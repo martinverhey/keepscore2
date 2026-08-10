@@ -1,0 +1,198 @@
+{
+  "@@locale": "nl",
+
+  "appTitle": "KeepScore2",
+
+  "commonCancel": "Annuleren",
+  "commonSave": "Opslaan",
+  "commonRetry": "Opnieuw proberen",
+  "commonDelete": "Verwijderen",
+  "commonLoading": "Laden…",
+  "commonBack": "Terug",
+  "commonCopy": "Kopiëren",
+
+  "errorGeneric": "Er is iets misgegaan. Probeer het opnieuw.",
+  "errorNetwork": "Geen verbinding. Controleer je internet en probeer het opnieuw.",
+  "errorNotAuthorized": "Je hebt hier geen rechten voor.",
+  "errorSignedOut": "Je sessie is verlopen. Log opnieuw in.",
+
+  "authSignInTitle": "Welkom bij KeepScore2",
+  "authSignInSubtitle": "Houd je wedstrijden bij en klim op het klassement.",
+  "authContinueWithApple": "Doorgaan met Apple",
+  "authContinueWithGoogle": "Doorgaan met Google",
+  "authContinueWithEmail": "Doorgaan met e-mail",
+  "authContinueAsGuest": "Doorgaan als gast",
+  "authEmailTitle": "Inloggen met e-mail",
+  "authEmailSubtitle": "We sturen je een code van zes cijfers. Geen wachtwoord nodig.",
+  "authEmailLabel": "E-mailadres",
+  "authEmailInvalid": "Dit lijkt geen e-mailadres te zijn.",
+  "authSendCode": "Code versturen",
+  "authResendCode": "Nieuwe code versturen",
+  "authCodeLabel": "Code van zes cijfers",
+  "authCodeTitle": "Voer je code in",
+  "authCodeSubtitle": "We hebben een code van 6 cijfers naar {email} gestuurd.",
+  "@authCodeSubtitle": {
+    "placeholders": { "email": { "type": "String" } }
+  },
+  "authVerify": "Bevestigen",
+  "authSignOut": "Uitloggen",
+  "authGuestBadge": "Gast",
+  "authUpgradeTitle": "Maak een account",
+  "authUpgradeBody": "Als gast kun je rondkijken, maar je hebt een account nodig om competities te maken en wedstrijden vast te leggen. Je geschiedenis blijft behouden.",
+
+  "competitionsTitle": "Competities",
+  "competitionsEmpty": "Je zit nog niet in een competitie.",
+  "competitionsCreate": "Competitie maken",
+  "competitionsJoin": "Deelnemen aan competitie",
+  "competitionNameLabel": "Naam van de competitie",
+  "competitionSeasonLengthLabel": "Lengte van het seizoen",
+  "seasonMonthly": "Maandelijks",
+  "seasonQuarterly": "Per kwartaal",
+  "seasonYearly": "Jaarlijks",
+  "competitionJoinCodeLabel": "Competitiecode",
+  "competitionCodeCopied": "Gekopieerd",
+  "competitionNameTooShort": "Geef de competitie een naam van minstens 2 tekens.",
+  "competitionCreateSubmit": "Competitie maken",
+  "competitionSeasonExplainer": "Aan het begin van elk seizoen gaan alle ratings terug naar {rating}.",
+  "@competitionSeasonExplainer": {
+    "placeholders": { "rating": { "type": "int" } }
+  },
+  "competitionPlayers": "{count, plural, =1{1 speler} other{{count} spelers}}",
+  "@competitionPlayers": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "competitionMatches": "{count, plural, =0{Nog geen wedstrijden} =1{1 wedstrijd} other{{count} wedstrijden}}",
+  "@competitionMatches": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "competitionGuestCannotCreate": "Als gast kun je rondkijken, maar voor het maken van een competitie heb je een account nodig.",
+  "competitionCodeHelp": "Iedereen met deze code kan meedoen.",
+  "competitionNotFound": "Deze competitie bestaat niet meer, of je zit er niet meer in.",
+
+  "competitionSettings": "Instellingen",
+  "competitionSettingsTitle": "Competitie-instellingen",
+  "competitionSettingsSave": "Wijzigingen opslaan",
+  "competitionSettingsSaved": "Wijzigingen opgeslagen.",
+  "competitionSettingsOwnerOnly": "Alleen de beheerder kan deze instellingen wijzigen.",
+  "competitionSeasonLengthWarning": "Gespeelde seizoenen behouden hun uitslagen. Dit verandert alleen hoe volgende seizoenen lopen.",
+  "competitionKFactorLabel": "K-factor",
+  "competitionKFactorHelp": "Hoeveel één wedstrijd een rating kan verschuiven. Hoger betekent grotere sprongen.",
+  "competitionKFactorInvalid": "Kies een K-factor tussen 1 en 200.",
+  "competitionMovLabel": "Scoreverschil",
+  "competitionMovHelp": "Grotere overwinningen verschuiven ratings verder. Zet dit uit om elke winst even zwaar te laten tellen.",
+  "competitionMovCapLabel": "Maximale vermenigvuldiging",
+  "competitionMovCapHelp": "Het maximum waarmee een monsterzege de ratingwijziging vergroot.",
+  "competitionMovCapInvalid": "Kies een maximum tussen 1,0 en 5,0.",
+  "competitionAllowDrawsLabel": "Gelijkspel toestaan",
+  "competitionAllowDrawsHelp": "Maakt het mogelijk een wedstrijd met gelijke score op te slaan.",
+
+  "joinTitle": "Deelnemen aan een competitie",
+  "joinSubtitle": "Voer de code van zes tekens in die je van de organisator hebt gekregen.",
+  "joinLookUp": "Competitie opzoeken",
+  "joinCodeInvalid": "Een code bestaat uit zes tekens.",
+  "joinConfirmTitle": "Deelnemen aan {name}?",
+  "@joinConfirmTitle": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "joinRunBy": "Beheerd door {owner}",
+  "@joinRunBy": {
+    "placeholders": { "owner": { "type": "String" } }
+  },
+  "joinClaimTitle": "Ben jij een van deze spelers?",
+  "joinClaimSubtitle": "Kies je naam om de rating en wedstrijdgeschiedenis over te nemen. Tik nogmaals om de keuze ongedaan te maken.",
+  "joinAsNewPlayer": "Deelnemen als nieuwe speler",
+  "joinConfirm": "Deelnemen",
+  "joinAlreadyMember": "Je zit al in deze competitie.",
+
+  "leaderboardTitle": "Klassement",
+  "leaderboardEmpty": "Dit seizoen zijn er nog geen wedstrijden gespeeld.",
+  "leaderboardNoPlayers": "Nog geen spelers. Voeg er een paar toe en leg een wedstrijd vast.",
+  "leaderboardCurrentSeason": "Huidig seizoen",
+  "leaderboardSeasonEnds": "Loopt tot {date}",
+  "@leaderboardSeasonEnds": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "leaderboardPickSeason": "Kies een seizoen",
+  "leaderboardUnplayed": "Nog niet gespeeld",
+  "seasonQuarterLabel": "K{quarter} {year}",
+  "@seasonQuarterLabel": {
+    "placeholders": {
+      "quarter": { "type": "int" },
+      "year": { "type": "String" }
+    }
+  },
+  "leaderboardRank": "Positie",
+  "leaderboardPlayer": "Speler",
+  "leaderboardRating": "Rating",
+  "leaderboardRecord": "{wins}W · {losses}V · {draws}G",
+  "@leaderboardRecord": {
+    "placeholders": {
+      "wins": { "type": "int" },
+      "losses": { "type": "int" },
+      "draws": { "type": "int" }
+    }
+  },
+
+  "matchesTitle": "Wedstrijden",
+  "matchesEmpty": "Nog geen wedstrijden. Leg je eerste vast.",
+  "matchNew": "Nieuwe wedstrijd",
+  "matchNewTitle": "Wedstrijd vastleggen",
+  "matchTeamA": "Team A",
+  "matchTeamB": "Team B",
+  "matchScore": "Score",
+  "matchSubmit": "Wedstrijd opslaan",
+  "matchDeleteConfirm": "Deze wedstrijd verwijderen? De ratings van het seizoen worden opnieuw berekend.",
+  "matchPickTeamsTitle": "Wie hebben er gespeeld?",
+  "matchPickTeamsHelp": "Tik op A of B om iemand aan die kant te zetten. Tik nogmaals om diegene eraf te halen.",
+  "matchBench": "Speelt niet mee",
+  "matchScoreTitle": "Eindstand",
+  "matchScoreTeam": "Score {team}",
+  "@matchScoreTeam": {
+    "placeholders": { "team": { "type": "String" } }
+  },
+  "matchSwapSides": "Kanten wisselen",
+  "matchClearTeams": "Teams wissen",
+  "matchPreviewTitle": "Wat dit oplevert",
+  "matchPreviewCaveat": "Een schatting. De definitieve cijfers worden berekend bij het opslaan.",
+  "matchTeamRating": "Teamrating {rating}",
+  "@matchTeamRating": {
+    "placeholders": { "rating": { "type": "String" } }
+  },
+  "matchNeedsBothTeams": "Zet minstens één speler aan elke kant.",
+  "matchScoreMissing": "Vul beide scores in.",
+  "matchDrawNotAllowed": "Deze competitie staat geen gelijkspel toe.",
+  "matchGuestCannotLog": "Als gast kun je rondkijken, maar voor het vastleggen van wedstrijden heb je een account nodig.",
+  "matchNeedsPlayers": "Voeg eerst spelers toe voordat je een wedstrijd vastlegt.",
+  "matchDetailTitle": "Wedstrijd",
+  "matchNotFound": "Deze wedstrijd bestaat niet meer.",
+  "matchDelete": "Wedstrijd verwijderen",
+  "matchDeleteTitle": "Deze wedstrijd verwijderen?",
+  "matchEditScore": "Score aanpassen",
+  "matchEditScoreTitle": "Score aanpassen",
+  "matchEditScoreHelp": "Het seizoen wordt vanaf deze wedstrijd opnieuw berekend.",
+  "matchDraw": "Gelijkspel",
+  "matchLoadMore": "Meer laden",
+
+  "playersTitle": "Spelers",
+  "playersAddDummy": "Speler toevoegen",
+  "playersDisplayNameLabel": "Naam",
+  "playersUnclaimed": "Niet geclaimd",
+  "playersEmpty": "Nog geen spelers.",
+  "playersYou": "Jij",
+  "playersOwner": "Beheerder",
+  "playersEdit": "Bewerken",
+  "playersAddTitle": "Speler toevoegen",
+  "playersAddSubtitle": "Met een tijdelijke speler kun je wedstrijden vastleggen voor iemand die nog niet meedoet. Diegene kan die naam later claimen met de competitiecode.",
+  "playersNameTooShort": "Vul een naam van minstens 2 tekens in.",
+  "playersRenameTitle": "Speler hernoemen",
+  "playersRename": "Hernoemen",
+  "playersRemove": "Uit de lijst halen",
+  "playersRemoveConfirmTitle": "{name} uit de lijst halen?",
+  "@playersRemoveConfirmTitle": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "playersRemoveConfirmBody": "Wedstrijden en ratings blijven bewaard, en de speler verdwijnt uit het klassement. Je kunt de speler altijd terugzetten.",
+  "playersRemoved": "Verwijderd",
+  "playersRestore": "Terugzetten",
+  "playersGuestCannotAdd": "Als gast kun je rondkijken, maar voor het toevoegen van spelers heb je een account nodig."
+}

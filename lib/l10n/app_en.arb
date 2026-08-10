@@ -1,0 +1,198 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "KeepScore2",
+
+  "commonCancel": "Cancel",
+  "commonSave": "Save",
+  "commonRetry": "Try again",
+  "commonDelete": "Delete",
+  "commonLoading": "Loading…",
+  "commonBack": "Back",
+  "commonCopy": "Copy",
+
+  "errorGeneric": "Something went wrong. Please try again.",
+  "errorNetwork": "No connection. Check your internet and try again.",
+  "errorNotAuthorized": "You don't have permission to do that.",
+  "errorSignedOut": "Your session expired. Please sign in again.",
+
+  "authSignInTitle": "Welcome to KeepScore2",
+  "authSignInSubtitle": "Track your matches, climb the leaderboard.",
+  "authContinueWithApple": "Continue with Apple",
+  "authContinueWithGoogle": "Continue with Google",
+  "authContinueWithEmail": "Continue with email",
+  "authContinueAsGuest": "Continue as guest",
+  "authEmailTitle": "Sign in with email",
+  "authEmailSubtitle": "We'll send you a six-digit code. No password needed.",
+  "authEmailLabel": "Email address",
+  "authEmailInvalid": "That doesn't look like an email address.",
+  "authSendCode": "Send code",
+  "authResendCode": "Send a new code",
+  "authCodeLabel": "Six-digit code",
+  "authCodeTitle": "Enter your code",
+  "authCodeSubtitle": "We sent a 6-digit code to {email}.",
+  "@authCodeSubtitle": {
+    "placeholders": { "email": { "type": "String" } }
+  },
+  "authVerify": "Verify",
+  "authSignOut": "Sign out",
+  "authGuestBadge": "Guest",
+  "authUpgradeTitle": "Create an account",
+  "authUpgradeBody": "Guests can look around, but you need an account to create competitions and log matches. Your history stays with you.",
+
+  "competitionsTitle": "Competitions",
+  "competitionsEmpty": "You're not in any competition yet.",
+  "competitionsCreate": "Create competition",
+  "competitionsJoin": "Join competition",
+  "competitionNameLabel": "Competition name",
+  "competitionSeasonLengthLabel": "Season length",
+  "seasonMonthly": "Monthly",
+  "seasonQuarterly": "Quarterly",
+  "seasonYearly": "Yearly",
+  "competitionJoinCodeLabel": "Competition code",
+  "competitionCodeCopied": "Copied",
+  "competitionNameTooShort": "Give the competition a name of at least 2 characters.",
+  "competitionCreateSubmit": "Create competition",
+  "competitionSeasonExplainer": "At the start of every season all ratings reset to {rating}.",
+  "@competitionSeasonExplainer": {
+    "placeholders": { "rating": { "type": "int" } }
+  },
+  "competitionPlayers": "{count, plural, =1{1 player} other{{count} players}}",
+  "@competitionPlayers": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "competitionMatches": "{count, plural, =0{No matches yet} =1{1 match} other{{count} matches}}",
+  "@competitionMatches": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "competitionGuestCannotCreate": "Guests can look around, but creating a competition needs an account.",
+  "competitionCodeHelp": "Anyone with this code can join.",
+  "competitionNotFound": "This competition is gone, or you're no longer in it.",
+
+  "competitionSettings": "Settings",
+  "competitionSettingsTitle": "Competition settings",
+  "competitionSettingsSave": "Save changes",
+  "competitionSettingsSaved": "Changes saved.",
+  "competitionSettingsOwnerOnly": "Only the owner can change these settings.",
+  "competitionSeasonLengthWarning": "Seasons already played keep their results. This only changes how future seasons are cut.",
+  "competitionKFactorLabel": "K-factor",
+  "competitionKFactorHelp": "How far a single match can move a rating. Higher means bigger swings.",
+  "competitionKFactorInvalid": "Pick a K-factor between 1 and 200.",
+  "competitionMovLabel": "Margin of victory",
+  "competitionMovHelp": "Bigger wins move ratings further. Turn this off to score every win the same.",
+  "competitionMovCapLabel": "Maximum multiplier",
+  "competitionMovCapHelp": "The most a blowout can multiply the rating change by.",
+  "competitionMovCapInvalid": "Pick a cap between 1.0 and 5.0.",
+  "competitionAllowDrawsLabel": "Allow draws",
+  "competitionAllowDrawsHelp": "Lets a match be saved with equal scores.",
+
+  "joinTitle": "Join a competition",
+  "joinSubtitle": "Enter the six-character code from whoever set it up.",
+  "joinLookUp": "Find competition",
+  "joinCodeInvalid": "A code is six characters.",
+  "joinConfirmTitle": "Join {name}?",
+  "@joinConfirmTitle": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "joinRunBy": "Run by {owner}",
+  "@joinRunBy": {
+    "placeholders": { "owner": { "type": "String" } }
+  },
+  "joinClaimTitle": "Are you one of these players?",
+  "joinClaimSubtitle": "Pick your name to take over its rating and match history. Tap again to deselect.",
+  "joinAsNewPlayer": "Join as a new player",
+  "joinConfirm": "Join",
+  "joinAlreadyMember": "You're already in this competition.",
+
+  "leaderboardTitle": "Leaderboard",
+  "leaderboardEmpty": "No matches played this season yet.",
+  "leaderboardNoPlayers": "No players yet. Add a few and log a match.",
+  "leaderboardCurrentSeason": "Current season",
+  "leaderboardSeasonEnds": "Ends {date}",
+  "@leaderboardSeasonEnds": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "leaderboardPickSeason": "Choose a season",
+  "leaderboardUnplayed": "Not played yet",
+  "seasonQuarterLabel": "Q{quarter} {year}",
+  "@seasonQuarterLabel": {
+    "placeholders": {
+      "quarter": { "type": "int" },
+      "year": { "type": "String" }
+    }
+  },
+  "leaderboardRank": "Rank",
+  "leaderboardPlayer": "Player",
+  "leaderboardRating": "Rating",
+  "leaderboardRecord": "{wins}W · {losses}L · {draws}D",
+  "@leaderboardRecord": {
+    "placeholders": {
+      "wins": { "type": "int" },
+      "losses": { "type": "int" },
+      "draws": { "type": "int" }
+    }
+  },
+
+  "matchesTitle": "Matches",
+  "matchesEmpty": "No matches yet. Log your first one.",
+  "matchNew": "New match",
+  "matchNewTitle": "Log a match",
+  "matchTeamA": "Team A",
+  "matchTeamB": "Team B",
+  "matchScore": "Score",
+  "matchSubmit": "Save match",
+  "matchDeleteConfirm": "Delete this match? Ratings for the season will be recalculated.",
+  "matchPickTeamsTitle": "Who played?",
+  "matchPickTeamsHelp": "Tap A or B to put someone on that side. Tap again to take them off.",
+  "matchBench": "Not playing",
+  "matchScoreTitle": "Final score",
+  "matchScoreTeam": "{team} score",
+  "@matchScoreTeam": {
+    "placeholders": { "team": { "type": "String" } }
+  },
+  "matchSwapSides": "Swap sides",
+  "matchClearTeams": "Clear teams",
+  "matchPreviewTitle": "What this is worth",
+  "matchPreviewCaveat": "An estimate. The final numbers are calculated when the match is saved.",
+  "matchTeamRating": "Team rating {rating}",
+  "@matchTeamRating": {
+    "placeholders": { "rating": { "type": "String" } }
+  },
+  "matchNeedsBothTeams": "Put at least one player on each side.",
+  "matchScoreMissing": "Enter both scores.",
+  "matchDrawNotAllowed": "This competition doesn't allow draws.",
+  "matchGuestCannotLog": "Guests can look around, but logging a match needs an account.",
+  "matchNeedsPlayers": "Add players to the roster before logging a match.",
+  "matchDetailTitle": "Match",
+  "matchNotFound": "This match is gone.",
+  "matchDelete": "Delete match",
+  "matchDeleteTitle": "Delete this match?",
+  "matchEditScore": "Edit score",
+  "matchEditScoreTitle": "Change the score",
+  "matchEditScoreHelp": "The season is recalculated from this match onwards.",
+  "matchDraw": "Draw",
+  "matchLoadMore": "Load more",
+
+  "playersTitle": "Players",
+  "playersAddDummy": "Add player",
+  "playersDisplayNameLabel": "Name",
+  "playersUnclaimed": "Not claimed",
+  "playersEmpty": "No players yet.",
+  "playersYou": "You",
+  "playersOwner": "Owner",
+  "playersEdit": "Edit",
+  "playersAddTitle": "Add a player",
+  "playersAddSubtitle": "A placeholder lets you log matches for someone who hasn't joined yet. They can claim the name later with the competition code.",
+  "playersNameTooShort": "Enter a name of at least 2 characters.",
+  "playersRenameTitle": "Rename player",
+  "playersRename": "Rename",
+  "playersRemove": "Remove from roster",
+  "playersRemoveConfirmTitle": "Remove {name}?",
+  "@playersRemoveConfirmTitle": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "playersRemoveConfirmBody": "Their matches and ratings stay on record, and they drop off the leaderboard. You can add them back at any time.",
+  "playersRemoved": "Removed",
+  "playersRestore": "Add back",
+  "playersGuestCannotAdd": "Guests can look around, but adding players needs an account."
+}
