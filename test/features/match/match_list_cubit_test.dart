@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/error/failure.dart';
 import 'package:keepscore2/features/match/domain/match_entry.dart';
 import 'package:keepscore2/features/match/domain/match_repository.dart';
-import 'package:keepscore2/features/match/presentation/bloc/match_list_cubit.dart';
+import 'package:keepscore2/features/match/presentation/cubit/match_list_cubit.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockMatchRepository extends Mock implements MatchRepository {}

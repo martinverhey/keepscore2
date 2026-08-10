@@ -8,7 +8,7 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../domain/competition.dart';
-import '../bloc/create_competition_cubit.dart';
+import '../cubit/create_competition_cubit.dart';
 
 class CreateCompetitionPage extends StatefulWidget {
   const CreateCompetitionPage({super.key});

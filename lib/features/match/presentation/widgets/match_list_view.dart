@@ -7,7 +7,7 @@ import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../auth/presentation/widgets/guest_notice.dart';
-import '../bloc/match_list_cubit.dart';
+import '../cubit/match_list_cubit.dart';
 import 'match_tile.dart';
 
 class MatchListView extends StatelessWidget {

@@ -7,7 +7,7 @@ import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.da
 import 'package:keepscore2/features/leaderboard/domain/season.dart';
 import 'package:keepscore2/features/leaderboard/domain/season_window.dart';
 import 'package:keepscore2/features/leaderboard/domain/standing.dart';
-import 'package:keepscore2/features/leaderboard/presentation/bloc/leaderboard_cubit.dart';
+import 'package:keepscore2/features/leaderboard/presentation/cubit/leaderboard_cubit.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockLeaderboardRepository extends Mock implements LeaderboardRepository {}

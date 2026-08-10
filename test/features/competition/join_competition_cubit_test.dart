@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/error/failure.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/domain/join_preview.dart';
-import 'package:keepscore2/features/competition/presentation/bloc/join_competition_cubit.dart';
+import 'package:keepscore2/features/competition/presentation/cubit/join_competition_cubit.dart';
 import 'package:keepscore2/features/player/domain/player.dart';
 import 'package:mocktail/mocktail.dart';
 

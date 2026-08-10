@@ -63,52 +63,14 @@ lib/
   features/<name>/
     domain/     entities + abstract repository
     data/       Supabase-backed repository implementation
-    presentation/ blocs + pages + widgets
+    presentation/ cubit/ (state) + pages + widgets
   l10n/         app_en.arb, app_nl.arb (+ generated app_localizations*.dart)
 ```
 
-Conventions that matter:
-
-- **No comments.** Only write one when it is absolutely necessary — something
-  the code genuinely cannot express itself. Doc comments count as comments.
-  Naming and structure carry the explanation. (Explicit user preference.)
-- **No freezed, no build_runner, no json_serializable.** Plain classes with
-  `Equatable` and hand-written `fromMap`. (Explicit user preference.)
-- **No usecase layer.** Blocs call repositories directly.
-- **Feature code never imports `package:flutter/cupertino.dart` or Material
-  widgets directly.** Everything platform-specific goes through
-  `core/widgets/adaptive/adaptive.dart`. `AppPlatform.useCupertino` is the single
-  switch, and `AppPlatform.debugOverrideCupertino` pins it in tests.
-- **The accent and team colours are resolved through `AdaptiveColors`, never
-  read off `AppColors` directly.** Each carries a second value for dark
-  surfaces; a saturated mid-tone sits near 4:1 on a dark background whatever its
-  hue. `test/core/adaptive_colors_test.dart` asserts the ratios against the
-  app's own surface — note that surface is a warm tint, not white, so measuring
-  against `#FFFFFF` flatters a colour by roughly 0.2.
-- **All repository methods wrap their body in `guard()`** from
-  `core/error/failure.dart`, which converts Postgrest/socket exceptions into a
-  sealed `Failure`. UI renders them via `failure.localized(l10n)`.
-- Messages raised by our own SQL (`RAISE EXCEPTION 'Create an account to log
-  matches'`) are written for humans and pass through to the UI unchanged.
-- **Every user-facing string goes through `AppLocalizations`.** Add to both ARB
-  files, then `flutter gen-l10n`.
-- Blocs that hold form state are `registerFactory`; session-wide ones are
-  `registerLazySingleton`; ones scoped to a single competition are
-  `registerFactoryParam<T, String, void>` and take the id as a constructor
-  argument (`getIt<PlayersCubit>(param1: id)`). See `lib/app/di/injector.dart`.
-  `MatchDetailCubit` uses both slots (`param1` match id, `param2` competition
-  id) because it needs the owner to decide who may delete.
-- **Realtime is a tick, never a payload.** `core/data/realtime.dart` turns a
-  `postgres_changes` subscription into a `Stream<void>`; the cubit debounces it
-  by 400 ms and refetches. This is not laziness: one `create_match` on the demo
-  competition emitted **36** `player_ratings` events and 14 `matches` events,
-  because a back-dated match replays the whole season and every replayed match
-  rewrites its own rating snapshot. Reconciling that stream row by row would
-  cost more than the refetch and could not keep `rank` consistent anyway.
-- **A write blocked by an RLS policy is not an error.** `update … where` simply
-  matches no rows, so repositories end those calls with `.select().maybeSingle()`
-  and raise `PermissionFailure` on null. Getting this wrong looks like a silent
-  success. `supabase/tests/players_check.sql` asserts the premise.
+Coding conventions (no comments, no freezed, cubit/state file layout,
+adaptive widgets, error handling, l10n, DI registration, realtime, RLS) live
+in the `guidelines` skill (`.claude/skills/guidelines/SKILL.md`), not here —
+load it before writing or reviewing `lib/**` or `supabase/**` code.
 
 ## Commands
 
@@ -145,6 +107,10 @@ from the project-root `.env`.
 - **Re-applying a `create or replace function` drops its grants.** Always
   re-issue `grant execute on function … to authenticated` afterwards.
 
+SQL gotchas (OUT-parameter shadowing, enum casts in `UNION`, PostgREST's
+`""` → `NULL` coercion) live in the `guidelines` skill, alongside the Dart
+conventions.
+
 ### Two `.env` files — do not confuse them
 
 - `assets/.env` — **bundled into the app**, readable by anyone, and **tracked
@@ -155,15 +121,6 @@ from the project-root `.env`.
   it by accident.
 - `.env` (project root) — tooling secrets (`SUPABASE_DB_PASSWORD`). Gitignored,
   never bundled, no template committed.
-
-### SQL gotchas already hit here
-
-- OUT parameters shadow column names — **table-qualify everything** inside
-  functions with `RETURNS TABLE`.
-- An untyped enum literal in a `UNION` branch resolves as `text`; cast it
-  (`'a'::public.match_team`).
-- PostgREST coerces `""` to `NULL` for `uuid` params, so an empty string is not
-  a validation error — it is a missing argument.
 
 ## Testing
 

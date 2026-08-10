@@ -10,9 +10,9 @@ import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/rating_delta.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../domain/match_entry.dart';
-import '../bloc/match_detail_cubit.dart';
+import '../cubit/match_detail_cubit.dart';
 
 class MatchDetailPage extends StatefulWidget {
   const MatchDetailPage({super.key});

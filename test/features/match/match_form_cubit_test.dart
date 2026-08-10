@@ -8,7 +8,7 @@ import 'package:keepscore2/features/leaderboard/domain/season_window.dart';
 import 'package:keepscore2/features/leaderboard/domain/standing.dart';
 import 'package:keepscore2/features/match/domain/match_entry.dart';
 import 'package:keepscore2/features/match/domain/match_repository.dart';
-import 'package:keepscore2/features/match/presentation/bloc/match_form_cubit.dart';
+import 'package:keepscore2/features/match/presentation/cubit/match_form_cubit.dart';
 import 'package:keepscore2/features/player/domain/player.dart';
 import 'package:keepscore2/features/player/domain/player_repository.dart';
 import 'package:mocktail/mocktail.dart';

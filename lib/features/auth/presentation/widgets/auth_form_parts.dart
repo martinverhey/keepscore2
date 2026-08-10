@@ -6,7 +6,7 @@ import '../../../../core/error/failure_messages.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../bloc/sign_in_cubit.dart';
+import '../cubit/sign_in_cubit.dart';
 
 class AuthHeading extends StatelessWidget {
   const AuthHeading(this.title, this.subtitle, {super.key});
