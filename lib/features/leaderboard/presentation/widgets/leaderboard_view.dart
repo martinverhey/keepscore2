@@ -11,7 +11,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../competition/domain/competition.dart';
 import '../../domain/season.dart';
 import '../../domain/standing.dart';
-import '../bloc/leaderboard_cubit.dart';
+import '../cubit/leaderboard_cubit.dart';
 import 'season_label.dart';
 
 class LeaderboardView extends StatelessWidget {

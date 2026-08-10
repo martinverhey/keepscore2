@@ -7,7 +7,7 @@ import '../../../../core/error/failure_messages.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../bloc/join_competition_cubit.dart';
+import '../cubit/join_competition_cubit.dart';
 
 class JoinCompetitionPage extends StatelessWidget {
   const JoinCompetitionPage({super.key});

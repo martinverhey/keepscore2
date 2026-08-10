@@ -8,7 +8,7 @@ import '../../../../core/widgets/state_views.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../auth/presentation/widgets/guest_notice.dart';
 import '../../domain/player.dart';
-import '../bloc/players_cubit.dart';
+import '../cubit/players_cubit.dart';
 import 'player_name_sheet.dart';
 
 class PlayerRoster extends StatelessWidget {

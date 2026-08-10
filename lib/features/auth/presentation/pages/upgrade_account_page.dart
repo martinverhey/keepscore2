@@ -5,8 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../bloc/auth_bloc.dart';
-import '../bloc/sign_in_cubit.dart';
+import '../cubit/auth_bloc.dart';
+import '../cubit/sign_in_cubit.dart';
 import '../widgets/auth_form_parts.dart';
 
 class UpgradeAccountPage extends StatelessWidget {

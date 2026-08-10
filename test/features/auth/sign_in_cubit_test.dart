@@ -2,7 +2,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/error/failure.dart';
 import 'package:keepscore2/features/auth/domain/auth_repository.dart';
-import 'package:keepscore2/features/auth/presentation/bloc/sign_in_cubit.dart';
+import 'package:keepscore2/features/auth/presentation/cubit/sign_in_cubit.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}

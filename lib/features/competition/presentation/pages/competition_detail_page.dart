@@ -11,14 +11,14 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../../auth/presentation/bloc/auth_bloc.dart';
-import '../../../leaderboard/presentation/bloc/leaderboard_cubit.dart';
+import '../../../auth/presentation/cubit/auth_bloc.dart';
+import '../../../leaderboard/presentation/cubit/leaderboard_cubit.dart';
 import '../../../leaderboard/presentation/widgets/leaderboard_view.dart';
-import '../../../match/presentation/bloc/match_list_cubit.dart';
+import '../../../match/presentation/cubit/match_list_cubit.dart';
 import '../../../match/presentation/widgets/match_list_view.dart';
-import '../../../player/presentation/bloc/players_cubit.dart';
+import '../../../player/presentation/cubit/players_cubit.dart';
 import '../../../player/presentation/widgets/player_roster.dart';
-import '../bloc/competition_detail_cubit.dart';
+import '../cubit/competition_detail_cubit.dart';
 
 enum CompetitionTab { leaderboard, matches, players }
 

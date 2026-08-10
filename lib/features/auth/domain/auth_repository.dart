@@ -1,12 +1,7 @@
+import 'auth_providers.dart';
 import 'auth_user.dart';
 
-class AuthProviders {
-  const AuthProviders({required this.apple, required this.google});
-  final bool apple;
-  final bool google;
-
-  bool get any => apple || google;
-}
+export 'auth_providers.dart';
 
 abstract interface class AuthRepository {
   Stream<AuthUser?> watchUser();

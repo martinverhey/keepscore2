@@ -3,26 +3,26 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/auth/data/supabase_auth_repository.dart';
 import '../../features/auth/domain/auth_repository.dart';
-import '../../features/auth/presentation/bloc/auth_bloc.dart';
-import '../../features/auth/presentation/bloc/sign_in_cubit.dart';
+import '../../features/auth/presentation/cubit/auth_bloc.dart';
+import '../../features/auth/presentation/cubit/sign_in_cubit.dart';
 import '../../features/competition/data/supabase_competition_repository.dart';
 import '../../features/competition/domain/competition_repository.dart';
-import '../../features/competition/presentation/bloc/competition_detail_cubit.dart';
-import '../../features/competition/presentation/bloc/competition_list_cubit.dart';
-import '../../features/competition/presentation/bloc/competition_settings_cubit.dart';
-import '../../features/competition/presentation/bloc/create_competition_cubit.dart';
-import '../../features/competition/presentation/bloc/join_competition_cubit.dart';
+import '../../features/competition/presentation/cubit/competition_detail_cubit.dart';
+import '../../features/competition/presentation/cubit/competition_list_cubit.dart';
+import '../../features/competition/presentation/cubit/competition_settings_cubit.dart';
+import '../../features/competition/presentation/cubit/create_competition_cubit.dart';
+import '../../features/competition/presentation/cubit/join_competition_cubit.dart';
 import '../../features/leaderboard/data/supabase_leaderboard_repository.dart';
 import '../../features/leaderboard/domain/leaderboard_repository.dart';
-import '../../features/leaderboard/presentation/bloc/leaderboard_cubit.dart';
+import '../../features/leaderboard/presentation/cubit/leaderboard_cubit.dart';
 import '../../features/match/data/supabase_match_repository.dart';
 import '../../features/match/domain/match_repository.dart';
-import '../../features/match/presentation/bloc/match_detail_cubit.dart';
-import '../../features/match/presentation/bloc/match_form_cubit.dart';
-import '../../features/match/presentation/bloc/match_list_cubit.dart';
+import '../../features/match/presentation/cubit/match_detail_cubit.dart';
+import '../../features/match/presentation/cubit/match_form_cubit.dart';
+import '../../features/match/presentation/cubit/match_list_cubit.dart';
 import '../../features/player/data/supabase_player_repository.dart';
 import '../../features/player/domain/player_repository.dart';
-import '../../features/player/presentation/bloc/players_cubit.dart';
+import '../../features/player/presentation/cubit/players_cubit.dart';
 
 final getIt = GetIt.instance;
 

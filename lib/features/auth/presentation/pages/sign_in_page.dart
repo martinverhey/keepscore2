@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../bloc/sign_in_cubit.dart';
+import '../cubit/sign_in_cubit.dart';
 import '../widgets/auth_form_parts.dart';
 
 class SignInPage extends StatelessWidget {

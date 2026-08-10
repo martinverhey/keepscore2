@@ -11,7 +11,7 @@ import '../../../../core/widgets/state_views.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../player/domain/player.dart';
 import '../../domain/match_entry.dart';
-import '../bloc/match_form_cubit.dart';
+import '../cubit/match_form_cubit.dart';
 
 class NewMatchPage extends StatefulWidget {
   const NewMatchPage({super.key});

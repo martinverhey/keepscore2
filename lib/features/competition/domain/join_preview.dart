@@ -1,19 +1,8 @@
 import 'package:equatable/equatable.dart';
 
-class ClaimablePlayer extends Equatable {
-  const ClaimablePlayer({required this.id, required this.displayName});
+import 'claimable_player.dart';
 
-  factory ClaimablePlayer.fromMap(Map<String, dynamic> map) => ClaimablePlayer(
-        id: map['id'] as String,
-        displayName: map['display_name'] as String,
-      );
-
-  final String id;
-  final String displayName;
-
-  @override
-  List<Object?> get props => [id, displayName];
-}
+export 'claimable_player.dart';
 
 class JoinPreview extends Equatable {
   const JoinPreview({

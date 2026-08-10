@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/error/failure.dart';
 import 'package:keepscore2/features/player/domain/player.dart';
 import 'package:keepscore2/features/player/domain/player_repository.dart';
-import 'package:keepscore2/features/player/presentation/bloc/players_cubit.dart';
+import 'package:keepscore2/features/player/presentation/cubit/players_cubit.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockPlayerRepository extends Mock implements PlayerRepository {}

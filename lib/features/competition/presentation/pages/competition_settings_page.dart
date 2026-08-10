@@ -7,9 +7,9 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../domain/competition.dart';
-import '../bloc/competition_settings_cubit.dart';
+import '../cubit/competition_settings_cubit.dart';
 
 class CompetitionSettingsPage extends StatefulWidget {
   const CompetitionSettingsPage({super.key});

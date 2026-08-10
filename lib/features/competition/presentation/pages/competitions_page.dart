@@ -8,9 +8,9 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../auth/presentation/widgets/guest_notice.dart';
-import '../bloc/competition_list_cubit.dart';
+import '../cubit/competition_list_cubit.dart';
 import '../widgets/competition_tile.dart';
 
 class CompetitionsPage extends StatefulWidget {
