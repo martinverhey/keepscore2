@@ -119,6 +119,30 @@ class SupabaseCompetitionRepository implements CompetitionRepository {
         return Competition.fromMap(row);
       });
 
+  @override
+  Future<void> leave(String competitionId) => guard(() async {
+        await _client.rpc(
+          'leave_competition',
+          params: {'p_competition_id': competitionId},
+        );
+      });
+
+  @override
+  Future<void> delete(String competitionId) => guard(() async {
+        final row = await _client
+            .from('competitions')
+            .delete()
+            .eq('id', competitionId)
+            .select()
+            .maybeSingle();
+
+        if (row == null) {
+          throw const PermissionFailure(
+            'Only the competition owner can delete this competition',
+          );
+        }
+      });
+
   String _normalizeCode(String value) =>
       value.replaceAll(RegExp(r'[\s-]'), '').toUpperCase();
 }

@@ -10,10 +10,12 @@ class CompetitionTile extends StatelessWidget {
     super.key,
     required this.overview,
     required this.onTap,
+    this.onManage,
   });
 
   final CompetitionOverview overview;
   final VoidCallback onTap;
+  final VoidCallback? onManage;
 
   @override
   Widget build(BuildContext context) {
@@ -48,10 +50,26 @@ class CompetitionTile extends StatelessWidget {
               ],
             ),
             const SizedBox(height: AppSpacing.xs),
-            Text(
-              '${l10n.competitionPlayers(overview.playerCount)}'
-              ' · ${l10n.competitionMatches(overview.matchCount)}',
-              style: const TextStyle(color: AppColors.neutral, fontSize: 13),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '${l10n.competitionPlayers(overview.playerCount)}'
+                    ' · ${l10n.competitionMatches(overview.matchCount)}',
+                    style: const TextStyle(
+                      color: AppColors.neutral,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+                if (onManage != null)
+                  AdaptiveButton(
+                    label: l10n.competitionManage,
+                    kind: AdaptiveButtonKind.plain,
+                    expand: false,
+                    onPressed: onManage,
+                  ),
+              ],
             ),
           ],
         ),

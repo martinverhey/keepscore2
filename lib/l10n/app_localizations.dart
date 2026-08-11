@@ -500,6 +500,60 @@ abstract class AppLocalizations {
   /// **'Lets a match be saved with equal scores.'**
   String get competitionAllowDrawsHelp;
 
+  /// No description provided for @competitionManage.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage'**
+  String get competitionManage;
+
+  /// No description provided for @competitionRenameTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename competition'**
+  String get competitionRenameTitle;
+
+  /// No description provided for @competitionRename.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get competitionRename;
+
+  /// No description provided for @competitionLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave competition'**
+  String get competitionLeave;
+
+  /// No description provided for @competitionLeaveConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave {name}?'**
+  String competitionLeaveConfirmTitle(String name);
+
+  /// No description provided for @competitionLeaveConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your matches and ratings stay on record, but you\'ll need the code to rejoin.'**
+  String get competitionLeaveConfirmBody;
+
+  /// No description provided for @competitionDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete competition'**
+  String get competitionDelete;
+
+  /// No description provided for @competitionDeleteConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {name}?'**
+  String competitionDeleteConfirmTitle(String name);
+
+  /// No description provided for @competitionDeleteConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This permanently deletes every player, match and rating in this competition. This can\'t be undone.'**
+  String get competitionDeleteConfirmBody;
+
   /// No description provided for @joinTitle.
   ///
   /// In en, this message translates to:
@@ -655,6 +709,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'New match'**
   String get matchNew;
+
+  /// No description provided for @matchAddFab.
+  ///
+  /// In en, this message translates to:
+  /// **'+ Add Match'**
+  String get matchAddFab;
 
   /// No description provided for @matchNewTitle.
   ///
@@ -949,6 +1009,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Guests can look around, but adding players needs an account.'**
   String get playersGuestCannotAdd;
+
+  /// No description provided for @profileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your stats'**
+  String get profileTitle;
+
+  /// No description provided for @profileRank.
+  ///
+  /// In en, this message translates to:
+  /// **'#{rank} of {count}'**
+  String profileRank(int rank, int count);
+
+  /// No description provided for @profileWinRate.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% win rate'**
+  String profileWinRate(int percent);
+
+  /// No description provided for @profileTrendTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent form'**
+  String get profileTrendTitle;
+
+  /// No description provided for @profileNotEnoughMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'Play a couple more matches to see your trend.'**
+  String get profileNotEnoughMatches;
 }
 
 class _AppLocalizationsDelegate

@@ -86,6 +86,22 @@
   "competitionAllowDrawsLabel": "Gelijkspel toestaan",
   "competitionAllowDrawsHelp": "Maakt het mogelijk een wedstrijd met gelijke score op te slaan.",
 
+  "competitionManage": "Beheren",
+  "competitionRenameTitle": "Competitie hernoemen",
+  "competitionRename": "Hernoemen",
+  "competitionLeave": "Competitie verlaten",
+  "competitionLeaveConfirmTitle": "{name} verlaten?",
+  "@competitionLeaveConfirmTitle": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "competitionLeaveConfirmBody": "Je wedstrijden en ratings blijven bewaard, maar je hebt de code weer nodig om opnieuw mee te doen.",
+  "competitionDelete": "Competitie verwijderen",
+  "competitionDeleteConfirmTitle": "{name} verwijderen?",
+  "@competitionDeleteConfirmTitle": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "competitionDeleteConfirmBody": "Dit verwijdert definitief alle spelers, wedstrijden en ratings in deze competitie. Dit kan niet ongedaan worden gemaakt.",
+
   "joinTitle": "Deelnemen aan een competitie",
   "joinSubtitle": "Voer de code van zes tekens in die je van de organisator hebt gekregen.",
   "joinLookUp": "Competitie opzoeken",
@@ -136,6 +152,7 @@
   "matchesTitle": "Wedstrijden",
   "matchesEmpty": "Nog geen wedstrijden. Leg je eerste vast.",
   "matchNew": "Nieuwe wedstrijd",
+  "matchAddFab": "+ Wedstrijd toevoegen",
   "matchNewTitle": "Wedstrijd vastleggen",
   "matchTeamA": "Team A",
   "matchTeamB": "Team B",
@@ -194,5 +211,20 @@
   "playersRemoveConfirmBody": "Wedstrijden en ratings blijven bewaard, en de speler verdwijnt uit het klassement. Je kunt de speler altijd terugzetten.",
   "playersRemoved": "Verwijderd",
   "playersRestore": "Terugzetten",
-  "playersGuestCannotAdd": "Als gast kun je rondkijken, maar voor het toevoegen van spelers heb je een account nodig."
+  "playersGuestCannotAdd": "Als gast kun je rondkijken, maar voor het toevoegen van spelers heb je een account nodig.",
+
+  "profileTitle": "Jouw statistieken",
+  "profileRank": "#{rank} van {count}",
+  "@profileRank": {
+    "placeholders": {
+      "rank": { "type": "int" },
+      "count": { "type": "int" }
+    }
+  },
+  "profileWinRate": "{percent}% winst",
+  "@profileWinRate": {
+    "placeholders": { "percent": { "type": "int" } }
+  },
+  "profileTrendTitle": "Recente vorm",
+  "profileNotEnoughMatches": "Speel nog een paar wedstrijden om je trend te zien."
 }

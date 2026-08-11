@@ -99,4 +99,98 @@ void main() {
       expect(cubit.state.status, CompetitionListStatus.ready);
     },
   );
+
+  blocTest<CompetitionListCubit, CompetitionListState>(
+    'a rename sends the full settings and refreshes the list',
+    setUp: () {
+      var call = 0;
+      when(() => repository.myCompetitions()).thenAnswer((_) async {
+        call++;
+        return [
+          _overview(
+            'c1',
+            call == 1 ? 'Office Table Tennis' : 'Table Tennis League',
+          ),
+        ];
+      });
+      when(() => repository.updateSettings(
+            competitionId: 'c1',
+            name: 'Table Tennis League',
+            seasonLength: SeasonLength.monthly,
+            kFactor: 32,
+            movEnabled: true,
+            movCap: 2.5,
+            allowDraws: true,
+          )).thenAnswer((_) async => _overview('c1', 'Table Tennis League').competition);
+    },
+    build: () => CompetitionListCubit(repository),
+    act: (cubit) async {
+      await cubit.load();
+      final ok = await cubit.rename('c1', 'Table Tennis League');
+      expect(ok, isTrue);
+    },
+    verify: (cubit) {
+      expect(cubit.state.competitions.single.competition.name, 'Table Tennis League');
+      expect(cubit.state.busy, isFalse);
+      verify(() => repository.myCompetitions()).called(2);
+    },
+  );
+
+  blocTest<CompetitionListCubit, CompetitionListState>(
+    'leaving drops the competition off the list',
+    setUp: () {
+      var call = 0;
+      when(() => repository.myCompetitions()).thenAnswer((_) async {
+        call++;
+        return call == 1 ? [_overview('c1', 'Office Table Tennis')] : [];
+      });
+      when(() => repository.leave('c1')).thenAnswer((_) async {});
+    },
+    build: () => CompetitionListCubit(repository),
+    act: (cubit) async {
+      await cubit.load();
+      final ok = await cubit.leave('c1');
+      expect(ok, isTrue);
+    },
+    verify: (cubit) => expect(cubit.state.competitions, isEmpty),
+  );
+
+  blocTest<CompetitionListCubit, CompetitionListState>(
+    'deleting drops the competition off the list',
+    setUp: () {
+      var call = 0;
+      when(() => repository.myCompetitions()).thenAnswer((_) async {
+        call++;
+        return call == 1 ? [_overview('c1', 'Office Table Tennis')] : [];
+      });
+      when(() => repository.delete('c1')).thenAnswer((_) async {});
+    },
+    build: () => CompetitionListCubit(repository),
+    act: (cubit) async {
+      await cubit.load();
+      final ok = await cubit.delete('c1');
+      expect(ok, isTrue);
+    },
+    verify: (cubit) => expect(cubit.state.competitions, isEmpty),
+  );
+
+  blocTest<CompetitionListCubit, CompetitionListState>(
+    'a refused delete is reported without disturbing the list',
+    setUp: () {
+      when(() => repository.myCompetitions())
+          .thenAnswer((_) async => [_overview('c1', 'Office Table Tennis')]);
+      when(() => repository.delete('c1')).thenThrow(const PermissionFailure());
+    },
+    build: () => CompetitionListCubit(repository),
+    act: (cubit) async {
+      await cubit.load();
+      final ok = await cubit.delete('c1');
+      expect(ok, isFalse);
+    },
+    verify: (cubit) {
+      expect(cubit.state.actionFailure, isA<PermissionFailure>());
+      expect(cubit.state.competitions, hasLength(1));
+      expect(cubit.state.busy, isFalse);
+    },
+  );
 }

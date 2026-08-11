@@ -23,6 +23,9 @@ import '../../features/match/presentation/cubit/match_list_cubit.dart';
 import '../../features/player/data/supabase_player_repository.dart';
 import '../../features/player/domain/player_repository.dart';
 import '../../features/player/presentation/cubit/players_cubit.dart';
+import '../../features/profile/data/supabase_profile_repository.dart';
+import '../../features/profile/domain/profile_repository.dart';
+import '../../features/profile/presentation/cubit/profile_cubit.dart';
 
 final getIt = GetIt.instance;
 
@@ -96,6 +99,19 @@ Future<void> configureDependencies() async {
         getIt<CompetitionRepository>(),
         matchId,
         competitionId,
+      ),
+    )
+    ..registerLazySingleton<ProfileRepository>(
+      () => SupabaseProfileRepository(getIt<SupabaseClient>()),
+    )
+    // Two ids: the competition the standings/history are scoped to, and the
+    // player whose stats are being shown.
+    ..registerFactoryParam<ProfileCubit, String, String>(
+      (competitionId, playerId) => ProfileCubit(
+        getIt<LeaderboardRepository>(),
+        getIt<ProfileRepository>(),
+        competitionId,
+        playerId,
       ),
     );
 }

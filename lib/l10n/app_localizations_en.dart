@@ -243,6 +243,39 @@ class AppLocalizationsEn extends AppLocalizations {
       'Lets a match be saved with equal scores.';
 
   @override
+  String get competitionManage => 'Manage';
+
+  @override
+  String get competitionRenameTitle => 'Rename competition';
+
+  @override
+  String get competitionRename => 'Rename';
+
+  @override
+  String get competitionLeave => 'Leave competition';
+
+  @override
+  String competitionLeaveConfirmTitle(String name) {
+    return 'Leave $name?';
+  }
+
+  @override
+  String get competitionLeaveConfirmBody =>
+      'Your matches and ratings stay on record, but you\'ll need the code to rejoin.';
+
+  @override
+  String get competitionDelete => 'Delete competition';
+
+  @override
+  String competitionDeleteConfirmTitle(String name) {
+    return 'Delete $name?';
+  }
+
+  @override
+  String get competitionDeleteConfirmBody =>
+      'This permanently deletes every player, match and rating in this competition. This can\'t be undone.';
+
+  @override
   String get joinTitle => 'Join a competition';
 
   @override
@@ -332,6 +365,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get matchNew => 'New match';
+
+  @override
+  String get matchAddFab => '+ Add Match';
 
   @override
   String get matchNewTitle => 'Log a match';
@@ -494,4 +530,24 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get playersGuestCannotAdd =>
       'Guests can look around, but adding players needs an account.';
+
+  @override
+  String get profileTitle => 'Your stats';
+
+  @override
+  String profileRank(int rank, int count) {
+    return '#$rank of $count';
+  }
+
+  @override
+  String profileWinRate(int percent) {
+    return '$percent% win rate';
+  }
+
+  @override
+  String get profileTrendTitle => 'Recent form';
+
+  @override
+  String get profileNotEnoughMatches =>
+      'Play a couple more matches to see your trend.';
 }
