@@ -21,7 +21,7 @@ class JoinCompetitionPage extends StatelessWidget {
       listener: (context, state) {
         final competitionId = state.preview!.competitionId;
         context.pop();
-        context.push('/c/$competitionId');
+        context.push('/competition/$competitionId');
       },
       builder: (context, state) {
         final cubit = context.read<JoinCompetitionCubit>();

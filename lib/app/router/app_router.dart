@@ -24,7 +24,7 @@ import '../../features/match/presentation/pages/match_detail_page.dart';
 import '../../features/match/presentation/pages/new_match_page.dart';
 import '../../features/player/presentation/cubit/players_cubit.dart';
 import '../../features/player/presentation/pages/players_page.dart';
-import '../di/injector.dart';
+import '../dependency_injection/injector.dart';
 import '../splash_page.dart';
 import 'go_router_refresh_stream.dart';
 
@@ -36,17 +36,19 @@ abstract final class Routes {
   static const createCompetition = '/create';
   static const joinCompetition = '/join';
 
-  static String competition(String id) => '/c/$id';
+  static String competition(String id) => '/competition/$id';
 
-  static String competitionMenu(String id) => '/c/$id/settings';
+  static String competitionMenu(String id) => '/competition/$id/settings';
 
-  static String competitionSettings(String id) => '/c/$id/settings/competition';
+  static String competitionSettings(String id) =>
+      '/competition/$id/settings/competition';
 
-  static String players(String id) => '/c/$id/settings/players';
+  static String players(String id) => '/competition/$id/settings/players';
 
-  static String newMatch(String id) => '/c/$id/match/new';
+  static String newMatch(String id) => '/competition/$id/match/new';
 
-  static String match(String id, String matchId) => '/c/$id/match/$matchId';
+  static String match(String id, String matchId) =>
+      '/competition/$id/match/$matchId';
 }
 
 GoRouter createRouter(AuthBloc authBloc) {
@@ -111,7 +113,7 @@ GoRouter createRouter(AuthBloc authBloc) {
         ),
       ),
       GoRoute(
-        path: '/c/:id',
+        path: '/competition/:id',
         builder: (context, state) {
           final id = state.pathParameters['id']!;
           return MultiBlocProvider(

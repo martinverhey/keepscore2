@@ -15,7 +15,7 @@ Future<bool> showAdaptiveConfirm(
   final future = AppPlatform.useCupertino
       ? showCupertinoDialog<bool>(
           context: context,
-          builder: (ctx) => CupertinoAlertDialog(
+          builder: (dialogContext) => CupertinoAlertDialog(
             title: Text(title),
             content: Padding(
               padding: const EdgeInsets.only(top: AppSpacing.sm),
@@ -23,12 +23,12 @@ Future<bool> showAdaptiveConfirm(
             ),
             actions: [
               CupertinoDialogAction(
-                onPressed: () => Navigator.of(ctx).pop(false),
+                onPressed: () => Navigator.of(dialogContext).pop(false),
                 child: Text(cancelLabel),
               ),
               CupertinoDialogAction(
                 isDestructiveAction: destructive,
-                onPressed: () => Navigator.of(ctx).pop(true),
+                onPressed: () => Navigator.of(dialogContext).pop(true),
                 child: Text(confirmLabel),
               ),
             ],
@@ -36,22 +36,22 @@ Future<bool> showAdaptiveConfirm(
         )
       : showDialog<bool>(
           context: context,
-          builder: (ctx) => AlertDialog(
+          builder: (dialogContext) => AlertDialog(
             title: Text(title),
             content: Text(message),
             actions: [
               TextButton(
-                onPressed: () => Navigator.of(ctx).pop(false),
+                onPressed: () => Navigator.of(dialogContext).pop(false),
                 child: Text(cancelLabel),
               ),
               FilledButton(
                 style: destructive
                     ? FilledButton.styleFrom(
-                        backgroundColor: Theme.of(ctx).colorScheme.error,
-                        foregroundColor: Theme.of(ctx).colorScheme.onError,
+                        backgroundColor: Theme.of(dialogContext).colorScheme.error,
+                        foregroundColor: Theme.of(dialogContext).colorScheme.onError,
                       )
                     : null,
-                onPressed: () => Navigator.of(ctx).pop(true),
+                onPressed: () => Navigator.of(dialogContext).pop(true),
                 child: Text(confirmLabel),
               ),
             ],
@@ -67,12 +67,12 @@ Future<T?> showAdaptiveSheet<T>(
   if (AppPlatform.useCupertino) {
     return showCupertinoModalPopup<T>(
       context: context,
-      builder: (ctx) => Container(
+      builder: (sheetContext) => Container(
         decoration: BoxDecoration(
-          color: CupertinoColors.systemBackground.resolveFrom(ctx),
+          color: CupertinoColors.systemBackground.resolveFrom(sheetContext),
           borderRadius: AppRadius.sheet,
         ),
-        child: SafeArea(top: false, child: builder(ctx)),
+        child: SafeArea(top: false, child: builder(sheetContext)),
       ),
     );
   }

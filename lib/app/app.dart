@@ -8,7 +8,7 @@ import '../core/theme/app_theme.dart';
 import '../core/widgets/adaptive/app_platform.dart';
 import '../features/auth/presentation/cubit/auth_bloc.dart';
 import '../l10n/app_localizations.dart';
-import 'di/injector.dart';
+import 'dependency_injection/injector.dart';
 import 'router/app_router.dart';
 
 class KeepScoreApp extends StatefulWidget {

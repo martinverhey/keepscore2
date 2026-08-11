@@ -95,7 +95,7 @@ class _Loaded extends StatelessWidget {
             for (final overview in state.competitions) ...[
               CompetitionTile(
                 overview: overview,
-                onTap: () => context.push('/c/${overview.id}'),
+                onTap: () => context.push('/competition/${overview.id}'),
                 onManage: () => _manage(context, overview),
               ),
               const SizedBox(height: AppSpacing.sm),

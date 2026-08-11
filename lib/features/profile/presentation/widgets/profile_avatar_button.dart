@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../app/di/injector.dart';
+import '../../../../app/dependency_injection/injector.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../cubit/profile_cubit.dart';
 import 'initials_circle.dart';

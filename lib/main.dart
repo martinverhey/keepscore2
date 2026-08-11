@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app/app.dart';
-import 'app/di/injector.dart';
+import 'app/dependency_injection/injector.dart';
 import 'core/config/env.dart';
 
 Future<void> main() async {

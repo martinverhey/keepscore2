@@ -34,7 +34,7 @@ class _CreateCompetitionPageState extends State<CreateCompetitionPage> {
       listenWhen: (previous, current) => current.created != null,
       listener: (context, state) {
         context.pop();
-        context.push('/c/${state.created!.id}');
+        context.push('/competition/${state.created!.id}');
       },
       builder: (context, state) {
         final cubit = context.read<CreateCompetitionCubit>();

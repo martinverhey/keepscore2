@@ -26,12 +26,12 @@ with `SignInMode.upgrade`, which routes the two email steps to
 renders `GuestNotice`, which carries the refusal *and* the way out; the page pops
 itself when `AuthBloc` reports the user is no longer anonymous.
 
-`/c/:id` is the tab shell (`features/competition/.../competition_detail_page.dart`):
+`/competition/:id` is the tab shell (`features/competition/.../competition_detail_page.dart`):
 Leaderboard (default), Matches, Players. The leaderboard tab carries the season
 switcher; the season list is `seasons` plus, stitched in front of it, the
 current calendar window — which has no row until the first match lands in it.
 
-`/c/:id/match/new` builds the teams and submits; `/c/:id/match/:matchId` shows
+`/competition/:id/match/new` builds the teams and submits; `/competition/:id/match/:matchId` shows
 the per-player before → after and lets the creator or the owner change the
 score or delete the match. Both are pushed on top of the shell, so they build
 their own cubits; the shell reloads its list and overview whenever one of them
