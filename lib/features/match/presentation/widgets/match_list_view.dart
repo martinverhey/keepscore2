@@ -8,20 +8,20 @@ import '../../../../core/widgets/state_views.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../auth/presentation/widgets/guest_notice.dart';
 import '../cubit/match_list_cubit.dart';
+import 'match_day_group.dart';
+import 'match_day_label.dart';
 import 'match_tile.dart';
 
 class MatchListView extends StatelessWidget {
   const MatchListView({
     super.key,
-    required this.canLog,
+    required this.isRegistered,
     required this.hasPlayers,
-    required this.onNewMatch,
     required this.onOpenMatch,
   });
 
-  final bool canLog;
+  final bool isRegistered;
   final bool hasPlayers;
-  final VoidCallback onNewMatch;
   final void Function(String matchId) onOpenMatch;
 
   @override
@@ -49,15 +49,9 @@ class MatchListView extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (canLog)
-              AdaptiveButton(
-                label: l10n.matchNew,
-                onPressed: hasPlayers ? onNewMatch : null,
-              )
-            else
-              GuestNotice(message: l10n.matchGuestCannotLog),
+            if (!isRegistered) GuestNotice(message: l10n.matchGuestCannotLog),
 
-            if (canLog && !hasPlayers)
+            if (isRegistered && !hasPlayers)
               Padding(
                 padding: const EdgeInsets.only(top: AppSpacing.sm),
                 child: Text(
@@ -71,8 +65,11 @@ class MatchListView extends StatelessWidget {
             if (state.matches.isEmpty)
               EmptyState(message: l10n.matchesEmpty)
             else
-              for (final match in state.matches)
-                MatchTile(match: match, onTap: () => onOpenMatch(match.id)),
+              for (final group in groupByDay(state.matches)) ...[
+                _DayHeader(day: group.day),
+                for (final match in group.matches)
+                  MatchTile(match: match, onTap: () => onOpenMatch(match.id)),
+              ],
 
             if (state.hasMore)
               Padding(
@@ -96,6 +93,30 @@ class MatchListView extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+class _DayHeader extends StatelessWidget {
+  const _DayHeader({required this.day});
+
+  final DateTime day;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(
+        top: AppSpacing.xs,
+        bottom: AppSpacing.sm,
+      ),
+      child: Text(
+        matchDayLabel(context, day),
+        style: const TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w700,
+          color: AppColors.neutral,
+        ),
+      ),
     );
   }
 }

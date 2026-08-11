@@ -50,8 +50,6 @@ class _NewMatchPageState extends State<NewMatchPage> {
     return AdaptiveScaffold(
       title: l10n.matchNewTitle,
       body: BlocConsumer<MatchFormCubit, MatchFormState>(
-        // swapSides rewrites both scores, so the fields follow the state
-        // rather than the other way round.
         listenWhen: (previous, current) =>
             previous.scoreA != current.scoreA ||
             previous.scoreB != current.scoreB,
@@ -69,9 +67,14 @@ class _NewMatchPageState extends State<NewMatchPage> {
             retryLabel: l10n.commonRetry,
             onRetry: cubit.load,
           ),
-          MatchFormStatus.ready => SingleChildScrollView(
+          MatchFormStatus.ready => Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
-            child: _Form(state: state, scoreA: _scoreA, scoreB: _scoreB, onSubmit: _submit),
+            child: _Form(
+              state: state,
+              scoreA: _scoreA,
+              scoreB: _scoreB,
+              onSubmit: _submit,
+            ),
           ),
         },
       ),
@@ -114,34 +117,35 @@ class _Form extends StatelessWidget {
         if (state.players.isEmpty)
           EmptyState(message: l10n.matchNeedsPlayers)
         else
-          for (final player in state.players)
-            _PlayerRow(
-              player: player,
-              rating: state.ratingOf(player.id),
-              side: state.assignments[player.id],
-              onAssign: (side) => cubit.assign(player.id, side),
-            ),
-
-        if (state.assignments.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: AppSpacing.sm),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                AdaptiveButton(
-                  label: l10n.matchSwapSides,
-                  kind: AdaptiveButtonKind.plain,
-                  expand: false,
-                  onPressed: cubit.swapSides,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _TeamArea(
+                  key: const Key('teamAreaA'),
+                  title: l10n.matchTeamA,
+                  color: AdaptiveColors.teamA(context),
+                  members: state.teamA,
+                  rating: state.teamRating(MatchTeam.a),
+                  ratingOf: state.ratingOf,
+                  placeholder: l10n.matchTapToSelectPlayers,
+                  onTap: () => _pickTeam(context, state, MatchTeam.a),
                 ),
-                AdaptiveButton(
-                  label: l10n.matchClearTeams,
-                  kind: AdaptiveButtonKind.plain,
-                  expand: false,
-                  onPressed: cubit.clearTeams,
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: _TeamArea(
+                  key: const Key('teamAreaB'),
+                  title: l10n.matchTeamB,
+                  color: AdaptiveColors.teamB(context),
+                  members: state.teamB,
+                  rating: state.teamRating(MatchTeam.b),
+                  ratingOf: state.ratingOf,
+                  placeholder: l10n.matchTapToSelectPlayers,
+                  onTap: () => _pickTeam(context, state, MatchTeam.b),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
 
         const SizedBox(height: AppSpacing.lg),
@@ -161,6 +165,7 @@ class _Form extends StatelessWidget {
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 maxLength: 3,
                 onChanged: cubit.scoreAChanged,
+                accentColor: AdaptiveColors.teamA(context),
               ),
             ),
             const SizedBox(width: AppSpacing.md),
@@ -172,6 +177,7 @@ class _Form extends StatelessWidget {
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 maxLength: 3,
                 onChanged: cubit.scoreBChanged,
+                accentColor: AdaptiveColors.teamB(context),
               ),
             ),
           ],
@@ -224,92 +230,60 @@ class _Form extends StatelessWidget {
   }
 }
 
-class _PlayerRow extends StatelessWidget {
-  const _PlayerRow({
-    required this.player,
-    required this.rating,
-    required this.side,
-    required this.onAssign,
-  });
+Future<void> _pickTeam(
+  BuildContext context,
+  MatchFormState state,
+  MatchTeam side,
+) async {
+  final l10n = AppLocalizations.of(context);
+  final cubit = context.read<MatchFormCubit>();
+  final color = side == MatchTeam.a
+      ? AdaptiveColors.teamA(context)
+      : AdaptiveColors.teamB(context);
 
-  final Player player;
-  final double rating;
-  final MatchTeam? side;
-  final void Function(MatchTeam side) onAssign;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.sm,
-        ),
-        decoration: BoxDecoration(
-          borderRadius: AppRadius.card,
-          color: AppColors.neutral.withValues(alpha: 0.08),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    player.displayName,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    side == null ? l10n.matchBench : formatRating(rating),
-                    style: const TextStyle(
-                      color: AppColors.neutral,
-                      fontSize: 12,
-                      fontFeatures: [FontFeature.tabularFigures()],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            _SideToggle(
-              label: 'A',
-              color: AdaptiveColors.teamA(context),
-              selected: side == MatchTeam.a,
-              onTap: () => onAssign(MatchTeam.a),
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            _SideToggle(
-              label: 'B',
-              color: AdaptiveColors.teamB(context),
-              selected: side == MatchTeam.b,
-              onTap: () => onAssign(MatchTeam.b),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  final otherSide = side.opposite;
+  final selected = await showAdaptiveSheet<Set<String>>(
+    context,
+    builder: (_) => _TeamPickerSheet(
+      key: const Key('teamPickerSheet'),
+      title: side == MatchTeam.a ? l10n.matchTeamA : l10n.matchTeamB,
+      color: color,
+      players: state.players
+          .where((player) => state.assignments[player.id] != otherSide)
+          .toList(growable: false),
+      initiallySelected: state.team(side).map((player) => player.id).toSet(),
+    ),
+  );
+  if (selected != null) cubit.setTeam(side, selected);
 }
 
-class _SideToggle extends StatelessWidget {
-  const _SideToggle({
-    required this.label,
+List<Player> _sortedByName(List<Player> players) {
+  final sorted = List<Player>.of(players);
+  sorted.sort(
+    (a, b) =>
+        a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase()),
+  );
+  return sorted;
+}
+
+class _TeamArea extends StatelessWidget {
+  const _TeamArea({
+    super.key,
+    required this.title,
     required this.color,
-    required this.selected,
+    required this.members,
+    required this.rating,
+    required this.ratingOf,
+    required this.placeholder,
     required this.onTap,
   });
 
-  final String label;
+  final String title;
   final Color color;
-  final bool selected;
+  final List<Player> members;
+  final double rating;
+  final double Function(String playerId) ratingOf;
+  final String placeholder;
   final VoidCallback onTap;
 
   @override
@@ -318,25 +292,255 @@ class _SideToggle extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Container(
-        width: 44,
-        height: 38,
-        alignment: Alignment.center,
+        width: double.infinity,
+        constraints: const BoxConstraints(minHeight: 88),
+        padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppRadius.sm),
-          color: selected ? color : color.withValues(alpha: 0.10),
-          border: Border.all(
-            color: selected ? color : AppColors.neutral.withValues(alpha: 0.35),
-          ),
+          borderRadius: AppRadius.card,
+          color: color.withValues(alpha: 0.10),
+          border: Border.all(color: color.withValues(alpha: 0.4)),
         ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
-            color: selected ? const Color(0xFFFFFFFF) : color,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: color,
+                    ),
+                  ),
+                ),
+                if (members.isNotEmpty)
+                  Text(
+                    formatRating(rating),
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: color,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            if (members.isEmpty)
+              Text(
+                placeholder,
+                style: const TextStyle(color: AppColors.neutral, fontSize: 13),
+              )
+            else
+              for (final player in _sortedByName(members))
+                Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          player.displayName,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Text(
+                        formatRating(ratingOf(player.id)),
+                        style: const TextStyle(
+                          color: AppColors.neutral,
+                          fontSize: 12,
+                          fontFeatures: [FontFeature.tabularFigures()],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TeamPickerSheet extends StatefulWidget {
+  const _TeamPickerSheet({
+    super.key,
+    required this.title,
+    required this.color,
+    required this.players,
+    required this.initiallySelected,
+  });
+
+  final String title;
+  final Color color;
+  final List<Player> players;
+  final Set<String> initiallySelected;
+
+  @override
+  State<_TeamPickerSheet> createState() => _TeamPickerSheetState();
+}
+
+class _TeamPickerSheetState extends State<_TeamPickerSheet> {
+  late final Set<String> _selected = Set.of(widget.initiallySelected);
+
+  void _toggle(String playerId) {
+    setState(() {
+      if (!_selected.remove(playerId)) _selected.add(playerId);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.sizeOf(context).height * 0.85,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                AppSpacing.lg,
+                AppSpacing.lg,
+                AppSpacing.lg,
+              ),
+              child: Text(
+                widget.title,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: widget.color,
+                ),
+              ),
+            ),
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (final player in _sortedByName(widget.players))
+                      _SelectablePlayerRow(
+                        player: player,
+                        color: widget.color,
+                        selected: _selected.contains(player.id),
+                        onTap: () => _toggle(player.id),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                AppSpacing.sm,
+                AppSpacing.lg,
+                AppSpacing.lg,
+              ),
+              child: AdaptiveButton(
+                label: l10n.commonDone,
+                onPressed: () => Navigator.of(context).pop(_selected),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SelectablePlayerRow extends StatelessWidget {
+  const _SelectablePlayerRow({
+    required this.player,
+    required this.color,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final Player player;
+  final Color color;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
+          decoration: BoxDecoration(
+            borderRadius: AppRadius.card,
+            color: selected
+                ? color.withValues(alpha: 0.14)
+                : AppColors.neutral.withValues(alpha: 0.08),
+            border: Border.all(
+              color: selected ? color : const Color(0x00000000),
+            ),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  player.displayName,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              _CheckMark(selected: selected, color: color),
+            ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class _CheckMark extends StatelessWidget {
+  const _CheckMark({required this.selected, required this.color});
+
+  final bool selected;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 24,
+      height: 24,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: selected ? color : null,
+        border: Border.all(
+          color: selected ? color : AppColors.neutral.withValues(alpha: 0.35),
+        ),
+      ),
+      child: selected
+          ? const AdaptiveIcon(
+              AdaptiveGlyph.check,
+              color: Color(0xFFFFFFFF),
+              size: 14,
+            )
+          : null,
     );
   }
 }
@@ -350,6 +554,8 @@ class _PreviewCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final preview = state.preview!;
+    final colorA = AdaptiveColors.teamA(context);
+    final colorB = AdaptiveColors.teamB(context);
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -362,29 +568,102 @@ class _PreviewCard extends StatelessWidget {
         children: [
           Text(
             l10n.matchPreviewTitle,
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.6,
+              color: AdaptiveColors.accent(context),
+            ),
           ),
           const SizedBox(height: AppSpacing.md),
           Row(
             children: [
               Expanded(
-                child: _PreviewSide(
-                  title: l10n.matchTeamA,
-                  color: AdaptiveColors.teamA(context),
-                  rating: preview.teamARating,
-                  delta: preview.deltaA,
-                  members: state.teamA,
-                  alignEnd: false,
+                child: Text(
+                  l10n.matchTeamA,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: colorA,
+                  ),
                 ),
               ),
               Expanded(
-                child: _PreviewSide(
-                  title: l10n.matchTeamB,
-                  color: AdaptiveColors.teamB(context),
-                  rating: preview.teamBRating,
-                  delta: preview.deltaB,
-                  members: state.teamB,
-                  alignEnd: true,
+                child: Text(
+                  l10n.matchTeamB,
+                  textAlign: TextAlign.end,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: colorB,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 2),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (final player in state.teamA)
+                      Text(
+                        player.displayName,
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    for (final player in state.teamB)
+                      Text(
+                        player.displayName,
+                        textAlign: TextAlign.end,
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  l10n.matchTeamRating(formatRating(preview.teamARating)),
+                  style: const TextStyle(
+                    color: AppColors.neutral,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  l10n.matchTeamRating(formatRating(preview.teamBRating)),
+                  textAlign: TextAlign.end,
+                  style: const TextStyle(
+                    color: AppColors.neutral,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 2),
+          Row(
+            children: [
+              Expanded(child: RatingDelta(value: preview.deltaA, fontSize: 18)),
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: RatingDelta(value: preview.deltaB, fontSize: 18),
                 ),
               ),
             ],
@@ -396,58 +675,6 @@ class _PreviewCard extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _PreviewSide extends StatelessWidget {
-  const _PreviewSide({
-    required this.title,
-    required this.color,
-    required this.rating,
-    required this.delta,
-    required this.members,
-    required this.alignEnd,
-  });
-
-  final String title;
-  final Color color;
-  final double rating;
-  final double delta;
-  final List<Player> members;
-  final bool alignEnd;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-
-    return Column(
-      crossAxisAlignment: alignEnd
-          ? CrossAxisAlignment.end
-          : CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-            color: color,
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          members.map((player) => player.displayName).join(' & '),
-          textAlign: alignEnd ? TextAlign.end : TextAlign.start,
-          style: const TextStyle(fontSize: 14),
-        ),
-        const SizedBox(height: AppSpacing.xs),
-        Text(
-          l10n.matchTeamRating(formatRating(rating)),
-          style: const TextStyle(color: AppColors.neutral, fontSize: 12),
-        ),
-        const SizedBox(height: 2),
-        RatingDelta(value: delta, fontSize: 18),
-      ],
     );
   }
 }

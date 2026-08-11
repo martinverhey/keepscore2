@@ -1,5 +1,4 @@
 import 'package:flutter/widgets.dart';
-import 'package:intl/intl.dart';
 
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/rating_delta.dart';
@@ -13,8 +12,6 @@ class MatchTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final locale = Localizations.localeOf(context).toLanguageTag();
-
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: GestureDetector(
@@ -23,42 +20,31 @@ class MatchTile extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.md,
-            vertical: AppSpacing.md - 4,
+            vertical: AppSpacing.md,
           ),
           decoration: BoxDecoration(
             borderRadius: AppRadius.card,
             color: AppColors.neutral.withValues(alpha: 0.08),
           ),
-          child: Column(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: _Side(match: match, team: MatchTeam.a),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.sm,
-                    ),
-                    child: Text(
-                      '${match.teamAScore} – ${match.teamBScore}',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        fontFeatures: [FontFeature.tabularFigures()],
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: _Side(match: match, team: MatchTeam.b),
-                  ),
-                ],
+              Expanded(
+                child: _Side(match: match, team: MatchTeam.a),
               ),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                DateFormat.MMMd(locale).add_Hm().format(match.playedAt),
-                style: const TextStyle(color: AppColors.neutral, fontSize: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                child: Text(
+                  '${match.teamAScore} – ${match.teamBScore}',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    fontFeatures: [FontFeature.tabularFigures()],
+                  ),
+                ),
+              ),
+              Expanded(
+                child: _Side(match: match, team: MatchTeam.b),
               ),
             ],
           ),
@@ -86,15 +72,18 @@ class _Side extends StatelessWidget {
           : CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          roster.map((entry) => entry.displayName).join(' & '),
-          textAlign: alignEnd ? TextAlign.end : TextAlign.start,
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: won ? FontWeight.w700 : FontWeight.w500,
-            color: won ? null : AppColors.neutral,
+        for (final entry in roster)
+          Text(
+            entry.displayName,
+            textAlign: alignEnd ? TextAlign.end : TextAlign.start,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: won ? FontWeight.w700 : FontWeight.w500,
+              color: won ? null : AppColors.neutral,
+            ),
           ),
-        ),
         const SizedBox(height: 2),
         RatingDelta(
           value: roster.isEmpty ? 0 : roster.first.ratingDelta,

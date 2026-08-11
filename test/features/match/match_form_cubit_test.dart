@@ -5,7 +5,7 @@ import 'package:keepscore2/features/competition/domain/competition.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
 import 'package:keepscore2/features/leaderboard/domain/season_window.dart';
-import 'package:keepscore2/features/leaderboard/domain/standing.dart';
+import 'package:keepscore2/features/leaderboard/domain/leaderboard.dart';
 import 'package:keepscore2/features/match/domain/match_entry.dart';
 import 'package:keepscore2/features/match/domain/match_repository.dart';
 import 'package:keepscore2/features/match/presentation/cubit/match_form_cubit.dart';
@@ -43,7 +43,7 @@ Player _player(String id, String name, {bool isActive = true}) => Player(
   isActive: isActive,
 );
 
-Standing _standing(String playerId, double rating) => Standing(
+Leaderboard _standing(String playerId, double rating) => Leaderboard(
   seasonId: 's1',
   competitionId: 'c1',
   playerId: playerId,
@@ -69,7 +69,7 @@ void main() {
   void stubLoad({
     Competition? competition,
     List<Player>? roster,
-    List<Standing> standings = const [],
+    List<Leaderboard> standings = const [],
   }) {
     when(() => competitions.overview('c1')).thenAnswer(
       (_) async => CompetitionOverview(
@@ -152,6 +152,27 @@ void main() {
   );
 
   blocTest<MatchFormCubit, MatchFormState>(
+    'setting a team replaces its members and moves anyone picked off the other side',
+    setUp: () => stubLoad(
+      roster: [
+        _player('p1', 'Ada'),
+        _player('p2', 'Grace'),
+        _player('p3', 'Zoe'),
+      ],
+    ),
+    build: build,
+    act: (cubit) async {
+      await cubit.load();
+      cubit.setTeam(MatchTeam.a, ['p1', 'p2']);
+      cubit.setTeam(MatchTeam.b, ['p2', 'p3']);
+    },
+    verify: (cubit) {
+      expect(cubit.state.teamA.map((player) => player.id), ['p1']);
+      expect(cubit.state.teamB.map((player) => player.id), ['p2', 'p3']);
+    },
+  );
+
+  blocTest<MatchFormCubit, MatchFormState>(
     'a match needs a player on each side and two scores',
     setUp: stubLoad,
     build: build,
@@ -202,26 +223,6 @@ void main() {
       expect(preview.teamBRating, 1000);
       expect(preview.deltaA, 16);
       expect(preview.deltaB, -16);
-    },
-  );
-
-  blocTest<MatchFormCubit, MatchFormState>(
-    'swapping sides moves every player and the scores with them',
-    setUp: stubLoad,
-    build: build,
-    act: (cubit) async {
-      await cubit.load();
-      cubit.assign('p1', MatchTeam.a);
-      cubit.assign('p2', MatchTeam.b);
-      cubit.scoreAChanged('11');
-      cubit.scoreBChanged('7');
-      cubit.swapSides();
-    },
-    verify: (cubit) {
-      expect(cubit.state.teamA.map((player) => player.id), ['p2']);
-      expect(cubit.state.teamB.map((player) => player.id), ['p1']);
-      expect(cubit.state.scoreA, '7');
-      expect(cubit.state.scoreB, '11');
     },
   );
 

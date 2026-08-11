@@ -68,7 +68,6 @@ class MatchFormCubit extends Cubit<MatchFormState> {
     }
   }
 
-  /// Tapping the side a player is already on takes them back off the pitch.
   void assign(String playerId, MatchTeam side) {
     final assignments = Map<String, MatchTeam>.from(state.assignments);
     if (assignments[playerId] == side) {
@@ -79,22 +78,14 @@ class MatchFormCubit extends Cubit<MatchFormState> {
     emit(state.copyWith(assignments: assignments, clearSubmitFailure: true));
   }
 
-  void swapSides() {
-    emit(
-      state.copyWith(
-        assignments: {
-          for (final entry in state.assignments.entries)
-            entry.key: entry.value.opposite,
-        },
-        scoreA: state.scoreB,
-        scoreB: state.scoreA,
-        clearSubmitFailure: true,
-      ),
-    );
+  void setTeam(MatchTeam side, Iterable<String> playerIds) {
+    final assignments = Map<String, MatchTeam>.from(state.assignments)
+      ..removeWhere((_, team) => team == side);
+    for (final playerId in playerIds) {
+      assignments[playerId] = side;
+    }
+    emit(state.copyWith(assignments: assignments, clearSubmitFailure: true));
   }
-
-  void clearTeams() =>
-      emit(state.copyWith(assignments: const {}, clearSubmitFailure: true));
 
   void scoreAChanged(String value) =>
       emit(state.copyWith(scoreA: value, clearSubmitFailure: true));

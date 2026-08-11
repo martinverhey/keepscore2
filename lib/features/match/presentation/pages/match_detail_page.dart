@@ -80,7 +80,7 @@ class _MatchDetailPageState extends State<MatchDetailPage> {
               retryLabel: l10n.commonRetry,
               onRetry: cubit.load,
             ),
-            MatchDetailStatus.ready => SingleChildScrollView(
+            MatchDetailStatus.ready => Padding(
               padding: const EdgeInsets.all(AppSpacing.md),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
