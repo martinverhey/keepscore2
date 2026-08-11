@@ -9,10 +9,13 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../auth/presentation/widgets/guest_notice.dart';
 import '../../domain/player.dart';
 import '../cubit/players_cubit.dart';
+import 'player_action.dart';
 import 'player_name_sheet.dart';
 
-class PlayerRoster extends StatelessWidget {
-  const PlayerRoster({
+export 'player_action.dart';
+
+class Players extends StatelessWidget {
+  const Players({
     super.key,
     required this.ownerUserId,
     required this.myUserId,
@@ -75,15 +78,37 @@ class PlayerRoster extends StatelessWidget {
 
             if (state.active.isEmpty)
               EmptyState(message: l10n.playersEmpty)
-            else
-              for (final player in state.active)
+            else ...[
+              for (final player in state.claimed)
                 _PlayerRow(
                   player: player,
-                  isOwnerRow: player.userId != null &&
-                      player.userId == ownerUserId,
+                  isOwnerRow:
+                      player.userId != null && player.userId == ownerUserId,
                   isMe: player.userId != null && player.userId == myUserId,
                   canEdit: _canEdit(player),
                 ),
+
+              if (state.unclaimed.isNotEmpty) ...[
+                if (state.claimed.isNotEmpty)
+                  const SizedBox(height: AppSpacing.sm),
+                Text(
+                  l10n.playersUnclaimed,
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                for (final player in state.unclaimed)
+                  _PlayerRow(
+                    player: player,
+                    isOwnerRow:
+                        player.userId != null && player.userId == ownerUserId,
+                    isMe: player.userId != null && player.userId == myUserId,
+                    canEdit: _canEdit(player),
+                  ),
+              ],
+            ],
 
             if (state.inactive.isNotEmpty) ...[
               const SizedBox(height: AppSpacing.lg),
@@ -172,7 +197,6 @@ class _PlayerRow extends StatelessWidget {
     final badges = [
       if (isMe) l10n.playersYou,
       if (isOwnerRow) l10n.playersOwner,
-      if (player.isPlaceholder) l10n.playersUnclaimed,
     ];
 
     return Padding(
@@ -232,17 +256,15 @@ class _PlayerRow extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final cubit = context.read<PlayersCubit>();
 
-    final action = await showAdaptiveSheet<_PlayerAction>(
+    final action = await showAdaptiveSheet<PlayerAction>(
       context,
-      builder: (sheetContext) => _PlayerActionSheet(
-        player: player,
-        canRemove: !isMe,
-      ),
+      builder: (sheetContext) =>
+          _PlayerActionSheet(player: player, canRemove: !isMe),
     );
     if (action == null) return;
 
     switch (action) {
-      case _PlayerAction.rename:
+      case PlayerAction.rename:
         if (!context.mounted) return;
         final name = await showPlayerNameSheet(
           context,
@@ -254,7 +276,7 @@ class _PlayerRow extends StatelessWidget {
           await cubit.rename(player.id, name);
         }
 
-      case _PlayerAction.remove:
+      case PlayerAction.remove:
         if (!context.mounted) return;
         final confirmed = await showAdaptiveConfirm(
           context,
@@ -266,13 +288,11 @@ class _PlayerRow extends StatelessWidget {
         );
         if (confirmed) await cubit.setActive(player.id, isActive: false);
 
-      case _PlayerAction.restore:
+      case PlayerAction.restore:
         await cubit.setActive(player.id, isActive: true);
     }
   }
 }
-
-enum _PlayerAction { rename, remove, restore }
 
 class _PlayerActionSheet extends StatelessWidget {
   const _PlayerActionSheet({required this.player, required this.canRemove});
@@ -299,8 +319,7 @@ class _PlayerActionSheet extends StatelessWidget {
           AdaptiveButton(
             label: l10n.playersRename,
             kind: AdaptiveButtonKind.tinted,
-            onPressed: () =>
-                Navigator.of(context).pop(_PlayerAction.rename),
+            onPressed: () => Navigator.of(context).pop(PlayerAction.rename),
           ),
 
           if (!player.isActive) ...[
@@ -308,16 +327,14 @@ class _PlayerActionSheet extends StatelessWidget {
             AdaptiveButton(
               label: l10n.playersRestore,
               kind: AdaptiveButtonKind.tinted,
-              onPressed: () =>
-                  Navigator.of(context).pop(_PlayerAction.restore),
+              onPressed: () => Navigator.of(context).pop(PlayerAction.restore),
             ),
           ] else if (canRemove) ...[
             const SizedBox(height: AppSpacing.sm),
             AdaptiveButton(
               label: l10n.playersRemove,
               kind: AdaptiveButtonKind.destructive,
-              onPressed: () =>
-                  Navigator.of(context).pop(_PlayerAction.remove),
+              onPressed: () => Navigator.of(context).pop(PlayerAction.remove),
             ),
           ],
 

@@ -44,6 +44,20 @@ void main() {
   );
 
   blocTest<PlayersCubit, PlayersState>(
+    'splits the active roster into claimed and unclaimed players',
+    setUp: () => stubRoster([
+      _player('p1', 'Ada', userId: 'u1'),
+      _player('p2', 'Grace'),
+    ]),
+    build: () => PlayersCubit(repository, 'c1'),
+    act: (cubit) => cubit.load(),
+    verify: (cubit) {
+      expect(cubit.state.claimed.map((player) => player.id), ['p1']);
+      expect(cubit.state.unclaimed.map((player) => player.id), ['p2']);
+    },
+  );
+
+  blocTest<PlayersCubit, PlayersState>(
     'a failed load surfaces the error',
     setUp: () => when(() => repository.roster('c1'))
         .thenThrow(const NetworkFailure()),

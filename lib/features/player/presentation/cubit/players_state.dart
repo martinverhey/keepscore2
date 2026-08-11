@@ -26,6 +26,12 @@ class PlayersState extends Equatable {
   List<Player> get inactive =>
       players.where((player) => !player.isActive).toList(growable: false);
 
+  List<Player> get claimed =>
+      active.where((player) => player.isClaimed).toList(growable: false);
+
+  List<Player> get unclaimed =>
+      active.where((player) => player.isPlaceholder).toList(growable: false);
+
   PlayersState copyWith({
     PlayersStatus? status,
     List<Player>? players,

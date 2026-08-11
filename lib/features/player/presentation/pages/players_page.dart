@@ -7,7 +7,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../competition/presentation/cubit/competition_detail_cubit.dart';
 import '../cubit/players_cubit.dart';
-import '../widgets/player_roster.dart';
+import '../widgets/players.dart';
 
 class PlayersPage extends StatefulWidget {
   const PlayersPage({super.key});
@@ -35,7 +35,7 @@ class _PlayersPageState extends State<PlayersPage> {
       title: l10n.playersTitle,
       body: Padding(
         padding: const EdgeInsets.all(AppSpacing.md),
-        child: PlayerRoster(
+        child: Players(
           ownerUserId: competition?.ownerId,
           myUserId: session.user?.id,
           isRegistered: session.canWrite,
