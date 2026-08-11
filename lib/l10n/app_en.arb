@@ -86,6 +86,22 @@
   "competitionAllowDrawsLabel": "Allow draws",
   "competitionAllowDrawsHelp": "Lets a match be saved with equal scores.",
 
+  "competitionManage": "Manage",
+  "competitionRenameTitle": "Rename competition",
+  "competitionRename": "Rename",
+  "competitionLeave": "Leave competition",
+  "competitionLeaveConfirmTitle": "Leave {name}?",
+  "@competitionLeaveConfirmTitle": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "competitionLeaveConfirmBody": "Your matches and ratings stay on record, but you'll need the code to rejoin.",
+  "competitionDelete": "Delete competition",
+  "competitionDeleteConfirmTitle": "Delete {name}?",
+  "@competitionDeleteConfirmTitle": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "competitionDeleteConfirmBody": "This permanently deletes every player, match and rating in this competition. This can't be undone.",
+
   "joinTitle": "Join a competition",
   "joinSubtitle": "Enter the six-character code from whoever set it up.",
   "joinLookUp": "Find competition",
@@ -136,6 +152,7 @@
   "matchesTitle": "Matches",
   "matchesEmpty": "No matches yet. Log your first one.",
   "matchNew": "New match",
+  "matchAddFab": "+ Add Match",
   "matchNewTitle": "Log a match",
   "matchTeamA": "Team A",
   "matchTeamB": "Team B",
@@ -194,5 +211,20 @@
   "playersRemoveConfirmBody": "Their matches and ratings stay on record, and they drop off the leaderboard. You can add them back at any time.",
   "playersRemoved": "Removed",
   "playersRestore": "Add back",
-  "playersGuestCannotAdd": "Guests can look around, but adding players needs an account."
+  "playersGuestCannotAdd": "Guests can look around, but adding players needs an account.",
+
+  "profileTitle": "Your stats",
+  "profileRank": "#{rank} of {count}",
+  "@profileRank": {
+    "placeholders": {
+      "rank": { "type": "int" },
+      "count": { "type": "int" }
+    }
+  },
+  "profileWinRate": "{percent}% win rate",
+  "@profileWinRate": {
+    "placeholders": { "percent": { "type": "int" } }
+  },
+  "profileTrendTitle": "Recent form",
+  "profileNotEnoughMatches": "Play a couple more matches to see your trend."
 }

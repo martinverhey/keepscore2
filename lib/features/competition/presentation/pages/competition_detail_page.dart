@@ -1,6 +1,3 @@
-import 'dart:async';
-
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -17,10 +14,10 @@ import '../../../leaderboard/presentation/widgets/leaderboard_view.dart';
 import '../../../match/presentation/cubit/match_list_cubit.dart';
 import '../../../match/presentation/widgets/match_list_view.dart';
 import '../../../player/presentation/cubit/players_cubit.dart';
-import '../../../player/presentation/widgets/player_roster.dart';
+import '../../../profile/presentation/widgets/profile_avatar_button.dart';
 import '../cubit/competition_detail_cubit.dart';
 
-enum CompetitionTab { leaderboard, matches, players }
+enum CompetitionTab { leaderboard, matches }
 
 class CompetitionDetailPage extends StatefulWidget {
   const CompetitionDetailPage({super.key, required this.competitionId});
@@ -71,18 +68,60 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
     return BlocBuilder<CompetitionDetailCubit, CompetitionDetailState>(
       builder: (context, state) {
         final competition = state.competition;
-        final isOwner = competition?.isOwnedBy(session.user?.id) ?? false;
+        final canLog = session.canWrite;
+        final hasPlayers = roster.active.length >= 2;
+        final myPlayerId = state.myPlayerId;
+
+        String? myDisplayName;
+        for (final player in roster.players) {
+          if (player.id == myPlayerId) {
+            myDisplayName = player.displayName;
+            break;
+          }
+        }
 
         return AdaptiveScaffold(
           title: competition?.name ?? l10n.commonLoading,
-          trailing: isOwner && session.canWrite
+          trailing: AdaptiveIconButton(
+            glyph: AdaptiveGlyph.settings,
+            onPressed: () =>
+                context.push(Routes.competitionMenu(widget.competitionId)),
+          ),
+          bottomBar: AdaptiveBottomTabBar(
+            items: [
+              AdaptiveTabBarItem(
+                glyph: AdaptiveGlyph.leaderboard,
+                label: l10n.leaderboardTitle,
+              ),
+              AdaptiveTabBarItem(
+                glyph: AdaptiveGlyph.newMatch,
+                label: l10n.matchNew,
+              ),
+              AdaptiveTabBarItem(
+                glyph: AdaptiveGlyph.matches,
+                label: l10n.matchesTitle,
+              ),
+            ],
+            selectedIndex: _tab == CompetitionTab.leaderboard ? 0 : 2,
+            onTap: (index) {
+              if (index == 1) {
+                _openAndReload(Routes.newMatch(widget.competitionId));
+                return;
+              }
+              setState(
+                () => _tab = index == 0
+                    ? CompetitionTab.leaderboard
+                    : CompetitionTab.matches,
+              );
+            },
+          ),
+          floatingAction: canLog && hasPlayers
               ? AdaptiveButton(
-                  label: l10n.competitionSettings,
-                  kind: AdaptiveButtonKind.plain,
+                  label: l10n.matchAddFab,
+                  kind: AdaptiveButtonKind.filled,
                   expand: false,
-                  onPressed: () => context.push(
-                    Routes.competitionSettings(widget.competitionId),
-                  ),
+                  onPressed: () =>
+                      _openAndReload(Routes.newMatch(widget.competitionId)),
                 )
               : null,
           body: switch (state.status) {
@@ -95,149 +134,52 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
                 retryLabel: l10n.commonRetry,
                 onRetry: context.read<CompetitionDetailCubit>().load,
               ),
-            _ => Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.md,
-                      AppSpacing.sm,
-                      AppSpacing.md,
-                      AppSpacing.sm,
-                    ),
-                    child: AdaptiveSegmented<CompetitionTab>(
-                      value: _tab,
-                      segments: {
-                        CompetitionTab.leaderboard: l10n.leaderboardTitle,
-                        CompetitionTab.matches: l10n.matchesTitle,
-                        CompetitionTab.players: l10n.playersTitle,
-                      },
-                      onChanged: (tab) => setState(() => _tab = tab),
-                    ),
+            _ => AdaptiveRefresh(
+                onRefresh: _refresh,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.md,
+                    AppSpacing.sm,
+                    AppSpacing.md,
+                    AppSpacing.xl,
                   ),
-                  Expanded(
-                    child: AdaptiveRefresh(
-                      onRefresh: _refresh,
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(
-                          AppSpacing.md,
-                          AppSpacing.sm,
-                          AppSpacing.md,
-                          AppSpacing.xl,
-                        ),
-                        child: switch (_tab) {
-                          CompetitionTab.leaderboard => LeaderboardView(
-                              seasonLength: competition!.seasonLength,
-                              myPlayerId: state.myPlayerId,
-                            ),
-                          CompetitionTab.matches => MatchListView(
-                              canLog: session.canWrite,
-                              hasPlayers: roster.active.length >= 2,
-                              onNewMatch: () => _openAndReload(
-                                Routes.newMatch(widget.competitionId),
-                              ),
-                              onOpenMatch: (matchId) => _openAndReload(
-                                Routes.match(widget.competitionId, matchId),
+                  child: switch (_tab) {
+                    CompetitionTab.leaderboard => Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          if (myPlayerId != null && myDisplayName != null) ...[
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: ProfileAvatarButton(
+                                competitionId: widget.competitionId,
+                                playerId: myPlayerId,
+                                displayName: myDisplayName,
                               ),
                             ),
-                          CompetitionTab.players => Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                _JoinCodeCard(code: competition!.joinCode),
-                                const SizedBox(height: AppSpacing.lg),
-                                PlayerRoster(
-                                  ownerUserId: competition.ownerId,
-                                  myUserId: session.user?.id,
-                                  isRegistered: session.canWrite,
-                                ),
-                              ],
-                            ),
-                        },
+                            const SizedBox(height: AppSpacing.md),
+                          ],
+                          LeaderboardView(
+                            seasonLength: competition!.seasonLength,
+                            myPlayerId: myPlayerId,
+                          ),
+                        ],
                       ),
-                    ),
-                  ),
-                ],
+                    CompetitionTab.matches => MatchListView(
+                        canLog: canLog,
+                        hasPlayers: hasPlayers,
+                        onNewMatch: () => _openAndReload(
+                          Routes.newMatch(widget.competitionId),
+                        ),
+                        onOpenMatch: (matchId) => _openAndReload(
+                          Routes.match(widget.competitionId, matchId),
+                        ),
+                      ),
+                  },
+                ),
               ),
           },
         );
       },
-    );
-  }
-}
-
-class _JoinCodeCard extends StatefulWidget {
-  const _JoinCodeCard({required this.code});
-  final String code;
-
-  @override
-  State<_JoinCodeCard> createState() => _JoinCodeCardState();
-}
-
-class _JoinCodeCardState extends State<_JoinCodeCard> {
-  Timer? _resetCopied;
-  bool _copied = false;
-
-  @override
-  void dispose() {
-    _resetCopied?.cancel();
-    super.dispose();
-  }
-
-  Future<void> _copy() async {
-    await Clipboard.setData(ClipboardData(text: widget.code));
-    if (!mounted) return;
-    setState(() => _copied = true);
-    _resetCopied?.cancel();
-    _resetCopied = Timer(const Duration(seconds: 2), () {
-      if (mounted) setState(() => _copied = false);
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        borderRadius: AppRadius.card,
-        color: AdaptiveColors.accent(context).withValues(alpha: 0.10),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  widget.code,
-                  style: TextStyle(
-                    fontFeatures: const [FontFeature.tabularFigures()],
-                    fontSize: 24,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 3,
-                    color: AdaptiveColors.accent(context),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  l10n.competitionCodeHelp,
-                  style: const TextStyle(
-                    color: AppColors.neutral,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          AdaptiveButton(
-            label: _copied ? l10n.competitionCodeCopied : l10n.commonCopy,
-            kind: AdaptiveButtonKind.plain,
-            expand: false,
-            onPressed: _copy,
-          ),
-        ],
-      ),
     );
   }
 }

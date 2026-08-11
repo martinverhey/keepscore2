@@ -12,6 +12,7 @@ class AdaptiveScaffold extends StatelessWidget {
     this.trailing,
     this.leading,
     this.floatingAction,
+    this.bottomBar,
     this.constrainWidth = true,
   });
 
@@ -20,6 +21,7 @@ class AdaptiveScaffold extends StatelessWidget {
   final Widget? trailing;
   final Widget? leading;
   final Widget? floatingAction;
+  final Widget? bottomBar;
   final bool constrainWidth;
 
   @override
@@ -33,6 +35,19 @@ class AdaptiveScaffold extends StatelessWidget {
           )
         : body;
 
+    final stacked = floatingAction == null
+        ? content
+        : Stack(
+            children: [
+              Positioned.fill(child: content),
+              Positioned(
+                right: AppSpacing.md,
+                bottom: AppSpacing.md,
+                child: floatingAction!,
+              ),
+            ],
+          );
+
     if (AppPlatform.useCupertino) {
       return CupertinoPageScaffold(
         navigationBar: CupertinoNavigationBar(
@@ -41,16 +56,12 @@ class AdaptiveScaffold extends StatelessWidget {
           trailing: trailing,
         ),
         child: SafeArea(
-          child: floatingAction == null
-              ? content
-              : Stack(
+          child: bottomBar == null
+              ? stacked
+              : Column(
                   children: [
-                    Positioned.fill(child: content),
-                    Positioned(
-                      right: AppSpacing.md,
-                      bottom: AppSpacing.md,
-                      child: floatingAction!,
-                    ),
+                    Expanded(child: stacked),
+                    bottomBar!,
                   ],
                 ),
         ),
@@ -72,6 +83,7 @@ class AdaptiveScaffold extends StatelessWidget {
       ),
       body: SafeArea(child: content),
       floatingActionButton: floatingAction,
+      bottomNavigationBar: bottomBar,
     );
   }
 }

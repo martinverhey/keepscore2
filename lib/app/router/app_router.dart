@@ -11,6 +11,7 @@ import '../../features/competition/presentation/cubit/competition_settings_cubit
 import '../../features/competition/presentation/cubit/create_competition_cubit.dart';
 import '../../features/competition/presentation/cubit/join_competition_cubit.dart';
 import '../../features/competition/presentation/pages/competition_detail_page.dart';
+import '../../features/competition/presentation/pages/competition_menu_page.dart';
 import '../../features/competition/presentation/pages/competition_settings_page.dart';
 import '../../features/competition/presentation/pages/competitions_page.dart';
 import '../../features/competition/presentation/pages/create_competition_page.dart';
@@ -22,6 +23,7 @@ import '../../features/match/presentation/cubit/match_list_cubit.dart';
 import '../../features/match/presentation/pages/match_detail_page.dart';
 import '../../features/match/presentation/pages/new_match_page.dart';
 import '../../features/player/presentation/cubit/players_cubit.dart';
+import '../../features/player/presentation/pages/players_page.dart';
 import '../di/injector.dart';
 import '../splash_page.dart';
 import 'go_router_refresh_stream.dart';
@@ -36,7 +38,11 @@ abstract final class Routes {
 
   static String competition(String id) => '/c/$id';
 
-  static String competitionSettings(String id) => '/c/$id/settings';
+  static String competitionMenu(String id) => '/c/$id/settings';
+
+  static String competitionSettings(String id) => '/c/$id/settings/competition';
+
+  static String players(String id) => '/c/$id/settings/players';
 
   static String newMatch(String id) => '/c/$id/match/new';
 
@@ -124,11 +130,41 @@ GoRouter createRouter(AuthBloc authBloc) {
           GoRoute(
             path: 'settings',
             builder: (context, state) => BlocProvider(
-              create: (_) => getIt<CompetitionSettingsCubit>(
+              create: (_) => getIt<CompetitionDetailCubit>(
                 param1: state.pathParameters['id']!,
               ),
-              child: const CompetitionSettingsPage(),
+              child: CompetitionMenuPage(
+                competitionId: state.pathParameters['id']!,
+              ),
             ),
+            routes: [
+              GoRoute(
+                path: 'competition',
+                builder: (context, state) => BlocProvider(
+                  create: (_) => getIt<CompetitionSettingsCubit>(
+                    param1: state.pathParameters['id']!,
+                  ),
+                  child: const CompetitionSettingsPage(),
+                ),
+              ),
+              GoRoute(
+                path: 'players',
+                builder: (context, state) {
+                  final id = state.pathParameters['id']!;
+                  return MultiBlocProvider(
+                    providers: [
+                      BlocProvider(
+                        create: (_) => getIt<CompetitionDetailCubit>(param1: id),
+                      ),
+                      BlocProvider(
+                        create: (_) => getIt<PlayersCubit>(param1: id),
+                      ),
+                    ],
+                    child: const PlayersPage(),
+                  );
+                },
+              ),
+            ],
           ),
           GoRoute(
             path: 'match/new',

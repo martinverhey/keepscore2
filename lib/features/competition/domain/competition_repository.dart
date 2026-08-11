@@ -30,4 +30,8 @@ abstract interface class CompetitionRepository {
     String? displayName,
     String? claimPlayerId,
   });
+
+  Future<void> leave(String competitionId);
+
+  Future<void> delete(String competitionId);
 }

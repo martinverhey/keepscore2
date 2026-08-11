@@ -244,6 +244,39 @@ class AppLocalizationsNl extends AppLocalizations {
       'Maakt het mogelijk een wedstrijd met gelijke score op te slaan.';
 
   @override
+  String get competitionManage => 'Beheren';
+
+  @override
+  String get competitionRenameTitle => 'Competitie hernoemen';
+
+  @override
+  String get competitionRename => 'Hernoemen';
+
+  @override
+  String get competitionLeave => 'Competitie verlaten';
+
+  @override
+  String competitionLeaveConfirmTitle(String name) {
+    return '$name verlaten?';
+  }
+
+  @override
+  String get competitionLeaveConfirmBody =>
+      'Je wedstrijden en ratings blijven bewaard, maar je hebt de code weer nodig om opnieuw mee te doen.';
+
+  @override
+  String get competitionDelete => 'Competitie verwijderen';
+
+  @override
+  String competitionDeleteConfirmTitle(String name) {
+    return '$name verwijderen?';
+  }
+
+  @override
+  String get competitionDeleteConfirmBody =>
+      'Dit verwijdert definitief alle spelers, wedstrijden en ratings in deze competitie. Dit kan niet ongedaan worden gemaakt.';
+
+  @override
   String get joinTitle => 'Deelnemen aan een competitie';
 
   @override
@@ -334,6 +367,9 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get matchNew => 'Nieuwe wedstrijd';
+
+  @override
+  String get matchAddFab => '+ Wedstrijd toevoegen';
 
   @override
   String get matchNewTitle => 'Wedstrijd vastleggen';
@@ -497,4 +533,24 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get playersGuestCannotAdd =>
       'Als gast kun je rondkijken, maar voor het toevoegen van spelers heb je een account nodig.';
+
+  @override
+  String get profileTitle => 'Jouw statistieken';
+
+  @override
+  String profileRank(int rank, int count) {
+    return '#$rank van $count';
+  }
+
+  @override
+  String profileWinRate(int percent) {
+    return '$percent% winst';
+  }
+
+  @override
+  String get profileTrendTitle => 'Recente vorm';
+
+  @override
+  String get profileNotEnoughMatches =>
+      'Speel nog een paar wedstrijden om je trend te zien.';
 }
