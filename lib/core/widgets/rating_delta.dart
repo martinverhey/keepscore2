@@ -18,8 +18,6 @@ Color deltaColor(double value) {
   return AppColors.neutral;
 }
 
-/// The rating change a match produced, in the sign and colour a player reads
-/// first. Figures are tabular so a column of these lines up.
 class RatingDelta extends StatelessWidget {
   const RatingDelta({super.key, required this.value, this.fontSize = 14});
 

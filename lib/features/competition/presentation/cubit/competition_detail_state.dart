@@ -3,13 +3,7 @@ import 'package:equatable/equatable.dart';
 import '../../../../core/error/failure.dart';
 import '../../domain/competition.dart';
 
-enum CompetitionDetailStatus {
-  loading,
-  ready,
-
-  missing,
-  failed,
-}
+enum CompetitionDetailStatus { loading, ready, missing, failed }
 
 class CompetitionDetailState extends Equatable {
   const CompetitionDetailState({

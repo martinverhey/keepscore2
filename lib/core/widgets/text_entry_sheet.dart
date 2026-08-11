@@ -49,8 +49,9 @@ class _TextEntrySheet extends StatefulWidget {
 }
 
 class _TextEntrySheetState extends State<_TextEntrySheet> {
-  late final TextEditingController _controller =
-      TextEditingController(text: widget.initialValue);
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.initialValue,
+  );
   late String _value = widget.initialValue;
 
   bool get _isValid => _value.trim().length >= 2;

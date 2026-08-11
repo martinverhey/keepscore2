@@ -25,11 +25,8 @@ class MatchFormState extends Equatable {
   final MatchFormStatus status;
   final Competition? competition;
 
-  /// Active roster, in name order — everyone who may be put on a side.
   final List<Player> players;
 
-  /// Current-season rating per player. Anyone missing has not played yet and
-  /// sits at the competition's starting rating.
   final Map<String, double> ratings;
 
   final Map<String, MatchTeam> assignments;
@@ -85,8 +82,6 @@ class MatchFormState extends Equatable {
       !drawIsRefused &&
       !busy;
 
-  /// What the result is worth, computed locally so the numbers appear as the
-  /// scores are typed. Postgres recomputes them on submit and its answer wins.
   EloPreview? get preview {
     final settings = competition;
     if (settings == null || !teamsAreValid || !scoresAreValid) return null;

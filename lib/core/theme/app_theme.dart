@@ -5,8 +5,6 @@ import 'app_tokens.dart';
 
 abstract final class AppTheme {
   static ThemeData material(Brightness brightness) {
-    // Fidelity keeps the generated primary on the seed. The default variant
-    // pulls a saturated orange most of the way to brown.
     final scheme = ColorScheme.fromSeed(
       seedColor: AppColors.seed,
       brightness: brightness,

@@ -6,21 +6,17 @@ import 'package:equatable/equatable.dart';
 import '../../domain/auth_repository.dart';
 import '../../domain/auth_user.dart';
 
-enum AuthStatus {
-  unknown,
-  unauthenticated,
-  authenticated,
-}
+enum AuthStatus { unknown, unauthenticated, authenticated }
 
 class AuthSessionState extends Equatable {
   const AuthSessionState._({required this.status, this.user});
   const AuthSessionState.unknown() : this._(status: AuthStatus.unknown);
 
   const AuthSessionState.unauthenticated()
-      : this._(status: AuthStatus.unauthenticated);
+    : this._(status: AuthStatus.unauthenticated);
 
   const AuthSessionState.authenticated(AuthUser user)
-      : this._(status: AuthStatus.authenticated, user: user);
+    : this._(status: AuthStatus.authenticated, user: user);
 
   final AuthStatus status;
   final AuthUser? user;
@@ -75,20 +71,24 @@ class AuthBloc extends Bloc<AuthEvent, AuthSessionState> {
     Emitter<AuthSessionState> emit,
   ) async {
     final existing = _repository.currentUser;
-    emit(existing == null
-        ? const AuthSessionState.unauthenticated()
-        : AuthSessionState.authenticated(existing));
+    emit(
+      existing == null
+          ? const AuthSessionState.unauthenticated()
+          : AuthSessionState.authenticated(existing),
+    );
 
     await _subscription?.cancel();
     _subscription = _repository.watchUser().listen(
-          (user) => add(_AuthUserChanged(user)),
-        );
+      (user) => add(_AuthUserChanged(user)),
+    );
   }
 
   void _onUserChanged(_AuthUserChanged event, Emitter<AuthSessionState> emit) {
-    emit(event.user == null
-        ? const AuthSessionState.unauthenticated()
-        : AuthSessionState.authenticated(event.user!));
+    emit(
+      event.user == null
+          ? const AuthSessionState.unauthenticated()
+          : AuthSessionState.authenticated(event.user!),
+    );
   }
 
   Future<void> _onSignOutRequested(

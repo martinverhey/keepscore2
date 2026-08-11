@@ -49,8 +49,8 @@ abstract final class EloCalculator {
     final actualA = scoreA > scoreB
         ? 1.0
         : scoreA < scoreB
-            ? 0.0
-            : 0.5;
+        ? 0.0
+        : 0.5;
 
     final margin = (scoreA - scoreB).abs();
     var mov = 1.0;
@@ -60,7 +60,9 @@ abstract final class EloCalculator {
         0.0,
         actualA == 1.0 ? ratingA - ratingB : ratingB - ratingA,
       );
-      mov = (math.log(margin + 1) / math.ln2) * (2.2 / (0.001 * winnerEdge + 2.2));
+      mov =
+          (math.log(margin + 1) / math.ln2) *
+          (2.2 / (0.001 * winnerEdge + 2.2));
       mov = math.min(settings.movCap, math.max(1.0, mov));
     }
 

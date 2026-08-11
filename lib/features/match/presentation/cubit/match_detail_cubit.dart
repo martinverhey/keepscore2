@@ -47,8 +47,6 @@ class MatchDetailCubit extends Cubit<MatchDetailState> {
     }
   }
 
-  /// The season is replayed server-side, so the numbers on this page are stale
-  /// the moment the score changes — reload rather than patch.
   Future<bool> updateScore({required int scoreA, required int scoreB}) async {
     if (state.busy || state.match == null) return false;
     emit(state.copyWith(busy: true, clearActionFailure: true));

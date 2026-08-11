@@ -22,8 +22,6 @@ class MatchListState extends Equatable {
 
   final Failure? failure;
 
-  /// A failed "load more". Kept apart from [failure] so it never blanks a
-  /// list that loaded perfectly well.
   final Failure? actionFailure;
 
   MatchListState copyWith({

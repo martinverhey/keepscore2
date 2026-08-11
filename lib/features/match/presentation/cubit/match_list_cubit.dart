@@ -22,7 +22,6 @@ class MatchListCubit extends Cubit<MatchListState> {
     if (!silent) emit(const MatchListState());
     _watch();
 
-    // A refresh keeps however many pages are already on screen.
     final limit = state.matches.length > pageSize
         ? state.matches.length
         : pageSize;

@@ -27,7 +27,5 @@ abstract interface class MatchRepository {
 
   Future<void> delete(String matchId);
 
-  /// Ticks whenever a match in this competition is logged, edited or removed —
-  /// by anyone, including this device.
   Stream<void> watch(String competitionId);
 }

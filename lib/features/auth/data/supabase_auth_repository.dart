@@ -29,9 +29,9 @@ class SupabaseAuthRepository implements AuthRepository {
 
   @override
   AuthProviders get availableProviders => AuthProviders(
-        apple: Env.appleSignInEnabled,
-        google: Env.googleSignInEnabled,
-      );
+    apple: Env.appleSignInEnabled,
+    google: Env.googleSignInEnabled,
+  );
 
   @override
   Stream<AuthUser?> watchUser() {
@@ -61,16 +61,16 @@ class SupabaseAuthRepository implements AuthRepository {
 
   AuthUser _fromUser(User user) {
     final meta = user.userMetadata ?? const {};
-    final fromMeta = (meta['full_name'] ?? meta['name'] ?? meta['display_name'])
-        as String?;
+    final fromMeta =
+        (meta['full_name'] ?? meta['name'] ?? meta['display_name']) as String?;
     final fromEmail = user.email?.split('@').first;
     return AuthUser(
       id: user.id,
       displayName: (fromMeta?.trim().isNotEmpty ?? false)
           ? fromMeta!.trim()
           : (fromEmail?.isNotEmpty ?? false)
-              ? fromEmail!
-              : 'Player',
+          ? fromEmail!
+          : 'Player',
       isGuest: user.isAnonymous,
       email: user.email,
       avatarUrl: meta['avatar_url'] as String?,
@@ -79,130 +79,125 @@ class SupabaseAuthRepository implements AuthRepository {
 
   @override
   Future<void> sendEmailCode(String email) => guard(() async {
-        await _auth.signInWithOtp(
-          email: email.trim(),
-          shouldCreateUser: true,
-        );
-      });
+    await _auth.signInWithOtp(email: email.trim(), shouldCreateUser: true);
+  });
 
   @override
   Future<void> verifyEmailCode({
     required String email,
     required String token,
-  }) =>
-      guard(() async {
-        await _auth.verifyOTP(
-          type: OtpType.email,
-          email: email.trim(),
-          token: token.trim(),
-        );
-      });
+  }) => guard(() async {
+    await _auth.verifyOTP(
+      type: OtpType.email,
+      email: email.trim(),
+      token: token.trim(),
+    );
+  });
 
   @override
   Future<void> signInAsGuest() => guard(() async {
-        await _auth.signInAnonymously();
-      });
+    await _auth.signInAnonymously();
+  });
 
   @override
   Future<void> upgradeGuestWithEmail(String email) => guard(() async {
-        await _auth.updateUser(UserAttributes(email: email.trim()));
-      });
+    await _auth.updateUser(UserAttributes(email: email.trim()));
+  });
 
   @override
   Future<void> verifyUpgradeCode({
     required String email,
     required String token,
-  }) =>
-      guard(() async {
-        await _auth.verifyOTP(
-          type: OtpType.emailChange,
-          email: email.trim(),
-          token: token.trim(),
-        );
-      });
+  }) => guard(() async {
+    await _auth.verifyOTP(
+      type: OtpType.emailChange,
+      email: email.trim(),
+      token: token.trim(),
+    );
+  });
 
   @override
   Future<void> signInWithApple() => guard(() async {
-        if (!Env.appleSignInEnabled) {
-          throw const AuthFailure('Apple sign-in is not configured yet');
-        }
+    if (!Env.appleSignInEnabled) {
+      throw const AuthFailure('Apple sign-in is not configured yet');
+    }
 
-        if (!kIsWeb &&
-            (defaultTargetPlatform == TargetPlatform.iOS ||
-                defaultTargetPlatform == TargetPlatform.macOS)) {
-          final rawNonce = _auth.generateRawNonce();
-          final hashedNonce = sha256.convert(utf8.encode(rawNonce)).toString();
+    if (!kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.iOS ||
+            defaultTargetPlatform == TargetPlatform.macOS)) {
+      final rawNonce = _auth.generateRawNonce();
+      final hashedNonce = sha256.convert(utf8.encode(rawNonce)).toString();
 
-          final credential = await SignInWithApple.getAppleIDCredential(
-            scopes: [
-              AppleIDAuthorizationScopes.email,
-              AppleIDAuthorizationScopes.fullName,
-            ],
-            nonce: hashedNonce,
-          );
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        nonce: hashedNonce,
+      );
 
-          final idToken = credential.identityToken;
-          if (idToken == null) {
-            throw const AuthFailure('Apple did not return an identity token');
-          }
+      final idToken = credential.identityToken;
+      if (idToken == null) {
+        throw const AuthFailure('Apple did not return an identity token');
+      }
 
-          await _auth.signInWithIdToken(
-            provider: OAuthProvider.apple,
-            idToken: idToken,
-            nonce: rawNonce,
-          );
-          return;
-        }
+      await _auth.signInWithIdToken(
+        provider: OAuthProvider.apple,
+        idToken: idToken,
+        nonce: rawNonce,
+      );
+      return;
+    }
 
-        await _auth.signInWithOAuth(
-          OAuthProvider.apple,
-          redirectTo: Env.oauthRedirectUrl,
-        );
-      });
+    await _auth.signInWithOAuth(
+      OAuthProvider.apple,
+      redirectTo: Env.oauthRedirectUrl,
+    );
+  });
 
   @override
   Future<void> signInWithGoogle() => guard(() async {
-        if (!Env.googleSignInEnabled) {
-          throw const AuthFailure('Google sign-in is not configured yet');
-        }
+    if (!Env.googleSignInEnabled) {
+      throw const AuthFailure('Google sign-in is not configured yet');
+    }
 
-        if (kIsWeb) {
-          await _auth.signInWithOAuth(
-            OAuthProvider.google,
-            redirectTo: Env.oauthRedirectUrl,
-          );
-          return;
-        }
+    if (kIsWeb) {
+      await _auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: Env.oauthRedirectUrl,
+      );
+      return;
+    }
 
-        final serverClientId = Env.googleServerClientId;
-        if (serverClientId == null) {
-          throw const AuthFailure(
-            'GOOGLE_SERVER_CLIENT_ID is missing from assets/.env',
-          );
-        }
+    final serverClientId = Env.googleServerClientId;
+    if (serverClientId == null) {
+      throw const AuthFailure(
+        'GOOGLE_SERVER_CLIENT_ID is missing from assets/.env',
+      );
+    }
 
-        _googleInit ??= GoogleSignIn.instance.initialize(
-          clientId: Env.googleIosClientId,
-          serverClientId: serverClientId,
-        );
-        await _googleInit;
+    _googleInit ??= GoogleSignIn.instance.initialize(
+      clientId: Env.googleIosClientId,
+      serverClientId: serverClientId,
+    );
+    await _googleInit;
 
-        final account = await GoogleSignIn.instance.authenticate(
-          scopeHint: const ['email', 'profile'],
-        );
-        final idToken = account.authentication.idToken;
-        if (idToken == null) {
-          throw const AuthFailure('Google did not return an identity token');
-        }
+    final account = await GoogleSignIn.instance.authenticate(
+      scopeHint: const ['email', 'profile'],
+    );
+    final idToken = account.authentication.idToken;
+    if (idToken == null) {
+      throw const AuthFailure('Google did not return an identity token');
+    }
 
-        await _auth.signInWithIdToken(
-          provider: OAuthProvider.google,
-          idToken: idToken,
-        );
-      });
+    await _auth.signInWithIdToken(
+      provider: OAuthProvider.google,
+      idToken: idToken,
+    );
+  });
 
   @override
   Future<void> signOut() => guard(() async {
-        await _auth.signOut();
-      });
+    await _auth.signOut();
+  });
 }

@@ -15,13 +15,11 @@ abstract final class AppRadius {
   static const double lg = 20;
   static const BorderRadius card = BorderRadius.all(Radius.circular(md));
   static const BorderRadius pill = BorderRadius.all(Radius.circular(999));
-  static const BorderRadius sheet = BorderRadius.vertical(top: Radius.circular(lg));
+  static const BorderRadius sheet = BorderRadius.vertical(
+    top: Radius.circular(lg),
+  );
 }
 
-// The accent and the team colours carry a second value for dark surfaces.
-// Reading them straight off a dark background leaves them at about 4:1, which
-// is where a saturated mid-tone lands whatever its hue. Resolve them through
-// `AdaptiveColors`, never directly.
 abstract final class AppColors {
   static const Color seed = Color(0xFFBC4D08);
   static const Color seedOnDark = Color(0xFFFFB694);

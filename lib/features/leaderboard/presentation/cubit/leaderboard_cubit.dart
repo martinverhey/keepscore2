@@ -9,10 +9,6 @@ import 'leaderboard_state.dart';
 
 export 'leaderboard_state.dart';
 
-/// The standings of one season, kept live.
-///
-/// Ratings are never patched from a realtime payload: a rank is a property of
-/// the whole table, and an edit replays the season, so a tick means "refetch".
 class LeaderboardCubit extends Cubit<LeaderboardState> {
   LeaderboardCubit(this._repository, this.competitionId)
     : super(const LeaderboardState());
@@ -96,8 +92,6 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
     }
   }
 
-  /// `seasons` only gets a row once a match lands in it, so the window the
-  /// competition is currently playing for has to be stitched in by hand.
   List<Season> _withCurrentWindow(List<Season> stored, SeasonWindow window) {
     final known = stored.any(
       (season) => season.startsAt.isAtSameMomentAs(window.startsAt),
