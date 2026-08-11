@@ -14,6 +14,9 @@ import '../../../auth/presentation/widgets/guest_notice.dart';
 import '../../domain/competition.dart';
 import '../cubit/competition_list_cubit.dart';
 import '../widgets/competition_tile.dart';
+import 'competition_action.dart';
+
+export 'competition_action.dart';
 
 class CompetitionsPage extends StatefulWidget {
   const CompetitionsPage({super.key});
@@ -36,16 +39,10 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
 
     return AdaptiveScaffold(
       title: l10n.competitionsTitle,
-      trailing: AdaptiveButton(
-        label: l10n.authSignOut,
-        kind: AdaptiveButtonKind.plain,
-        expand: false,
-        onPressed: () =>
-            context.read<AuthBloc>().add(const AuthSignOutRequested()),
-      ),
+      onRefresh: context.read<CompetitionListCubit>().refresh,
       body: BlocBuilder<CompetitionListCubit, CompetitionListState>(
         builder: (context, state) {
-          final body = switch (state.status) {
+          return switch (state.status) {
             CompetitionListStatus.loading => const AdaptiveLoader(),
             CompetitionListStatus.failed when state.competitions.isEmpty =>
               ErrorRetry(
@@ -54,16 +51,11 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
                 onRetry: context.read<CompetitionListCubit>().load,
               ),
             _ => _Loaded(
-                state: state,
-                canCreate: session.canWrite,
-                myUserId: session.user?.id,
-              ),
+              state: state,
+              canCreate: session.canWrite,
+              myUserId: session.user?.id,
+            ),
           };
-
-          return AdaptiveRefresh(
-            onRefresh: context.read<CompetitionListCubit>().refresh,
-            child: body,
-          );
         },
       ),
     );
@@ -95,7 +87,7 @@ class _Loaded extends StatelessWidget {
             for (final overview in state.competitions) ...[
               CompetitionTile(
                 overview: overview,
-                onTap: () => context.push('/competition/${overview.id}'),
+                onTap: () => context.go(Routes.competition(overview.id)),
                 onManage: () => _manage(context, overview),
               ),
               const SizedBox(height: AppSpacing.sm),
@@ -134,20 +126,25 @@ class _Loaded extends StatelessWidget {
     );
   }
 
-  Future<void> _manage(BuildContext context, CompetitionOverview overview) async {
+  Future<void> _manage(
+    BuildContext context,
+    CompetitionOverview overview,
+  ) async {
     final l10n = AppLocalizations.of(context);
     final cubit = context.read<CompetitionListCubit>();
     final isOwner = overview.competition.isOwnedBy(myUserId);
 
-    final action = await showAdaptiveSheet<_CompetitionAction>(
+    final action = await showAdaptiveSheet<CompetitionAction>(
       context,
-      builder: (_) =>
-          _CompetitionActionSheet(name: overview.competition.name, isOwner: isOwner),
+      builder: (_) => _CompetitionActionSheet(
+        name: overview.competition.name,
+        isOwner: isOwner,
+      ),
     );
     if (action == null || !context.mounted) return;
 
     switch (action) {
-      case _CompetitionAction.rename:
+      case CompetitionAction.rename:
         final name = await showTextEntrySheet(
           context,
           title: l10n.competitionRenameTitle,
@@ -160,7 +157,7 @@ class _Loaded extends StatelessWidget {
           await cubit.rename(overview.id, name);
         }
 
-      case _CompetitionAction.leave:
+      case CompetitionAction.leave:
         if (!context.mounted) return;
         final confirmed = await showAdaptiveConfirm(
           context,
@@ -172,7 +169,7 @@ class _Loaded extends StatelessWidget {
         );
         if (confirmed) await cubit.leave(overview.id);
 
-      case _CompetitionAction.delete:
+      case CompetitionAction.delete:
         if (!context.mounted) return;
         final confirmed = await showAdaptiveConfirm(
           context,
@@ -186,8 +183,6 @@ class _Loaded extends StatelessWidget {
     }
   }
 }
-
-enum _CompetitionAction { rename, leave, delete }
 
 class _CompetitionActionSheet extends StatelessWidget {
   const _CompetitionActionSheet({required this.name, required this.isOwner});
@@ -216,21 +211,21 @@ class _CompetitionActionSheet extends StatelessWidget {
               label: l10n.competitionRename,
               kind: AdaptiveButtonKind.tinted,
               onPressed: () =>
-                  Navigator.of(context).pop(_CompetitionAction.rename),
+                  Navigator.of(context).pop(CompetitionAction.rename),
             ),
             const SizedBox(height: AppSpacing.sm),
             AdaptiveButton(
               label: l10n.competitionDelete,
               kind: AdaptiveButtonKind.destructive,
               onPressed: () =>
-                  Navigator.of(context).pop(_CompetitionAction.delete),
+                  Navigator.of(context).pop(CompetitionAction.delete),
             ),
           ] else
             AdaptiveButton(
               label: l10n.competitionLeave,
               kind: AdaptiveButtonKind.destructive,
               onPressed: () =>
-                  Navigator.of(context).pop(_CompetitionAction.leave),
+                  Navigator.of(context).pop(CompetitionAction.leave),
             ),
 
           const SizedBox(height: AppSpacing.sm),
