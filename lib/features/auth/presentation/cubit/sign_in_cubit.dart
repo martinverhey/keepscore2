@@ -2,23 +2,21 @@ import 'package:bloc/bloc.dart';
 
 import '../../../../core/error/failure.dart';
 import '../../domain/auth_repository.dart';
+import 'sign_in_mode.dart';
 import 'sign_in_state.dart';
 
+export 'sign_in_mode.dart';
 export 'sign_in_state.dart';
-
-enum SignInMode {
-  signIn,
-
-  upgrade,
-}
 
 class SignInCubit extends Cubit<SignInState> {
   SignInCubit(this._repository, {this.mode = SignInMode.signIn})
-      : super(SignInState(
+    : super(
+        SignInState(
           step: mode == SignInMode.upgrade
               ? SignInStep.email
               : SignInStep.chooser,
-        ));
+        ),
+      );
 
   final AuthRepository _repository;
   final SignInMode mode;
@@ -57,16 +55,18 @@ class SignInCubit extends Cubit<SignInState> {
 
   Future<void> verifyCode() async {
     if (!state.canVerify) return;
-    await _run(() => switch (mode) {
-          SignInMode.signIn => _repository.verifyEmailCode(
-              email: state.email,
-              token: state.code,
-            ),
-          SignInMode.upgrade => _repository.verifyUpgradeCode(
-              email: state.email,
-              token: state.code,
-            ),
-        });
+    await _run(
+      () => switch (mode) {
+        SignInMode.signIn => _repository.verifyEmailCode(
+          email: state.email,
+          token: state.code,
+        ),
+        SignInMode.upgrade => _repository.verifyUpgradeCode(
+          email: state.email,
+          token: state.code,
+        ),
+      },
+    );
   }
 
   Future<void> signInWithApple() => _run(_repository.signInWithApple);
