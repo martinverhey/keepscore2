@@ -10,6 +10,7 @@
   "commonLoading": "Laden…",
   "commonBack": "Terug",
   "commonCopy": "Kopiëren",
+  "commonDone": "Klaar",
 
   "errorGeneric": "Er is iets misgegaan. Probeer het opnieuw.",
   "errorNetwork": "Geen verbinding. Controleer je internet en probeer het opnieuw.",
@@ -67,9 +68,17 @@
   },
   "competitionGuestCannotCreate": "Als gast kun je rondkijken, maar voor het maken van een competitie heb je een account nodig.",
   "competitionCodeHelp": "Iedereen met deze code kan meedoen.",
+  "competitionQrInvite": "Scan om direct mee te doen",
+  "competitionQrHelp": "Richt een camera op deze code — typen hoeft niet.",
+  "competitionInviteTitle": "Spelers uitnodigen",
+  "competitionInviteAction": "Uitnodigen",
+  "competitionUseQrInstead": "Gebruik liever een QR-code",
   "competitionNotFound": "Deze competitie bestaat niet meer, of je zit er niet meer in.",
 
   "competitionSettings": "Instellingen",
+  "competitionMenuSectionCompetition": "Competitie",
+  "competitionMenuSectionUser": "Gebruiker",
+  "competitionMenuSectionSystem": "Systeem",
   "competitionSettingsTitle": "Competitie-instellingen",
   "competitionSettingsSave": "Wijzigingen opslaan",
   "competitionSettingsSaved": "Wijzigingen opgeslagen.",
@@ -119,6 +128,7 @@
   "joinAsNewPlayer": "Deelnemen als nieuwe speler",
   "joinConfirm": "Deelnemen",
   "joinAlreadyMember": "Je zit al in deze competitie.",
+  "joinNewPlayerNameTitle": "Wat is je naam?",
 
   "leaderboardTitle": "Klassement",
   "leaderboardEmpty": "Dit seizoen zijn er nog geen wedstrijden gespeeld.",
@@ -130,6 +140,10 @@
   },
   "leaderboardPickSeason": "Kies een seizoen",
   "leaderboardUnplayed": "Nog niet gespeeld",
+  "leaderboardPlayersHint": "Voeg de mensen toe waar je tegen gaat spelen.",
+  "leaderboardPlayersHintAction": "Naar Spelers",
+  "leaderboardMatchesHint": "Voer een wedstrijd in om het klassement te vullen.",
+  "leaderboardMatchesHintAction": "Naar Wedstrijden",
   "seasonQuarterLabel": "K{quarter} {year}",
   "@seasonQuarterLabel": {
     "placeholders": {
@@ -137,9 +151,6 @@
       "year": { "type": "String" }
     }
   },
-  "leaderboardRank": "Positie",
-  "leaderboardPlayer": "Speler",
-  "leaderboardRating": "Rating",
   "leaderboardRecord": "{wins}W · {losses}V · {draws}G",
   "@leaderboardRecord": {
     "placeholders": {
@@ -150,25 +161,24 @@
   },
 
   "matchesTitle": "Wedstrijden",
-  "matchesEmpty": "Nog geen wedstrijden. Leg je eerste vast.",
+  "matchesEmpty": "Nog geen wedstrijden. Voer je eerste in.",
+  "matchDayToday": "Vandaag",
+  "matchDayYesterday": "Gisteren",
   "matchNew": "Nieuwe wedstrijd",
-  "matchAddFab": "+ Wedstrijd toevoegen",
-  "matchNewTitle": "Wedstrijd vastleggen",
+  "matchNewTitle": "Wedstrijd invoeren",
   "matchTeamA": "Team A",
   "matchTeamB": "Team B",
   "matchScore": "Score",
   "matchSubmit": "Wedstrijd opslaan",
   "matchDeleteConfirm": "Deze wedstrijd verwijderen? De ratings van het seizoen worden opnieuw berekend.",
-  "matchPickTeamsTitle": "Wie hebben er gespeeld?",
-  "matchPickTeamsHelp": "Tik op A of B om iemand aan die kant te zetten. Tik nogmaals om diegene eraf te halen.",
-  "matchBench": "Speelt niet mee",
+  "matchPickTeamsTitle": "Kies spelers",
+  "matchPickTeamsHelp": "Tik op een team om te kiezen wie er gespeeld hebben.",
+  "matchTapToSelectPlayers": "Tik om spelers toe te voegen",
   "matchScoreTitle": "Eindstand",
   "matchScoreTeam": "Score {team}",
   "@matchScoreTeam": {
     "placeholders": { "team": { "type": "String" } }
   },
-  "matchSwapSides": "Kanten wisselen",
-  "matchClearTeams": "Teams wissen",
   "matchPreviewTitle": "Wat dit oplevert",
   "matchPreviewCaveat": "Een schatting. De definitieve cijfers worden berekend bij het opslaan.",
   "matchTeamRating": "Teamrating {rating}",
@@ -226,5 +236,14 @@
     "placeholders": { "percent": { "type": "int" } }
   },
   "profileTrendTitle": "Recente vorm",
-  "profileNotEnoughMatches": "Speel nog een paar wedstrijden om je trend te zien."
+  "profileNotEnoughMatches": "Speel nog een paar wedstrijden om je trend te zien.",
+  "profileGreeting": "Hallo, {name}",
+  "@profileGreeting": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "settingsThemeTitle": "Thema",
+  "themeOptionSystem": "Systeem",
+  "themeOptionLight": "Licht",
+  "themeOptionDark": "Donker"
 }

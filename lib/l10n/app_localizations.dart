@@ -146,6 +146,12 @@ abstract class AppLocalizations {
   /// **'Copy'**
   String get commonCopy;
 
+  /// No description provided for @commonDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get commonDone;
+
   /// No description provided for @errorGeneric.
   ///
   /// In en, this message translates to:
@@ -398,6 +404,36 @@ abstract class AppLocalizations {
   /// **'Anyone with this code can join.'**
   String get competitionCodeHelp;
 
+  /// No description provided for @competitionQrInvite.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan to join instantly'**
+  String get competitionQrInvite;
+
+  /// No description provided for @competitionQrHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Point a camera at this code — no typing required.'**
+  String get competitionQrHelp;
+
+  /// No description provided for @competitionInviteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite players'**
+  String get competitionInviteTitle;
+
+  /// No description provided for @competitionInviteAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite'**
+  String get competitionInviteAction;
+
+  /// No description provided for @competitionUseQrInstead.
+  ///
+  /// In en, this message translates to:
+  /// **'Use QR code instead'**
+  String get competitionUseQrInstead;
+
   /// No description provided for @competitionNotFound.
   ///
   /// In en, this message translates to:
@@ -409,6 +445,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Settings'**
   String get competitionSettings;
+
+  /// No description provided for @competitionMenuSectionCompetition.
+  ///
+  /// In en, this message translates to:
+  /// **'Competition'**
+  String get competitionMenuSectionCompetition;
+
+  /// No description provided for @competitionMenuSectionUser.
+  ///
+  /// In en, this message translates to:
+  /// **'User'**
+  String get competitionMenuSectionUser;
+
+  /// No description provided for @competitionMenuSectionSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get competitionMenuSectionSystem;
 
   /// No description provided for @competitionSettingsTitle.
   ///
@@ -620,6 +674,12 @@ abstract class AppLocalizations {
   /// **'You\'re already in this competition.'**
   String get joinAlreadyMember;
 
+  /// No description provided for @joinNewPlayerNameTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s your name?'**
+  String get joinNewPlayerNameTitle;
+
   /// No description provided for @leaderboardTitle.
   ///
   /// In en, this message translates to:
@@ -662,29 +722,35 @@ abstract class AppLocalizations {
   /// **'Not played yet'**
   String get leaderboardUnplayed;
 
+  /// No description provided for @leaderboardPlayersHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add the people you\'ll be playing against.'**
+  String get leaderboardPlayersHint;
+
+  /// No description provided for @leaderboardPlayersHintAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Players'**
+  String get leaderboardPlayersHintAction;
+
+  /// No description provided for @leaderboardMatchesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a match to start filling in the leaderboard.'**
+  String get leaderboardMatchesHint;
+
+  /// No description provided for @leaderboardMatchesHintAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Matches'**
+  String get leaderboardMatchesHintAction;
+
   /// No description provided for @seasonQuarterLabel.
   ///
   /// In en, this message translates to:
   /// **'Q{quarter} {year}'**
   String seasonQuarterLabel(int quarter, String year);
-
-  /// No description provided for @leaderboardRank.
-  ///
-  /// In en, this message translates to:
-  /// **'Rank'**
-  String get leaderboardRank;
-
-  /// No description provided for @leaderboardPlayer.
-  ///
-  /// In en, this message translates to:
-  /// **'Player'**
-  String get leaderboardPlayer;
-
-  /// No description provided for @leaderboardRating.
-  ///
-  /// In en, this message translates to:
-  /// **'Rating'**
-  String get leaderboardRating;
 
   /// No description provided for @leaderboardRecord.
   ///
@@ -701,8 +767,20 @@ abstract class AppLocalizations {
   /// No description provided for @matchesEmpty.
   ///
   /// In en, this message translates to:
-  /// **'No matches yet. Log your first one.'**
+  /// **'No matches yet. Enter your first one.'**
   String get matchesEmpty;
+
+  /// No description provided for @matchDayToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get matchDayToday;
+
+  /// No description provided for @matchDayYesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get matchDayYesterday;
 
   /// No description provided for @matchNew.
   ///
@@ -710,16 +788,10 @@ abstract class AppLocalizations {
   /// **'New match'**
   String get matchNew;
 
-  /// No description provided for @matchAddFab.
-  ///
-  /// In en, this message translates to:
-  /// **'+ Add Match'**
-  String get matchAddFab;
-
   /// No description provided for @matchNewTitle.
   ///
   /// In en, this message translates to:
-  /// **'Log a match'**
+  /// **'Enter match'**
   String get matchNewTitle;
 
   /// No description provided for @matchTeamA.
@@ -755,20 +827,20 @@ abstract class AppLocalizations {
   /// No description provided for @matchPickTeamsTitle.
   ///
   /// In en, this message translates to:
-  /// **'Who played?'**
+  /// **'Choose players'**
   String get matchPickTeamsTitle;
 
   /// No description provided for @matchPickTeamsHelp.
   ///
   /// In en, this message translates to:
-  /// **'Tap A or B to put someone on that side. Tap again to take them off.'**
+  /// **'Tap a team below to choose who played.'**
   String get matchPickTeamsHelp;
 
-  /// No description provided for @matchBench.
+  /// No description provided for @matchTapToSelectPlayers.
   ///
   /// In en, this message translates to:
-  /// **'Not playing'**
-  String get matchBench;
+  /// **'Tap to add players'**
+  String get matchTapToSelectPlayers;
 
   /// No description provided for @matchScoreTitle.
   ///
@@ -781,18 +853,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{team} score'**
   String matchScoreTeam(String team);
-
-  /// No description provided for @matchSwapSides.
-  ///
-  /// In en, this message translates to:
-  /// **'Swap sides'**
-  String get matchSwapSides;
-
-  /// No description provided for @matchClearTeams.
-  ///
-  /// In en, this message translates to:
-  /// **'Clear teams'**
-  String get matchClearTeams;
 
   /// No description provided for @matchPreviewTitle.
   ///
@@ -1039,6 +1099,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Play a couple more matches to see your trend.'**
   String get profileNotEnoughMatches;
+
+  /// No description provided for @profileGreeting.
+  ///
+  /// In en, this message translates to:
+  /// **'Hello, {name}'**
+  String profileGreeting(String name);
+
+  /// No description provided for @settingsThemeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get settingsThemeTitle;
+
+  /// No description provided for @themeOptionSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get themeOptionSystem;
+
+  /// No description provided for @themeOptionLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get themeOptionLight;
+
+  /// No description provided for @themeOptionDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get themeOptionDark;
 }
 
 class _AppLocalizationsDelegate

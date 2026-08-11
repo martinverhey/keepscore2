@@ -33,6 +33,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonCopy => 'Copy';
 
   @override
+  String get commonDone => 'Done';
+
+  @override
   String get errorGeneric => 'Something went wrong. Please try again.';
 
   @override
@@ -185,11 +188,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get competitionCodeHelp => 'Anyone with this code can join.';
 
   @override
+  String get competitionQrInvite => 'Scan to join instantly';
+
+  @override
+  String get competitionQrHelp =>
+      'Point a camera at this code — no typing required.';
+
+  @override
+  String get competitionInviteTitle => 'Invite players';
+
+  @override
+  String get competitionInviteAction => 'Invite';
+
+  @override
+  String get competitionUseQrInstead => 'Use QR code instead';
+
+  @override
   String get competitionNotFound =>
       'This competition is gone, or you\'re no longer in it.';
 
   @override
   String get competitionSettings => 'Settings';
+
+  @override
+  String get competitionMenuSectionCompetition => 'Competition';
+
+  @override
+  String get competitionMenuSectionUser => 'User';
+
+  @override
+  String get competitionMenuSectionSystem => 'System';
 
   @override
   String get competitionSettingsTitle => 'Competition settings';
@@ -315,6 +343,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get joinAlreadyMember => 'You\'re already in this competition.';
 
   @override
+  String get joinNewPlayerNameTitle => 'What\'s your name?';
+
+  @override
   String get leaderboardTitle => 'Leaderboard';
 
   @override
@@ -339,18 +370,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get leaderboardUnplayed => 'Not played yet';
 
   @override
+  String get leaderboardPlayersHint =>
+      'Add the people you\'ll be playing against.';
+
+  @override
+  String get leaderboardPlayersHintAction => 'Go to Players';
+
+  @override
+  String get leaderboardMatchesHint =>
+      'Enter a match to start filling in the leaderboard.';
+
+  @override
+  String get leaderboardMatchesHintAction => 'Go to Matches';
+
+  @override
   String seasonQuarterLabel(int quarter, String year) {
     return 'Q$quarter $year';
   }
-
-  @override
-  String get leaderboardRank => 'Rank';
-
-  @override
-  String get leaderboardPlayer => 'Player';
-
-  @override
-  String get leaderboardRating => 'Rating';
 
   @override
   String leaderboardRecord(int wins, int losses, int draws) {
@@ -361,16 +397,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get matchesTitle => 'Matches';
 
   @override
-  String get matchesEmpty => 'No matches yet. Log your first one.';
+  String get matchesEmpty => 'No matches yet. Enter your first one.';
+
+  @override
+  String get matchDayToday => 'Today';
+
+  @override
+  String get matchDayYesterday => 'Yesterday';
 
   @override
   String get matchNew => 'New match';
 
   @override
-  String get matchAddFab => '+ Add Match';
-
-  @override
-  String get matchNewTitle => 'Log a match';
+  String get matchNewTitle => 'Enter match';
 
   @override
   String get matchTeamA => 'Team A';
@@ -389,14 +428,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Delete this match? Ratings for the season will be recalculated.';
 
   @override
-  String get matchPickTeamsTitle => 'Who played?';
+  String get matchPickTeamsTitle => 'Choose players';
 
   @override
-  String get matchPickTeamsHelp =>
-      'Tap A or B to put someone on that side. Tap again to take them off.';
+  String get matchPickTeamsHelp => 'Tap a team below to choose who played.';
 
   @override
-  String get matchBench => 'Not playing';
+  String get matchTapToSelectPlayers => 'Tap to add players';
 
   @override
   String get matchScoreTitle => 'Final score';
@@ -405,12 +443,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String matchScoreTeam(String team) {
     return '$team score';
   }
-
-  @override
-  String get matchSwapSides => 'Swap sides';
-
-  @override
-  String get matchClearTeams => 'Clear teams';
 
   @override
   String get matchPreviewTitle => 'What this is worth';
@@ -550,4 +582,21 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get profileNotEnoughMatches =>
       'Play a couple more matches to see your trend.';
+
+  @override
+  String profileGreeting(String name) {
+    return 'Hello, $name';
+  }
+
+  @override
+  String get settingsThemeTitle => 'Theme';
+
+  @override
+  String get themeOptionSystem => 'System';
+
+  @override
+  String get themeOptionLight => 'Light';
+
+  @override
+  String get themeOptionDark => 'Dark';
 }

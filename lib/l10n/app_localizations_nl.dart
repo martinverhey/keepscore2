@@ -33,6 +33,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get commonCopy => 'Kopiëren';
 
   @override
+  String get commonDone => 'Klaar';
+
+  @override
   String get errorGeneric => 'Er is iets misgegaan. Probeer het opnieuw.';
 
   @override
@@ -186,11 +189,36 @@ class AppLocalizationsNl extends AppLocalizations {
   String get competitionCodeHelp => 'Iedereen met deze code kan meedoen.';
 
   @override
+  String get competitionQrInvite => 'Scan om direct mee te doen';
+
+  @override
+  String get competitionQrHelp =>
+      'Richt een camera op deze code — typen hoeft niet.';
+
+  @override
+  String get competitionInviteTitle => 'Spelers uitnodigen';
+
+  @override
+  String get competitionInviteAction => 'Uitnodigen';
+
+  @override
+  String get competitionUseQrInstead => 'Gebruik liever een QR-code';
+
+  @override
   String get competitionNotFound =>
       'Deze competitie bestaat niet meer, of je zit er niet meer in.';
 
   @override
   String get competitionSettings => 'Instellingen';
+
+  @override
+  String get competitionMenuSectionCompetition => 'Competitie';
+
+  @override
+  String get competitionMenuSectionUser => 'Gebruiker';
+
+  @override
+  String get competitionMenuSectionSystem => 'Systeem';
 
   @override
   String get competitionSettingsTitle => 'Competitie-instellingen';
@@ -316,6 +344,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get joinAlreadyMember => 'Je zit al in deze competitie.';
 
   @override
+  String get joinNewPlayerNameTitle => 'Wat is je naam?';
+
+  @override
   String get leaderboardTitle => 'Klassement';
 
   @override
@@ -341,18 +372,23 @@ class AppLocalizationsNl extends AppLocalizations {
   String get leaderboardUnplayed => 'Nog niet gespeeld';
 
   @override
+  String get leaderboardPlayersHint =>
+      'Voeg de mensen toe waar je tegen gaat spelen.';
+
+  @override
+  String get leaderboardPlayersHintAction => 'Naar Spelers';
+
+  @override
+  String get leaderboardMatchesHint =>
+      'Voer een wedstrijd in om het klassement te vullen.';
+
+  @override
+  String get leaderboardMatchesHintAction => 'Naar Wedstrijden';
+
+  @override
   String seasonQuarterLabel(int quarter, String year) {
     return 'K$quarter $year';
   }
-
-  @override
-  String get leaderboardRank => 'Positie';
-
-  @override
-  String get leaderboardPlayer => 'Speler';
-
-  @override
-  String get leaderboardRating => 'Rating';
 
   @override
   String leaderboardRecord(int wins, int losses, int draws) {
@@ -363,16 +399,19 @@ class AppLocalizationsNl extends AppLocalizations {
   String get matchesTitle => 'Wedstrijden';
 
   @override
-  String get matchesEmpty => 'Nog geen wedstrijden. Leg je eerste vast.';
+  String get matchesEmpty => 'Nog geen wedstrijden. Voer je eerste in.';
+
+  @override
+  String get matchDayToday => 'Vandaag';
+
+  @override
+  String get matchDayYesterday => 'Gisteren';
 
   @override
   String get matchNew => 'Nieuwe wedstrijd';
 
   @override
-  String get matchAddFab => '+ Wedstrijd toevoegen';
-
-  @override
-  String get matchNewTitle => 'Wedstrijd vastleggen';
+  String get matchNewTitle => 'Wedstrijd invoeren';
 
   @override
   String get matchTeamA => 'Team A';
@@ -391,14 +430,14 @@ class AppLocalizationsNl extends AppLocalizations {
       'Deze wedstrijd verwijderen? De ratings van het seizoen worden opnieuw berekend.';
 
   @override
-  String get matchPickTeamsTitle => 'Wie hebben er gespeeld?';
+  String get matchPickTeamsTitle => 'Kies spelers';
 
   @override
   String get matchPickTeamsHelp =>
-      'Tik op A of B om iemand aan die kant te zetten. Tik nogmaals om diegene eraf te halen.';
+      'Tik op een team om te kiezen wie er gespeeld hebben.';
 
   @override
-  String get matchBench => 'Speelt niet mee';
+  String get matchTapToSelectPlayers => 'Tik om spelers toe te voegen';
 
   @override
   String get matchScoreTitle => 'Eindstand';
@@ -407,12 +446,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String matchScoreTeam(String team) {
     return 'Score $team';
   }
-
-  @override
-  String get matchSwapSides => 'Kanten wisselen';
-
-  @override
-  String get matchClearTeams => 'Teams wissen';
 
   @override
   String get matchPreviewTitle => 'Wat dit oplevert';
@@ -553,4 +586,21 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get profileNotEnoughMatches =>
       'Speel nog een paar wedstrijden om je trend te zien.';
+
+  @override
+  String profileGreeting(String name) {
+    return 'Hallo, $name';
+  }
+
+  @override
+  String get settingsThemeTitle => 'Thema';
+
+  @override
+  String get themeOptionSystem => 'Systeem';
+
+  @override
+  String get themeOptionLight => 'Licht';
+
+  @override
+  String get themeOptionDark => 'Donker';
 }

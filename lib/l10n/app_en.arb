@@ -10,6 +10,7 @@
   "commonLoading": "Loading…",
   "commonBack": "Back",
   "commonCopy": "Copy",
+  "commonDone": "Done",
 
   "errorGeneric": "Something went wrong. Please try again.",
   "errorNetwork": "No connection. Check your internet and try again.",
@@ -67,9 +68,17 @@
   },
   "competitionGuestCannotCreate": "Guests can look around, but creating a competition needs an account.",
   "competitionCodeHelp": "Anyone with this code can join.",
+  "competitionQrInvite": "Scan to join instantly",
+  "competitionQrHelp": "Point a camera at this code — no typing required.",
+  "competitionInviteTitle": "Invite players",
+  "competitionInviteAction": "Invite",
+  "competitionUseQrInstead": "Use QR code instead",
   "competitionNotFound": "This competition is gone, or you're no longer in it.",
 
   "competitionSettings": "Settings",
+  "competitionMenuSectionCompetition": "Competition",
+  "competitionMenuSectionUser": "User",
+  "competitionMenuSectionSystem": "System",
   "competitionSettingsTitle": "Competition settings",
   "competitionSettingsSave": "Save changes",
   "competitionSettingsSaved": "Changes saved.",
@@ -119,6 +128,7 @@
   "joinAsNewPlayer": "Join as a new player",
   "joinConfirm": "Join",
   "joinAlreadyMember": "You're already in this competition.",
+  "joinNewPlayerNameTitle": "What's your name?",
 
   "leaderboardTitle": "Leaderboard",
   "leaderboardEmpty": "No matches played this season yet.",
@@ -130,6 +140,10 @@
   },
   "leaderboardPickSeason": "Choose a season",
   "leaderboardUnplayed": "Not played yet",
+  "leaderboardPlayersHint": "Add the people you'll be playing against.",
+  "leaderboardPlayersHintAction": "Go to Players",
+  "leaderboardMatchesHint": "Enter a match to start filling in the leaderboard.",
+  "leaderboardMatchesHintAction": "Go to Matches",
   "seasonQuarterLabel": "Q{quarter} {year}",
   "@seasonQuarterLabel": {
     "placeholders": {
@@ -137,9 +151,6 @@
       "year": { "type": "String" }
     }
   },
-  "leaderboardRank": "Rank",
-  "leaderboardPlayer": "Player",
-  "leaderboardRating": "Rating",
   "leaderboardRecord": "{wins}W · {losses}L · {draws}D",
   "@leaderboardRecord": {
     "placeholders": {
@@ -150,25 +161,24 @@
   },
 
   "matchesTitle": "Matches",
-  "matchesEmpty": "No matches yet. Log your first one.",
+  "matchesEmpty": "No matches yet. Enter your first one.",
+  "matchDayToday": "Today",
+  "matchDayYesterday": "Yesterday",
   "matchNew": "New match",
-  "matchAddFab": "+ Add Match",
-  "matchNewTitle": "Log a match",
+  "matchNewTitle": "Enter match",
   "matchTeamA": "Team A",
   "matchTeamB": "Team B",
   "matchScore": "Score",
   "matchSubmit": "Save match",
   "matchDeleteConfirm": "Delete this match? Ratings for the season will be recalculated.",
-  "matchPickTeamsTitle": "Who played?",
-  "matchPickTeamsHelp": "Tap A or B to put someone on that side. Tap again to take them off.",
-  "matchBench": "Not playing",
+  "matchPickTeamsTitle": "Choose players",
+  "matchPickTeamsHelp": "Tap a team below to choose who played.",
+  "matchTapToSelectPlayers": "Tap to add players",
   "matchScoreTitle": "Final score",
   "matchScoreTeam": "{team} score",
   "@matchScoreTeam": {
     "placeholders": { "team": { "type": "String" } }
   },
-  "matchSwapSides": "Swap sides",
-  "matchClearTeams": "Clear teams",
   "matchPreviewTitle": "What this is worth",
   "matchPreviewCaveat": "An estimate. The final numbers are calculated when the match is saved.",
   "matchTeamRating": "Team rating {rating}",
@@ -226,5 +236,14 @@
     "placeholders": { "percent": { "type": "int" } }
   },
   "profileTrendTitle": "Recent form",
-  "profileNotEnoughMatches": "Play a couple more matches to see your trend."
+  "profileNotEnoughMatches": "Play a couple more matches to see your trend.",
+  "profileGreeting": "Hello, {name}",
+  "@profileGreeting": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "settingsThemeTitle": "Theme",
+  "themeOptionSystem": "System",
+  "themeOptionLight": "Light",
+  "themeOptionDark": "Dark"
 }
