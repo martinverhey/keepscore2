@@ -37,7 +37,9 @@ void main() {
 
       expect(find.byType(Scaffold), findsOneWidget);
       expect(find.byType(CupertinoPageScaffold), findsNothing);
-      expect(find.text('Leaderboard'), findsOneWidget);
+      expect(find.byType(SliverAppBar), findsOneWidget);
+      expect(find.text('Leaderboard'), findsWidgets);
+      expect(find.text('body'), findsOneWidget);
     });
 
     testWidgets('renders a CupertinoPageScaffold on iOS', (tester) async {
@@ -48,7 +50,28 @@ void main() {
       );
 
       expect(find.byType(CupertinoPageScaffold), findsOneWidget);
-      expect(find.text('Leaderboard'), findsOneWidget);
+      expect(find.byType(CupertinoSliverNavigationBar), findsOneWidget);
+      expect(find.text('Leaderboard'), findsWidgets);
+      expect(find.text('body'), findsOneWidget);
+    });
+
+    testWidgets('scrolls a long body under a collapsing title', (tester) async {
+      AppPlatform.debugOverrideCupertino = false;
+      await pumpAdaptive(
+        tester,
+        const AdaptiveScaffold(
+          title: 'Leaderboard',
+          body: SizedBox(height: 4000, child: Text('body')),
+        ),
+      );
+
+      final expanded = tester.getSize(find.byType(AppBar)).height;
+
+      await tester.drag(find.byType(CustomScrollView), const Offset(0, -300));
+      await tester.pumpAndSettle();
+
+      expect(tester.getSize(find.byType(AppBar)).height, lessThan(expanded));
+      expect(find.text('Leaderboard'), findsWidgets);
     });
   });
 

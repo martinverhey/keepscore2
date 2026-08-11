@@ -21,6 +21,7 @@ class AdaptiveTextField extends StatelessWidget {
     this.enabled = true,
     this.onChanged,
     this.onSubmitted,
+    this.accentColor,
   });
 
   final String label;
@@ -36,10 +37,18 @@ class AdaptiveTextField extends StatelessWidget {
   final bool enabled;
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
+  final Color? accentColor;
 
   @override
   Widget build(BuildContext context) {
     if (!AppPlatform.useCupertino) {
+      final accentBorder = accentColor == null
+          ? null
+          : OutlineInputBorder(
+              borderRadius: AppRadius.card,
+              borderSide: BorderSide(color: accentColor!.withValues(alpha: 0.4)),
+            );
+
       return TextField(
         controller: controller,
         keyboardType: keyboardType,
@@ -56,6 +65,19 @@ class AdaptiveTextField extends StatelessWidget {
           hintText: hintText,
           errorText: errorText,
           counterText: '',
+          filled: accentColor != null,
+          fillColor: accentColor?.withValues(alpha: 0.08),
+          labelStyle: accentColor == null
+              ? null
+              : TextStyle(color: accentColor),
+          border: accentBorder,
+          enabledBorder: accentBorder,
+          focusedBorder: accentColor == null
+              ? null
+              : OutlineInputBorder(
+                  borderRadius: AppRadius.card,
+                  borderSide: BorderSide(color: accentColor!, width: 2),
+                ),
         ),
       );
     }
@@ -70,7 +92,7 @@ class AdaptiveTextField extends StatelessWidget {
             style: CupertinoTheme.of(context)
                 .textTheme
                 .tabLabelTextStyle
-                .copyWith(fontSize: 13),
+                .copyWith(fontSize: 13, color: accentColor),
           ),
         ),
         CupertinoTextField(
@@ -87,11 +109,14 @@ class AdaptiveTextField extends StatelessWidget {
           onSubmitted: onSubmitted,
           padding: const EdgeInsets.all(AppSpacing.md - 2),
           decoration: BoxDecoration(
-            color: CupertinoColors.tertiarySystemFill.resolveFrom(context),
+            color: accentColor?.withValues(alpha: 0.08) ??
+                CupertinoColors.tertiarySystemFill.resolveFrom(context),
             borderRadius: AppRadius.card,
-            border: errorText == null
-                ? null
-                : Border.all(color: CupertinoColors.destructiveRed),
+            border: errorText != null
+                ? Border.all(color: CupertinoColors.destructiveRed)
+                : accentColor == null
+                    ? null
+                    : Border.all(color: accentColor!.withValues(alpha: 0.4)),
           ),
         ),
         if (errorText != null)

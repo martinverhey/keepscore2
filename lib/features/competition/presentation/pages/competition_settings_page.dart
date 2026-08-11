@@ -77,7 +77,7 @@ class _CompetitionSettingsPageState extends State<CompetitionSettingsPage> {
                 retryLabel: l10n.commonRetry,
                 onRetry: cubit.load,
               ),
-            _ => SingleChildScrollView(
+            _ => Padding(
                 padding: const EdgeInsets.all(AppSpacing.lg),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,

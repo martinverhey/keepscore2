@@ -24,8 +24,6 @@ Future<List<Color>> resolvedUnder(WidgetTester tester, Brightness b) async {
     return const SizedBox();
   });
 
-  // Keyed per brightness: without it the second pump reuses the element tree
-  // and the probe reports the previous theme's colours.
   final key = ValueKey('$b-${AppPlatform.useCupertino}');
   await tester.pumpWidget(
     AppPlatform.useCupertino
@@ -57,9 +55,6 @@ void main() {
     }
   });
 
-  // The point of the swap. A saturated mid-tone sits near 4:1 on a dark
-  // surface whatever its hue, which is what the orange accent did before it
-  // had a dark variant.
   test('both palettes clear 4.5:1 against the surface they are drawn on', () {
     for (final brightness in Brightness.values) {
       final surface = AppTheme.material(brightness).colorScheme.surface;

@@ -41,7 +41,7 @@ class _CreateCompetitionPageState extends State<CreateCompetitionPage> {
 
         return AdaptiveScaffold(
           title: l10n.competitionsCreate,
-          body: SingleChildScrollView(
+          body: Padding(
             padding: const EdgeInsets.all(AppSpacing.lg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -51,6 +51,7 @@ class _CreateCompetitionPageState extends State<CreateCompetitionPage> {
                   controller: _nameController,
                   autofocus: true,
                   enabled: !state.busy,
+                  maxLength: 60,
                   textInputAction: TextInputAction.done,
                   errorText: state.name.isEmpty || state.nameIsValid
                       ? null

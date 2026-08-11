@@ -25,7 +25,6 @@ class UpgradeAccountPage extends StatelessWidget {
       child: BlocBuilder<SignInCubit, SignInState>(
         builder: (context, state) {
           return AdaptiveScaffold(
-            title: l10n.authUpgradeTitle,
             leading: AdaptiveButton(
               label: l10n.commonBack,
               kind: AdaptiveButtonKind.plain,
@@ -34,7 +33,7 @@ class UpgradeAccountPage extends StatelessWidget {
                   ? context.read<SignInCubit>().back
                   : context.pop,
             ),
-            body: SingleChildScrollView(
+            body: Padding(
               padding: const EdgeInsets.all(AppSpacing.lg),
               child: switch (state.step) {
                 SignInStep.code => const AuthCodeStep(),

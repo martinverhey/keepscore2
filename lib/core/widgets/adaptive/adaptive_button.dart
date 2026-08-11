@@ -2,10 +2,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../theme/app_tokens.dart';
+import 'adaptive_button_kind.dart';
 import 'adaptive_colors.dart';
 import 'app_platform.dart';
 
-enum AdaptiveButtonKind { filled, tinted, plain, destructive }
+export 'adaptive_button_kind.dart';
 
 class AdaptiveButton extends StatelessWidget {
   const AdaptiveButton({
@@ -59,28 +60,28 @@ class AdaptiveButton extends StatelessWidget {
 
     final button = switch (kind) {
       AdaptiveButtonKind.filled => FilledButton(
-          onPressed: callback,
-          child: _child(scheme.onPrimary),
-        ),
+        onPressed: callback,
+        child: _child(scheme.onPrimary),
+      ),
       AdaptiveButtonKind.tinted => FilledButton.tonal(
-          onPressed: callback,
-          style: FilledButton.styleFrom(minimumSize: size),
-          child: _child(scheme.onSecondaryContainer),
-        ),
+        onPressed: callback,
+        style: FilledButton.styleFrom(minimumSize: size),
+        child: _child(scheme.onSecondaryContainer),
+      ),
       AdaptiveButtonKind.plain => TextButton(
-          onPressed: callback,
-          style: TextButton.styleFrom(minimumSize: size),
-          child: _child(scheme.primary),
-        ),
+        onPressed: callback,
+        style: TextButton.styleFrom(minimumSize: size),
+        child: _child(scheme.primary),
+      ),
       AdaptiveButtonKind.destructive => FilledButton(
-          onPressed: callback,
-          style: FilledButton.styleFrom(
-            minimumSize: size,
-            backgroundColor: scheme.errorContainer,
-            foregroundColor: scheme.onErrorContainer,
-          ),
-          child: _child(scheme.onErrorContainer),
+        onPressed: callback,
+        style: FilledButton.styleFrom(
+          minimumSize: size,
+          backgroundColor: scheme.errorContainer,
+          foregroundColor: scheme.onErrorContainer,
         ),
+        child: _child(scheme.onErrorContainer),
+      ),
     };
 
     return expand ? SizedBox(width: double.infinity, child: button) : button;
@@ -91,28 +92,28 @@ class AdaptiveButton extends StatelessWidget {
     final accent = AdaptiveColors.accent(context);
     final button = switch (kind) {
       AdaptiveButtonKind.filled => CupertinoButton.filled(
-          onPressed: callback,
-          child: _child(CupertinoColors.white),
-        ),
+        onPressed: callback,
+        child: _child(CupertinoColors.white),
+      ),
       AdaptiveButtonKind.tinted => CupertinoButton(
-          color: accent.withValues(alpha: 0.15),
-          onPressed: callback,
-          child: DefaultTextStyle.merge(
-            style: TextStyle(color: accent),
-            child: _child(accent),
-          ),
-        ),
-      AdaptiveButtonKind.plain => CupertinoButton(
-          onPressed: callback,
+        color: accent.withValues(alpha: 0.15),
+        onPressed: callback,
+        child: DefaultTextStyle.merge(
+          style: TextStyle(color: accent),
           child: _child(accent),
         ),
+      ),
+      AdaptiveButtonKind.plain => CupertinoButton(
+        onPressed: callback,
+        child: _child(accent),
+      ),
       AdaptiveButtonKind.destructive => CupertinoButton(
-          onPressed: callback,
-          child: DefaultTextStyle.merge(
-            style: const TextStyle(color: CupertinoColors.destructiveRed),
-            child: _child(CupertinoColors.destructiveRed),
-          ),
+        onPressed: callback,
+        child: DefaultTextStyle.merge(
+          style: const TextStyle(color: CupertinoColors.destructiveRed),
+          child: _child(CupertinoColors.destructiveRed),
         ),
+      ),
     };
 
     return expand ? SizedBox(width: double.infinity, child: button) : button;

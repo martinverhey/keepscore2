@@ -17,7 +17,6 @@ class SignInPage extends StatelessWidget {
     return BlocBuilder<SignInCubit, SignInState>(
       builder: (context, state) {
         return AdaptiveScaffold(
-          title: l10n.appTitle,
           leading: state.step == SignInStep.chooser
               ? null
               : AdaptiveButton(
@@ -26,7 +25,7 @@ class SignInPage extends StatelessWidget {
                   expand: false,
                   onPressed: context.read<SignInCubit>().back,
                 ),
-          body: SingleChildScrollView(
+          body: Padding(
             padding: const EdgeInsets.all(AppSpacing.lg),
             child: switch (state.step) {
               SignInStep.chooser => const _ChooserStep(),
@@ -56,6 +55,7 @@ class _ChooserStep extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        const SizedBox(height: AppSpacing.xxl),
         AuthHeading(l10n.authSignInTitle, l10n.authSignInSubtitle),
 
         if (providers.apple) ...[
