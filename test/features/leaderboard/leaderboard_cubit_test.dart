@@ -6,7 +6,7 @@ import 'package:keepscore2/core/error/failure.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
 import 'package:keepscore2/features/leaderboard/domain/season.dart';
 import 'package:keepscore2/features/leaderboard/domain/season_window.dart';
-import 'package:keepscore2/features/leaderboard/domain/standing.dart';
+import 'package:keepscore2/features/leaderboard/domain/leaderboard.dart';
 import 'package:keepscore2/features/leaderboard/presentation/cubit/leaderboard_cubit.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -16,7 +16,7 @@ final _august = DateTime.utc(2026, 7, 31, 22);
 final _september = DateTime.utc(2026, 8, 31, 22);
 final _july = DateTime.utc(2026, 6, 30, 22);
 
-Standing _standing(String playerId, double rating, int rank) => Standing(
+Leaderboard _standing(String playerId, double rating, int rank) => Leaderboard(
   seasonId: 's-august',
   competitionId: 'c1',
   playerId: playerId,
@@ -43,7 +43,7 @@ void main() {
     when(() => repository.seasons('c1')).thenAnswer((_) async => stored);
   }
 
-  void stubStandings(String? seasonId, List<Standing> standings) {
+  void stubStandings(String? seasonId, List<Leaderboard> standings) {
     when(
       () => repository.standings(competitionId: 'c1', seasonId: seasonId),
     ).thenAnswer((_) async => standings);

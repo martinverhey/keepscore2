@@ -2,10 +2,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/data/realtime.dart';
 import '../../../core/error/failure.dart';
+import '../domain/leaderboard.dart';
 import '../domain/leaderboard_repository.dart';
 import '../domain/season.dart';
 import '../domain/season_window.dart';
-import '../domain/standing.dart';
 
 class SupabaseLeaderboardRepository implements LeaderboardRepository {
   SupabaseLeaderboardRepository(this._client);
@@ -40,7 +40,7 @@ class SupabaseLeaderboardRepository implements LeaderboardRepository {
   });
 
   @override
-  Future<List<Standing>> standings({
+  Future<List<Leaderboard>> standings({
     required String competitionId,
     required String? seasonId,
   }) => guard(() async {
@@ -51,9 +51,9 @@ class SupabaseLeaderboardRepository implements LeaderboardRepository {
         .select()
         .eq('competition_id', competitionId)
         .eq('season_id', seasonId)
-        .order('rank');
+        .order('rank', ascending: true);
 
-    return rows.map((row) => Standing.fromMap(row)).toList(growable: false);
+    return rows.map((row) => Leaderboard.fromMap(row)).toList(growable: false);
   });
 
   @override
@@ -61,8 +61,6 @@ class SupabaseLeaderboardRepository implements LeaderboardRepository {
     required String competitionId,
     required String? seasonId,
   }) {
-    // Before the first match of a season there is no season id to filter on,
-    // and the insert that creates one is exactly the event worth waiting for.
     return realtimeTicks(
       _client,
       topic: 'leaderboard:$competitionId:${seasonId ?? 'pending'}',

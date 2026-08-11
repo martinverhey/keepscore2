@@ -1,8 +1,8 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/failure.dart';
+import '../../domain/leaderboard.dart';
 import '../../domain/season.dart';
-import '../../domain/standing.dart';
 
 enum LeaderboardStatus { loading, ready, failed }
 
@@ -18,14 +18,11 @@ class LeaderboardState extends Equatable {
 
   final LeaderboardStatus status;
 
-  /// Newest first. The window the competition is currently playing for is
-  /// always the first entry, whether or not it has a row in `seasons` yet.
   final List<Season> seasons;
 
   final DateTime? selectedStartsAt;
-  final List<Standing> standings;
+  final List<Leaderboard> standings;
 
-  /// A season switch is in flight.
   final bool busy;
 
   final Failure? failure;
@@ -51,7 +48,7 @@ class LeaderboardState extends Equatable {
     LeaderboardStatus? status,
     List<Season>? seasons,
     DateTime? selectedStartsAt,
-    List<Standing>? standings,
+    List<Leaderboard>? standings,
     bool? busy,
     Failure? failure,
     bool clearFailure = false,

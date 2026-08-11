@@ -1,8 +1,8 @@
 import 'package:bloc/bloc.dart';
 
 import '../../../../core/error/failure.dart';
+import '../../../leaderboard/domain/leaderboard.dart';
 import '../../../leaderboard/domain/leaderboard_repository.dart';
-import '../../../leaderboard/domain/standing.dart';
 import '../../domain/profile_repository.dart';
 import 'profile_state.dart';
 
@@ -46,7 +46,7 @@ class ProfileCubit extends Cubit<ProfileState> {
       );
       if (isClosed) return;
 
-      Standing? mine;
+      Leaderboard? mine;
       for (final standing in standings) {
         if (standing.playerId == playerId) {
           mine = standing;
