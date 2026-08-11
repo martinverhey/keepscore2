@@ -26,6 +26,7 @@ import '../../features/player/presentation/cubit/players_cubit.dart';
 import '../../features/profile/data/supabase_profile_repository.dart';
 import '../../features/profile/domain/profile_repository.dart';
 import '../../features/profile/presentation/cubit/profile_cubit.dart';
+import '../../features/settings/presentation/cubit/theme_cubit.dart';
 
 final getIt = GetIt.instance;
 
@@ -91,8 +92,6 @@ Future<void> configureDependencies() async {
         competitionId,
       ),
     )
-    // Two ids: the match to show, and the competition it belongs to — the
-    // page needs the owner to know whether this user may delete it.
     ..registerFactoryParam<MatchDetailCubit, String, String>(
       (matchId, competitionId) => MatchDetailCubit(
         getIt<MatchRepository>(),
@@ -104,8 +103,6 @@ Future<void> configureDependencies() async {
     ..registerLazySingleton<ProfileRepository>(
       () => SupabaseProfileRepository(getIt<SupabaseClient>()),
     )
-    // Two ids: the competition the standings/history are scoped to, and the
-    // player whose stats are being shown.
     ..registerFactoryParam<ProfileCubit, String, String>(
       (competitionId, playerId) => ProfileCubit(
         getIt<LeaderboardRepository>(),
@@ -113,5 +110,6 @@ Future<void> configureDependencies() async {
         competitionId,
         playerId,
       ),
-    );
+    )
+    ..registerLazySingleton<ThemeCubit>(() => ThemeCubit());
 }
