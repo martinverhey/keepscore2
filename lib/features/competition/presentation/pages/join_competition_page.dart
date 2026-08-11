@@ -7,6 +7,7 @@ import '../../../../core/error/failure_messages.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../player/presentation/widgets/player_name_sheet.dart';
 import '../cubit/join_competition_cubit.dart';
 
 class JoinCompetitionPage extends StatelessWidget {
@@ -36,7 +37,7 @@ class JoinCompetitionPage extends StatelessWidget {
                   expand: false,
                   onPressed: cubit.back,
                 ),
-          body: SingleChildScrollView(
+          body: Padding(
             padding: const EdgeInsets.all(AppSpacing.lg),
             child: switch (state.step) {
               JoinStep.code => const _CodeStep(),
@@ -176,7 +177,9 @@ class _ConfirmStep extends StatelessWidget {
                 ? l10n.joinAsNewPlayer
                 : l10n.joinConfirm,
             busy: state.busy,
-            onPressed: state.canJoin ? cubit.join : null,
+            onPressed: state.canJoin
+                ? () => _join(context, cubit, state)
+                : null,
           ),
         ],
 
@@ -190,6 +193,27 @@ class _ConfirmStep extends StatelessWidget {
           ),
       ],
     );
+  }
+
+  Future<void> _join(
+    BuildContext context,
+    JoinCompetitionCubit cubit,
+    JoinCompetitionState state,
+  ) async {
+    if (state.selectedClaimId != null) {
+      await cubit.join();
+      return;
+    }
+
+    final l10n = AppLocalizations.of(context);
+    final name = await showPlayerNameSheet(
+      context,
+      title: l10n.joinNewPlayerNameTitle,
+      submitLabel: l10n.joinConfirm,
+    );
+    if (name == null) return;
+    if (!context.mounted) return;
+    await cubit.join(displayName: name);
   }
 }
 

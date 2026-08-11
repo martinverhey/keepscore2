@@ -134,6 +134,7 @@ void main() {
         verify(() => repository.join(
               joinCode: 'hdhs39',
               claimPlayerId: 'p-fleur',
+              displayName: null,
             )).called(1);
         expect(cubit.state.joined, _joined);
       },
@@ -151,8 +152,28 @@ void main() {
       },
       verify: (cubit) {
         expect(cubit.state.selectedClaimId, isNull);
-        verify(() => repository.join(joinCode: 'hdhs39', claimPlayerId: null))
-            .called(1);
+        verify(() => repository.join(
+              joinCode: 'hdhs39',
+              claimPlayerId: null,
+              displayName: null,
+            )).called(1);
+      },
+    );
+
+    blocTest<JoinCompetitionCubit, JoinCompetitionState>(
+      'joining as a new player passes the chosen display name through',
+      build: () => JoinCompetitionCubit(repository),
+      act: (cubit) async {
+        cubit.codeChanged('hdhs39');
+        await cubit.lookUp();
+        await cubit.join(displayName: 'Bram');
+      },
+      verify: (cubit) {
+        verify(() => repository.join(
+              joinCode: 'hdhs39',
+              claimPlayerId: null,
+              displayName: 'Bram',
+            )).called(1);
       },
     );
 

@@ -46,13 +46,14 @@ class JoinCompetitionCubit extends Cubit<JoinCompetitionState> {
     }
   }
 
-  Future<void> join() async {
+  Future<void> join({String? displayName}) async {
     if (!state.canJoin) return;
     emit(state.copyWith(busy: true, clearFailure: true));
     try {
       final player = await _repository.join(
         joinCode: state.code,
         claimPlayerId: state.selectedClaimId,
+        displayName: displayName,
       );
       if (isClosed) return;
       emit(state.copyWith(busy: false, joined: player));
