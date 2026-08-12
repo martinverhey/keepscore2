@@ -29,7 +29,27 @@ class Leaderboard extends Equatable {
     rank: (map['rank'] as num?)?.toInt() ?? 0,
   );
 
-  final String seasonId;
+  factory Leaderboard.forRosterPlayer(
+    Map<String, dynamic> map, {
+    required String competitionId,
+  }) {
+    final competition = map['competitions'] as Map<String, dynamic>;
+    return Leaderboard(
+      seasonId: null,
+      competitionId: competitionId,
+      playerId: map['id'] as String,
+      displayName: map['display_name'] as String,
+      isClaimed: map['user_id'] != null,
+      rating: _toDouble(competition['starting_rating']),
+      played: 0,
+      wins: 0,
+      losses: 0,
+      draws: 0,
+      rank: 1,
+    );
+  }
+
+  final String? seasonId;
   final String competitionId;
   final String playerId;
   final String displayName;

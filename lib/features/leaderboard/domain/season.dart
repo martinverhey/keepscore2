@@ -13,8 +13,9 @@ class Season extends Equatable {
   final DateTime startsAt;
   final DateTime endsAt;
 
-  DateTime get midpoint =>
-      startsAt.add(Duration(microseconds: endsAt.difference(startsAt).inMicroseconds ~/ 2));
+  DateTime get midpoint => startsAt.add(
+    Duration(microseconds: endsAt.difference(startsAt).inMicroseconds ~/ 2),
+  );
 
   bool get hasStarted => id != null;
 
