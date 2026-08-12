@@ -13,7 +13,7 @@ import '../../../competition/domain/competition.dart';
 import '../../../profile/presentation/widgets/game_type_label.dart';
 import '../../domain/season.dart';
 import '../cubit/leaderboard_cubit.dart';
-import 'game_type_filter_bar.dart';
+import 'game_type_filter_segmented.dart';
 import 'leaderboard_row.dart';
 import 'season_label.dart';
 
@@ -59,7 +59,7 @@ class LeaderboardView extends StatelessWidget {
             if (state.season != null) _seasonBar(context, state.season!),
             const SizedBox(height: AppSpacing.md),
 
-            GameTypeFilterBar(
+            GameTypeFilterSegmented(
               selected: state.selectedGameType,
               onSelected: cubit.selectGameTypeFilter,
             ),
