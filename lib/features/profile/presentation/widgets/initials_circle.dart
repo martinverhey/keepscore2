@@ -14,7 +14,9 @@ class InitialsCircle extends StatelessWidget {
         if (word.isNotEmpty) word[0].toUpperCase(),
     ];
     if (letters.isEmpty) return '?';
-    return letters.length == 1 ? letters.first : '${letters.first}${letters.last}';
+    return letters.length == 1
+        ? letters.first
+        : '${letters.first}${letters.last}';
   }
 
   @override

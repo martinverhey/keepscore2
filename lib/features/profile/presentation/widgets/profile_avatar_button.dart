@@ -2,9 +2,9 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../app/dependency_injection/injector.dart';
+import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
-import '../../../../l10n/app_localizations.dart';
 import '../cubit/profile_cubit.dart';
 import 'initials_circle.dart';
 import 'profile_sheet.dart';
@@ -25,16 +25,13 @@ class ProfileAvatarButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-
     return GestureDetector(
       onTap: () => showAdaptiveSheet<void>(
         context,
         builder: (_) => BlocProvider(
-          create: (_) => getIt<ProfileCubit>(
-            param1: competitionId,
-            param2: playerId,
-          )..load(),
+          create: (_) =>
+              getIt<ProfileCubit>(param1: competitionId, param2: playerId)
+                ..load(),
           child: ProfileSheet(displayName: displayName),
         ),
       ),
@@ -46,7 +43,7 @@ class ProfileAvatarButton extends StatelessWidget {
           const SizedBox(width: AppSpacing.md),
           Flexible(
             child: Text(
-              l10n.profileGreeting(displayName),
+              context.l10n.profileGreeting(displayName),
               style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

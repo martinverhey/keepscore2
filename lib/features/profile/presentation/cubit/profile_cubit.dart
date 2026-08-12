@@ -24,9 +24,7 @@ class ProfileCubit extends Cubit<ProfileState> {
   Future<void> load() async {
     emit(const ProfileState());
     try {
-      final season = await _leaderboardRepository.currentSeason(
-        competitionId,
-      );
+      final season = await _leaderboardRepository.currentSeason(competitionId);
       if (isClosed) return;
 
       if (season.id == null) {

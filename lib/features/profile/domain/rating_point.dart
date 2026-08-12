@@ -25,7 +25,7 @@ class RatingPoint extends Equatable {
 }
 
 double _toDouble(Object? value) => switch (value) {
-      final num n => n.toDouble(),
-      final String s => double.tryParse(s) ?? 0,
-      _ => 0,
-    };
+  final num n => n.toDouble(),
+  final String s => double.tryParse(s) ?? 0,
+  _ => 0,
+};

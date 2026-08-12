@@ -14,20 +14,19 @@ class SupabaseProfileRepository implements ProfileRepository {
     required String seasonId,
     required String playerId,
     int limit = 10,
-  }) =>
-      guard(() async {
-        final rows = await _client
-            .from('match_players')
-            .select('rating_after, rating_delta, matches!inner(played_at)')
-            .eq('player_id', playerId)
-            .eq('matches.season_id', seasonId)
-            .order('played_at', referencedTable: 'matches', ascending: false)
-            .limit(limit);
+  }) => guard(() async {
+    final rows = await _client
+        .from('match_players')
+        .select('rating_after, rating_delta, matches!inner(played_at)')
+        .eq('player_id', playerId)
+        .eq('matches.season_id', seasonId)
+        .order('played_at', referencedTable: 'matches', ascending: false)
+        .limit(limit);
 
-        return rows
-            .map((row) => RatingPoint.fromMap(row))
-            .toList(growable: false)
-            .reversed
-            .toList(growable: false);
-      });
+    return rows
+        .map((row) => RatingPoint.fromMap(row))
+        .toList(growable: false)
+        .reversed
+        .toList(growable: false);
+  });
 }

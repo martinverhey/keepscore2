@@ -37,7 +37,9 @@ class _RatingTrendPainter extends CustomPainter {
     final ratings = [for (final point in points) point.ratingAfter];
     final minRating = ratings.reduce(min);
     final maxRating = ratings.reduce(max);
-    final range = (maxRating - minRating).abs() < 1 ? 1.0 : maxRating - minRating;
+    final range = (maxRating - minRating).abs() < 1
+        ? 1.0
+        : maxRating - minRating;
     final step = size.width / (points.length - 1);
 
     Offset offsetAt(int index) {
