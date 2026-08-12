@@ -5,6 +5,7 @@ import '../../../../app/dependency_injection/injector.dart';
 import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
+import '../../../competition/domain/competition.dart';
 import '../cubit/profile_cubit.dart';
 import 'initials_circle.dart';
 import 'profile_sheet.dart';
@@ -15,11 +16,13 @@ class ProfileAvatarButton extends StatelessWidget {
     required this.competitionId,
     required this.playerId,
     required this.displayName,
+    required this.seasonLength,
   });
 
   final String competitionId;
   final String playerId;
   final String displayName;
+  final SeasonLength seasonLength;
 
   static const double _avatarSize = 64;
 
@@ -31,8 +34,11 @@ class ProfileAvatarButton extends StatelessWidget {
         builder: (_) => BlocProvider(
           create: (_) =>
               getIt<ProfileCubit>(param1: competitionId, param2: playerId)
-                ..load(),
-          child: ProfileSheet(displayName: displayName),
+                ..load(viewerPlayerId: playerId),
+          child: ProfileSheet(
+            displayName: displayName,
+            seasonLength: seasonLength,
+          ),
         ),
       ),
       child: Row(

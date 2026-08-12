@@ -3,6 +3,7 @@ import 'package:bloc/bloc.dart';
 import '../../../../core/data/realtime.dart';
 import '../../../../core/error/failure.dart';
 import '../../domain/leaderboard_repository.dart';
+import '../../domain/medal_tally.dart';
 import '../../domain/season.dart';
 import '../../domain/season_window.dart';
 import 'leaderboard_state.dart';
@@ -25,6 +26,7 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
       final results = await Future.wait<Object?>([
         _repository.currentSeason(competitionId),
         _repository.seasons(competitionId),
+        _repository.medalTallies(competitionId),
       ]);
       if (isClosed) return;
 
@@ -33,6 +35,10 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
         results[0] as SeasonWindow,
       );
       final selected = _pick(seasons, state.selectedStartsAt);
+      final medals = {
+        for (final tally in results[2] as List<MedalTally>)
+          tally.playerId: tally,
+      };
 
       final standings = await _repository.standings(
         competitionId: competitionId,
@@ -46,6 +52,7 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
           seasons: seasons,
           selectedStartsAt: selected?.startsAt,
           standings: standings,
+          medals: medals,
         ),
       );
       _watch(selected?.id);
@@ -57,6 +64,7 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
           seasons: silent ? state.seasons : const [],
           selectedStartsAt: state.selectedStartsAt,
           standings: silent ? state.standings : const [],
+          medals: silent ? state.medals : const {},
           failure: failure,
         ),
       );

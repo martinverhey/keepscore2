@@ -75,6 +75,7 @@ declare
   v_name      text;
   v_when      timestamptz;
   v_i         integer;
+  v_month_offset integer;
 begin
   -- Two real accounts. handle_new_user() fills in public.profiles.
   foreach v_name in array array['owner', 'friend'] loop
@@ -116,36 +117,40 @@ begin
     from public.players where competition_id = v_comp.id;
 
   -- A spread of shapes: 1v1s, a 2v2, a draw and a blowout, back-dated across
-  -- the month so the feed has something to show.
-  v_when := date_trunc('month', now()) + interval '2 days';
+  -- three months so season_history / player_medals / a streak that survives
+  -- a season boundary all have something to show, not just the current month.
+  for v_month_offset in -2..0 loop
+    v_when := date_trunc('month', now()) + (v_month_offset || ' months')::interval
+              + interval '2 days';
 
-  for v_i in 1..12 loop
-    if v_i % 4 = 0 then
-      -- 2v2
-      perform public.create_match(
-        v_comp.id,
-        array[v_players[1], v_players[2]],
-        array[v_players[3], v_players[4]],
-        21, 15 + (v_i % 5),
-        v_when
-      );
-    elsif v_i % 5 = 0 then
-      -- draw
-      perform public.create_match(
-        v_comp.id,
-        array[v_players[2]], array[v_players[5]],
-        11, 11, v_when
-      );
-    else
-      perform public.create_match(
-        v_comp.id,
-        array[v_players[1 + (v_i % 5)]],
-        array[v_players[1 + ((v_i + 2) % 5)]],
-        21, 21 - (1 + (v_i * 3) % 18),
-        v_when
-      );
-    end if;
-    v_when := v_when + interval '19 hours';
+    for v_i in 1..12 loop
+      if v_i % 4 = 0 then
+        -- 2v2
+        perform public.create_match(
+          v_comp.id,
+          array[v_players[1], v_players[2]],
+          array[v_players[3], v_players[4]],
+          21, 15 + (v_i % 5),
+          v_when
+        );
+      elsif v_i % 5 = 0 then
+        -- draw
+        perform public.create_match(
+          v_comp.id,
+          array[v_players[2]], array[v_players[5]],
+          11, 11, v_when
+        );
+      else
+        perform public.create_match(
+          v_comp.id,
+          array[v_players[1 + (v_i % 5)]],
+          array[v_players[1 + ((v_i + 2) % 5)]],
+          21, 21 - (1 + (v_i * 3) % 18),
+          v_when
+        );
+      end if;
+      v_when := v_when + interval '19 hours';
+    end loop;
   end loop;
 
   select id into v_season_id

@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keepscore2/features/competition/domain/competition.dart';
 import 'package:keepscore2/features/profile/presentation/widgets/profile_avatar_button.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 
@@ -16,6 +17,7 @@ void main() {
             competitionId: 'c1',
             playerId: 'p1',
             displayName: 'Bartholomew Alexandertonovich',
+            seasonLength: SeasonLength.monthly,
           ),
         ),
       );

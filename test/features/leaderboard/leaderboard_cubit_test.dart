@@ -7,6 +7,7 @@ import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.da
 import 'package:keepscore2/features/leaderboard/domain/season.dart';
 import 'package:keepscore2/features/leaderboard/domain/season_window.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard.dart';
+import 'package:keepscore2/features/leaderboard/domain/medal_tally.dart';
 import 'package:keepscore2/features/leaderboard/presentation/cubit/leaderboard_cubit.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -58,6 +59,9 @@ void main() {
         seasonId: any(named: 'seasonId'),
       ),
     ).thenAnswer((_) => ticks.stream);
+    when(
+      () => repository.medalTallies('c1'),
+    ).thenAnswer((_) async => const []);
   });
 
   tearDown(() => ticks.close());
@@ -84,6 +88,34 @@ void main() {
       expect(cubit.state.isShowingCurrentSeason, isTrue);
       expect(cubit.state.hasHistory, isTrue);
       expect(cubit.state.standings.first.playerId, 'p1');
+    },
+  );
+
+  blocTest<LeaderboardCubit, LeaderboardState>(
+    'loads medal tallies alongside standings and keeps them across a season switch',
+    setUp: () {
+      stubSeason(
+        stored: [
+          Season(id: 's-august', startsAt: _august, endsAt: _september),
+          Season(id: 's-july', startsAt: _july, endsAt: _august),
+        ],
+      );
+      stubStandings('s-august', [_standing('p1', 1040, 1)]);
+      stubStandings('s-july', [_standing('p2', 1100, 1)]);
+      when(() => repository.medalTallies('c1')).thenAnswer(
+        (_) async => const [
+          MedalTally(playerId: 'p1', gold: 2, silver: 0, bronze: 1),
+        ],
+      );
+    },
+    build: build,
+    act: (cubit) async {
+      await cubit.load();
+      await cubit.selectSeason(_july);
+    },
+    verify: (cubit) {
+      expect(cubit.state.medals['p1']?.gold, 2);
+      expect(cubit.state.medals['p1']?.bronze, 1);
     },
   );
 

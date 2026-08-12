@@ -227,6 +227,9 @@ void main() {
           seasonId: 's1',
         ),
       ).thenAnswer((_) => const Stream.empty());
+      when(
+        () => leaderboard.medalTallies(_competitionId),
+      ).thenAnswer((_) async => const []);
 
       final authBloc = AuthBloc(auth);
       addTearDown(authBloc.close);

@@ -230,6 +230,7 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
                 competitionId: widget.competitionId,
                 playerId: myPlayerId,
                 displayName: myDisplayName,
+                seasonLength: competition.seasonLength,
               ),
             ),
           const SizedBox(height: AppSpacing.lg),

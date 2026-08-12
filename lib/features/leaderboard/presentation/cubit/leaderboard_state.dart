@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/failure.dart';
 import '../../domain/leaderboard.dart';
+import '../../domain/medal_tally.dart';
 import '../../domain/season.dart';
 
 enum LeaderboardStatus { loading, ready, failed }
@@ -12,6 +13,7 @@ class LeaderboardState extends Equatable {
     this.seasons = const [],
     this.selectedStartsAt,
     this.standings = const [],
+    this.medals = const {},
     this.busy = false,
     this.failure,
   });
@@ -22,6 +24,7 @@ class LeaderboardState extends Equatable {
 
   final DateTime? selectedStartsAt;
   final List<Leaderboard> standings;
+  final Map<String, MedalTally> medals;
 
   final bool busy;
 
@@ -49,6 +52,7 @@ class LeaderboardState extends Equatable {
     List<Season>? seasons,
     DateTime? selectedStartsAt,
     List<Leaderboard>? standings,
+    Map<String, MedalTally>? medals,
     bool? busy,
     Failure? failure,
     bool clearFailure = false,
@@ -58,6 +62,7 @@ class LeaderboardState extends Equatable {
       seasons: seasons ?? this.seasons,
       selectedStartsAt: selectedStartsAt ?? this.selectedStartsAt,
       standings: standings ?? this.standings,
+      medals: medals ?? this.medals,
       busy: busy ?? this.busy,
       failure: clearFailure ? null : (failure ?? this.failure),
     );
@@ -69,6 +74,7 @@ class LeaderboardState extends Equatable {
     seasons,
     selectedStartsAt,
     standings,
+    medals,
     busy,
     failure,
   ];

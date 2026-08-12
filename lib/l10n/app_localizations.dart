@@ -476,6 +476,18 @@ abstract class AppLocalizations {
   /// **'Manage players'**
   String get playersManageTitle;
 
+  /// No description provided for @seasonHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Season history'**
+  String get seasonHistoryTitle;
+
+  /// No description provided for @seasonHistoryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No seasons have finished yet.'**
+  String get seasonHistoryEmpty;
+
   /// No description provided for @competitionSettingsSave.
   ///
   /// In en, this message translates to:
@@ -739,6 +751,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{wins}W · {losses}L · {draws}D'**
   String leaderboardRecord(int wins, int losses, int draws);
+
+  /// No description provided for @gameType1v1.
+  ///
+  /// In en, this message translates to:
+  /// **'1v1'**
+  String get gameType1v1;
+
+  /// No description provided for @gameType2v2.
+  ///
+  /// In en, this message translates to:
+  /// **'2v2'**
+  String get gameType2v2;
+
+  /// No description provided for @gameType3v3.
+  ///
+  /// In en, this message translates to:
+  /// **'3v3'**
+  String get gameType3v3;
+
+  /// No description provided for @gameType4v4.
+  ///
+  /// In en, this message translates to:
+  /// **'4v4'**
+  String get gameType4v4;
+
+  /// No description provided for @gameTypeMixed.
+  ///
+  /// In en, this message translates to:
+  /// **'Mixed'**
+  String get gameTypeMixed;
 
   /// No description provided for @matchesTitle.
   ///
@@ -1105,6 +1147,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hello, {name}'**
   String profileGreeting(String name);
+
+  /// No description provided for @profileTabOverview.
+  ///
+  /// In en, this message translates to:
+  /// **'Overview'**
+  String get profileTabOverview;
+
+  /// No description provided for @profileTabSeasonHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Season history'**
+  String get profileTabSeasonHistory;
+
+  /// No description provided for @profileMatchesPlayed.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 match played} other{{count} matches played}}'**
+  String profileMatchesPlayed(int count);
+
+  /// No description provided for @profileStreakWin.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 win in a row} other{{count} wins in a row}}'**
+  String profileStreakWin(int count);
+
+  /// No description provided for @profileStreakLoss.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 loss in a row} other{{count} losses in a row}}'**
+  String profileStreakLoss(int count);
+
+  /// No description provided for @profileHeadToHeadTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your record vs {name}'**
+  String profileHeadToHeadTitle(String name);
+
+  /// No description provided for @profileSeasonHistoryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No past seasons yet.'**
+  String get profileSeasonHistoryEmpty;
 
   /// No description provided for @settingsThemeTitle.
   ///

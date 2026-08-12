@@ -5,10 +5,13 @@ import '../../../../app/dependency_injection/injector.dart';
 import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
+import '../../../../core/widgets/medal_chip.dart';
 import '../../../../core/widgets/rating_delta.dart';
+import '../../../competition/domain/competition.dart';
 import '../../../profile/presentation/cubit/profile_cubit.dart';
 import '../../../profile/presentation/widgets/profile_sheet.dart';
 import '../../domain/leaderboard.dart';
+import '../../domain/medal_tally.dart';
 
 class LeaderboardRow extends StatelessWidget {
   const LeaderboardRow({
@@ -16,11 +19,17 @@ class LeaderboardRow extends StatelessWidget {
     required this.competitionId,
     required this.standing,
     required this.isMe,
+    required this.myPlayerId,
+    required this.seasonLength,
+    this.medals,
   });
 
   final String competitionId;
   final Leaderboard standing;
   final bool isMe;
+  final String? myPlayerId;
+  final SeasonLength seasonLength;
+  final MedalTally? medals;
 
   Color? get _rankColor => switch (standing.rank) {
     1 => AppColors.gold,
@@ -34,8 +43,11 @@ class LeaderboardRow extends StatelessWidget {
     builder: (_) => BlocProvider(
       create: (_) =>
           getIt<ProfileCubit>(param1: competitionId, param2: standing.playerId)
-            ..load(),
-      child: ProfileSheet(displayName: standing.displayName),
+            ..load(viewerPlayerId: myPlayerId),
+      child: ProfileSheet(
+        displayName: standing.displayName,
+        seasonLength: seasonLength,
+      ),
     ),
   );
 
@@ -81,13 +93,23 @@ class LeaderboardRow extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      standing.displayName,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      overflow: TextOverflow.ellipsis,
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            standing.displayName,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (medals != null && medals!.hasAny) ...[
+                          const SizedBox(width: AppSpacing.sm),
+                          ..._medalChips(medals!),
+                        ],
+                      ],
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -122,5 +144,21 @@ class LeaderboardRow extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  List<Widget> _medalChips(MedalTally medals) {
+    final chips = [
+      if (medals.gold > 0) MedalChip(color: AppColors.gold, count: medals.gold),
+      if (medals.silver > 0)
+        MedalChip(color: AppColors.silver, count: medals.silver),
+      if (medals.bronze > 0)
+        MedalChip(color: AppColors.bronze, count: medals.bronze),
+    ];
+    return [
+      for (var i = 0; i < chips.length; i++) ...[
+        if (i > 0) const SizedBox(width: AppSpacing.xs),
+        chips[i],
+      ],
+    ];
   }
 }

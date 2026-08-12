@@ -8,4 +8,7 @@ enum AdaptiveGlyph {
   invite,
   star,
   add,
+  medal,
+  fire,
+  ice,
 }

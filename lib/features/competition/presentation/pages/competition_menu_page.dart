@@ -74,11 +74,15 @@ class _CompetitionMenuPageState extends State<CompetitionMenuPage> {
                         onPressed: () => setState(() => _showQr = true),
                       ),
                     ),
-                  if (session.canWrite) ...[
-                    const SizedBox(height: AppSpacing.lg),
-                    SectionLabel(
-                      context.l10n.competitionMenuSectionCompetition,
+                  const SizedBox(height: AppSpacing.lg),
+                  SectionLabel(context.l10n.competitionMenuSectionCompetition),
+                  NavRow(
+                    label: context.l10n.seasonHistoryTitle,
+                    onTap: () => context.push(
+                      Routes.seasonHistory(widget.competitionId),
                     ),
+                  ),
+                  if (session.canWrite) ...[
                     if (isOwner)
                       NavRow(
                         label: context.l10n.competitionSettingsTitle,

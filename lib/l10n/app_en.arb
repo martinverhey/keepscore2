@@ -81,6 +81,8 @@
   "competitionMenuSectionSystem": "System",
   "competitionSettingsTitle": "Competition settings",
   "playersManageTitle": "Manage players",
+  "seasonHistoryTitle": "Season history",
+  "seasonHistoryEmpty": "No seasons have finished yet.",
   "competitionSettingsSave": "Save changes",
   "competitionSettingsSaved": "Changes saved.",
   "competitionSettingsOwnerOnly": "Only the owner can change these settings.",
@@ -156,6 +158,11 @@
       "draws": { "type": "int" }
     }
   },
+  "gameType1v1": "1v1",
+  "gameType2v2": "2v2",
+  "gameType3v3": "3v3",
+  "gameType4v4": "4v4",
+  "gameTypeMixed": "Mixed",
 
   "matchesTitle": "Matches",
   "matchesEmpty": "No matches yet.",
@@ -241,6 +248,25 @@
   "@profileGreeting": {
     "placeholders": { "name": { "type": "String" } }
   },
+  "profileTabOverview": "Overview",
+  "profileTabSeasonHistory": "Season history",
+  "profileMatchesPlayed": "{count, plural, =1{1 match played} other{{count} matches played}}",
+  "@profileMatchesPlayed": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "profileStreakWin": "{count, plural, =1{1 win in a row} other{{count} wins in a row}}",
+  "@profileStreakWin": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "profileStreakLoss": "{count, plural, =1{1 loss in a row} other{{count} losses in a row}}",
+  "@profileStreakLoss": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "profileHeadToHeadTitle": "Your record vs {name}",
+  "@profileHeadToHeadTitle": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "profileSeasonHistoryEmpty": "No past seasons yet.",
 
   "settingsThemeTitle": "Theme",
   "themeOptionSystem": "System",

@@ -75,6 +75,9 @@ class LeaderboardView extends StatelessWidget {
                   competitionId: competitionId,
                   standing: standing,
                   isMe: standing.playerId == myPlayerId,
+                  myPlayerId: myPlayerId,
+                  seasonLength: seasonLength,
+                  medals: state.medals[standing.playerId],
                 ),
 
             if (isOwner) ...[

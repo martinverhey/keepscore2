@@ -19,6 +19,8 @@ import '../../features/competition/presentation/pages/competition_settings_page.
 import '../../features/competition/presentation/pages/competitions_page.dart';
 import '../../features/competition/presentation/pages/create_competition_page.dart';
 import '../../features/competition/presentation/pages/join_competition_page.dart';
+import '../../features/competition/presentation/cubit/season_history_cubit.dart';
+import '../../features/competition/presentation/pages/season_history_page.dart';
 import '../../features/leaderboard/presentation/cubit/leaderboard_cubit.dart';
 import '../../features/match/presentation/cubit/match_detail_cubit.dart';
 import '../../features/match/presentation/cubit/match_form_cubit.dart';
@@ -49,6 +51,9 @@ abstract final class Routes {
       '/competition/$id/settings/competition';
 
   static String players(String id) => '/competition/$id/settings/players';
+
+  static String seasonHistory(String id) =>
+      '/competition/$id/settings/history';
 
   static String newMatch(String id) => '/competition/$id/match/new';
 
@@ -179,6 +184,24 @@ GoRouter createRouter(AuthBloc authBloc) {
                       ),
                     ],
                     child: const PlayersPage(),
+                  );
+                },
+              ),
+              GoRoute(
+                path: 'history',
+                builder: (context, state) {
+                  final id = state.pathParameters['id']!;
+                  return MultiBlocProvider(
+                    providers: [
+                      BlocProvider(
+                        create: (_) =>
+                            getIt<CompetitionDetailCubit>(param1: id),
+                      ),
+                      BlocProvider(
+                        create: (_) => getIt<SeasonHistoryCubit>(param1: id),
+                      ),
+                    ],
+                    child: const SeasonHistoryPage(),
                   );
                 },
               ),

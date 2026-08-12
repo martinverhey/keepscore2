@@ -227,6 +227,12 @@ class AppLocalizationsNl extends AppLocalizations {
   String get playersManageTitle => 'Spelers beheren';
 
   @override
+  String get seasonHistoryTitle => 'Seizoensgeschiedenis';
+
+  @override
+  String get seasonHistoryEmpty => 'Er zijn nog geen seizoenen afgelopen.';
+
+  @override
   String get competitionSettingsSave => 'Wijzigingen opslaan';
 
   @override
@@ -382,6 +388,21 @@ class AppLocalizationsNl extends AppLocalizations {
   String leaderboardRecord(int wins, int losses, int draws) {
     return '${wins}W · ${losses}V · ${draws}G';
   }
+
+  @override
+  String get gameType1v1 => '1v1';
+
+  @override
+  String get gameType2v2 => '2v2';
+
+  @override
+  String get gameType3v3 => '3v3';
+
+  @override
+  String get gameType4v4 => '4v4';
+
+  @override
+  String get gameTypeMixed => 'Gemengd';
 
   @override
   String get matchesTitle => 'Wedstrijden';
@@ -587,6 +608,53 @@ class AppLocalizationsNl extends AppLocalizations {
   String profileGreeting(String name) {
     return 'Hallo, $name';
   }
+
+  @override
+  String get profileTabOverview => 'Overzicht';
+
+  @override
+  String get profileTabSeasonHistory => 'Seizoensgeschiedenis';
+
+  @override
+  String profileMatchesPlayed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count wedstrijden gespeeld',
+      one: '1 wedstrijd gespeeld',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String profileStreakWin(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count keer op rij gewonnen',
+      one: '1 keer op rij gewonnen',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String profileStreakLoss(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count keer op rij verloren',
+      one: '1 keer op rij verloren',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String profileHeadToHeadTitle(String name) {
+    return 'Jouw resultaat tegen $name';
+  }
+
+  @override
+  String get profileSeasonHistoryEmpty => 'Nog geen eerdere seizoenen.';
 
   @override
   String get settingsThemeTitle => 'Thema';

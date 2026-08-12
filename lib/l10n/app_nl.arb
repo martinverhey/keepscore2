@@ -81,6 +81,8 @@
   "competitionMenuSectionSystem": "Systeem",
   "competitionSettingsTitle": "Competitie-instellingen",
   "playersManageTitle": "Spelers beheren",
+  "seasonHistoryTitle": "Seizoensgeschiedenis",
+  "seasonHistoryEmpty": "Er zijn nog geen seizoenen afgelopen.",
   "competitionSettingsSave": "Wijzigingen opslaan",
   "competitionSettingsSaved": "Wijzigingen opgeslagen.",
   "competitionSettingsOwnerOnly": "Alleen de beheerder kan deze instellingen wijzigen.",
@@ -156,6 +158,11 @@
       "draws": { "type": "int" }
     }
   },
+  "gameType1v1": "1v1",
+  "gameType2v2": "2v2",
+  "gameType3v3": "3v3",
+  "gameType4v4": "4v4",
+  "gameTypeMixed": "Gemengd",
 
   "matchesTitle": "Wedstrijden",
   "matchesEmpty": "Nog geen wedstrijden.",
@@ -241,6 +248,25 @@
   "@profileGreeting": {
     "placeholders": { "name": { "type": "String" } }
   },
+  "profileTabOverview": "Overzicht",
+  "profileTabSeasonHistory": "Seizoensgeschiedenis",
+  "profileMatchesPlayed": "{count, plural, =1{1 wedstrijd gespeeld} other{{count} wedstrijden gespeeld}}",
+  "@profileMatchesPlayed": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "profileStreakWin": "{count, plural, =1{1 keer op rij gewonnen} other{{count} keer op rij gewonnen}}",
+  "@profileStreakWin": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "profileStreakLoss": "{count, plural, =1{1 keer op rij verloren} other{{count} keer op rij verloren}}",
+  "@profileStreakLoss": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "profileHeadToHeadTitle": "Jouw resultaat tegen {name}",
+  "@profileHeadToHeadTitle": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "profileSeasonHistoryEmpty": "Nog geen eerdere seizoenen.",
 
   "settingsThemeTitle": "Thema",
   "themeOptionSystem": "Systeem",

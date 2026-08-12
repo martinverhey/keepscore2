@@ -12,6 +12,7 @@ import '../../features/competition/presentation/cubit/competition_list_cubit.dar
 import '../../features/competition/presentation/cubit/competition_settings_cubit.dart';
 import '../../features/competition/presentation/cubit/create_competition_cubit.dart';
 import '../../features/competition/presentation/cubit/join_competition_cubit.dart';
+import '../../features/competition/presentation/cubit/season_history_cubit.dart';
 import '../../features/leaderboard/data/supabase_leaderboard_repository.dart';
 import '../../features/leaderboard/domain/leaderboard_repository.dart';
 import '../../features/leaderboard/presentation/cubit/leaderboard_cubit.dart';
@@ -68,6 +69,10 @@ Future<void> configureDependencies() async {
     ..registerFactoryParam<PlayersCubit, String, void>(
       (competitionId, _) =>
           PlayersCubit(getIt<PlayerRepository>(), competitionId),
+    )
+    ..registerFactoryParam<SeasonHistoryCubit, String, void>(
+      (competitionId, _) =>
+          SeasonHistoryCubit(getIt<LeaderboardRepository>(), competitionId),
     )
     ..registerLazySingleton<LeaderboardRepository>(
       () => SupabaseLeaderboardRepository(getIt<SupabaseClient>()),

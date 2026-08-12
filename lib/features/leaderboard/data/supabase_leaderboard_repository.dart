@@ -4,7 +4,9 @@ import '../../../core/data/realtime.dart';
 import '../../../core/error/failure.dart';
 import '../domain/leaderboard.dart';
 import '../domain/leaderboard_repository.dart';
+import '../domain/medal_tally.dart';
 import '../domain/season.dart';
+import '../domain/season_standing.dart';
 import '../domain/season_window.dart';
 
 class SupabaseLeaderboardRepository implements LeaderboardRepository {
@@ -85,4 +87,37 @@ class SupabaseLeaderboardRepository implements LeaderboardRepository {
       value: seasonId,
     );
   }
+
+  @override
+  Future<List<SeasonStanding>> seasonHistory({
+    required String competitionId,
+    String? playerId,
+  }) => guard(() async {
+    var query = _client
+        .from('season_history')
+        .select()
+        .eq('competition_id', competitionId);
+    if (playerId != null) query = query.eq('player_id', playerId);
+
+    final rows = await query
+        .order('starts_at', ascending: false)
+        .order('rank', ascending: true);
+
+    return rows
+        .map((row) => SeasonStanding.fromMap(row))
+        .toList(growable: false);
+  });
+
+  @override
+  Future<List<MedalTally>> medalTallies(String competitionId) =>
+      guard(() async {
+        final rows = await _client
+            .from('player_medals')
+            .select()
+            .eq('competition_id', competitionId);
+
+        return rows
+            .map((row) => MedalTally.fromMap(row))
+            .toList(growable: false);
+      });
 }

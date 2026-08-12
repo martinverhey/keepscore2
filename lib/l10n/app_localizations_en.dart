@@ -226,6 +226,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playersManageTitle => 'Manage players';
 
   @override
+  String get seasonHistoryTitle => 'Season history';
+
+  @override
+  String get seasonHistoryEmpty => 'No seasons have finished yet.';
+
+  @override
   String get competitionSettingsSave => 'Save changes';
 
   @override
@@ -381,6 +387,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String leaderboardRecord(int wins, int losses, int draws) {
     return '${wins}W · ${losses}L · ${draws}D';
   }
+
+  @override
+  String get gameType1v1 => '1v1';
+
+  @override
+  String get gameType2v2 => '2v2';
+
+  @override
+  String get gameType3v3 => '3v3';
+
+  @override
+  String get gameType4v4 => '4v4';
+
+  @override
+  String get gameTypeMixed => 'Mixed';
 
   @override
   String get matchesTitle => 'Matches';
@@ -584,6 +605,53 @@ class AppLocalizationsEn extends AppLocalizations {
   String profileGreeting(String name) {
     return 'Hello, $name';
   }
+
+  @override
+  String get profileTabOverview => 'Overview';
+
+  @override
+  String get profileTabSeasonHistory => 'Season history';
+
+  @override
+  String profileMatchesPlayed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count matches played',
+      one: '1 match played',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String profileStreakWin(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count wins in a row',
+      one: '1 win in a row',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String profileStreakLoss(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count losses in a row',
+      one: '1 loss in a row',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String profileHeadToHeadTitle(String name) {
+    return 'Your record vs $name';
+  }
+
+  @override
+  String get profileSeasonHistoryEmpty => 'No past seasons yet.';
 
   @override
   String get settingsThemeTitle => 'Theme';

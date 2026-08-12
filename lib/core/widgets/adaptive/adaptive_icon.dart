@@ -23,6 +23,9 @@ class AdaptiveIcon extends StatelessWidget {
     AdaptiveGlyph.invite => CupertinoIcons.share,
     AdaptiveGlyph.star => CupertinoIcons.star_fill,
     AdaptiveGlyph.add => CupertinoIcons.add,
+    AdaptiveGlyph.medal => CupertinoIcons.rosette,
+    AdaptiveGlyph.fire => CupertinoIcons.flame_fill,
+    AdaptiveGlyph.ice => CupertinoIcons.snow,
   };
 
   IconData get _material => switch (glyph) {
@@ -35,6 +38,9 @@ class AdaptiveIcon extends StatelessWidget {
     AdaptiveGlyph.invite => Icons.ios_share,
     AdaptiveGlyph.star => Icons.star,
     AdaptiveGlyph.add => Icons.add,
+    AdaptiveGlyph.medal => Icons.military_tech,
+    AdaptiveGlyph.fire => Icons.local_fire_department,
+    AdaptiveGlyph.ice => Icons.ac_unit,
   };
 
   @override
