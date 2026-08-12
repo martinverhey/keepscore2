@@ -4,6 +4,7 @@ import 'package:keepscore2/core/error/failure.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/season_history_cubit.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
 import 'package:keepscore2/features/leaderboard/domain/season_standing.dart';
+import 'package:keepscore2/features/match/domain/game_type.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockLeaderboardRepository extends Mock implements LeaderboardRepository {}
@@ -101,6 +102,92 @@ void main() {
     verify: (cubit) {
       expect(cubit.state.status, SeasonHistoryStatus.failed);
       expect(cubit.state.failure, isA<NetworkFailure>());
+    },
+  );
+
+  blocTest<SeasonHistoryCubit, SeasonHistoryState>(
+    'filtering by game type fetches that game type\'s season history',
+    setUp: () {
+      when(
+        () => repository.seasonHistory(competitionId: 'c1'),
+      ).thenAnswer(
+        (_) async => [
+          _standing(
+            seasonId: 's-june',
+            startsAt: DateTime.utc(2026, 5, 31, 22),
+            playerId: 'p1',
+            rank: 1,
+          ),
+        ],
+      );
+      when(
+        () => repository.seasonHistory(
+          competitionId: 'c1',
+          gameType: GameType.oneVOne,
+        ),
+      ).thenAnswer(
+        (_) async => [
+          _standing(
+            seasonId: 's-june',
+            startsAt: DateTime.utc(2026, 5, 31, 22),
+            playerId: 'p2',
+            rank: 1,
+          ),
+        ],
+      );
+    },
+    build: build,
+    act: (cubit) async {
+      await cubit.load();
+      await cubit.selectGameTypeFilter(GameType.oneVOne);
+    },
+    verify: (cubit) {
+      expect(cubit.state.selectedGameType, GameType.oneVOne);
+      expect(cubit.state.busy, isFalse);
+      expect(cubit.state.groups.single.standings.single.playerId, 'p2');
+    },
+  );
+
+  blocTest<SeasonHistoryCubit, SeasonHistoryState>(
+    'clearing the game type filter goes back to combined history',
+    setUp: () {
+      when(
+        () => repository.seasonHistory(competitionId: 'c1'),
+      ).thenAnswer(
+        (_) async => [
+          _standing(
+            seasonId: 's-june',
+            startsAt: DateTime.utc(2026, 5, 31, 22),
+            playerId: 'p1',
+            rank: 1,
+          ),
+        ],
+      );
+      when(
+        () => repository.seasonHistory(
+          competitionId: 'c1',
+          gameType: GameType.oneVOne,
+        ),
+      ).thenAnswer(
+        (_) async => [
+          _standing(
+            seasonId: 's-june',
+            startsAt: DateTime.utc(2026, 5, 31, 22),
+            playerId: 'p2',
+            rank: 1,
+          ),
+        ],
+      );
+    },
+    build: build,
+    act: (cubit) async {
+      await cubit.load();
+      await cubit.selectGameTypeFilter(GameType.oneVOne);
+      await cubit.selectGameTypeFilter(null);
+    },
+    verify: (cubit) {
+      expect(cubit.state.selectedGameType, isNull);
+      expect(cubit.state.groups.single.standings.single.playerId, 'p1');
     },
   );
 }

@@ -800,6 +800,12 @@ abstract class AppLocalizations {
   /// **'No {gameType} matches yet this season.'**
   String leaderboardFilterEmpty(String gameType);
 
+  /// No description provided for @seasonHistoryFilterEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No finished {gameType} seasons yet.'**
+  String seasonHistoryFilterEmpty(String gameType);
+
   /// No description provided for @matchesTitle.
   ///
   /// In en, this message translates to:

@@ -100,12 +100,14 @@ class SupabaseLeaderboardRepository implements LeaderboardRepository {
   Future<List<SeasonStanding>> seasonHistory({
     required String competitionId,
     String? playerId,
+    GameType? gameType,
   }) => guard(() async {
     var query = _client
-        .from('season_history')
+        .from(gameType == null ? 'season_history' : 'game_type_season_history')
         .select()
         .eq('competition_id', competitionId);
     if (playerId != null) query = query.eq('player_id', playerId);
+    if (gameType != null) query = query.eq('game_type', gameType.wireValue);
 
     final rows = await query
         .order('starts_at', ascending: false)

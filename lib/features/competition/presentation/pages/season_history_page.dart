@@ -9,7 +9,9 @@ import '../../../../core/widgets/rating_delta.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../leaderboard/domain/medal.dart';
 import '../../../leaderboard/domain/season_standing.dart';
+import '../../../leaderboard/presentation/widgets/game_type_filter_bar.dart';
 import '../../../leaderboard/presentation/widgets/season_label.dart';
+import '../../../profile/presentation/widgets/game_type_label.dart';
 import '../../domain/competition.dart';
 import '../cubit/competition_detail_cubit.dart';
 import '../cubit/season_history_cubit.dart';
@@ -43,6 +45,7 @@ class _SeasonHistoryPageState extends State<SeasonHistoryPage> {
 
         return AdaptiveScaffold(
           title: context.l10n.seasonHistoryTitle,
+          hasScrollBody: true,
           body: switch (state.status) {
             SeasonHistoryStatus.loading => const AdaptiveLoader(),
             SeasonHistoryStatus.failed => ErrorRetry(
@@ -50,20 +53,68 @@ class _SeasonHistoryPageState extends State<SeasonHistoryPage> {
               retryLabel: context.l10n.commonRetry,
               onRetry: cubit.load,
             ),
-            SeasonHistoryStatus.ready when state.groups.isEmpty =>
-              EmptyState(message: context.l10n.seasonHistoryEmpty),
             SeasonHistoryStatus.ready when seasonLength == null =>
               const AdaptiveLoader(),
-            SeasonHistoryStatus.ready => ListView(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              children: [
-                for (final group in state.groups)
-                  _seasonCard(context, group, seasonLength!),
-              ],
+            SeasonHistoryStatus.ready => _ready(
+              context,
+              state,
+              cubit,
+              seasonLength!,
             ),
           },
         );
       },
+    );
+  }
+
+  Widget _ready(
+    BuildContext context,
+    SeasonHistoryState state,
+    SeasonHistoryCubit cubit,
+    SeasonLength seasonLength,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.md,
+            AppSpacing.md,
+            AppSpacing.md,
+            0,
+          ),
+          child: GameTypeFilterBar(
+            selected: state.selectedGameType,
+            onSelected: cubit.selectGameTypeFilter,
+          ),
+        ),
+        Expanded(child: _groupList(context, state, seasonLength)),
+      ],
+    );
+  }
+
+  Widget _groupList(
+    BuildContext context,
+    SeasonHistoryState state,
+    SeasonLength seasonLength,
+  ) {
+    if (state.busy) return const Center(child: AdaptiveLoader());
+
+    if (state.groups.isEmpty) {
+      return EmptyState(
+        message: state.selectedGameType == null
+            ? context.l10n.seasonHistoryEmpty
+            : context.l10n.seasonHistoryFilterEmpty(
+                gameTypeLabel(context, state.selectedGameType!),
+              ),
+      );
+    }
+
+    return ListView(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      children: [
+        for (final group in state.groups) _seasonCard(context, group, seasonLength),
+      ],
     );
   }
 

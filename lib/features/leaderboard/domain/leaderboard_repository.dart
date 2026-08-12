@@ -25,6 +25,7 @@ abstract interface class LeaderboardRepository {
   Future<List<SeasonStanding>> seasonHistory({
     required String competitionId,
     String? playerId,
+    GameType? gameType,
   });
 
   Future<List<MedalTally>> medalTallies(String competitionId);

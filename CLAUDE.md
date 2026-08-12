@@ -197,6 +197,13 @@ Kept here because the code cannot express them and they cost real debugging:
   `game_type_leaderboard` view is not roster-backed: a player who hasn't
   played a given type this season doesn't appear in it, rather than
   showing everyone tied at `starting_rating` for a type nobody's played.
+- **`game_type_season_history`** is the same trick one level up: `select
+  l.*, s.starts_at, s.ends_at, medal … from game_type_leaderboard l join
+  seasons s … where s.ends_at <= now()`, exactly how `season_history` is
+  built from `leaderboard`. `SeasonHistoryPage` carries its own
+  `GameTypeFilterBar`/`selectGameTypeFilter`, independent of the
+  leaderboard tab's filter — they're different cubits with their own
+  `selectedGameType`.
 
 ## Commands
 

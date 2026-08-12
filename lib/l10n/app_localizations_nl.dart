@@ -418,6 +418,11 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
+  String seasonHistoryFilterEmpty(String gameType) {
+    return 'Nog geen afgeronde $gameType-seizoenen.';
+  }
+
+  @override
   String get matchesTitle => 'Wedstrijden';
 
   @override

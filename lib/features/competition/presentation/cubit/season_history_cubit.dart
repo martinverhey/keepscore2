@@ -3,6 +3,7 @@ import 'package:bloc/bloc.dart';
 import '../../../../core/error/failure.dart';
 import '../../../leaderboard/domain/leaderboard_repository.dart';
 import '../../../leaderboard/domain/season_standing.dart';
+import '../../../match/domain/game_type.dart';
 import 'season_history_state.dart';
 
 export 'season_history_state.dart';
@@ -15,21 +16,56 @@ class SeasonHistoryCubit extends Cubit<SeasonHistoryState> {
   final String competitionId;
 
   Future<void> load() async {
-    emit(const SeasonHistoryState());
+    final gameType = state.selectedGameType;
+    emit(SeasonHistoryState(selectedGameType: gameType));
     try {
       final standings = await _repository.seasonHistory(
         competitionId: competitionId,
+        gameType: gameType,
       );
       if (isClosed) return;
       emit(
         SeasonHistoryState(
           status: SeasonHistoryStatus.ready,
           groups: _group(standings),
+          selectedGameType: gameType,
         ),
       );
     } on Failure catch (failure) {
       if (isClosed) return;
-      emit(SeasonHistoryState(status: SeasonHistoryStatus.failed, failure: failure));
+      emit(
+        SeasonHistoryState(
+          status: SeasonHistoryStatus.failed,
+          selectedGameType: gameType,
+          failure: failure,
+        ),
+      );
+    }
+  }
+
+  Future<void> selectGameTypeFilter(GameType? gameType) async {
+    if (gameType == state.selectedGameType) return;
+
+    emit(
+      state.copyWith(
+        selectedGameType: gameType,
+        clearGameType: gameType == null,
+        groups: const [],
+        busy: true,
+        clearFailure: true,
+      ),
+    );
+
+    try {
+      final standings = await _repository.seasonHistory(
+        competitionId: competitionId,
+        gameType: gameType,
+      );
+      if (isClosed) return;
+      emit(state.copyWith(groups: _group(standings), busy: false));
+    } on Failure catch (failure) {
+      if (isClosed) return;
+      emit(state.copyWith(busy: false, failure: failure));
     }
   }
 

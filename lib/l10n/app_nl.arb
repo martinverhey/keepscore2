@@ -172,6 +172,10 @@
   "@leaderboardFilterEmpty": {
     "placeholders": { "gameType": { "type": "String" } }
   },
+  "seasonHistoryFilterEmpty": "Nog geen afgeronde {gameType}-seizoenen.",
+  "@seasonHistoryFilterEmpty": {
+    "placeholders": { "gameType": { "type": "String" } }
+  },
 
   "matchesTitle": "Wedstrijden",
   "matchesEmpty": "Nog geen wedstrijden.",

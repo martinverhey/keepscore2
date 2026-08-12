@@ -172,6 +172,10 @@
   "@leaderboardFilterEmpty": {
     "placeholders": { "gameType": { "type": "String" } }
   },
+  "seasonHistoryFilterEmpty": "No finished {gameType} seasons yet.",
+  "@seasonHistoryFilterEmpty": {
+    "placeholders": { "gameType": { "type": "String" } }
+  },
 
   "matchesTitle": "Matches",
   "matchesEmpty": "No matches yet.",
