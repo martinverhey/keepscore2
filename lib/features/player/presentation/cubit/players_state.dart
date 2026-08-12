@@ -46,8 +46,9 @@ class PlayersState extends Equatable {
       players: players ?? this.players,
       busy: busy ?? this.busy,
       failure: clearFailure ? null : (failure ?? this.failure),
-      actionFailure:
-          clearActionFailure ? null : (actionFailure ?? this.actionFailure),
+      actionFailure: clearActionFailure
+          ? null
+          : (actionFailure ?? this.actionFailure),
     );
   }
 

@@ -10,12 +10,12 @@ class Player extends Equatable {
   });
 
   factory Player.fromMap(Map<String, dynamic> map) => Player(
-        id: map['id'] as String,
-        competitionId: map['competition_id'] as String,
-        displayName: map['display_name'] as String,
-        isActive: map['is_active'] as bool? ?? true,
-        userId: map['user_id'] as String?,
-      );
+    id: map['id'] as String,
+    competitionId: map['competition_id'] as String,
+    displayName: map['display_name'] as String,
+    isActive: map['is_active'] as bool? ?? true,
+    userId: map['user_id'] as String?,
+  );
 
   final String id;
   final String competitionId;

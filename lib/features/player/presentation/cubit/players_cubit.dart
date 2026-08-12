@@ -9,7 +9,7 @@ export 'players_state.dart';
 
 class PlayersCubit extends Cubit<PlayersState> {
   PlayersCubit(this._repository, this.competitionId)
-      : super(const PlayersState());
+    : super(const PlayersState());
 
   final PlayerRepository _repository;
   final String competitionId;
@@ -19,37 +19,41 @@ class PlayersCubit extends Cubit<PlayersState> {
     try {
       final players = await _repository.roster(competitionId);
       if (isClosed) return;
-      emit(state.copyWith(
-        status: PlayersStatus.ready,
-        players: players,
-        clearFailure: true,
-      ));
+      emit(
+        state.copyWith(
+          status: PlayersStatus.ready,
+          players: _sortedByName(players),
+          clearFailure: true,
+        ),
+      );
     } on Failure catch (failure) {
       if (isClosed) return;
-      emit(state.copyWith(
-        status: PlayersStatus.failed,
-        players: silent ? state.players : const [],
-        failure: failure,
-      ));
+      emit(
+        state.copyWith(
+          status: PlayersStatus.failed,
+          players: silent ? state.players : const [],
+          failure: failure,
+        ),
+      );
     }
   }
 
   Future<void> refresh() => load(silent: true);
 
   Future<bool> addPlaceholder(String displayName) => _mutate(
-        () => _repository.addPlaceholder(
-          competitionId: competitionId,
-          displayName: displayName,
-        ),
-      );
+    () => _repository.addPlaceholder(
+      competitionId: competitionId,
+      displayName: displayName,
+    ),
+  );
 
   Future<bool> rename(String playerId, String displayName) => _mutate(
-        () => _repository.rename(playerId: playerId, displayName: displayName),
-      );
+    () => _repository.rename(playerId: playerId, displayName: displayName),
+  );
 
   Future<bool> setActive(String playerId, {required bool isActive}) => _mutate(
-        () => _repository.setActive(playerId: playerId, isActive: isActive),
-      );
+    () => _repository.setActive(playerId: playerId, isActive: isActive),
+  );
 
   Future<bool> _mutate(Future<Player> Function() action) async {
     if (state.busy) return false;
@@ -74,9 +78,15 @@ class PlayersCubit extends Cubit<PlayersState> {
     if (!players.any((existing) => existing.id == player.id)) {
       players.add(player);
     }
-    players.sort(
-      (a, b) => a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase()),
-    );
-    return List.unmodifiable(players);
+    return _sortedByName(players);
   }
+}
+
+List<Player> _sortedByName(List<Player> players) {
+  final sorted = [...players];
+  sorted.sort(
+    (a, b) =>
+        a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase()),
+  );
+  return List.unmodifiable(sorted);
 }

@@ -13,8 +13,5 @@ abstract interface class PlayerRepository {
     required String displayName,
   });
 
-  Future<Player> setActive({
-    required String playerId,
-    required bool isActive,
-  });
+  Future<Player> setActive({required String playerId, required bool isActive});
 }

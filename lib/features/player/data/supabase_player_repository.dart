@@ -11,44 +11,41 @@ class SupabasePlayerRepository implements PlayerRepository {
 
   @override
   Future<List<Player>> roster(String competitionId) => guard(() async {
-        final rows = await _client
-            .from('players')
-            .select()
-            .eq('competition_id', competitionId)
-            .order('display_name');
+    final rows = await _client
+        .from('players')
+        .select()
+        .eq('competition_id', competitionId)
+        .order('display_name');
 
-        return rows.map((row) => Player.fromMap(row)).toList(growable: false);
-      });
+    return rows.map((row) => Player.fromMap(row)).toList(growable: false);
+  });
 
   @override
   Future<Player> addPlaceholder({
     required String competitionId,
     required String displayName,
-  }) =>
-      guard(() async {
-        final row = await _client.rpc<Map<String, dynamic>>(
-          'add_dummy_player',
-          params: {
-            'p_competition_id': competitionId,
-            'p_display_name': displayName.trim(),
-          },
-        );
-        return Player.fromMap(row);
-      });
+  }) => guard(() async {
+    final row = await _client.rpc<Map<String, dynamic>>(
+      'add_dummy_player',
+      params: {
+        'p_competition_id': competitionId,
+        'p_display_name': displayName.trim(),
+      },
+    );
+    return Player.fromMap(row);
+  });
 
   @override
   Future<Player> rename({
     required String playerId,
     required String displayName,
-  }) =>
-      _update(playerId, {'display_name': displayName.trim()});
+  }) => _update(playerId, {'display_name': displayName.trim()});
 
   @override
   Future<Player> setActive({
     required String playerId,
     required bool isActive,
-  }) =>
-      _update(playerId, {'is_active': isActive});
+  }) => _update(playerId, {'is_active': isActive});
 
   Future<Player> _update(String playerId, Map<String, Object?> values) =>
       guard(() async {

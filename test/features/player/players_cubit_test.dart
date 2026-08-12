@@ -44,6 +44,21 @@ void main() {
   );
 
   blocTest<PlayersCubit, PlayersState>(
+    'loads the roster sorted a to z, regardless of server order',
+    setUp: () => stubRoster([
+      _player('p1', 'Zoe'),
+      _player('p2', 'ada'),
+      _player('p3', 'Grace'),
+    ]),
+    build: () => PlayersCubit(repository, 'c1'),
+    act: (cubit) => cubit.load(),
+    verify: (cubit) => expect(
+      cubit.state.players.map((player) => player.displayName),
+      ['ada', 'Grace', 'Zoe'],
+    ),
+  );
+
+  blocTest<PlayersCubit, PlayersState>(
     'splits the active roster into claimed and unclaimed players',
     setUp: () => stubRoster([
       _player('p1', 'Ada', userId: 'u1'),
