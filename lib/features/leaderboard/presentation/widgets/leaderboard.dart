@@ -10,7 +10,9 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../competition/domain/competition.dart';
+import '../../../profile/presentation/widgets/game_type_label.dart';
 import '../cubit/leaderboard_cubit.dart';
+import 'game_type_filter_bar.dart';
 import 'leaderboard_row.dart';
 import 'season_label.dart';
 import 'season_sheet.dart';
@@ -62,13 +64,25 @@ class LeaderboardView extends StatelessWidget {
               ),
             const SizedBox(height: AppSpacing.md),
 
+            GameTypeFilterBar(
+              selected: state.selectedGameType,
+              onSelected: cubit.selectGameTypeFilter,
+            ),
+            const SizedBox(height: AppSpacing.md),
+
             if (state.busy)
               const Padding(
                 padding: EdgeInsets.all(AppSpacing.xl),
                 child: AdaptiveLoader(),
               )
             else if (state.standings.isEmpty)
-              EmptyState(message: context.l10n.leaderboardNoPlayers)
+              EmptyState(
+                message: state.selectedGameType == null
+                    ? context.l10n.leaderboardNoPlayers
+                    : context.l10n.leaderboardFilterEmpty(
+                        gameTypeLabel(context, state.selectedGameType!),
+                      ),
+              )
             else
               for (final standing in state.standings)
                 LeaderboardRow(

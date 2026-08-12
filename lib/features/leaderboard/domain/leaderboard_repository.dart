@@ -1,3 +1,4 @@
+import '../../match/domain/game_type.dart';
 import 'leaderboard.dart';
 import 'medal_tally.dart';
 import 'season.dart';
@@ -12,11 +13,13 @@ abstract interface class LeaderboardRepository {
   Future<List<Leaderboard>> standings({
     required String competitionId,
     required String? seasonId,
+    GameType? gameType,
   });
 
   Stream<void> watchStandings({
     required String competitionId,
     required String? seasonId,
+    GameType? gameType,
   });
 
   Future<List<SeasonStanding>> seasonHistory({

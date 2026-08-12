@@ -410,6 +410,14 @@ class AppLocalizationsNl extends AppLocalizations {
   String get gameTypeMixed => 'Gemengd';
 
   @override
+  String get leaderboardFilterAll => 'Alles';
+
+  @override
+  String leaderboardFilterEmpty(String gameType) {
+    return 'Nog geen $gameType-wedstrijden dit seizoen.';
+  }
+
+  @override
   String get matchesTitle => 'Wedstrijden';
 
   @override

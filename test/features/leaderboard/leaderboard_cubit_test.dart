@@ -9,6 +9,7 @@ import 'package:keepscore2/features/leaderboard/domain/season_window.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard.dart';
 import 'package:keepscore2/features/leaderboard/domain/medal_tally.dart';
 import 'package:keepscore2/features/leaderboard/presentation/cubit/leaderboard_cubit.dart';
+import 'package:keepscore2/features/match/domain/game_type.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockLeaderboardRepository extends Mock implements LeaderboardRepository {}
@@ -50,6 +51,20 @@ void main() {
     ).thenAnswer((_) async => standings);
   }
 
+  void stubGameTypeStandings(
+    String? seasonId,
+    GameType gameType,
+    List<Leaderboard> standings,
+  ) {
+    when(
+      () => repository.standings(
+        competitionId: 'c1',
+        seasonId: seasonId,
+        gameType: gameType,
+      ),
+    ).thenAnswer((_) async => standings);
+  }
+
   setUp(() {
     repository = MockLeaderboardRepository();
     ticks = StreamController<void>.broadcast();
@@ -57,6 +72,7 @@ void main() {
       () => repository.watchStandings(
         competitionId: any(named: 'competitionId'),
         seasonId: any(named: 'seasonId'),
+        gameType: any(named: 'gameType'),
       ),
     ).thenAnswer((_) => ticks.stream);
     when(
@@ -237,6 +253,59 @@ void main() {
       expect(cubit.state.status, LeaderboardStatus.failed);
       expect(cubit.state.standings, hasLength(1));
       expect(cubit.state.failure, isA<NetworkFailure>());
+    },
+  );
+
+  blocTest<LeaderboardCubit, LeaderboardState>(
+    'filtering by game type fetches that game type\'s standings',
+    setUp: () {
+      stubSeason(
+        stored: [Season(id: 's-august', startsAt: _august, endsAt: _september)],
+      );
+      stubStandings('s-august', [_standing('p1', 1040, 1)]);
+      stubGameTypeStandings('s-august', GameType.oneVOne, [
+        _standing('p2', 1100, 1),
+      ]);
+    },
+    build: build,
+    act: (cubit) async {
+      await cubit.load();
+      await cubit.selectGameTypeFilter(GameType.oneVOne);
+    },
+    verify: (cubit) {
+      expect(cubit.state.selectedGameType, GameType.oneVOne);
+      expect(cubit.state.standings.single.playerId, 'p2');
+      expect(cubit.state.busy, isFalse);
+      verify(
+        () => repository.watchStandings(
+          competitionId: 'c1',
+          seasonId: 's-august',
+          gameType: GameType.oneVOne,
+        ),
+      ).called(1);
+    },
+  );
+
+  blocTest<LeaderboardCubit, LeaderboardState>(
+    'clearing the game type filter goes back to combined standings',
+    setUp: () {
+      stubSeason(
+        stored: [Season(id: 's-august', startsAt: _august, endsAt: _september)],
+      );
+      stubStandings('s-august', [_standing('p1', 1040, 1)]);
+      stubGameTypeStandings('s-august', GameType.oneVOne, [
+        _standing('p2', 1100, 1),
+      ]);
+    },
+    build: build,
+    act: (cubit) async {
+      await cubit.load();
+      await cubit.selectGameTypeFilter(GameType.oneVOne);
+      await cubit.selectGameTypeFilter(null);
+    },
+    verify: (cubit) {
+      expect(cubit.state.selectedGameType, isNull);
+      expect(cubit.state.standings.single.playerId, 'p1');
     },
   );
 }

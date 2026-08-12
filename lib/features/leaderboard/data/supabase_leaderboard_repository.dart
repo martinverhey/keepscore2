@@ -2,6 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/data/realtime.dart';
 import '../../../core/error/failure.dart';
+import '../../match/domain/game_type.dart';
 import '../domain/leaderboard.dart';
 import '../domain/leaderboard_repository.dart';
 import '../domain/medal_tally.dart';
@@ -45,15 +46,20 @@ class SupabaseLeaderboardRepository implements LeaderboardRepository {
   Future<List<Leaderboard>> standings({
     required String competitionId,
     required String? seasonId,
+    GameType? gameType,
   }) => guard(() async {
-    if (seasonId == null) return _rosterStandings(competitionId);
+    if (seasonId == null) {
+      return gameType == null ? _rosterStandings(competitionId) : <Leaderboard>[];
+    }
 
-    final rows = await _client
-        .from('leaderboard')
+    var query = _client
+        .from(gameType == null ? 'leaderboard' : 'game_type_leaderboard')
         .select()
         .eq('competition_id', competitionId)
-        .eq('season_id', seasonId)
-        .order('rank', ascending: true);
+        .eq('season_id', seasonId);
+    if (gameType != null) query = query.eq('game_type', gameType.wireValue);
+
+    final rows = await query.order('rank', ascending: true);
 
     return rows.map((row) => Leaderboard.fromMap(row)).toList(growable: false);
   });
@@ -78,11 +84,13 @@ class SupabaseLeaderboardRepository implements LeaderboardRepository {
   Stream<void> watchStandings({
     required String competitionId,
     required String? seasonId,
+    GameType? gameType,
   }) {
     return realtimeTicks(
       _client,
-      topic: 'leaderboard:$competitionId:${seasonId ?? 'pending'}',
-      table: 'player_ratings',
+      topic:
+          'leaderboard:$competitionId:${seasonId ?? 'pending'}:${gameType?.wireValue ?? 'combined'}',
+      table: gameType == null ? 'player_ratings' : 'player_game_type_ratings',
       column: seasonId == null ? null : 'season_id',
       value: seasonId,
     );

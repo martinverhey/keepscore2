@@ -409,6 +409,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gameTypeMixed => 'Mixed';
 
   @override
+  String get leaderboardFilterAll => 'All';
+
+  @override
+  String leaderboardFilterEmpty(String gameType) {
+    return 'No $gameType matches yet this season.';
+  }
+
+  @override
   String get matchesTitle => 'Matches';
 
   @override

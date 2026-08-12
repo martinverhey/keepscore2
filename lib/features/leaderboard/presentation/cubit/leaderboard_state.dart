@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/failure.dart';
+import '../../../match/domain/game_type.dart';
 import '../../domain/leaderboard.dart';
 import '../../domain/medal_tally.dart';
 import '../../domain/season.dart';
@@ -12,6 +13,7 @@ class LeaderboardState extends Equatable {
     this.status = LeaderboardStatus.loading,
     this.seasons = const [],
     this.selectedStartsAt,
+    this.selectedGameType,
     this.standings = const [],
     this.medals = const {},
     this.busy = false,
@@ -23,6 +25,7 @@ class LeaderboardState extends Equatable {
   final List<Season> seasons;
 
   final DateTime? selectedStartsAt;
+  final GameType? selectedGameType;
   final List<Leaderboard> standings;
   final Map<String, MedalTally> medals;
 
@@ -51,16 +54,21 @@ class LeaderboardState extends Equatable {
     LeaderboardStatus? status,
     List<Season>? seasons,
     DateTime? selectedStartsAt,
+    GameType? selectedGameType,
     List<Leaderboard>? standings,
     Map<String, MedalTally>? medals,
     bool? busy,
     Failure? failure,
     bool clearFailure = false,
+    bool clearGameType = false,
   }) {
     return LeaderboardState(
       status: status ?? this.status,
       seasons: seasons ?? this.seasons,
       selectedStartsAt: selectedStartsAt ?? this.selectedStartsAt,
+      selectedGameType: clearGameType
+          ? null
+          : (selectedGameType ?? this.selectedGameType),
       standings: standings ?? this.standings,
       medals: medals ?? this.medals,
       busy: busy ?? this.busy,
@@ -73,6 +81,7 @@ class LeaderboardState extends Equatable {
     status,
     seasons,
     selectedStartsAt,
+    selectedGameType,
     standings,
     medals,
     busy,

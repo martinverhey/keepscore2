@@ -788,6 +788,18 @@ abstract class AppLocalizations {
   /// **'Mixed'**
   String get gameTypeMixed;
 
+  /// No description provided for @leaderboardFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get leaderboardFilterAll;
+
+  /// No description provided for @leaderboardFilterEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No {gameType} matches yet this season.'**
+  String leaderboardFilterEmpty(String gameType);
+
   /// No description provided for @matchesTitle.
   ///
   /// In en, this message translates to:

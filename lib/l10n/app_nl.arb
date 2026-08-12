@@ -167,6 +167,11 @@
   "gameType3v3": "3v3",
   "gameType4v4": "4v4",
   "gameTypeMixed": "Gemengd",
+  "leaderboardFilterAll": "Alles",
+  "leaderboardFilterEmpty": "Nog geen {gameType}-wedstrijden dit seizoen.",
+  "@leaderboardFilterEmpty": {
+    "placeholders": { "gameType": { "type": "String" } }
+  },
 
   "matchesTitle": "Wedstrijden",
   "matchesEmpty": "Nog geen wedstrijden.",

@@ -12,4 +12,12 @@ enum GameType {
     '4v4' => GameType.fourVFour,
     _ => GameType.mixed,
   };
+
+  String get wireValue => switch (this) {
+    GameType.oneVOne => '1v1',
+    GameType.twoVTwo => '2v2',
+    GameType.threeVThree => '3v3',
+    GameType.fourVFour => '4v4',
+    GameType.mixed => 'mixed',
+  };
 }

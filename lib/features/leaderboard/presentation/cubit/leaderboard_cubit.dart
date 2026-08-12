@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 
 import '../../../../core/data/realtime.dart';
 import '../../../../core/error/failure.dart';
+import '../../../match/domain/game_type.dart';
 import '../../domain/leaderboard_repository.dart';
 import '../../domain/medal_tally.dart';
 import '../../domain/season.dart';
@@ -19,9 +20,11 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
 
   DebouncedTicks? _watcher;
   String? _watchedSeasonId;
+  GameType? _watchedGameType;
 
   Future<void> load({bool silent = false}) async {
     if (!silent) emit(const LeaderboardState());
+    final gameType = state.selectedGameType;
     try {
       final results = await Future.wait<Object?>([
         _repository.currentSeason(competitionId),
@@ -43,6 +46,7 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
       final standings = await _repository.standings(
         competitionId: competitionId,
         seasonId: selected?.id,
+        gameType: gameType,
       );
       if (isClosed) return;
 
@@ -51,11 +55,12 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
           status: LeaderboardStatus.ready,
           seasons: seasons,
           selectedStartsAt: selected?.startsAt,
+          selectedGameType: gameType,
           standings: standings,
           medals: medals,
         ),
       );
-      _watch(selected?.id);
+      _watch(selected?.id, gameType);
     } on Failure catch (failure) {
       if (isClosed) return;
       emit(
@@ -63,6 +68,7 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
           status: LeaderboardStatus.failed,
           seasons: silent ? state.seasons : const [],
           selectedStartsAt: state.selectedStartsAt,
+          selectedGameType: gameType,
           standings: silent ? state.standings : const [],
           medals: silent ? state.medals : const {},
           failure: failure,
@@ -90,10 +96,39 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
       final standings = await _repository.standings(
         competitionId: competitionId,
         seasonId: season.id,
+        gameType: state.selectedGameType,
       );
       if (isClosed) return;
       emit(state.copyWith(standings: standings, busy: false));
-      _watch(season.id);
+      _watch(season.id, state.selectedGameType);
+    } on Failure catch (failure) {
+      if (isClosed) return;
+      emit(state.copyWith(busy: false, failure: failure));
+    }
+  }
+
+  Future<void> selectGameTypeFilter(GameType? gameType) async {
+    if (gameType == state.selectedGameType) return;
+
+    emit(
+      state.copyWith(
+        selectedGameType: gameType,
+        clearGameType: gameType == null,
+        standings: const [],
+        busy: true,
+        clearFailure: true,
+      ),
+    );
+
+    try {
+      final standings = await _repository.standings(
+        competitionId: competitionId,
+        seasonId: state.selectedSeason?.id,
+        gameType: gameType,
+      );
+      if (isClosed) return;
+      emit(state.copyWith(standings: standings, busy: false));
+      _watch(state.selectedSeason?.id, gameType);
     } on Failure catch (failure) {
       if (isClosed) return;
       emit(state.copyWith(busy: false, failure: failure));
@@ -124,14 +159,20 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
     return seasons.first;
   }
 
-  void _watch(String? seasonId) {
-    if (_watcher != null && _watchedSeasonId == seasonId) return;
+  void _watch(String? seasonId, GameType? gameType) {
+    if (_watcher != null &&
+        _watchedSeasonId == seasonId &&
+        _watchedGameType == gameType) {
+      return;
+    }
     _watcher?.cancel();
     _watchedSeasonId = seasonId;
+    _watchedGameType = gameType;
     _watcher = DebouncedTicks(
       _repository.watchStandings(
         competitionId: competitionId,
         seasonId: seasonId,
+        gameType: gameType,
       ),
       () {
         if (!isClosed) refresh();

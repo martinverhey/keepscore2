@@ -30,6 +30,8 @@ itself when `AuthBloc` reports the user is no longer anonymous.
 Leaderboard (default), Matches, Players. The leaderboard tab carries the season
 switcher; the season list is `seasons` plus, stitched in front of it, the
 current calendar window — which has no row until the first match lands in it.
+It also carries a game-type filter (`GameTypeFilterBar`) — combined (default)
+or one of `1v1`/`2v2`/`3v3`/`4v4`/`mixed`.
 
 `/competition/:id/match/new` builds the teams and submits; `/competition/:id/match/:matchId` shows
 the per-player before → after and lets the creator or the owner change the
@@ -182,6 +184,19 @@ Kept here because the code cannot express them and they cost real debugging:
   roster read (`players` embedding `competitions(starting_rating)`) so the
   page still shows everyone at the starting rating instead of an empty list.
   `Leaderboard.seasonId` is nullable for exactly this synthetic case.
+- **The per-game-type leaderboard is a second, parallel Elo track, not a
+  filter on the existing one.** Elo is order-dependent, so "1v1 ranking"
+  can't be derived by filtering `player_ratings` after the fact — it needs
+  its own replay built only from 1v1 matches. `player_game_type_ratings`
+  (`apply_match_type_rating` / `recalc_season_game_type`, driven alongside
+  the combined track by `create_match` / `update_match_score` /
+  `delete_match`) is that second track, keyed by `(season_id, game_type,
+  player_id)`. `player_ratings` / `leaderboard` are unchanged and remain
+  "combined" (every match, any type) — that's what "all game types
+  combined" already meant before this existed. Unlike `leaderboard`, the
+  `game_type_leaderboard` view is not roster-backed: a player who hasn't
+  played a given type this season doesn't appear in it, rather than
+  showing everyone tied at `starting_rating` for a type nobody's played.
 
 ## Commands
 
