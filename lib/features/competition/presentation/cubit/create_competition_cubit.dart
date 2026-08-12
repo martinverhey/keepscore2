@@ -9,7 +9,7 @@ export 'create_competition_state.dart';
 
 class CreateCompetitionCubit extends Cubit<CreateCompetitionState> {
   CreateCompetitionCubit(this._repository)
-      : super(const CreateCompetitionState());
+    : super(const CreateCompetitionState());
 
   final CompetitionRepository _repository;
 

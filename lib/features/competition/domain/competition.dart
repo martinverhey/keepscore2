@@ -22,19 +22,19 @@ class Competition extends Equatable {
   });
 
   factory Competition.fromMap(Map<String, dynamic> map) => Competition(
-        id: map['id'] as String,
-        joinCode: map['join_code'] as String,
-        name: map['name'] as String,
-        ownerId: map['owner_id'] as String,
-        seasonLength: SeasonLength.fromWire(map['season_length'] as String),
-        timezone: map['timezone'] as String,
-        startingRating: map['starting_rating'] as int,
-        kFactor: map['k_factor'] as int,
-        movEnabled: map['mov_enabled'] as bool,
-        movCap: _toDouble(map['mov_cap']),
-        allowDraws: map['allow_draws'] as bool,
-        createdAt: DateTime.parse(map['created_at'] as String),
-      );
+    id: map['id'] as String,
+    joinCode: map['join_code'] as String,
+    name: map['name'] as String,
+    ownerId: map['owner_id'] as String,
+    seasonLength: SeasonLength.fromWire(map['season_length'] as String),
+    timezone: map['timezone'] as String,
+    startingRating: map['starting_rating'] as int,
+    kFactor: map['k_factor'] as int,
+    movEnabled: map['mov_enabled'] as bool,
+    movCap: _toDouble(map['mov_cap']),
+    allowDraws: map['allow_draws'] as bool,
+    createdAt: DateTime.parse(map['created_at'] as String),
+  );
 
   final String id;
   final String joinCode;
@@ -53,23 +53,23 @@ class Competition extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        joinCode,
-        name,
-        ownerId,
-        seasonLength,
-        timezone,
-        startingRating,
-        kFactor,
-        movEnabled,
-        movCap,
-        allowDraws,
-        createdAt,
-      ];
+    id,
+    joinCode,
+    name,
+    ownerId,
+    seasonLength,
+    timezone,
+    startingRating,
+    kFactor,
+    movEnabled,
+    movCap,
+    allowDraws,
+    createdAt,
+  ];
 }
 
 double _toDouble(Object? value) => switch (value) {
-      final num n => n.toDouble(),
-      final String s => double.tryParse(s) ?? 0,
-      _ => 0,
-    };
+  final num n => n.toDouble(),
+  final String s => double.tryParse(s) ?? 0,
+  _ => 0,
+};

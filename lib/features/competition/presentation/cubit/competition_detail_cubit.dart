@@ -8,7 +8,7 @@ export 'competition_detail_state.dart';
 
 class CompetitionDetailCubit extends Cubit<CompetitionDetailState> {
   CompetitionDetailCubit(this._repository, this.competitionId)
-      : super(const CompetitionDetailState());
+    : super(const CompetitionDetailState());
 
   final CompetitionRepository _repository;
   final String competitionId;
@@ -18,19 +18,23 @@ class CompetitionDetailCubit extends Cubit<CompetitionDetailState> {
     try {
       final overview = await _repository.overview(competitionId);
       if (isClosed) return;
-      emit(CompetitionDetailState(
-        status: overview == null
-            ? CompetitionDetailStatus.missing
-            : CompetitionDetailStatus.ready,
-        overview: overview,
-      ));
+      emit(
+        CompetitionDetailState(
+          status: overview == null
+              ? CompetitionDetailStatus.missing
+              : CompetitionDetailStatus.ready,
+          overview: overview,
+        ),
+      );
     } on Failure catch (failure) {
       if (isClosed) return;
-      emit(CompetitionDetailState(
-        status: CompetitionDetailStatus.failed,
-        overview: silent ? state.overview : null,
-        failure: failure,
-      ));
+      emit(
+        CompetitionDetailState(
+          status: CompetitionDetailStatus.failed,
+          overview: silent ? state.overview : null,
+          failure: failure,
+        ),
+      );
     }
   }
 

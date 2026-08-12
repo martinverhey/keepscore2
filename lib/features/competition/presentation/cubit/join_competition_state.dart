@@ -4,11 +4,7 @@ import '../../../../core/error/failure.dart';
 import '../../../player/domain/player.dart';
 import '../../domain/join_preview.dart';
 
-enum JoinStep {
-  code,
-
-  confirm,
-}
+enum JoinStep { code, confirm }
 
 class JoinCompetitionState extends Equatable {
   const JoinCompetitionState({
@@ -36,7 +32,8 @@ class JoinCompetitionState extends Equatable {
 
   bool get canLookUp => codeIsValid && !busy;
 
-  bool get canJoin => preview != null && !busy && !(preview?.alreadyMember ?? false);
+  bool get canJoin =>
+      preview != null && !busy && !(preview?.alreadyMember ?? false);
 
   JoinCompetitionState copyWith({
     JoinStep? step,
@@ -54,13 +51,22 @@ class JoinCompetitionState extends Equatable {
       code: code ?? this.code,
       busy: busy ?? this.busy,
       preview: preview ?? this.preview,
-      selectedClaimId: clearClaim ? null : (selectedClaimId ?? this.selectedClaimId),
+      selectedClaimId: clearClaim
+          ? null
+          : (selectedClaimId ?? this.selectedClaimId),
       joined: joined ?? this.joined,
       failure: clearFailure ? null : (failure ?? this.failure),
     );
   }
 
   @override
-  List<Object?> get props =>
-      [step, code, busy, preview, selectedClaimId, joined, failure];
+  List<Object?> get props => [
+    step,
+    code,
+    busy,
+    preview,
+    selectedClaimId,
+    joined,
+    failure,
+  ];
 }

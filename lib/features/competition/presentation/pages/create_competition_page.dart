@@ -4,9 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/error/failure_messages.dart';
+import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
-import '../../../../l10n/app_localizations.dart';
 import '../../domain/competition.dart';
 import '../cubit/create_competition_cubit.dart';
 
@@ -28,8 +28,6 @@ class _CreateCompetitionPageState extends State<CreateCompetitionPage> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-
     return BlocConsumer<CreateCompetitionCubit, CreateCompetitionState>(
       listenWhen: (previous, current) => current.created != null,
       listener: (context, state) {
@@ -40,14 +38,14 @@ class _CreateCompetitionPageState extends State<CreateCompetitionPage> {
         final cubit = context.read<CreateCompetitionCubit>();
 
         return AdaptiveScaffold(
-          title: l10n.competitionsCreate,
+          title: context.l10n.competitionsCreate,
           body: Padding(
             padding: const EdgeInsets.all(AppSpacing.lg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 AdaptiveTextField(
-                  label: l10n.competitionNameLabel,
+                  label: context.l10n.competitionNameLabel,
                   controller: _nameController,
                   autofocus: true,
                   enabled: !state.busy,
@@ -55,14 +53,14 @@ class _CreateCompetitionPageState extends State<CreateCompetitionPage> {
                   textInputAction: TextInputAction.done,
                   errorText: state.name.isEmpty || state.nameIsValid
                       ? null
-                      : l10n.competitionNameTooShort,
+                      : context.l10n.competitionNameTooShort,
                   onChanged: cubit.nameChanged,
                   onSubmitted: (_) => cubit.submit(),
                 ),
                 const SizedBox(height: AppSpacing.lg),
 
                 Text(
-                  l10n.competitionSeasonLengthLabel,
+                  context.l10n.competitionSeasonLengthLabel,
                   style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: AppSpacing.sm),
@@ -70,14 +68,14 @@ class _CreateCompetitionPageState extends State<CreateCompetitionPage> {
                   value: state.seasonLength,
                   onChanged: cubit.seasonLengthChanged,
                   segments: {
-                    SeasonLength.monthly: l10n.seasonMonthly,
-                    SeasonLength.quarterly: l10n.seasonQuarterly,
-                    SeasonLength.yearly: l10n.seasonYearly,
+                    SeasonLength.monthly: context.l10n.seasonMonthly,
+                    SeasonLength.quarterly: context.l10n.seasonQuarterly,
+                    SeasonLength.yearly: context.l10n.seasonYearly,
                   },
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  l10n.competitionSeasonExplainer(1000),
+                  context.l10n.competitionSeasonExplainer(1000),
                   style: const TextStyle(
                     color: AppColors.neutral,
                     fontSize: 13,
@@ -86,7 +84,7 @@ class _CreateCompetitionPageState extends State<CreateCompetitionPage> {
                 const SizedBox(height: AppSpacing.xl),
 
                 AdaptiveButton(
-                  label: l10n.competitionCreateSubmit,
+                  label: context.l10n.competitionCreateSubmit,
                   busy: state.busy,
                   onPressed: state.canSubmit ? cubit.submit : null,
                 ),
@@ -95,7 +93,7 @@ class _CreateCompetitionPageState extends State<CreateCompetitionPage> {
                   Padding(
                     padding: const EdgeInsets.only(top: AppSpacing.md),
                     child: Text(
-                      state.failure!.localized(l10n),
+                      state.failure!.localized(context.l10n),
                       style: const TextStyle(color: AppColors.negative),
                     ),
                   ),

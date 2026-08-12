@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
-import '../../../../l10n/app_localizations.dart';
 
 class JoinCodeCard extends StatefulWidget {
   const JoinCodeCard({super.key, required this.code});
@@ -37,8 +37,6 @@ class _JoinCodeCardState extends State<JoinCodeCard> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
@@ -64,7 +62,7 @@ class _JoinCodeCardState extends State<JoinCodeCard> {
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  l10n.competitionCodeHelp,
+                  context.l10n.competitionCodeHelp,
                   style: const TextStyle(
                     color: AppColors.neutral,
                     fontSize: 13,
@@ -74,7 +72,9 @@ class _JoinCodeCardState extends State<JoinCodeCard> {
             ),
           ),
           AdaptiveButton(
-            label: _copied ? l10n.competitionCodeCopied : l10n.commonCopy,
+            label: _copied
+                ? context.l10n.competitionCodeCopied
+                : context.l10n.commonCopy,
             kind: AdaptiveButtonKind.plain,
             expand: false,
             onPressed: _copy,

@@ -9,7 +9,7 @@ export 'competition_settings_state.dart';
 
 class CompetitionSettingsCubit extends Cubit<CompetitionSettingsState> {
   CompetitionSettingsCubit(this._repository, this.competitionId)
-      : super(const CompetitionSettingsState());
+    : super(const CompetitionSettingsState());
 
   final CompetitionRepository _repository;
   final String competitionId;
@@ -19,17 +19,21 @@ class CompetitionSettingsCubit extends Cubit<CompetitionSettingsState> {
     try {
       final overview = await _repository.overview(competitionId);
       if (isClosed) return;
-      emit(overview == null
-          ? const CompetitionSettingsState(
-              status: CompetitionSettingsStatus.missing,
-            )
-          : CompetitionSettingsState.of(overview.competition));
+      emit(
+        overview == null
+            ? const CompetitionSettingsState(
+                status: CompetitionSettingsStatus.missing,
+              )
+            : CompetitionSettingsState.of(overview.competition),
+      );
     } on Failure catch (failure) {
       if (isClosed) return;
-      emit(CompetitionSettingsState(
-        status: CompetitionSettingsStatus.failed,
-        failure: failure,
-      ));
+      emit(
+        CompetitionSettingsState(
+          status: CompetitionSettingsStatus.failed,
+          failure: failure,
+        ),
+      );
     }
   }
 

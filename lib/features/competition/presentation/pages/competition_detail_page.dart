@@ -5,17 +5,18 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/router/app_router.dart';
 import '../../../../core/data/recent_competition_store.dart';
 import '../../../../core/error/failure_messages.dart';
+import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/state_views.dart';
-import '../../../../l10n/app_localizations.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../leaderboard/presentation/cubit/leaderboard_cubit.dart';
-import '../../../leaderboard/presentation/widgets/leaderboard_view.dart';
+import '../../../leaderboard/presentation/widgets/leaderboard.dart';
 import '../../../match/presentation/cubit/match_list_cubit.dart';
-import '../../../match/presentation/widgets/match_list_view.dart';
+import '../../../match/presentation/widgets/matches_page.dart';
 import '../../../player/presentation/cubit/players_cubit.dart';
 import '../../../profile/presentation/widgets/profile_avatar_button.dart';
+import '../../domain/competition.dart';
 import '../cubit/competition_detail_cubit.dart';
 import '../widgets/invite_sheet.dart';
 
@@ -77,14 +78,20 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     final session = context.watch<AuthBloc>().state;
     final roster = context.watch<PlayersCubit>().state;
 
-    return BlocBuilder<CompetitionDetailCubit, CompetitionDetailState>(
+    return BlocConsumer<CompetitionDetailCubit, CompetitionDetailState>(
+      listener: (context, state) {
+        if (state.status == CompetitionDetailStatus.missing) {
+          RecentCompetitionStore.clear();
+          context.go(Routes.home);
+        }
+      },
       builder: (context, state) {
         final competition = state.competition;
         final isRegistered = session.canWrite;
+        final isOwner = competition?.isOwnedBy(session.user?.id) ?? false;
         final hasPlayers = roster.active.length >= 2;
         final myPlayerId = state.myPlayerId;
 
@@ -98,8 +105,8 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
 
         return AdaptiveScaffold(
           title: switch (_tab) {
-            CompetitionTab.leaderboard => l10n.leaderboardTitle,
-            CompetitionTab.matches => l10n.matchesTitle,
+            CompetitionTab.leaderboard => context.l10n.leaderboardTitle,
+            CompetitionTab.matches => context.l10n.matchesTitle,
           },
           onRefresh: _refresh,
           trailing: AdaptiveIconButton(
@@ -111,16 +118,16 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
             items: [
               AdaptiveTabBarItem(
                 glyph: AdaptiveGlyph.leaderboard,
-                label: l10n.leaderboardTitle,
+                label: context.l10n.leaderboardTitle,
               ),
               if (isRegistered)
                 AdaptiveTabBarItem(
                   glyph: AdaptiveGlyph.newMatch,
-                  label: l10n.matchNew,
+                  label: context.l10n.matchNew,
                 ),
               AdaptiveTabBarItem(
                 glyph: AdaptiveGlyph.matches,
-                label: l10n.matchesTitle,
+                label: context.l10n.matchesTitle,
               ),
             ],
             selectedIndex: _tab == CompetitionTab.leaderboard
@@ -141,98 +148,141 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
           body: switch (state.status) {
             CompetitionDetailStatus.loading => const AdaptiveLoader(),
             CompetitionDetailStatus.missing => EmptyState(
-              message: l10n.competitionNotFound,
+              message: context.l10n.competitionNotFound,
             ),
             CompetitionDetailStatus.failed when competition == null =>
               ErrorRetry(
-                message: state.failure!.localized(l10n),
-                retryLabel: l10n.commonRetry,
+                message: state.failure!.localized(context.l10n),
+                retryLabel: context.l10n.commonRetry,
                 onRetry: context.read<CompetitionDetailCubit>().load,
               ),
-            _ => Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.md,
-                AppSpacing.sm,
-                AppSpacing.md,
-                AppSpacing.xl,
-              ),
-              child: switch (_tab) {
-                CompetitionTab.leaderboard => Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: _openSettingsThenCompetitions,
-                      child: Row(
-                        children: [
-                          Flexible(
-                            child: Text(
-                              competition!.name,
-                              style: const TextStyle(
-                                color: AppColors.neutral,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const AdaptiveIcon(
-                            AdaptiveGlyph.chevronRight,
-                            color: AppColors.neutral,
-                            size: 16,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    if (myPlayerId != null && myDisplayName != null)
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: ProfileAvatarButton(
-                          competitionId: widget.competitionId,
-                          playerId: myPlayerId,
-                          displayName: myDisplayName,
-                        ),
-                      ),
-                    const SizedBox(height: AppSpacing.lg),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: AdaptiveButton(
-                        label: l10n.competitionInviteAction,
-                        icon: AdaptiveIcon(
-                          AdaptiveGlyph.invite,
-                          size: 18,
-                          color: AdaptiveColors.accent(context),
-                        ),
-                        kind: AdaptiveButtonKind.plain,
-                        expand: false,
-                        onPressed: () => showInviteSheet(
-                          context,
-                          code: competition.joinCode,
-                        ),
-                      ),
-                    ),
-                    LeaderboardView(
-                      competitionId: widget.competitionId,
-                      seasonLength: competition.seasonLength,
-                      myPlayerId: myPlayerId,
-                      onGoToMatches: () =>
-                          setState(() => _tab = CompetitionTab.matches),
-                    ),
-                  ],
-                ),
-                CompetitionTab.matches => MatchListView(
-                  isRegistered: isRegistered,
-                  hasPlayers: hasPlayers,
-                  onOpenMatch: (matchId) => _openAndReload(
-                    Routes.match(widget.competitionId, matchId),
-                  ),
-                ),
-              },
+            _ when competition == null => const SizedBox.shrink(),
+            _ => _body(
+              context,
+              competition,
+              isRegistered: isRegistered,
+              isOwner: isOwner,
+              hasPlayers: hasPlayers,
+              myPlayerId: myPlayerId,
+              myDisplayName: myDisplayName,
             ),
           },
         );
       },
+    );
+  }
+
+  Widget _body(
+    BuildContext context,
+    Competition competition, {
+    required bool isRegistered,
+    required bool isOwner,
+    required bool hasPlayers,
+    required String? myPlayerId,
+    required String? myDisplayName,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.sm,
+        AppSpacing.md,
+        AppSpacing.xl,
+      ),
+      child: switch (_tab) {
+        CompetitionTab.leaderboard => _leaderboardTab(
+          context,
+          competition,
+          isRegistered: isRegistered,
+          isOwner: isOwner,
+          myPlayerId: myPlayerId,
+          myDisplayName: myDisplayName,
+        ),
+        CompetitionTab.matches => MatchesPage(
+          isRegistered: isRegistered,
+          hasPlayers: hasPlayers,
+          isOwner: isOwner,
+          onOpenMatch: (matchId) =>
+              _openAndReload(Routes.match(widget.competitionId, matchId)),
+          onCreateMatch: _openNewMatch,
+        ),
+      },
+    );
+  }
+
+  Widget _leaderboardTab(
+    BuildContext context,
+    Competition competition, {
+    required bool isRegistered,
+    required bool isOwner,
+    required String? myPlayerId,
+    required String? myDisplayName,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (isRegistered) ...[
+          _competitionHeader(context, competition),
+          const SizedBox(height: AppSpacing.sm),
+          if (myPlayerId != null && myDisplayName != null)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: ProfileAvatarButton(
+                competitionId: widget.competitionId,
+                playerId: myPlayerId,
+                displayName: myDisplayName,
+              ),
+            ),
+          const SizedBox(height: AppSpacing.lg),
+          Align(
+            alignment: Alignment.centerRight,
+            child: AdaptiveButton(
+              label: context.l10n.competitionInviteAction,
+              icon: AdaptiveIcon(
+                AdaptiveGlyph.invite,
+                size: 18,
+                color: AdaptiveColors.accent(context),
+              ),
+              kind: AdaptiveButtonKind.plain,
+              expand: false,
+              onPressed: () =>
+                  showInviteSheet(context, code: competition.joinCode),
+            ),
+          ),
+        ],
+        LeaderboardView(
+          competitionId: widget.competitionId,
+          seasonLength: competition.seasonLength,
+          myPlayerId: myPlayerId,
+          isOwner: isOwner,
+        ),
+      ],
+    );
+  }
+
+  Widget _competitionHeader(BuildContext context, Competition competition) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: _openSettingsThenCompetitions,
+      child: Row(
+        children: [
+          Flexible(
+            child: Text(
+              competition.name,
+              style: const TextStyle(
+                color: AppColors.neutral,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const AdaptiveIcon(
+            AdaptiveGlyph.chevronRight,
+            color: AppColors.neutral,
+            size: 16,
+          ),
+        ],
+      ),
     );
   }
 }

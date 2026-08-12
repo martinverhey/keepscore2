@@ -7,7 +7,7 @@ enum SeasonLength {
   final String wireName;
 
   static SeasonLength fromWire(String value) => SeasonLength.values.firstWhere(
-        (v) => v.wireName == value,
-        orElse: () => SeasonLength.monthly,
-      );
+    (v) => v.wireName == value,
+    orElse: () => SeasonLength.monthly,
+  );
 }

@@ -36,12 +36,18 @@ class CompetitionListState extends Equatable {
       competitions: competitions ?? this.competitions,
       busy: busy ?? this.busy,
       failure: failure ?? this.failure,
-      actionFailure:
-          clearActionFailure ? null : (actionFailure ?? this.actionFailure),
+      actionFailure: clearActionFailure
+          ? null
+          : (actionFailure ?? this.actionFailure),
     );
   }
 
   @override
-  List<Object?> get props =>
-      [status, competitions, busy, failure, actionFailure];
+  List<Object?> get props => [
+    status,
+    competitions,
+    busy,
+    failure,
+    actionFailure,
+  ];
 }

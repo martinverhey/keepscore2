@@ -1,8 +1,9 @@
 import 'package:flutter/widgets.dart';
 
+import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
-import '../../../../l10n/app_localizations.dart';
+import '../../../../core/widgets/tag.dart';
 import '../../domain/competition.dart';
 
 class CompetitionTile extends StatelessWidget {
@@ -19,7 +20,6 @@ class CompetitionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     final competition = overview.competition;
 
     return GestureDetector(
@@ -46,7 +46,11 @@ class CompetitionTile extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                _CodeChip(code: competition.joinCode),
+                Tag(
+                  competition.joinCode,
+                  color: AdaptiveColors.accent(context),
+                  style: TagStyle.code,
+                ),
               ],
             ),
             const SizedBox(height: AppSpacing.xs),
@@ -54,8 +58,8 @@ class CompetitionTile extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    '${l10n.competitionPlayers(overview.playerCount)}'
-                    ' · ${l10n.competitionMatches(overview.matchCount)}',
+                    '${context.l10n.competitionPlayers(overview.playerCount)}'
+                    ' · ${context.l10n.competitionMatches(overview.matchCount)}',
                     style: const TextStyle(
                       color: AppColors.neutral,
                       fontSize: 13,
@@ -64,7 +68,7 @@ class CompetitionTile extends StatelessWidget {
                 ),
                 if (onManage != null)
                   AdaptiveButton(
-                    label: l10n.competitionManage,
+                    label: context.l10n.competitionManage,
                     kind: AdaptiveButtonKind.plain,
                     expand: false,
                     onPressed: onManage,
@@ -72,35 +76,6 @@ class CompetitionTile extends StatelessWidget {
               ],
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _CodeChip extends StatelessWidget {
-  const _CodeChip({required this.code});
-  final String code;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.xs,
-      ),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppRadius.sm),
-        color: AdaptiveColors.accent(context).withValues(alpha: 0.14),
-      ),
-      child: Text(
-        code,
-        style: TextStyle(
-          fontFeatures: const [FontFeature.tabularFigures()],
-          letterSpacing: 1.2,
-          fontWeight: FontWeight.w700,
-          fontSize: 13,
-          color: AdaptiveColors.accent(context),
         ),
       ),
     );

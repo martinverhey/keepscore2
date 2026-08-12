@@ -15,15 +15,15 @@ class JoinPreview extends Equatable {
   });
 
   factory JoinPreview.fromMap(Map<String, dynamic> map) => JoinPreview(
-        competitionId: map['competition_id'] as String,
-        name: map['name'] as String,
-        ownerName: map['owner_name'] as String?,
-        playerCount: (map['player_count'] as num?)?.toInt() ?? 0,
-        alreadyMember: map['already_member'] as bool? ?? false,
-        claimable: ((map['unclaimed'] as List<dynamic>?) ?? const [])
-            .map((e) => ClaimablePlayer.fromMap(e as Map<String, dynamic>))
-            .toList(growable: false),
-      );
+    competitionId: map['competition_id'] as String,
+    name: map['name'] as String,
+    ownerName: map['owner_name'] as String?,
+    playerCount: (map['player_count'] as num?)?.toInt() ?? 0,
+    alreadyMember: map['already_member'] as bool? ?? false,
+    claimable: ((map['unclaimed'] as List<dynamic>?) ?? const [])
+        .map((e) => ClaimablePlayer.fromMap(e as Map<String, dynamic>))
+        .toList(growable: false),
+  );
 
   final String competitionId;
   final String name;
@@ -33,6 +33,12 @@ class JoinPreview extends Equatable {
   final List<ClaimablePlayer> claimable;
 
   @override
-  List<Object?> get props =>
-      [competitionId, name, ownerName, playerCount, alreadyMember, claimable];
+  List<Object?> get props => [
+    competitionId,
+    name,
+    ownerName,
+    playerCount,
+    alreadyMember,
+    claimable,
+  ];
 }

@@ -129,7 +129,7 @@ void main() {
       );
 
       expect(find.text(l10n.competitionSettingsTitle), findsNothing);
-      expect(find.text(l10n.playersTitle), findsOneWidget);
+      expect(find.text(l10n.playersManageTitle), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );

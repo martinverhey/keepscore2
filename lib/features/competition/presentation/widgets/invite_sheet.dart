@@ -1,8 +1,9 @@
 import 'package:flutter/widgets.dart';
 
+import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
-import '../../../../l10n/app_localizations.dart';
+import '../../../../core/widgets/sheet.dart';
 import 'join_code_card.dart';
 import 'join_qr_card.dart';
 
@@ -19,19 +20,12 @@ class _InviteSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      child: Column(
+    return Sheet(
+      title: context.l10n.competitionInviteTitle,
+      content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            l10n.competitionInviteTitle,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: AppSpacing.lg),
           JoinQrCard(code: code),
           const SizedBox(height: AppSpacing.sm),
           JoinCodeCard(code: code),

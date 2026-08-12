@@ -1,9 +1,9 @@
 import 'package:flutter/widgets.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
+import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
-import '../../../../l10n/app_localizations.dart';
 
 class JoinQrCard extends StatelessWidget {
   const JoinQrCard({super.key, required this.code});
@@ -13,7 +13,6 @@ class JoinQrCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     final accent = AdaptiveColors.accent(context);
 
     return Container(
@@ -46,7 +45,7 @@ class JoinQrCard extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
-            l10n.competitionQrInvite,
+            context.l10n.competitionQrInvite,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 15,
@@ -56,7 +55,7 @@ class JoinQrCard extends StatelessWidget {
           ),
           const SizedBox(height: 2),
           Text(
-            l10n.competitionQrHelp,
+            context.l10n.competitionQrHelp,
             textAlign: TextAlign.center,
             style: const TextStyle(color: AppColors.neutral, fontSize: 12),
           ),

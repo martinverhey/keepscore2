@@ -31,6 +31,11 @@ class CompetitionOverview extends Equatable {
   String get id => competition.id;
 
   @override
-  List<Object?> get props =>
-      [competition, playerCount, matchCount, lastPlayedAt, myPlayerId];
+  List<Object?> get props => [
+    competition,
+    playerCount,
+    matchCount,
+    lastPlayedAt,
+    myPlayerId,
+  ];
 }

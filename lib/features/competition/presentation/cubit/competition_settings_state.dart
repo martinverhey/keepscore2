@@ -51,7 +51,8 @@ class CompetitionSettingsState extends Equatable {
   bool get kFactorIsValid =>
       kFactorValue != null && kFactorValue! >= 1 && kFactorValue! <= 200;
 
-  double? get movCapValue => double.tryParse(movCap.trim().replaceAll(',', '.'));
+  double? get movCapValue =>
+      double.tryParse(movCap.trim().replaceAll(',', '.'));
 
   bool get movCapIsValid =>
       movCapValue != null && movCapValue! >= 1 && movCapValue! <= 5;
@@ -94,18 +95,18 @@ class CompetitionSettingsState extends Equatable {
 
   @override
   List<Object?> get props => [
-        status,
-        competition,
-        name,
-        seasonLength,
-        kFactor,
-        movEnabled,
-        movCap,
-        allowDraws,
-        busy,
-        saved,
-        failure,
-      ];
+    status,
+    competition,
+    name,
+    seasonLength,
+    kFactor,
+    movEnabled,
+    movCap,
+    allowDraws,
+    busy,
+    saved,
+    failure,
+  ];
 }
 
 String _formatCap(double value) =>

@@ -22,11 +22,9 @@ class JoinCompetitionCubit extends Cubit<JoinCompetitionState> {
     }
   }
 
-  void back() => emit(state.copyWith(
-        step: JoinStep.code,
-        clearClaim: true,
-        clearFailure: true,
-      ));
+  void back() => emit(
+    state.copyWith(step: JoinStep.code, clearClaim: true, clearFailure: true),
+  );
 
   Future<void> lookUp() async {
     if (!state.canLookUp) return;
@@ -34,12 +32,14 @@ class JoinCompetitionCubit extends Cubit<JoinCompetitionState> {
     try {
       final preview = await _repository.preview(state.code);
       if (isClosed) return;
-      emit(state.copyWith(
-        busy: false,
-        preview: preview,
-        step: JoinStep.confirm,
-        clearClaim: true,
-      ));
+      emit(
+        state.copyWith(
+          busy: false,
+          preview: preview,
+          step: JoinStep.confirm,
+          clearClaim: true,
+        ),
+      );
     } on Failure catch (failure) {
       if (isClosed) return;
       emit(state.copyWith(busy: false, failure: failure));

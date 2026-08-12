@@ -19,36 +19,40 @@ class CompetitionListCubit extends Cubit<CompetitionListState> {
     try {
       final competitions = await _repository.myCompetitions();
       if (isClosed) return;
-      emit(CompetitionListState(
-        status: CompetitionListStatus.ready,
-        competitions: competitions,
-      ));
+      emit(
+        CompetitionListState(
+          status: CompetitionListStatus.ready,
+          competitions: competitions,
+        ),
+      );
     } on Failure catch (failure) {
       if (isClosed) return;
-      emit(CompetitionListState(
-        status: CompetitionListStatus.failed,
-        competitions: silent ? state.competitions : const [],
-        failure: failure,
-      ));
+      emit(
+        CompetitionListState(
+          status: CompetitionListStatus.failed,
+          competitions: silent ? state.competitions : const [],
+          failure: failure,
+        ),
+      );
     }
   }
 
   Future<void> refresh() => load(silent: true);
 
   Future<bool> rename(String competitionId, String name) => _mutate(() async {
-        final overview = _find(competitionId);
-        if (overview == null) return;
-        final competition = overview.competition;
-        await _repository.updateSettings(
-          competitionId: competitionId,
-          name: name,
-          seasonLength: competition.seasonLength,
-          kFactor: competition.kFactor,
-          movEnabled: competition.movEnabled,
-          movCap: competition.movCap,
-          allowDraws: competition.allowDraws,
-        );
-      });
+    final overview = _find(competitionId);
+    if (overview == null) return;
+    final competition = overview.competition;
+    await _repository.updateSettings(
+      competitionId: competitionId,
+      name: name,
+      seasonLength: competition.seasonLength,
+      kFactor: competition.kFactor,
+      movEnabled: competition.movEnabled,
+      movCap: competition.movCap,
+      allowDraws: competition.allowDraws,
+    );
+  });
 
   Future<bool> leave(String competitionId) =>
       _mutate(() => _repository.leave(competitionId));
