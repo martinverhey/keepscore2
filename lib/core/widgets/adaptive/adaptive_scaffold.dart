@@ -15,6 +15,7 @@ class AdaptiveScaffold extends StatelessWidget {
     this.bottomBar,
     this.onRefresh,
     this.constrainWidth = true,
+    this.hasScrollBody = false,
   });
 
   final String? title;
@@ -25,6 +26,7 @@ class AdaptiveScaffold extends StatelessWidget {
   final Widget? bottomBar;
   final Future<void> Function()? onRefresh;
   final bool constrainWidth;
+  final bool hasScrollBody;
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +41,7 @@ class AdaptiveScaffold extends StatelessWidget {
 
     final sliverBody = SliverSafeArea(
       top: false,
-      sliver: SliverFillRemaining(hasScrollBody: false, child: content),
+      sliver: SliverFillRemaining(hasScrollBody: hasScrollBody, child: content),
     );
 
     return AppPlatform.useCupertino

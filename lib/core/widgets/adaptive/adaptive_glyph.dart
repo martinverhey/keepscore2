@@ -6,4 +6,6 @@ enum AdaptiveGlyph {
   chevronRight,
   check,
   invite,
+  star,
+  add,
 }

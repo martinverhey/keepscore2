@@ -21,6 +21,8 @@ class AdaptiveIcon extends StatelessWidget {
     AdaptiveGlyph.chevronRight => CupertinoIcons.chevron_right,
     AdaptiveGlyph.check => CupertinoIcons.checkmark,
     AdaptiveGlyph.invite => CupertinoIcons.share,
+    AdaptiveGlyph.star => CupertinoIcons.star_fill,
+    AdaptiveGlyph.add => CupertinoIcons.add,
   };
 
   IconData get _material => switch (glyph) {
@@ -31,6 +33,8 @@ class AdaptiveIcon extends StatelessWidget {
     AdaptiveGlyph.chevronRight => Icons.chevron_right,
     AdaptiveGlyph.check => Icons.check,
     AdaptiveGlyph.invite => Icons.ios_share,
+    AdaptiveGlyph.star => Icons.star,
+    AdaptiveGlyph.add => Icons.add,
   };
 
   @override

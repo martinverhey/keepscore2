@@ -29,13 +29,15 @@ abstract final class Env {
 
   static String get supabaseUrl => _require('SUPABASE_URL');
 
-  static String get supabasePublishableKey => _require('SUPABASE_PUBLISHABLE_KEY');
+  static String get supabasePublishableKey =>
+      _require('SUPABASE_PUBLISHABLE_KEY');
 
   static bool get appleSignInEnabled => _flag('AUTH_APPLE_ENABLED');
 
   static bool get googleSignInEnabled => _flag('AUTH_GOOGLE_ENABLED');
 
-  static String? get googleServerClientId => _optional('GOOGLE_SERVER_CLIENT_ID');
+  static String? get googleServerClientId =>
+      _optional('GOOGLE_SERVER_CLIENT_ID');
 
   static String? get googleIosClientId => _optional('GOOGLE_IOS_CLIENT_ID');
 
@@ -55,9 +57,7 @@ abstract final class Env {
   static String _require(String key) {
     final value = dotenv.env[key];
     if (value == null || value.isEmpty) {
-      throw StateError(
-        'Missing $key in $_envAsset.',
-      );
+      throw StateError('Missing $key in $_envAsset.');
     }
     return value;
   }

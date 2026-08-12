@@ -46,7 +46,9 @@ class AdaptiveTextField extends StatelessWidget {
           ? null
           : OutlineInputBorder(
               borderRadius: AppRadius.card,
-              borderSide: BorderSide(color: accentColor!.withValues(alpha: 0.4)),
+              borderSide: BorderSide(
+                color: accentColor!.withValues(alpha: 0.4),
+              ),
             );
 
       return TextField(
@@ -86,12 +88,13 @@ class AdaptiveTextField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(bottom: AppSpacing.xs, left: AppSpacing.xs),
+          padding: const EdgeInsets.only(
+            bottom: AppSpacing.xs,
+            left: AppSpacing.xs,
+          ),
           child: Text(
             label,
-            style: CupertinoTheme.of(context)
-                .textTheme
-                .tabLabelTextStyle
+            style: CupertinoTheme.of(context).textTheme.tabLabelTextStyle
                 .copyWith(fontSize: 13, color: accentColor),
           ),
         ),
@@ -109,19 +112,23 @@ class AdaptiveTextField extends StatelessWidget {
           onSubmitted: onSubmitted,
           padding: const EdgeInsets.all(AppSpacing.md - 2),
           decoration: BoxDecoration(
-            color: accentColor?.withValues(alpha: 0.08) ??
+            color:
+                accentColor?.withValues(alpha: 0.08) ??
                 CupertinoColors.tertiarySystemFill.resolveFrom(context),
             borderRadius: AppRadius.card,
             border: errorText != null
                 ? Border.all(color: CupertinoColors.destructiveRed)
                 : accentColor == null
-                    ? null
-                    : Border.all(color: accentColor!.withValues(alpha: 0.4)),
+                ? null
+                : Border.all(color: accentColor!.withValues(alpha: 0.4)),
           ),
         ),
         if (errorText != null)
           Padding(
-            padding: const EdgeInsets.only(top: AppSpacing.xs, left: AppSpacing.xs),
+            padding: const EdgeInsets.only(
+              top: AppSpacing.xs,
+              left: AppSpacing.xs,
+            ),
             child: Text(
               errorText!,
               style: const TextStyle(

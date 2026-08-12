@@ -47,8 +47,12 @@ Future<bool> showAdaptiveConfirm(
               FilledButton(
                 style: destructive
                     ? FilledButton.styleFrom(
-                        backgroundColor: Theme.of(dialogContext).colorScheme.error,
-                        foregroundColor: Theme.of(dialogContext).colorScheme.onError,
+                        backgroundColor: Theme.of(
+                          dialogContext,
+                        ).colorScheme.error,
+                        foregroundColor: Theme.of(
+                          dialogContext,
+                        ).colorScheme.onError,
                       )
                     : null,
                 onPressed: () => Navigator.of(dialogContext).pop(true),

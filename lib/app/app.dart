@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 
+import '../core/extensions/build_context_l10n.dart';
 import '../core/theme/app_theme.dart';
 import '../core/widgets/adaptive/app_platform.dart';
 import '../features/auth/presentation/cubit/auth_bloc.dart';
@@ -66,7 +67,7 @@ class _KeepScoreAppState extends State<KeepScoreApp> {
           preference.brightnessOverride ??
           MediaQuery.platformBrightnessOf(context);
       return CupertinoApp.router(
-        onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
+        onGenerateTitle: (context) => context.l10n.appTitle,
         theme: AppTheme.cupertino(brightness),
         routerConfig: _router,
         localizationsDelegates: _localizationsDelegates,
@@ -79,7 +80,7 @@ class _KeepScoreAppState extends State<KeepScoreApp> {
     }
 
     return MaterialApp.router(
-      onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
+      onGenerateTitle: (context) => context.l10n.appTitle,
       theme: AppTheme.material(Brightness.light),
       darkTheme: AppTheme.material(Brightness.dark),
       themeMode: preference.mode,

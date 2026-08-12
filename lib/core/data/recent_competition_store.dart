@@ -12,4 +12,9 @@ abstract final class RecentCompetitionStore {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_key, competitionId);
   }
+
+  static Future<void> clear() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_key);
+  }
 }

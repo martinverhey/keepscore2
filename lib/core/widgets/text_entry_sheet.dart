@@ -1,9 +1,9 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
-import '../theme/app_tokens.dart';
+import '../../core/extensions/build_context_l10n.dart';
 import 'adaptive/adaptive.dart';
-import '../../l10n/app_localizations.dart';
+import 'sheet.dart';
 
 Future<String?> showTextEntrySheet(
   BuildContext context, {
@@ -69,55 +69,27 @@ class _TextEntrySheetState extends State<_TextEntrySheet> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-
-    return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              widget.title,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-            ),
-            if (widget.subtitle != null) ...[
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                widget.subtitle!,
-                style: const TextStyle(color: AppColors.neutral, fontSize: 13),
-              ),
-            ],
-            const SizedBox(height: AppSpacing.lg),
-
-            AdaptiveTextField(
-              label: widget.fieldLabel,
-              controller: _controller,
-              autofocus: true,
-              maxLength: 60,
-              textInputAction: TextInputAction.done,
-              errorText: _value.isEmpty || _isValid
-                  ? null
-                  : widget.tooShortMessage,
-              onChanged: (value) => setState(() => _value = value),
-              onSubmitted: (_) => _submit(),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-
-            AdaptiveButton(
-              label: widget.submitLabel,
-              onPressed: _isValid ? _submit : null,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            AdaptiveButton(
-              label: l10n.commonCancel,
-              kind: AdaptiveButtonKind.plain,
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-          ],
-        ),
+    return Sheet(
+      title: widget.title,
+      subtitle: widget.subtitle,
+      content: AdaptiveTextField(
+        label: widget.fieldLabel,
+        controller: _controller,
+        autofocus: true,
+        maxLength: 60,
+        textInputAction: TextInputAction.done,
+        errorText: _value.isEmpty || _isValid ? null : widget.tooShortMessage,
+        onChanged: (value) => setState(() => _value = value),
+        onSubmitted: (_) => _submit(),
+      ),
+      primaryButton: AdaptiveButton(
+        label: widget.submitLabel,
+        onPressed: _isValid ? _submit : null,
+      ),
+      secondaryButton: AdaptiveButton(
+        label: context.l10n.commonCancel,
+        kind: AdaptiveButtonKind.plain,
+        onPressed: () => Navigator.of(context).pop(),
       ),
     );
   }

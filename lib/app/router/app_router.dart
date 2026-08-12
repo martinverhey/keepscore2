@@ -171,7 +171,8 @@ GoRouter createRouter(AuthBloc authBloc) {
                   return MultiBlocProvider(
                     providers: [
                       BlocProvider(
-                        create: (_) => getIt<CompetitionDetailCubit>(param1: id),
+                        create: (_) =>
+                            getIt<CompetitionDetailCubit>(param1: id),
                       ),
                       BlocProvider(
                         create: (_) => getIt<PlayersCubit>(param1: id),
@@ -187,9 +188,8 @@ GoRouter createRouter(AuthBloc authBloc) {
             path: 'match/new',
             pageBuilder: (context, state) => adaptiveModalPage<bool>(
               child: BlocProvider(
-                create: (_) => getIt<MatchFormCubit>(
-                  param1: state.pathParameters['id']!,
-                ),
+                create: (_) =>
+                    getIt<MatchFormCubit>(param1: state.pathParameters['id']!),
                 child: const NewMatchPage(),
               ),
             ),

@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 
+import '../core/extensions/build_context_l10n.dart';
 import '../core/widgets/adaptive/adaptive.dart';
-import '../l10n/app_localizations.dart';
 
 class SplashPage extends StatelessWidget {
   const SplashPage({super.key});
@@ -9,7 +9,7 @@ class SplashPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AdaptiveScaffold(
-      title: AppLocalizations.of(context).appTitle,
+      title: context.l10n.appTitle,
       body: const AdaptiveLoader(),
     );
   }
