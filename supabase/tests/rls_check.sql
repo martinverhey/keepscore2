@@ -19,17 +19,35 @@ do $$
 declare
   v_owner    constant uuid := '11111111-1111-1111-1111-111111111111';
   v_guest    constant uuid := '22222222-2222-2222-2222-222222222222';
-  v_outsider uuid;
+  v_outsider constant uuid := '55555555-5555-5555-5555-555555555555';
   v_comp     public.competitions;
   v_n        integer;
   v_denied   boolean;
   v_player   uuid;
 begin
-  select * into v_comp from public.competitions limit 1;
+  -- Pinned to the seed's own join code rather than "limit 1": the live
+  -- project accumulates other competitions from manual testing, and an
+  -- unordered limit 1 is one VACUUM away from picking a different one.
+  select * into v_comp from public.competitions where join_code = 'HDHS39';
 
-  -- A real account that is not in the competition.
-  select id into v_outsider from auth.users
-   where id not in (v_owner, v_guest) limit 1;
+  -- A dedicated, freshly-minted account rather than "any account that
+  -- isn't owner/guest" — the live project now has plenty of real accounts
+  -- from manual testing, and one picked at random could turn out to be a
+  -- member of some other competition, which would make the "outsider sees
+  -- nothing" assertions below fail for reasons unrelated to RLS.
+  insert into auth.users (
+    id, instance_id, aud, role, email, encrypted_password,
+    email_confirmed_at, created_at, updated_at,
+    raw_app_meta_data, raw_user_meta_data, is_anonymous
+  )
+  values (
+    v_outsider, '00000000-0000-0000-0000-000000000000',
+    'authenticated', 'authenticated',
+    'outsider@keepscore.test', '', now(), now(), now(),
+    '{"provider":"email","providers":["email"]}'::jsonb,
+    '{"full_name":"Outsider"}'::jsonb, false
+  )
+  on conflict (id) do nothing;
 
   set local role authenticated;
 
@@ -50,21 +68,19 @@ begin
   -- ---------------------------------------------------------------------
   -- Outsider sees nothing at all
   -- ---------------------------------------------------------------------
-  if v_outsider is not null then
-    perform pg_temp.act_as(v_outsider);
+  perform pg_temp.act_as(v_outsider);
 
-    select count(*) into v_n from public.competitions;
-    assert v_n = 0, format('outsider should see no competitions, saw %s', v_n);
+  select count(*) into v_n from public.competitions;
+  assert v_n = 0, format('outsider should see no competitions, saw %s', v_n);
 
-    select count(*) into v_n from public.leaderboard;
-    assert v_n = 0, format('outsider should see no leaderboard, saw %s', v_n);
+  select count(*) into v_n from public.leaderboard;
+  assert v_n = 0, format('outsider should see no leaderboard, saw %s', v_n);
 
-    select count(*) into v_n from public.matches;
-    assert v_n = 0, format('outsider should see no matches, saw %s', v_n);
+  select count(*) into v_n from public.matches;
+  assert v_n = 0, format('outsider should see no matches, saw %s', v_n);
 
-    select count(*) into v_n from public.players;
-    assert v_n = 0, format('outsider should see no players, saw %s', v_n);
-  end if;
+  select count(*) into v_n from public.players;
+  assert v_n = 0, format('outsider should see no players, saw %s', v_n);
 
   -- ---------------------------------------------------------------------
   -- Direct writes are impossible even for a member

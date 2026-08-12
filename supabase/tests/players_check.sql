@@ -26,6 +26,7 @@ declare
   v_owner   constant uuid := '11111111-1111-1111-1111-111111111111';
   v_guest   constant uuid := '22222222-2222-2222-2222-222222222222';
   v_member  constant uuid := '33333333-3333-3333-3333-333333333333';
+  v_other   constant uuid := '44444444-4444-4444-4444-444444444444';
   v_comp    public.competitions;
   v_added   public.players;
   v_target  uuid;
@@ -35,20 +36,24 @@ declare
 begin
   select * into v_comp from public.competitions limit 1;
 
-  -- A second *registered* account. The seed's "friend" is anonymous, and the
-  -- interesting non-owner cases need someone who is not.
+  -- Two more *registered* accounts. The seed's "friend" is anonymous, and
+  -- the interesting non-owner cases need people who are not.
   insert into auth.users (
     id, instance_id, aud, role, email, encrypted_password,
     email_confirmed_at, created_at, updated_at,
     raw_app_meta_data, raw_user_meta_data, is_anonymous
   )
-  values (
-    v_member, '00000000-0000-0000-0000-000000000000',
-    'authenticated', 'authenticated',
-    'member@keepscore.test', '', now(), now(), now(),
-    '{"provider":"email","providers":["email"]}'::jsonb,
-    '{"full_name":"Member"}'::jsonb, false
-  )
+  values
+    (v_member, '00000000-0000-0000-0000-000000000000',
+     'authenticated', 'authenticated',
+     'member@keepscore.test', '', now(), now(), now(),
+     '{"provider":"email","providers":["email"]}'::jsonb,
+     '{"full_name":"Member"}'::jsonb, false),
+    (v_other, '00000000-0000-0000-0000-000000000000',
+     'authenticated', 'authenticated',
+     'other@keepscore.test', '', now(), now(), now(),
+     '{"provider":"email","providers":["email"]}'::jsonb,
+     '{"full_name":"Other"}'::jsonb, false)
   on conflict (id) do nothing;
 
   set local role authenticated;
@@ -98,6 +103,15 @@ begin
      where id = v_added.id returning 1
   ) select count(*) into v_n from updated;
   assert v_n = 1, 'the owner should be able to bring a player back';
+
+  -- Display names are unique per competition, case- and space-insensitive.
+  v_denied := false;
+  begin
+    perform public.add_dummy_player(v_comp.id, '  pieter k.  ');
+  exception when others then v_denied := true;
+  end;
+  assert v_denied,
+    'add_dummy_player must reject a name already used in the competition';
 
   -- -------------------------------------------------------------------
   -- Registered non-owner: own row only, and refused *silently*
@@ -194,6 +208,19 @@ begin
   exception when others then v_denied := true;
   end;
   assert v_denied, 'join_code must not be writable from a client';
+
+  -- -------------------------------------------------------------------
+  -- A second registered account joining as a brand new player
+  -- -------------------------------------------------------------------
+  perform pg_temp.act_as(v_other);
+
+  v_denied := false;
+  begin
+    perform public.join_competition(v_comp.join_code, ' member b ');
+  exception when others then v_denied := true;
+  end;
+  assert v_denied,
+    'join_competition must reject a display name already used in the competition';
 
   raise notice 'Player + settings checks OK';
 end;
