@@ -58,7 +58,8 @@ class MatchFormCubit extends Cubit<MatchFormState> {
               .where((player) => player.isActive)
               .toList(growable: false),
           ratings: {
-            for (final standing in standings) standing.playerId: standing.rating,
+            for (final standing in standings)
+              standing.playerId: standing.rating,
           },
         ),
       );

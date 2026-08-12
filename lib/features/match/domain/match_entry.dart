@@ -22,18 +22,18 @@ class MatchEntry extends Equatable {
   });
 
   factory MatchEntry.fromMap(Map<String, dynamic> map) => MatchEntry(
-        id: map['id'] as String,
-        competitionId: map['competition_id'] as String,
-        seasonId: map['season_id'] as String,
-        playedAt: DateTime.parse(map['played_at'] as String).toLocal(),
-        teamAScore: (map['team_a_score'] as num).toInt(),
-        teamBScore: (map['team_b_score'] as num).toInt(),
-        teamARating: _toDouble(map['team_a_rating']),
-        teamBRating: _toDouble(map['team_b_rating']),
-        createdBy: map['created_by'] as String?,
-        teamA: _roster(map['team_a']),
-        teamB: _roster(map['team_b']),
-      );
+    id: map['id'] as String,
+    competitionId: map['competition_id'] as String,
+    seasonId: map['season_id'] as String,
+    playedAt: DateTime.parse(map['played_at'] as String).toLocal(),
+    teamAScore: (map['team_a_score'] as num).toInt(),
+    teamBScore: (map['team_b_score'] as num).toInt(),
+    teamARating: _toDouble(map['team_a_rating']),
+    teamBRating: _toDouble(map['team_b_rating']),
+    createdBy: map['created_by'] as String?,
+    teamA: _roster(map['team_a']),
+    teamB: _roster(map['team_b']),
+  );
 
   final String id;
   final String competitionId;
@@ -52,8 +52,8 @@ class MatchEntry extends Equatable {
   MatchTeam? get winner => isDraw
       ? null
       : teamAScore > teamBScore
-          ? MatchTeam.a
-          : MatchTeam.b;
+      ? MatchTeam.a
+      : MatchTeam.b;
 
   double get deltaA => teamA.isEmpty ? 0 : teamA.first.ratingDelta;
 
@@ -67,29 +67,30 @@ class MatchEntry extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        competitionId,
-        seasonId,
-        playedAt,
-        teamAScore,
-        teamBScore,
-        teamARating,
-        teamBRating,
-        teamA,
-        teamB,
-        createdBy,
-      ];
+    id,
+    competitionId,
+    seasonId,
+    playedAt,
+    teamAScore,
+    teamBScore,
+    teamARating,
+    teamBRating,
+    teamA,
+    teamB,
+    createdBy,
+  ];
 }
 
 List<MatchParticipant> _roster(Object? value) => switch (value) {
-      final List<dynamic> rows => rows
-          .map((row) => MatchParticipant.fromMap(row as Map<String, dynamic>))
-          .toList(growable: false),
-      _ => const [],
-    };
+  final List<dynamic> rows =>
+    rows
+        .map((row) => MatchParticipant.fromMap(row as Map<String, dynamic>))
+        .toList(growable: false),
+  _ => const [],
+};
 
 double _toDouble(Object? value) => switch (value) {
-      final num n => n.toDouble(),
-      final String s => double.tryParse(s) ?? 0,
-      _ => 0,
-    };
+  final num n => n.toDouble(),
+  final String s => double.tryParse(s) ?? 0,
+  _ => 0,
+};

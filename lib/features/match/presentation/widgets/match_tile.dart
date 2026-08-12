@@ -29,9 +29,7 @@ class MatchTile extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Expanded(
-                child: _Side(match: match, team: MatchTeam.a),
-              ),
+              Expanded(child: _side(team: MatchTeam.a)),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                 child: Text(
@@ -43,25 +41,15 @@ class MatchTile extends StatelessWidget {
                   ),
                 ),
               ),
-              Expanded(
-                child: _Side(match: match, team: MatchTeam.b),
-              ),
+              Expanded(child: _side(team: MatchTeam.b)),
             ],
           ),
         ),
       ),
     );
   }
-}
 
-class _Side extends StatelessWidget {
-  const _Side({required this.match, required this.team});
-
-  final MatchEntry match;
-  final MatchTeam team;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _side({required MatchTeam team}) {
     final roster = match.roster(team);
     final won = match.winner == team;
     final alignEnd = team == MatchTeam.b;

@@ -24,11 +24,8 @@ class MatchFormState extends Equatable {
 
   final MatchFormStatus status;
   final Competition? competition;
-
   final List<Player> players;
-
   final Map<String, double> ratings;
-
   final Map<String, MatchTeam> assignments;
   final String scoreA;
   final String scoreB;

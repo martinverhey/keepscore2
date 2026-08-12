@@ -43,7 +43,9 @@ class MatchDetailCubit extends Cubit<MatchDetailState> {
       );
     } on Failure catch (failure) {
       if (isClosed) return;
-      emit(MatchDetailState(status: MatchDetailStatus.failed, failure: failure));
+      emit(
+        MatchDetailState(status: MatchDetailStatus.failed, failure: failure),
+      );
     }
   }
 

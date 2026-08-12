@@ -2,31 +2,35 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/error/failure_messages.dart';
+import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
+import '../../../../core/widgets/hint_card.dart';
 import '../../../../core/widgets/state_views.dart';
-import '../../../../l10n/app_localizations.dart';
 import '../../../auth/presentation/widgets/guest_notice.dart';
 import '../cubit/match_list_cubit.dart';
+import 'day_header.dart';
 import 'match_day_group.dart';
-import 'match_day_label.dart';
 import 'match_tile.dart';
 
-class MatchListView extends StatelessWidget {
-  const MatchListView({
+class MatchesPage extends StatelessWidget {
+  const MatchesPage({
     super.key,
     required this.isRegistered,
     required this.hasPlayers,
+    required this.isOwner,
     required this.onOpenMatch,
+    required this.onCreateMatch,
   });
 
   final bool isRegistered;
   final bool hasPlayers;
+  final bool isOwner;
   final void Function(String matchId) onOpenMatch;
+  final VoidCallback onCreateMatch;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     final cubit = context.read<MatchListCubit>();
 
     return BlocBuilder<MatchListCubit, MatchListState>(
@@ -40,8 +44,8 @@ class MatchListView extends StatelessWidget {
 
         if (state.status == MatchListStatus.failed && state.matches.isEmpty) {
           return ErrorRetry(
-            message: state.failure!.localized(l10n),
-            retryLabel: l10n.commonRetry,
+            message: state.failure!.localized(context.l10n),
+            retryLabel: context.l10n.commonRetry,
             onRetry: cubit.load,
           );
         }
@@ -49,24 +53,36 @@ class MatchListView extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (!isRegistered) GuestNotice(message: l10n.matchGuestCannotLog),
+            if (!isRegistered)
+              GuestNotice(message: context.l10n.matchGuestCannotLog),
 
-            if (isRegistered && !hasPlayers)
+            if (isRegistered && hasPlayers)
               Padding(
                 padding: const EdgeInsets.only(top: AppSpacing.sm),
                 child: Text(
-                  l10n.matchNeedsPlayers,
-                  style: const TextStyle(color: AppColors.neutral, fontSize: 13),
+                  context.l10n.matchNeedsPlayers,
+                  style: const TextStyle(
+                    color: AppColors.neutral,
+                    fontSize: 13,
+                  ),
                 ),
               ),
 
             const SizedBox(height: AppSpacing.lg),
 
-            if (state.matches.isEmpty)
-              EmptyState(message: l10n.matchesEmpty)
-            else
+            if (state.matches.isEmpty) ...[
+              EmptyState(message: context.l10n.matchesEmpty),
+              if (isOwner) ...[
+                const SizedBox(height: AppSpacing.sm),
+                HintCard(
+                  message: context.l10n.matchesCreateHint,
+                  actionLabel: context.l10n.matchesCreateHintAction,
+                  onAction: onCreateMatch,
+                ),
+              ],
+            ] else
               for (final group in groupByDay(state.matches)) ...[
-                _DayHeader(day: group.day),
+                DayHeader(day: group.day),
                 for (final match in group.matches)
                   MatchTile(match: match, onTap: () => onOpenMatch(match.id)),
               ],
@@ -75,7 +91,7 @@ class MatchListView extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: AppSpacing.sm),
                 child: AdaptiveButton(
-                  label: l10n.matchLoadMore,
+                  label: context.l10n.matchLoadMore,
                   kind: AdaptiveButtonKind.plain,
                   busy: state.loadingMore,
                   onPressed: cubit.loadMore,
@@ -86,37 +102,13 @@ class MatchListView extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: AppSpacing.md),
                 child: Text(
-                  state.actionFailure!.localized(l10n),
+                  state.actionFailure!.localized(context.l10n),
                   style: const TextStyle(color: AppColors.negative),
                 ),
               ),
           ],
         );
       },
-    );
-  }
-}
-
-class _DayHeader extends StatelessWidget {
-  const _DayHeader({required this.day});
-
-  final DateTime day;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(
-        top: AppSpacing.xs,
-        bottom: AppSpacing.sm,
-      ),
-      child: Text(
-        matchDayLabel(context, day),
-        style: const TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w700,
-          color: AppColors.neutral,
-        ),
-      ),
     );
   }
 }

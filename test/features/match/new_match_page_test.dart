@@ -7,6 +7,7 @@ import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.da
 import 'package:keepscore2/features/leaderboard/domain/season_window.dart';
 import 'package:keepscore2/features/match/domain/match_repository.dart';
 import 'package:keepscore2/features/match/presentation/cubit/match_form_cubit.dart';
+import 'package:keepscore2/features/match/presentation/pages/new_match_keys_enum.dart';
 import 'package:keepscore2/features/match/presentation/pages/new_match_page.dart';
 import 'package:keepscore2/features/player/domain/player.dart';
 import 'package:keepscore2/features/player/domain/player_repository.dart';
@@ -92,16 +93,16 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byKey(const Key('teamAreaA')), findsOneWidget);
-      expect(find.byKey(const Key('teamAreaB')), findsOneWidget);
+      expect(find.byKey(const ValueKey(NewMatchKey.teamAreaA)), findsOneWidget);
+      expect(find.byKey(const ValueKey(NewMatchKey.teamAreaB)), findsOneWidget);
 
-      await tester.tap(find.byKey(const Key('teamAreaA')));
+      await tester.tap(find.byKey(const ValueKey(NewMatchKey.teamAreaA)));
       await tester.pumpAndSettle();
 
       final sheetNames = tester
           .widgetList<Text>(
             find.descendant(
-              of: find.byKey(const Key('teamPickerSheet')),
+              of: find.byKey(const ValueKey(NewMatchKey.teamPickerSheet)),
               matching: find.byType(Text),
             ),
           )
@@ -122,7 +123,7 @@ void main() {
       final teamAText = tester
           .widgetList<Text>(
             find.descendant(
-              of: find.byKey(const Key('teamAreaA')),
+              of: find.byKey(const ValueKey(NewMatchKey.teamAreaA)),
               matching: find.byType(Text),
             ),
           )
@@ -133,13 +134,13 @@ void main() {
       expect(teamAText, containsAllInOrder(['Ada', 'Zoe']));
       expect(teamAText, contains('1000'));
 
-      await tester.tap(find.byKey(const Key('teamAreaB')));
+      await tester.tap(find.byKey(const ValueKey(NewMatchKey.teamAreaB)));
       await tester.pumpAndSettle();
 
       final otherSheetNames = tester
           .widgetList<Text>(
             find.descendant(
-              of: find.byKey(const Key('teamPickerSheet')),
+              of: find.byKey(const ValueKey(NewMatchKey.teamPickerSheet)),
               matching: find.byType(Text),
             ),
           )
