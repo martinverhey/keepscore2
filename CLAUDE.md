@@ -105,6 +105,15 @@ code; don't relitigate them.
     helper used by more than one of the split files (e.g. a `_toDouble` map
     coercion) is duplicated into each file that needs it rather than shared —
     matching how the codebase already handled this before the split.
+  - **An enum used from more than one file gets its own file** (e.g.
+    `adaptive_button_kind.dart`, `adaptive_glyph.dart`, `sign_in_mode.dart`).
+    **An enum referenced only within the single file that declares it may stay
+    there** — a sheet-result enum like `CompetitionAction` in
+    `competitions_page.dart` or `PlayerAction` in `players.dart` doesn't earn
+    its own file just for being an enum. Either way, **name it `Enum`, never
+    `_Enum`** — Dart privacy is per-file, so a leading underscore would block
+    the file-splitting `export` pattern above the moment a second file needs
+    it; starting public avoids a rename later.
   - **The file that keeps the original name re-`export`s the ones that moved
     out of it**, so every other file's import of it keeps working unchanged —
     e.g. `import '.../competition.dart'` still yields `SeasonLength` and
@@ -166,6 +175,13 @@ Kept here because the code cannot express them and they cost real debugging:
 - **Widget tests that pump the same tree twice under a different theme must key
   the probe per brightness.** Without it the second pump reuses the element tree
   and reports the *previous* theme's colours — a green test asserting nothing.
+- **The current calendar season has no `seasons` row until its first match is
+  created** (`season_window()` returns `season_id = null`), so the `leaderboard`
+  view — inner-joined from `seasons` — cannot be queried for it. Before a
+  season starts, `SupabaseLeaderboardRepository.standings()` falls back to a
+  roster read (`players` embedding `competitions(starting_rating)`) so the
+  page still shows everyone at the starting rating instead of an empty list.
+  `Leaderboard.seasonId` is nullable for exactly this synthetic case.
 
 ## Commands
 
