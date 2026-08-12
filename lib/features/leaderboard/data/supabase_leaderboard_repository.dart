@@ -6,7 +6,6 @@ import '../../match/domain/game_type.dart';
 import '../domain/leaderboard.dart';
 import '../domain/leaderboard_repository.dart';
 import '../domain/medal_tally.dart';
-import '../domain/season.dart';
 import '../domain/season_standing.dart';
 import '../domain/season_window.dart';
 
@@ -30,17 +29,6 @@ class SupabaseLeaderboardRepository implements LeaderboardRepository {
         }
         return SeasonWindow.fromMap(rows.first as Map<String, dynamic>);
       });
-
-  @override
-  Future<List<Season>> seasons(String competitionId) => guard(() async {
-    final rows = await _client
-        .from('seasons')
-        .select()
-        .eq('competition_id', competitionId)
-        .order('starts_at', ascending: false);
-
-    return rows.map((row) => Season.fromMap(row)).toList(growable: false);
-  });
 
   @override
   Future<List<Leaderboard>> standings({

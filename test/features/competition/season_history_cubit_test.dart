@@ -81,6 +81,88 @@ void main() {
   );
 
   blocTest<SeasonHistoryCubit, SeasonHistoryState>(
+    'defaults to the most recent season and selectSeason switches within the loaded data',
+    setUp: () => when(
+      () => repository.seasonHistory(competitionId: 'c1'),
+    ).thenAnswer(
+      (_) async => [
+        _standing(
+          seasonId: 's-june',
+          startsAt: DateTime.utc(2026, 5, 31, 22),
+          playerId: 'p1',
+          rank: 1,
+        ),
+        _standing(
+          seasonId: 's-july',
+          startsAt: DateTime.utc(2026, 6, 30, 22),
+          playerId: 'p2',
+          rank: 1,
+        ),
+      ],
+    ),
+    build: build,
+    act: (cubit) async {
+      await cubit.load();
+      expect(cubit.state.selectedGroup!.seasonId, 's-july');
+      expect(cubit.state.hasHistory, isTrue);
+      cubit.selectSeason('s-june');
+    },
+    verify: (cubit) {
+      expect(cubit.state.selectedSeasonId, 's-june');
+      expect(cubit.state.selectedGroup!.seasonId, 's-june');
+    },
+  );
+
+  blocTest<SeasonHistoryCubit, SeasonHistoryState>(
+    'a season missing from a filtered game type falls back to the most recent one',
+    setUp: () {
+      when(
+        () => repository.seasonHistory(competitionId: 'c1'),
+      ).thenAnswer(
+        (_) async => [
+          _standing(
+            seasonId: 's-june',
+            startsAt: DateTime.utc(2026, 5, 31, 22),
+            playerId: 'p1',
+            rank: 1,
+          ),
+          _standing(
+            seasonId: 's-july',
+            startsAt: DateTime.utc(2026, 6, 30, 22),
+            playerId: 'p2',
+            rank: 1,
+          ),
+        ],
+      );
+      when(
+        () => repository.seasonHistory(
+          competitionId: 'c1',
+          gameType: GameType.oneVOne,
+        ),
+      ).thenAnswer(
+        (_) async => [
+          _standing(
+            seasonId: 's-july',
+            startsAt: DateTime.utc(2026, 6, 30, 22),
+            playerId: 'p2',
+            rank: 1,
+          ),
+        ],
+      );
+    },
+    build: build,
+    act: (cubit) async {
+      await cubit.load();
+      cubit.selectSeason('s-june');
+      await cubit.selectGameTypeFilter(GameType.oneVOne);
+    },
+    verify: (cubit) {
+      expect(cubit.state.selectedSeasonId, 's-june');
+      expect(cubit.state.selectedGroup!.seasonId, 's-july');
+    },
+  );
+
+  blocTest<SeasonHistoryCubit, SeasonHistoryState>(
     'no closed seasons yet is ready with no groups',
     setUp: () => when(
       () => repository.seasonHistory(competitionId: 'c1'),

@@ -11,11 +11,11 @@ import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../competition/domain/competition.dart';
 import '../../../profile/presentation/widgets/game_type_label.dart';
+import '../../domain/season.dart';
 import '../cubit/leaderboard_cubit.dart';
 import 'game_type_filter_bar.dart';
 import 'leaderboard_row.dart';
 import 'season_label.dart';
-import 'season_sheet.dart';
 
 class LeaderboardView extends StatelessWidget {
   const LeaderboardView({
@@ -56,12 +56,7 @@ class LeaderboardView extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (state.selectedSeason != null)
-              _seasonBar(
-                context,
-                state,
-                onPick: () => _pickSeason(context, state),
-              ),
+            if (state.season != null) _seasonBar(context, state.season!),
             const SizedBox(height: AppSpacing.md),
 
             GameTypeFilterBar(
@@ -108,61 +103,25 @@ class LeaderboardView extends StatelessWidget {
     );
   }
 
-  Widget _seasonBar(
-    BuildContext context,
-    LeaderboardState state, {
-    required VoidCallback onPick,
-  }) {
+  Widget _seasonBar(BuildContext context, Season season) {
     final locale = Localizations.localeOf(context).toLanguageTag();
-    final season = state.selectedSeason!;
 
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                seasonLabel(context, season, seasonLength),
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              if (state.isShowingCurrentSeason) ...[
-                const SizedBox(height: 2),
-                Text(
-                  context.l10n.leaderboardSeasonEnds(
-                    DateFormat.MMMd(locale).format(season.endsAt),
-                  ),
-                  style: const TextStyle(
-                    color: AppColors.neutral,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ],
-          ),
+        Text(
+          seasonLabel(context, season, seasonLength),
+          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
         ),
-        if (state.hasHistory)
-          AdaptiveButton(
-            label: context.l10n.leaderboardPickSeason,
-            kind: AdaptiveButtonKind.plain,
-            expand: false,
-            onPressed: onPick,
+        const SizedBox(height: 2),
+        Text(
+          context.l10n.leaderboardSeasonEnds(
+            DateFormat.MMMd(locale).format(season.endsAt),
           ),
+          style: const TextStyle(color: AppColors.neutral, fontSize: 12),
+        ),
       ],
     );
-  }
-
-  Future<void> _pickSeason(BuildContext context, LeaderboardState state) async {
-    final cubit = context.read<LeaderboardCubit>();
-
-    final startsAt = await showAdaptiveSheet<DateTime>(
-      context,
-      builder: (_) => SeasonSheet(state: state, seasonLength: seasonLength),
-    );
-    if (startsAt != null) await cubit.selectSeason(startsAt);
   }
 }

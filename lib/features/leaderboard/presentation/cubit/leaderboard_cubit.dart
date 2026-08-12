@@ -28,24 +28,24 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
     try {
       final results = await Future.wait<Object?>([
         _repository.currentSeason(competitionId),
-        _repository.seasons(competitionId),
         _repository.medalTallies(competitionId),
       ]);
       if (isClosed) return;
 
-      final seasons = _withCurrentWindow(
-        results[1] as List<Season>,
-        results[0] as SeasonWindow,
+      final window = results[0] as SeasonWindow;
+      final season = Season(
+        id: window.id,
+        startsAt: window.startsAt.toLocal(),
+        endsAt: window.endsAt.toLocal(),
       );
-      final selected = _pick(seasons, state.selectedStartsAt);
       final medals = {
-        for (final tally in results[2] as List<MedalTally>)
+        for (final tally in results[1] as List<MedalTally>)
           tally.playerId: tally,
       };
 
       final standings = await _repository.standings(
         competitionId: competitionId,
-        seasonId: selected?.id,
+        seasonId: season.id,
         gameType: gameType,
       );
       if (isClosed) return;
@@ -53,21 +53,19 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
       emit(
         LeaderboardState(
           status: LeaderboardStatus.ready,
-          seasons: seasons,
-          selectedStartsAt: selected?.startsAt,
+          season: season,
           selectedGameType: gameType,
           standings: standings,
           medals: medals,
         ),
       );
-      _watch(selected?.id, gameType);
+      _watch(season.id, gameType);
     } on Failure catch (failure) {
       if (isClosed) return;
       emit(
         LeaderboardState(
           status: LeaderboardStatus.failed,
-          seasons: silent ? state.seasons : const [],
-          selectedStartsAt: state.selectedStartsAt,
+          season: silent ? state.season : null,
           selectedGameType: gameType,
           standings: silent ? state.standings : const [],
           medals: silent ? state.medals : const {},
@@ -78,34 +76,6 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
   }
 
   Future<void> refresh() => load(silent: true);
-
-  Future<void> selectSeason(DateTime startsAt) async {
-    final season = _pick(state.seasons, startsAt);
-    if (season == null || season == state.selectedSeason) return;
-
-    emit(
-      state.copyWith(
-        selectedStartsAt: season.startsAt,
-        standings: const [],
-        busy: true,
-        clearFailure: true,
-      ),
-    );
-
-    try {
-      final standings = await _repository.standings(
-        competitionId: competitionId,
-        seasonId: season.id,
-        gameType: state.selectedGameType,
-      );
-      if (isClosed) return;
-      emit(state.copyWith(standings: standings, busy: false));
-      _watch(season.id, state.selectedGameType);
-    } on Failure catch (failure) {
-      if (isClosed) return;
-      emit(state.copyWith(busy: false, failure: failure));
-    }
-  }
 
   Future<void> selectGameTypeFilter(GameType? gameType) async {
     if (gameType == state.selectedGameType) return;
@@ -123,40 +93,16 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
     try {
       final standings = await _repository.standings(
         competitionId: competitionId,
-        seasonId: state.selectedSeason?.id,
+        seasonId: state.season?.id,
         gameType: gameType,
       );
       if (isClosed) return;
       emit(state.copyWith(standings: standings, busy: false));
-      _watch(state.selectedSeason?.id, gameType);
+      _watch(state.season?.id, gameType);
     } on Failure catch (failure) {
       if (isClosed) return;
       emit(state.copyWith(busy: false, failure: failure));
     }
-  }
-
-  List<Season> _withCurrentWindow(List<Season> stored, SeasonWindow window) {
-    final known = stored.any(
-      (season) => season.startsAt.isAtSameMomentAs(window.startsAt),
-    );
-    if (known) return stored;
-    return [
-      Season(
-        id: window.id,
-        startsAt: window.startsAt.toLocal(),
-        endsAt: window.endsAt.toLocal(),
-      ),
-      ...stored,
-    ];
-  }
-
-  Season? _pick(List<Season> seasons, DateTime? startsAt) {
-    if (seasons.isEmpty) return null;
-    if (startsAt == null) return seasons.first;
-    for (final season in seasons) {
-      if (season.startsAt.isAtSameMomentAs(startsAt)) return season;
-    }
-    return seasons.first;
   }
 
   void _watch(String? seasonId, GameType? gameType) {

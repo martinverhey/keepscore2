@@ -27,11 +27,14 @@ renders `GuestNotice`, which carries the refusal *and* the way out; the page pop
 itself when `AuthBloc` reports the user is no longer anonymous.
 
 `/competition/:id` is the tab shell (`features/competition/.../competition_detail_page.dart`):
-Leaderboard (default), Matches, Players. The leaderboard tab carries the season
-switcher; the season list is `seasons` plus, stitched in front of it, the
-current calendar window — which has no row until the first match lands in it.
-It also carries a game-type filter (`GameTypeFilterBar`) — combined (default)
-or one of `1v1`/`2v2`/`3v3`/`4v4`/`mixed`.
+Leaderboard (default), Matches, Players. The leaderboard tab always shows the
+current calendar window — which has no row until the first match lands in it —
+and carries a game-type filter (`GameTypeFilterBar`) — combined (default) or
+one of `1v1`/`2v2`/`3v3`/`4v4`/`mixed`. It has no season picker: that moved to
+`/competition/:id/settings/history` (`SeasonHistoryPage`), which shows one
+finished season at a time — `SeasonSheet` picks among `SeasonHistoryState.groups`
+(the already-loaded, already-finished seasons; no separate fetch) — and
+carries its own, independent `GameTypeFilterBar`.
 
 `/competition/:id/match/new` builds the teams and submits; `/competition/:id/match/:matchId` shows
 the per-player before → after and lets the creator or the owner change the

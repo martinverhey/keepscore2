@@ -20,7 +20,6 @@ import 'package:keepscore2/features/competition/presentation/pages/competition_d
 import 'package:keepscore2/features/competition/presentation/pages/join_competition_page.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
-import 'package:keepscore2/features/leaderboard/domain/season.dart';
 import 'package:keepscore2/features/leaderboard/domain/season_window.dart';
 import 'package:keepscore2/features/leaderboard/presentation/cubit/leaderboard_cubit.dart';
 import 'package:keepscore2/features/match/domain/match_entry.dart';
@@ -182,9 +181,6 @@ void main() {
       when(() => leaderboard.currentSeason(_competitionId)).thenAnswer(
         (_) async =>
             SeasonWindow(id: 's1', startsAt: seasonStart, endsAt: seasonEnd),
-      );
-      when(() => leaderboard.seasons(_competitionId)).thenAnswer(
-        (_) async => [Season(id: 's1', startsAt: seasonStart, endsAt: seasonEnd)],
       );
       when(
         () => leaderboard.standings(

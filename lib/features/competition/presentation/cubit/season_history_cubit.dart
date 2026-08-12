@@ -17,7 +17,10 @@ class SeasonHistoryCubit extends Cubit<SeasonHistoryState> {
 
   Future<void> load() async {
     final gameType = state.selectedGameType;
-    emit(SeasonHistoryState(selectedGameType: gameType));
+    final seasonId = state.selectedSeasonId;
+    emit(
+      SeasonHistoryState(selectedGameType: gameType, selectedSeasonId: seasonId),
+    );
     try {
       final standings = await _repository.seasonHistory(
         competitionId: competitionId,
@@ -29,6 +32,7 @@ class SeasonHistoryCubit extends Cubit<SeasonHistoryState> {
           status: SeasonHistoryStatus.ready,
           groups: _group(standings),
           selectedGameType: gameType,
+          selectedSeasonId: seasonId,
         ),
       );
     } on Failure catch (failure) {
@@ -37,10 +41,16 @@ class SeasonHistoryCubit extends Cubit<SeasonHistoryState> {
         SeasonHistoryState(
           status: SeasonHistoryStatus.failed,
           selectedGameType: gameType,
+          selectedSeasonId: seasonId,
           failure: failure,
         ),
       );
     }
+  }
+
+  void selectSeason(String seasonId) {
+    if (seasonId == state.selectedSeasonId) return;
+    emit(state.copyWith(selectedSeasonId: seasonId));
   }
 
   Future<void> selectGameTypeFilter(GameType? gameType) async {

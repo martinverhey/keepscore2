@@ -17,6 +17,7 @@ class SeasonHistoryState extends Equatable {
   const SeasonHistoryState({
     this.status = SeasonHistoryStatus.loading,
     this.groups = const [],
+    this.selectedSeasonId,
     this.selectedGameType,
     this.busy = false,
     this.failure,
@@ -24,13 +25,25 @@ class SeasonHistoryState extends Equatable {
 
   final SeasonHistoryStatus status;
   final List<SeasonHistoryGroup> groups;
+  final String? selectedSeasonId;
   final GameType? selectedGameType;
   final bool busy;
   final Failure? failure;
 
+  SeasonHistoryGroup? get selectedGroup {
+    if (groups.isEmpty) return null;
+    for (final group in groups) {
+      if (group.seasonId == selectedSeasonId) return group;
+    }
+    return groups.first;
+  }
+
+  bool get hasHistory => groups.length > 1;
+
   SeasonHistoryState copyWith({
     SeasonHistoryStatus? status,
     List<SeasonHistoryGroup>? groups,
+    String? selectedSeasonId,
     GameType? selectedGameType,
     bool? busy,
     Failure? failure,
@@ -40,6 +53,7 @@ class SeasonHistoryState extends Equatable {
     return SeasonHistoryState(
       status: status ?? this.status,
       groups: groups ?? this.groups,
+      selectedSeasonId: selectedSeasonId ?? this.selectedSeasonId,
       selectedGameType: clearGameType
           ? null
           : (selectedGameType ?? this.selectedGameType),
@@ -49,5 +63,12 @@ class SeasonHistoryState extends Equatable {
   }
 
   @override
-  List<Object?> get props => [status, groups, selectedGameType, busy, failure];
+  List<Object?> get props => [
+    status,
+    groups,
+    selectedSeasonId,
+    selectedGameType,
+    busy,
+    failure,
+  ];
 }

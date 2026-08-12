@@ -8,9 +8,11 @@ import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/rating_delta.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../leaderboard/domain/medal.dart';
+import '../../../leaderboard/domain/season.dart';
 import '../../../leaderboard/domain/season_standing.dart';
 import '../../../leaderboard/presentation/widgets/game_type_filter_bar.dart';
 import '../../../leaderboard/presentation/widgets/season_label.dart';
+import '../../../leaderboard/presentation/widgets/season_sheet.dart';
 import '../../../profile/presentation/widgets/game_type_label.dart';
 import '../../domain/competition.dart';
 import '../cubit/competition_detail_cubit.dart';
@@ -83,24 +85,79 @@ class _SeasonHistoryPageState extends State<SeasonHistoryPage> {
             AppSpacing.md,
             0,
           ),
-          child: GameTypeFilterBar(
-            selected: state.selectedGameType,
-            onSelected: cubit.selectGameTypeFilter,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (state.selectedGroup != null) ...[
+                _seasonBar(context, state, cubit, seasonLength),
+                const SizedBox(height: AppSpacing.md),
+              ],
+              GameTypeFilterBar(
+                selected: state.selectedGameType,
+                onSelected: cubit.selectGameTypeFilter,
+              ),
+            ],
           ),
         ),
-        Expanded(child: _groupList(context, state, seasonLength)),
+        Expanded(child: _content(context, state, seasonLength)),
       ],
     );
   }
 
-  Widget _groupList(
+  Widget _seasonBar(
+    BuildContext context,
+    SeasonHistoryState state,
+    SeasonHistoryCubit cubit,
+    SeasonLength seasonLength,
+  ) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            seasonLabel(context, _seasonOf(state.selectedGroup!), seasonLength),
+            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+          ),
+        ),
+        if (state.hasHistory)
+          AdaptiveButton(
+            label: context.l10n.leaderboardPickSeason,
+            kind: AdaptiveButtonKind.plain,
+            expand: false,
+            onPressed: () => _pickSeason(context, state, cubit, seasonLength),
+          ),
+      ],
+    );
+  }
+
+  Future<void> _pickSeason(
+    BuildContext context,
+    SeasonHistoryState state,
+    SeasonHistoryCubit cubit,
+    SeasonLength seasonLength,
+  ) async {
+    final seasonId = await showAdaptiveSheet<String>(
+      context,
+      builder: (_) => SeasonSheet(
+        seasons: [for (final group in state.groups) _seasonOf(group)],
+        selected: _seasonOf(state.selectedGroup!),
+        seasonLength: seasonLength,
+      ),
+    );
+    if (seasonId != null) cubit.selectSeason(seasonId);
+  }
+
+  Season _seasonOf(SeasonHistoryGroup group) =>
+      Season(id: group.seasonId, startsAt: group.startsAt, endsAt: group.endsAt);
+
+  Widget _content(
     BuildContext context,
     SeasonHistoryState state,
     SeasonLength seasonLength,
   ) {
     if (state.busy) return const Center(child: AdaptiveLoader());
 
-    if (state.groups.isEmpty) {
+    final group = state.selectedGroup;
+    if (group == null) {
       return EmptyState(
         message: state.selectedGameType == null
             ? context.l10n.seasonHistoryEmpty
@@ -113,35 +170,8 @@ class _SeasonHistoryPageState extends State<SeasonHistoryPage> {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.md),
       children: [
-        for (final group in state.groups) _seasonCard(context, group, seasonLength),
+        for (final standing in group.standings) _playerRow(context, standing),
       ],
-    );
-  }
-
-  Widget _seasonCard(
-    BuildContext context,
-    SeasonHistoryGroup group,
-    SeasonLength seasonLength,
-  ) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppSpacing.md),
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        borderRadius: AppRadius.card,
-        color: AppColors.neutral.withValues(alpha: 0.08),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            seasonLabel(context, group.standings.first.season, seasonLength),
-            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          for (final standing in group.standings)
-            _playerRow(context, standing),
-        ],
-      ),
     );
   }
 

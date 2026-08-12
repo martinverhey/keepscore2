@@ -11,8 +11,7 @@ enum LeaderboardStatus { loading, ready, failed }
 class LeaderboardState extends Equatable {
   const LeaderboardState({
     this.status = LeaderboardStatus.loading,
-    this.seasons = const [],
-    this.selectedStartsAt,
+    this.season,
     this.selectedGameType,
     this.standings = const [],
     this.medals = const {},
@@ -22,9 +21,7 @@ class LeaderboardState extends Equatable {
 
   final LeaderboardStatus status;
 
-  final List<Season> seasons;
-
-  final DateTime? selectedStartsAt;
+  final Season? season;
   final GameType? selectedGameType;
   final List<Leaderboard> standings;
   final Map<String, MedalTally> medals;
@@ -33,27 +30,9 @@ class LeaderboardState extends Equatable {
 
   final Failure? failure;
 
-  Season? get currentSeason => seasons.isEmpty ? null : seasons.first;
-
-  Season? get selectedSeason {
-    if (seasons.isEmpty) return null;
-    for (final season in seasons) {
-      if (selectedStartsAt != null &&
-          season.startsAt.isAtSameMomentAs(selectedStartsAt!)) {
-        return season;
-      }
-    }
-    return seasons.first;
-  }
-
-  bool get isShowingCurrentSeason => selectedSeason == currentSeason;
-
-  bool get hasHistory => seasons.length > 1;
-
   LeaderboardState copyWith({
     LeaderboardStatus? status,
-    List<Season>? seasons,
-    DateTime? selectedStartsAt,
+    Season? season,
     GameType? selectedGameType,
     List<Leaderboard>? standings,
     Map<String, MedalTally>? medals,
@@ -64,8 +43,7 @@ class LeaderboardState extends Equatable {
   }) {
     return LeaderboardState(
       status: status ?? this.status,
-      seasons: seasons ?? this.seasons,
-      selectedStartsAt: selectedStartsAt ?? this.selectedStartsAt,
+      season: season ?? this.season,
       selectedGameType: clearGameType
           ? null
           : (selectedGameType ?? this.selectedGameType),
@@ -79,8 +57,7 @@ class LeaderboardState extends Equatable {
   @override
   List<Object?> get props => [
     status,
-    seasons,
-    selectedStartsAt,
+    season,
     selectedGameType,
     standings,
     medals,

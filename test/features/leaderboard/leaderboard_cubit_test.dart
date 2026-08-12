@@ -4,7 +4,6 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/error/failure.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
-import 'package:keepscore2/features/leaderboard/domain/season.dart';
 import 'package:keepscore2/features/leaderboard/domain/season_window.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard.dart';
 import 'package:keepscore2/features/leaderboard/domain/medal_tally.dart';
@@ -16,7 +15,6 @@ class MockLeaderboardRepository extends Mock implements LeaderboardRepository {}
 
 final _august = DateTime.utc(2026, 7, 31, 22);
 final _september = DateTime.utc(2026, 8, 31, 22);
-final _july = DateTime.utc(2026, 6, 30, 22);
 
 Leaderboard _standing(String playerId, double rating, int rank) => Leaderboard(
   seasonId: 's-august',
@@ -38,11 +36,10 @@ void main() {
 
   LeaderboardCubit build() => LeaderboardCubit(repository, 'c1');
 
-  void stubSeason({String? id = 's-august', List<Season> stored = const []}) {
+  void stubSeason({String? id = 's-august'}) {
     when(() => repository.currentSeason('c1')).thenAnswer(
       (_) async => SeasonWindow(id: id, startsAt: _august, endsAt: _september),
     );
-    when(() => repository.seasons('c1')).thenAnswer((_) async => stored);
   }
 
   void stubStandings(String? seasonId, List<Leaderboard> standings) {
@@ -85,12 +82,7 @@ void main() {
   blocTest<LeaderboardCubit, LeaderboardState>(
     'loads the current season and its standings',
     setUp: () {
-      stubSeason(
-        stored: [
-          Season(id: 's-august', startsAt: _august, endsAt: _september),
-          Season(id: 's-july', startsAt: _july, endsAt: _august),
-        ],
-      );
+      stubSeason();
       stubStandings('s-august', [
         _standing('p1', 1040, 1),
         _standing('p2', 960, 2),
@@ -100,24 +92,16 @@ void main() {
     act: (cubit) => cubit.load(),
     verify: (cubit) {
       expect(cubit.state.status, LeaderboardStatus.ready);
-      expect(cubit.state.seasons, hasLength(2));
-      expect(cubit.state.isShowingCurrentSeason, isTrue);
-      expect(cubit.state.hasHistory, isTrue);
+      expect(cubit.state.season?.id, 's-august');
       expect(cubit.state.standings.first.playerId, 'p1');
     },
   );
 
   blocTest<LeaderboardCubit, LeaderboardState>(
-    'loads medal tallies alongside standings and keeps them across a season switch',
+    'loads medal tallies alongside standings',
     setUp: () {
-      stubSeason(
-        stored: [
-          Season(id: 's-august', startsAt: _august, endsAt: _september),
-          Season(id: 's-july', startsAt: _july, endsAt: _august),
-        ],
-      );
+      stubSeason();
       stubStandings('s-august', [_standing('p1', 1040, 1)]);
-      stubStandings('s-july', [_standing('p2', 1100, 1)]);
       when(() => repository.medalTallies('c1')).thenAnswer(
         (_) async => const [
           MedalTally(playerId: 'p1', gold: 2, silver: 0, bronze: 1),
@@ -125,10 +109,7 @@ void main() {
       );
     },
     build: build,
-    act: (cubit) async {
-      await cubit.load();
-      await cubit.selectSeason(_july);
-    },
+    act: (cubit) => cubit.load(),
     verify: (cubit) {
       expect(cubit.state.medals['p1']?.gold, 2);
       expect(cubit.state.medals['p1']?.bronze, 1);
@@ -138,53 +119,22 @@ void main() {
   blocTest<LeaderboardCubit, LeaderboardState>(
     'a season nobody has played yet is still offered, with no standings',
     setUp: () {
-      stubSeason(
-        id: null,
-        stored: [Season(id: 's-july', startsAt: _july, endsAt: _august)],
-      );
+      stubSeason(id: null);
       stubStandings(null, const []);
     },
     build: build,
     act: (cubit) => cubit.load(),
     verify: (cubit) {
-      expect(cubit.state.seasons.first.startsAt.isAtSameMomentAs(_august), isTrue);
-      expect(cubit.state.seasons.first.hasStarted, isFalse);
-      expect(cubit.state.isShowingCurrentSeason, isTrue);
+      expect(cubit.state.season!.startsAt.isAtSameMomentAs(_august), isTrue);
+      expect(cubit.state.season!.hasStarted, isFalse);
       expect(cubit.state.standings, isEmpty);
-    },
-  );
-
-  blocTest<LeaderboardCubit, LeaderboardState>(
-    'switching season fetches that season and keeps the choice on refresh',
-    setUp: () {
-      stubSeason(
-        stored: [
-          Season(id: 's-august', startsAt: _august, endsAt: _september),
-          Season(id: 's-july', startsAt: _july, endsAt: _august),
-        ],
-      );
-      stubStandings('s-august', [_standing('p1', 1040, 1)]);
-      stubStandings('s-july', [_standing('p2', 1100, 1)]);
-    },
-    build: build,
-    act: (cubit) async {
-      await cubit.load();
-      await cubit.selectSeason(_july);
-      await cubit.refresh();
-    },
-    verify: (cubit) {
-      expect(cubit.state.isShowingCurrentSeason, isFalse);
-      expect(cubit.state.standings.single.playerId, 'p2');
-      expect(cubit.state.busy, isFalse);
     },
   );
 
   blocTest<LeaderboardCubit, LeaderboardState>(
     'a rating written by someone else arrives without a gesture',
     setUp: () {
-      stubSeason(
-        stored: [Season(id: 's-august', startsAt: _august, endsAt: _september)],
-      );
+      stubSeason();
       stubStandings('s-august', [_standing('p1', 1000, 1)]);
     },
     build: build,
@@ -204,23 +154,13 @@ void main() {
   );
 
   blocTest<LeaderboardCubit, LeaderboardState>(
-    'the subscription follows the selected season',
+    'the subscription watches the current season',
     setUp: () {
-      stubSeason(
-        stored: [
-          Season(id: 's-august', startsAt: _august, endsAt: _september),
-          Season(id: 's-july', startsAt: _july, endsAt: _august),
-        ],
-      );
+      stubSeason();
       stubStandings('s-august', [_standing('p1', 1040, 1)]);
-      stubStandings('s-july', [_standing('p2', 1100, 1)]);
     },
     build: build,
-    act: (cubit) async {
-      await cubit.load();
-      await cubit.selectSeason(_july);
-      await cubit.refresh();
-    },
+    act: (cubit) => cubit.load(),
     verify: (cubit) {
       verify(
         () => repository.watchStandings(
@@ -228,25 +168,19 @@ void main() {
           seasonId: 's-august',
         ),
       ).called(1);
-      verify(
-        () =>
-            repository.watchStandings(competitionId: 'c1', seasonId: 's-july'),
-      ).called(1);
     },
   );
 
   blocTest<LeaderboardCubit, LeaderboardState>(
     'a failed silent refresh keeps the table on screen',
     setUp: () {
-      stubSeason(
-        stored: [Season(id: 's-august', startsAt: _august, endsAt: _september)],
-      );
+      stubSeason();
       stubStandings('s-august', [_standing('p1', 1040, 1)]);
     },
     build: build,
     act: (cubit) async {
       await cubit.load();
-      when(() => repository.seasons('c1')).thenThrow(const NetworkFailure());
+      when(() => repository.currentSeason('c1')).thenThrow(const NetworkFailure());
       await cubit.refresh();
     },
     verify: (cubit) {
@@ -259,9 +193,7 @@ void main() {
   blocTest<LeaderboardCubit, LeaderboardState>(
     'filtering by game type fetches that game type\'s standings',
     setUp: () {
-      stubSeason(
-        stored: [Season(id: 's-august', startsAt: _august, endsAt: _september)],
-      );
+      stubSeason();
       stubStandings('s-august', [_standing('p1', 1040, 1)]);
       stubGameTypeStandings('s-august', GameType.oneVOne, [
         _standing('p2', 1100, 1),
@@ -289,9 +221,7 @@ void main() {
   blocTest<LeaderboardCubit, LeaderboardState>(
     'clearing the game type filter goes back to combined standings',
     setUp: () {
-      stubSeason(
-        stored: [Season(id: 's-august', startsAt: _august, endsAt: _september)],
-      );
+      stubSeason();
       stubStandings('s-august', [_standing('p1', 1040, 1)]);
       stubGameTypeStandings('s-august', GameType.oneVOne, [
         _standing('p2', 1100, 1),

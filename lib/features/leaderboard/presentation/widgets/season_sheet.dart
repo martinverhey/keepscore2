@@ -5,17 +5,18 @@ import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/sheet.dart';
 import '../../../competition/domain/competition.dart';
 import '../../domain/season.dart';
-import '../cubit/leaderboard_cubit.dart';
 import 'season_label.dart';
 
 class SeasonSheet extends StatelessWidget {
   const SeasonSheet({
     super.key,
-    required this.state,
+    required this.seasons,
+    required this.selected,
     required this.seasonLength,
   });
 
-  final LeaderboardState state;
+  final List<Season> seasons;
+  final Season? selected;
   final SeasonLength seasonLength;
 
   @override
@@ -26,13 +27,13 @@ class SeasonSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          for (final season in state.seasons)
+          for (final season in seasons)
             AdaptiveButton(
-              label: _label(context, season),
-              kind: season == state.selectedSeason
+              label: seasonLabel(context, season, seasonLength),
+              kind: season == selected
                   ? AdaptiveButtonKind.tinted
                   : AdaptiveButtonKind.plain,
-              onPressed: () => Navigator.of(context).pop(season.startsAt),
+              onPressed: () => Navigator.of(context).pop(season.id),
             ),
         ],
       ),
@@ -42,12 +43,5 @@ class SeasonSheet extends StatelessWidget {
         onPressed: () => Navigator.of(context).pop(),
       ),
     );
-  }
-
-  String _label(BuildContext context, Season season) {
-    final label = seasonLabel(context, season, seasonLength);
-    return season == state.currentSeason
-        ? '$label · ${context.l10n.leaderboardCurrentSeason}'
-        : label;
   }
 }
