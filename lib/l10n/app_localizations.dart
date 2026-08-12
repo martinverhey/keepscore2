@@ -470,6 +470,12 @@ abstract class AppLocalizations {
   /// **'Competition settings'**
   String get competitionSettingsTitle;
 
+  /// No description provided for @playersManageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage players'**
+  String get playersManageTitle;
+
   /// No description provided for @competitionSettingsSave.
   ///
   /// In en, this message translates to:
@@ -674,6 +680,12 @@ abstract class AppLocalizations {
   /// **'You\'re already in this competition.'**
   String get joinAlreadyMember;
 
+  /// No description provided for @joinViewCompetition.
+  ///
+  /// In en, this message translates to:
+  /// **'View competition'**
+  String get joinViewCompetition;
+
   /// No description provided for @joinNewPlayerNameTitle.
   ///
   /// In en, this message translates to:
@@ -685,12 +697,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Leaderboard'**
   String get leaderboardTitle;
-
-  /// No description provided for @leaderboardEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'No matches played this season yet.'**
-  String get leaderboardEmpty;
 
   /// No description provided for @leaderboardNoPlayers.
   ///
@@ -722,30 +728,6 @@ abstract class AppLocalizations {
   /// **'Not played yet'**
   String get leaderboardUnplayed;
 
-  /// No description provided for @leaderboardPlayersHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Add the people you\'ll be playing against.'**
-  String get leaderboardPlayersHint;
-
-  /// No description provided for @leaderboardPlayersHintAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Go to Players'**
-  String get leaderboardPlayersHintAction;
-
-  /// No description provided for @leaderboardMatchesHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter a match to start filling in the leaderboard.'**
-  String get leaderboardMatchesHint;
-
-  /// No description provided for @leaderboardMatchesHintAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Go to Matches'**
-  String get leaderboardMatchesHintAction;
-
   /// No description provided for @seasonQuarterLabel.
   ///
   /// In en, this message translates to:
@@ -767,8 +749,20 @@ abstract class AppLocalizations {
   /// No description provided for @matchesEmpty.
   ///
   /// In en, this message translates to:
-  /// **'No matches yet. Enter your first one.'**
+  /// **'No matches yet.'**
   String get matchesEmpty;
+
+  /// No description provided for @matchesCreateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your first match.'**
+  String get matchesCreateHint;
+
+  /// No description provided for @matchesCreateHintAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Match'**
+  String get matchesCreateHintAction;
 
   /// No description provided for @matchDayToday.
   ///
@@ -899,7 +893,7 @@ abstract class AppLocalizations {
   /// No description provided for @matchNeedsPlayers.
   ///
   /// In en, this message translates to:
-  /// **'Add players to the roster before logging a match.'**
+  /// **'Add players and start creating matches.'**
   String get matchNeedsPlayers;
 
   /// No description provided for @matchDetailTitle.
@@ -965,7 +959,7 @@ abstract class AppLocalizations {
   /// No description provided for @playersAddDummy.
   ///
   /// In en, this message translates to:
-  /// **'Add player'**
+  /// **'Add a dummy'**
   String get playersAddDummy;
 
   /// No description provided for @playersDisplayNameLabel.
@@ -998,6 +992,12 @@ abstract class AppLocalizations {
   /// **'Owner'**
   String get playersOwner;
 
+  /// No description provided for @playersDummy.
+  ///
+  /// In en, this message translates to:
+  /// **'Dummy'**
+  String get playersDummy;
+
   /// No description provided for @playersEdit.
   ///
   /// In en, this message translates to:
@@ -1007,13 +1007,13 @@ abstract class AppLocalizations {
   /// No description provided for @playersAddTitle.
   ///
   /// In en, this message translates to:
-  /// **'Add a player'**
+  /// **'Add a dummy'**
   String get playersAddTitle;
 
   /// No description provided for @playersAddSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'A placeholder lets you log matches for someone who hasn\'t joined yet. They can claim the name later with the competition code.'**
+  /// **'Create as many dummies as you want. You can use them to create matches. Or they can be used as placeholders for players who might join later. Another player can claim a dummy after joining your competition.'**
   String get playersAddSubtitle;
 
   /// No description provided for @playersNameTooShort.

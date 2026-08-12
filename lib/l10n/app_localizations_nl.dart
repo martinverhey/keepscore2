@@ -224,6 +224,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get competitionSettingsTitle => 'Competitie-instellingen';
 
   @override
+  String get playersManageTitle => 'Spelers beheren';
+
+  @override
   String get competitionSettingsSave => 'Wijzigingen opslaan';
 
   @override
@@ -344,14 +347,13 @@ class AppLocalizationsNl extends AppLocalizations {
   String get joinAlreadyMember => 'Je zit al in deze competitie.';
 
   @override
+  String get joinViewCompetition => 'Bekijk competitie';
+
+  @override
   String get joinNewPlayerNameTitle => 'Wat is je naam?';
 
   @override
   String get leaderboardTitle => 'Klassement';
-
-  @override
-  String get leaderboardEmpty =>
-      'Dit seizoen zijn er nog geen wedstrijden gespeeld.';
 
   @override
   String get leaderboardNoPlayers =>
@@ -372,20 +374,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String get leaderboardUnplayed => 'Nog niet gespeeld';
 
   @override
-  String get leaderboardPlayersHint =>
-      'Voeg de mensen toe waar je tegen gaat spelen.';
-
-  @override
-  String get leaderboardPlayersHintAction => 'Naar Spelers';
-
-  @override
-  String get leaderboardMatchesHint =>
-      'Voer een wedstrijd in om het klassement te vullen.';
-
-  @override
-  String get leaderboardMatchesHintAction => 'Naar Wedstrijden';
-
-  @override
   String seasonQuarterLabel(int quarter, String year) {
     return 'K$quarter $year';
   }
@@ -399,7 +387,13 @@ class AppLocalizationsNl extends AppLocalizations {
   String get matchesTitle => 'Wedstrijden';
 
   @override
-  String get matchesEmpty => 'Nog geen wedstrijden. Voer je eerste in.';
+  String get matchesEmpty => 'Nog geen wedstrijden.';
+
+  @override
+  String get matchesCreateHint => 'Maak je eerste wedstrijd aan.';
+
+  @override
+  String get matchesCreateHintAction => 'Wedstrijd aanmaken';
 
   @override
   String get matchDayToday => 'Vandaag';
@@ -474,8 +468,7 @@ class AppLocalizationsNl extends AppLocalizations {
       'Als gast kun je rondkijken, maar voor het vastleggen van wedstrijden heb je een account nodig.';
 
   @override
-  String get matchNeedsPlayers =>
-      'Voeg eerst spelers toe voordat je een wedstrijd vastlegt.';
+  String get matchNeedsPlayers => 'Voeg spelers toe en maak wedstrijden aan.';
 
   @override
   String get matchDetailTitle => 'Wedstrijd';
@@ -509,7 +502,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get playersTitle => 'Spelers';
 
   @override
-  String get playersAddDummy => 'Speler toevoegen';
+  String get playersAddDummy => 'Dummy toevoegen';
 
   @override
   String get playersDisplayNameLabel => 'Naam';
@@ -527,14 +520,17 @@ class AppLocalizationsNl extends AppLocalizations {
   String get playersOwner => 'Beheerder';
 
   @override
+  String get playersDummy => 'Dummy';
+
+  @override
   String get playersEdit => 'Bewerken';
 
   @override
-  String get playersAddTitle => 'Speler toevoegen';
+  String get playersAddTitle => 'Dummy toevoegen';
 
   @override
   String get playersAddSubtitle =>
-      'Met een tijdelijke speler kun je wedstrijden vastleggen voor iemand die nog niet meedoet. Diegene kan die naam later claimen met de competitiecode.';
+      'Maak zoveel dummies aan als je wilt. Je kunt ze gebruiken om wedstrijden vast te leggen. Of ze dienen als plaatshouder voor spelers die later meedoen. Een andere speler kan een dummy claimen nadat die zich bij je competitie heeft aangesloten.';
 
   @override
   String get playersNameTooShort => 'Vul een naam van minstens 2 tekens in.';

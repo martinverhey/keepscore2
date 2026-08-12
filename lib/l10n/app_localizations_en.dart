@@ -223,6 +223,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get competitionSettingsTitle => 'Competition settings';
 
   @override
+  String get playersManageTitle => 'Manage players';
+
+  @override
   String get competitionSettingsSave => 'Save changes';
 
   @override
@@ -343,13 +346,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get joinAlreadyMember => 'You\'re already in this competition.';
 
   @override
+  String get joinViewCompetition => 'View competition';
+
+  @override
   String get joinNewPlayerNameTitle => 'What\'s your name?';
 
   @override
   String get leaderboardTitle => 'Leaderboard';
-
-  @override
-  String get leaderboardEmpty => 'No matches played this season yet.';
 
   @override
   String get leaderboardNoPlayers =>
@@ -370,20 +373,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get leaderboardUnplayed => 'Not played yet';
 
   @override
-  String get leaderboardPlayersHint =>
-      'Add the people you\'ll be playing against.';
-
-  @override
-  String get leaderboardPlayersHintAction => 'Go to Players';
-
-  @override
-  String get leaderboardMatchesHint =>
-      'Enter a match to start filling in the leaderboard.';
-
-  @override
-  String get leaderboardMatchesHintAction => 'Go to Matches';
-
-  @override
   String seasonQuarterLabel(int quarter, String year) {
     return 'Q$quarter $year';
   }
@@ -397,7 +386,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get matchesTitle => 'Matches';
 
   @override
-  String get matchesEmpty => 'No matches yet. Enter your first one.';
+  String get matchesEmpty => 'No matches yet.';
+
+  @override
+  String get matchesCreateHint => 'Create your first match.';
+
+  @override
+  String get matchesCreateHintAction => 'Create Match';
 
   @override
   String get matchDayToday => 'Today';
@@ -470,8 +465,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Guests can look around, but logging a match needs an account.';
 
   @override
-  String get matchNeedsPlayers =>
-      'Add players to the roster before logging a match.';
+  String get matchNeedsPlayers => 'Add players and start creating matches.';
 
   @override
   String get matchDetailTitle => 'Match';
@@ -505,7 +499,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playersTitle => 'Players';
 
   @override
-  String get playersAddDummy => 'Add player';
+  String get playersAddDummy => 'Add a dummy';
 
   @override
   String get playersDisplayNameLabel => 'Name';
@@ -523,14 +517,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playersOwner => 'Owner';
 
   @override
+  String get playersDummy => 'Dummy';
+
+  @override
   String get playersEdit => 'Edit';
 
   @override
-  String get playersAddTitle => 'Add a player';
+  String get playersAddTitle => 'Add a dummy';
 
   @override
   String get playersAddSubtitle =>
-      'A placeholder lets you log matches for someone who hasn\'t joined yet. They can claim the name later with the competition code.';
+      'Create as many dummies as you want. You can use them to create matches. Or they can be used as placeholders for players who might join later. Another player can claim a dummy after joining your competition.';
 
   @override
   String get playersNameTooShort => 'Enter a name of at least 2 characters.';
