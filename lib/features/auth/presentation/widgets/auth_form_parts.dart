@@ -3,9 +3,9 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/error/failure_messages.dart';
+import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
-import '../../../../l10n/app_localizations.dart';
 import '../cubit/sign_in_cubit.dart';
 
 class AuthHeading extends StatelessWidget {
@@ -41,7 +41,7 @@ class AuthFailureText extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.md),
       child: Text(
-        failure.localized(AppLocalizations.of(context)),
+        failure.localized(context.l10n),
         style: const TextStyle(color: AppColors.negative),
       ),
     );
@@ -59,8 +59,9 @@ class AuthEmailStep extends StatefulWidget {
 }
 
 class _AuthEmailStepState extends State<AuthEmailStep> {
-  late final TextEditingController _controller =
-      TextEditingController(text: context.read<SignInCubit>().state.email);
+  late final TextEditingController _controller = TextEditingController(
+    text: context.read<SignInCubit>().state.email,
+  );
 
   @override
   void dispose() {
@@ -70,7 +71,6 @@ class _AuthEmailStepState extends State<AuthEmailStep> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     final cubit = context.read<SignInCubit>();
     final state = context.watch<SignInCubit>().state;
 
@@ -79,7 +79,7 @@ class _AuthEmailStepState extends State<AuthEmailStep> {
       children: [
         AuthHeading(widget.title, widget.subtitle),
         AdaptiveTextField(
-          label: l10n.authEmailLabel,
+          label: context.l10n.authEmailLabel,
           controller: _controller,
           autofocus: true,
           enabled: !state.busy,
@@ -88,13 +88,13 @@ class _AuthEmailStepState extends State<AuthEmailStep> {
           autofillHints: const [AutofillHints.email],
           errorText: state.email.isEmpty || state.emailIsValid
               ? null
-              : l10n.authEmailInvalid,
+              : context.l10n.authEmailInvalid,
           onChanged: cubit.emailChanged,
           onSubmitted: (_) => cubit.sendCode(),
         ),
         const SizedBox(height: AppSpacing.lg),
         AdaptiveButton(
-          label: l10n.authSendCode,
+          label: context.l10n.authSendCode,
           busy: state.busy,
           onPressed: state.canSendCode ? cubit.sendCode : null,
         ),
@@ -122,16 +122,18 @@ class _AuthCodeStepState extends State<AuthCodeStep> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     final cubit = context.read<SignInCubit>();
     final state = context.watch<SignInCubit>().state;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        AuthHeading(l10n.authCodeTitle, l10n.authCodeSubtitle(state.email)),
+        AuthHeading(
+          context.l10n.authCodeTitle,
+          context.l10n.authCodeSubtitle(state.email),
+        ),
         AdaptiveTextField(
-          label: l10n.authCodeLabel,
+          label: context.l10n.authCodeLabel,
           controller: _controller,
           autofocus: true,
           enabled: !state.busy,
@@ -148,13 +150,13 @@ class _AuthCodeStepState extends State<AuthCodeStep> {
         ),
         const SizedBox(height: AppSpacing.lg),
         AdaptiveButton(
-          label: l10n.authVerify,
+          label: context.l10n.authVerify,
           busy: state.busy,
           onPressed: state.canVerify ? cubit.verifyCode : null,
         ),
         const SizedBox(height: AppSpacing.sm),
         AdaptiveButton(
-          label: l10n.authResendCode,
+          label: context.l10n.authResendCode,
           kind: AdaptiveButtonKind.plain,
           onPressed: state.busy ? null : cubit.sendCode,
         ),

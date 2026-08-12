@@ -18,12 +18,12 @@ class AuthUser extends Equatable {
   bool get isRegistered => !isGuest;
 
   AuthUser copyWith({String? displayName, String? avatarUrl}) => AuthUser(
-        id: id,
-        displayName: displayName ?? this.displayName,
-        isGuest: isGuest,
-        email: email,
-        avatarUrl: avatarUrl ?? this.avatarUrl,
-      );
+    id: id,
+    displayName: displayName ?? this.displayName,
+    isGuest: isGuest,
+    email: email,
+    avatarUrl: avatarUrl ?? this.avatarUrl,
+  );
 
   @override
   List<Object?> get props => [id, displayName, isGuest, email, avatarUrl];

@@ -2,13 +2,7 @@ import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/failure.dart';
 
-enum SignInStep {
-  chooser,
-
-  email,
-
-  code,
-}
+enum SignInStep { chooser, email, code }
 
 class SignInState extends Equatable {
   const SignInState({

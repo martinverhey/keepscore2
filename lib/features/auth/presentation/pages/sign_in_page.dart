@@ -1,9 +1,9 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
-import '../../../../l10n/app_localizations.dart';
 import '../cubit/sign_in_cubit.dart';
 import '../widgets/auth_form_parts.dart';
 
@@ -12,15 +12,13 @@ class SignInPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-
     return BlocBuilder<SignInCubit, SignInState>(
       builder: (context, state) {
         return AdaptiveScaffold(
           leading: state.step == SignInStep.chooser
               ? null
               : AdaptiveButton(
-                  label: l10n.commonBack,
+                  label: context.l10n.commonBack,
                   kind: AdaptiveButtonKind.plain,
                   expand: false,
                   onPressed: context.read<SignInCubit>().back,
@@ -28,11 +26,11 @@ class SignInPage extends StatelessWidget {
           body: Padding(
             padding: const EdgeInsets.all(AppSpacing.lg),
             child: switch (state.step) {
-              SignInStep.chooser => const _ChooserStep(),
+              SignInStep.chooser => _chooserStep(context),
               SignInStep.email => AuthEmailStep(
-                  title: l10n.authEmailTitle,
-                  subtitle: l10n.authEmailSubtitle,
-                ),
+                title: context.l10n.authEmailTitle,
+                subtitle: context.l10n.authEmailSubtitle,
+              ),
               SignInStep.code => const AuthCodeStep(),
             },
           ),
@@ -40,14 +38,8 @@ class SignInPage extends StatelessWidget {
       },
     );
   }
-}
 
-class _ChooserStep extends StatelessWidget {
-  const _ChooserStep();
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+  Widget _chooserStep(BuildContext context) {
     final cubit = context.read<SignInCubit>();
     final state = context.watch<SignInCubit>().state;
     final providers = cubit.providers;
@@ -56,11 +48,14 @@ class _ChooserStep extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const SizedBox(height: AppSpacing.xxl),
-        AuthHeading(l10n.authSignInTitle, l10n.authSignInSubtitle),
+        AuthHeading(
+          context.l10n.authSignInTitle,
+          context.l10n.authSignInSubtitle,
+        ),
 
         if (providers.apple) ...[
           AdaptiveButton(
-            label: l10n.authContinueWithApple,
+            label: context.l10n.authContinueWithApple,
             busy: state.busy,
             onPressed: cubit.signInWithApple,
           ),
@@ -68,7 +63,7 @@ class _ChooserStep extends StatelessWidget {
         ],
         if (providers.google) ...[
           AdaptiveButton(
-            label: l10n.authContinueWithGoogle,
+            label: context.l10n.authContinueWithGoogle,
             kind: AdaptiveButtonKind.tinted,
             busy: state.busy,
             onPressed: cubit.signInWithGoogle,
@@ -77,7 +72,7 @@ class _ChooserStep extends StatelessWidget {
         ],
 
         AdaptiveButton(
-          label: l10n.authContinueWithEmail,
+          label: context.l10n.authContinueWithEmail,
           kind: providers.any
               ? AdaptiveButtonKind.tinted
               : AdaptiveButtonKind.filled,
@@ -86,7 +81,7 @@ class _ChooserStep extends StatelessWidget {
         const SizedBox(height: AppSpacing.lg),
 
         AdaptiveButton(
-          label: l10n.authContinueAsGuest,
+          label: context.l10n.authContinueAsGuest,
           kind: AdaptiveButtonKind.plain,
           busy: state.busy,
           onPressed: cubit.continueAsGuest,

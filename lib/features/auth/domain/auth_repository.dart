@@ -22,7 +22,10 @@ abstract interface class AuthRepository {
 
   Future<void> upgradeGuestWithEmail(String email);
 
-  Future<void> verifyUpgradeCode({required String email, required String token});
+  Future<void> verifyUpgradeCode({
+    required String email,
+    required String token,
+  });
 
   Future<void> signOut();
 }
