@@ -752,6 +752,12 @@ abstract class AppLocalizations {
   /// **'{wins}W · {losses}L · {draws}D'**
   String leaderboardRecord(int wins, int losses, int draws);
 
+  /// No description provided for @leaderboardWinRate.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}%'**
+  String leaderboardWinRate(int percent);
+
   /// No description provided for @gameType1v1.
   ///
   /// In en, this message translates to:

@@ -158,6 +158,10 @@
       "draws": { "type": "int" }
     }
   },
+  "leaderboardWinRate": "{percent}%",
+  "@leaderboardWinRate": {
+    "placeholders": { "percent": { "type": "int" } }
+  },
   "gameType1v1": "1v1",
   "gameType2v2": "2v2",
   "gameType3v3": "3v3",

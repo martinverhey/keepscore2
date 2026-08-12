@@ -21,6 +21,7 @@ declare
   v_guest    constant uuid := '22222222-2222-2222-2222-222222222222';
   v_outsider constant uuid := '55555555-5555-5555-5555-555555555555';
   v_comp     public.competitions;
+  v_season   uuid;
   v_n        integer;
   v_denied   boolean;
   v_player   uuid;
@@ -29,6 +30,16 @@ begin
   -- project accumulates other competitions from manual testing, and an
   -- unordered limit 1 is one VACUUM away from picking a different one.
   select * into v_comp from public.competitions where join_code = 'HDHS39';
+
+  -- season_history (20260812120000) backfilled several historical seasons
+  -- for the demo competition, so `leaderboard` now spans more than one
+  -- season_id; pin to the latest one the same way the app always does
+  -- (a season_id filter), instead of counting across every season ever played.
+  select id into v_season
+    from public.seasons
+   where competition_id = v_comp.id
+   order by starts_at desc
+   limit 1;
 
   -- A dedicated, freshly-minted account rather than "any account that
   -- isn't owner/guest" — the live project now has plenty of real accounts
@@ -59,7 +70,7 @@ begin
   select count(*) into v_n from public.competitions;
   assert v_n = 1, format('owner should see 1 competition, saw %s', v_n);
 
-  select count(*) into v_n from public.leaderboard;
+  select count(*) into v_n from public.leaderboard where season_id = v_season;
   assert v_n = 5, format('owner should see 5 leaderboard rows, saw %s', v_n);
 
   select count(*) into v_n from public.match_feed;
@@ -73,7 +84,7 @@ begin
   select count(*) into v_n from public.competitions;
   assert v_n = 0, format('outsider should see no competitions, saw %s', v_n);
 
-  select count(*) into v_n from public.leaderboard;
+  select count(*) into v_n from public.leaderboard where season_id = v_season;
   assert v_n = 0, format('outsider should see no leaderboard, saw %s', v_n);
 
   select count(*) into v_n from public.matches;
@@ -120,7 +131,7 @@ begin
   -- ---------------------------------------------------------------------
   perform pg_temp.act_as(v_guest, true);
 
-  select count(*) into v_n from public.leaderboard;
+  select count(*) into v_n from public.leaderboard where season_id = v_season;
   assert v_n = 5, format('guest should still see the leaderboard, saw %s', v_n);
 
   v_denied := false;

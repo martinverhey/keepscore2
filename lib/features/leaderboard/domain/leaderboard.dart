@@ -1,5 +1,9 @@
 import 'package:equatable/equatable.dart';
 
+import '../../profile/domain/streak_type.dart';
+
+export '../../profile/domain/streak_type.dart';
+
 class Leaderboard extends Equatable {
   const Leaderboard({
     required this.seasonId,
@@ -13,6 +17,8 @@ class Leaderboard extends Equatable {
     required this.losses,
     required this.draws,
     required this.rank,
+    this.streakType = StreakType.none,
+    this.streakCount = 0,
   });
 
   factory Leaderboard.fromMap(Map<String, dynamic> map) => Leaderboard(
@@ -27,6 +33,8 @@ class Leaderboard extends Equatable {
     losses: (map['losses'] as num?)?.toInt() ?? 0,
     draws: (map['draws'] as num?)?.toInt() ?? 0,
     rank: (map['rank'] as num?)?.toInt() ?? 0,
+    streakType: StreakType.fromWire(map['streak_type'] as String? ?? 'none'),
+    streakCount: (map['streak_count'] as num?)?.toInt() ?? 0,
   );
 
   factory Leaderboard.forRosterPlayer(
@@ -60,6 +68,10 @@ class Leaderboard extends Equatable {
   final int losses;
   final int draws;
   final int rank;
+  final StreakType streakType;
+  final int streakCount;
+
+  double get winRate => played == 0 ? 0 : wins / played;
 
   @override
   List<Object?> get props => [
@@ -74,6 +86,8 @@ class Leaderboard extends Equatable {
     losses,
     draws,
     rank,
+    streakType,
+    streakCount,
   ];
 }
 

@@ -389,6 +389,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String leaderboardWinRate(int percent) {
+    return '$percent%';
+  }
+
+  @override
   String get gameType1v1 => '1v1';
 
   @override
