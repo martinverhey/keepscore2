@@ -36,6 +36,8 @@ Future<T> guard<T>(Future<T> Function() action) async {
     return await action();
   } on Failure {
     rethrow;
+  } on AuthRetryableFetchException catch (e) {
+    throw NetworkFailure(e.message);
   } on AuthException catch (e) {
     throw AuthFailure(e.message);
   } on PostgrestException catch (e) {
