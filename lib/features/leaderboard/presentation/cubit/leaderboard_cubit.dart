@@ -10,7 +10,6 @@ import '../../domain/leaderboard.model.dart';
 import '../../domain/leaderboard_repository.dart';
 import '../../domain/medals.model.dart';
 import '../../domain/season.model.dart';
-import '../../domain/season_window.model.dart';
 import 'leaderboard_state.dart';
 
 export 'leaderboard_state.dart';
@@ -37,28 +36,33 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
     if (!silent) emit(const LeaderboardState());
     final gameType = _gameTypeFilterCubit.state;
     try {
-      final results = await Future.wait<Object?>([
-        _repository.currentSeason(competitionId),
-        _repository.medals(competitionId, gameType: gameType),
-      ]);
+      // medals doesn't depend on the season, so it's kicked off up front and
+      // only awaited once leaderboards (which does depend on it) is also in
+      // flight — instead of blocking the season lookup on it first.
+      final medalsFuture = _repository.medals(competitionId, gameType: gameType);
+      final window = await _repository.currentSeason(competitionId);
       if (isClosed) return;
 
-      final window = results[0] as SeasonWindow;
       final season = Season(
         id: window.id,
         startsAt: window.startsAt.toLocal(),
         endsAt: window.endsAt.toLocal(),
       );
+
+      final results = await Future.wait<Object?>([
+        _repository.leaderboards(
+          competitionId: competitionId,
+          seasonId: season.id,
+          gameType: gameType,
+        ),
+        medalsFuture,
+      ]);
+      if (isClosed || gameType != _gameTypeFilterCubit.state) return;
+
+      final leaderboards = results[0] as List<Leaderboard>;
       final medals = {
         for (final tally in results[1] as List<Medals>) tally.playerId: tally,
       };
-
-      final leaderboards = await _repository.leaderboards(
-        competitionId: competitionId,
-        seasonId: season.id,
-        gameType: gameType,
-      );
-      if (isClosed || gameType != _gameTypeFilterCubit.state) return;
 
       emit(
         LeaderboardState(
