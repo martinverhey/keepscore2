@@ -37,6 +37,7 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
 
     return AdaptiveScaffold(
       title: context.l10n.competitionsTitle,
+      trailing: context.canPop() ? null : _signOutButton(context),
       onRefresh: context.read<CompetitionListCubit>().refresh,
       body: BlocBuilder<CompetitionListCubit, CompetitionListState>(
         builder: (context, state) {
@@ -59,6 +60,13 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
       ),
     );
   }
+
+  Widget _signOutButton(BuildContext context) => AdaptiveIconButton(
+    glyph: AdaptiveGlyph.signOut,
+    semanticLabel: context.l10n.authSignOut,
+    onPressed: () =>
+        context.read<AuthBloc>().add(const AuthSignOutRequested()),
+  );
 
   Widget _loaded(
     BuildContext context,

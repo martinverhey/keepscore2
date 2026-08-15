@@ -14,4 +14,5 @@ enum AdaptiveGlyph {
   ice,
   triangleUp,
   triangleDown,
+  signOut,
 }
