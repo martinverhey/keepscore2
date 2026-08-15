@@ -15,6 +15,7 @@ import 'package:keepscore2/features/match/presentation/cubit/game_type_filter_cu
 import 'package:keepscore2/features/profile/domain/best_streaks.model.dart';
 import 'package:keepscore2/features/profile/domain/head_to_head_record.model.dart';
 import 'package:keepscore2/features/profile/domain/profile_repository.dart';
+import 'package:keepscore2/features/profile/domain/profile_stats.model.dart';
 import 'package:keepscore2/features/profile/domain/recent_played.model.dart';
 import 'package:keepscore2/features/profile/domain/streak.model.dart';
 import 'package:keepscore2/features/profile/presentation/cubit/profile_overview_cubit.dart';
@@ -187,34 +188,23 @@ void main() {
           ),
         ).thenAnswer((_) async => const []);
         when(
-          () => profileRepository.currentStreak(
-            seasonId: 's1',
+          () => profileRepository.profileStats(
             playerId: 'p1',
+            seasonId: any(named: 'seasonId'),
             gameType: type,
           ),
-        ).thenAnswer((_) async => const Streak.none());
-        when(
-          () => profileRepository.bestStreaks(playerId: 'p1', gameType: type),
-        ).thenAnswer((_) async => const BestStreaks.zero());
-        when(
-          () => profileRepository.recentPlayed(
-            seasonId: 's1',
-            playerId: 'p1',
-            gameType: type,
+        ).thenAnswer(
+          (_) async => ProfileStats(
+            totalPlayed: totalPlayed,
+            bestStreaks: const BestStreaks.zero(),
+            bestRating: bestRating,
+            streak: const Streak.none(),
+            recentPlayed: const RecentPlayed.zero(),
           ),
-        ).thenAnswer((_) async => const RecentPlayed.zero());
-        when(
-          () => profileRepository.totalMatchesPlayed(
-            playerId: 'p1',
-            gameType: type,
-          ),
-        ).thenAnswer((_) async => totalPlayed);
+        );
         when(
           () => matchRepository.recentForPlayer(playerId: 'p1', gameType: type),
         ).thenAnswer((_) async => recentMatches);
-        when(
-          () => profileRepository.bestRating(playerId: 'p1', gameType: type),
-        ).thenAnswer((_) async => bestRating);
       }
 
       when(() => leaderboardRepository.currentSeason('c1')).thenAnswer(
@@ -380,34 +370,23 @@ void main() {
         ),
       ).thenAnswer((_) async => const []);
       when(
-        () => profileRepository.currentStreak(
-          seasonId: 's1',
+        () => profileRepository.profileStats(
           playerId: 'p1',
+          seasonId: any(named: 'seasonId'),
           gameType: null,
         ),
-      ).thenAnswer((_) async => const Streak.none());
-      when(
-        () => profileRepository.bestStreaks(playerId: 'p1', gameType: null),
-      ).thenAnswer((_) async => const BestStreaks.zero());
-      when(
-        () => profileRepository.recentPlayed(
-          seasonId: 's1',
-          playerId: 'p1',
-          gameType: null,
+      ).thenAnswer(
+        (_) async => const ProfileStats(
+          totalPlayed: 42,
+          bestStreaks: BestStreaks.zero(),
+          bestRating: 1234,
+          streak: Streak.none(),
+          recentPlayed: RecentPlayed.zero(),
         ),
-      ).thenAnswer((_) async => const RecentPlayed.zero());
-      when(
-        () => profileRepository.totalMatchesPlayed(
-          playerId: 'p1',
-          gameType: null,
-        ),
-      ).thenAnswer((_) async => 42);
+      );
       when(
         () => matchRepository.recentForPlayer(playerId: 'p1', gameType: null),
       ).thenAnswer((_) async => const []);
-      when(
-        () => profileRepository.bestRating(playerId: 'p1', gameType: null),
-      ).thenAnswer((_) async => 1234);
       when(() => leaderboardRepository.medals('c1', gameType: null)).thenAnswer(
         (_) async => const [
           Medals(playerId: 'p1', gold: 12, silver: 34, bronze: 56),
@@ -472,32 +451,23 @@ void main() {
       ),
     ).thenAnswer((_) async => const []);
     when(
-      () => profileRepository.currentStreak(
-        seasonId: 's1',
+      () => profileRepository.profileStats(
         playerId: 'p1',
+        seasonId: any(named: 'seasonId'),
         gameType: null,
       ),
-    ).thenAnswer((_) async => const Streak.none());
-    when(
-      () => profileRepository.bestStreaks(playerId: 'p1', gameType: null),
-    ).thenAnswer((_) async => const BestStreaks.zero());
-    when(
-      () => profileRepository.recentPlayed(
-        seasonId: 's1',
-        playerId: 'p1',
-        gameType: null,
+    ).thenAnswer(
+      (_) async => const ProfileStats(
+        totalPlayed: 20,
+        bestStreaks: BestStreaks.zero(),
+        bestRating: 1050,
+        streak: Streak.none(),
+        recentPlayed: RecentPlayed.zero(),
       ),
-    ).thenAnswer((_) async => const RecentPlayed.zero());
-    when(
-      () =>
-          profileRepository.totalMatchesPlayed(playerId: 'p1', gameType: null),
-    ).thenAnswer((_) async => 20);
+    );
     when(
       () => matchRepository.recentForPlayer(playerId: 'p1', gameType: null),
     ).thenAnswer((_) async => const []);
-    when(
-      () => profileRepository.bestRating(playerId: 'p1', gameType: null),
-    ).thenAnswer((_) async => 1050);
     when(
       () => leaderboardRepository.medals('c1', gameType: null),
     ).thenAnswer((_) async => const []);
@@ -545,34 +515,23 @@ void main() {
         ),
       ).thenAnswer((_) async => const []);
       when(
-        () => profileRepository.currentStreak(
-          seasonId: 's1',
+        () => profileRepository.profileStats(
           playerId: 'p1',
+          seasonId: any(named: 'seasonId'),
           gameType: null,
         ),
-      ).thenAnswer((_) async => const Streak.none());
-      when(
-        () => profileRepository.bestStreaks(playerId: 'p1', gameType: null),
-      ).thenAnswer((_) async => const BestStreaks.zero());
-      when(
-        () => profileRepository.recentPlayed(
-          seasonId: 's1',
-          playerId: 'p1',
-          gameType: null,
+      ).thenAnswer(
+        (_) async => const ProfileStats(
+          totalPlayed: 0,
+          bestStreaks: BestStreaks.zero(),
+          bestRating: 0,
+          streak: Streak.none(),
+          recentPlayed: RecentPlayed.zero(),
         ),
-      ).thenAnswer((_) async => const RecentPlayed.zero());
-      when(
-        () => profileRepository.totalMatchesPlayed(
-          playerId: 'p1',
-          gameType: null,
-        ),
-      ).thenAnswer((_) async => 0);
+      );
       when(
         () => matchRepository.recentForPlayer(playerId: 'p1', gameType: null),
       ).thenAnswer((_) async => const []);
-      when(
-        () => profileRepository.bestRating(playerId: 'p1', gameType: null),
-      ).thenAnswer((_) async => 0);
       when(
         () => leaderboardRepository.medals('c1', gameType: null),
       ).thenAnswer((_) async => const []);
@@ -676,34 +635,23 @@ void main() {
         ),
       ).thenAnswer((_) async => const []);
       when(
-        () => profileRepository.currentStreak(
-          seasonId: 's1',
+        () => profileRepository.profileStats(
           playerId: 'p1',
+          seasonId: any(named: 'seasonId'),
           gameType: null,
         ),
-      ).thenAnswer((_) async => const Streak.none());
-      when(
-        () => profileRepository.bestStreaks(playerId: 'p1', gameType: null),
-      ).thenAnswer((_) async => const BestStreaks.zero());
-      when(
-        () => profileRepository.recentPlayed(
-          seasonId: 's1',
-          playerId: 'p1',
-          gameType: null,
+      ).thenAnswer(
+        (_) async => const ProfileStats(
+          totalPlayed: 0,
+          bestStreaks: BestStreaks.zero(),
+          bestRating: 0,
+          streak: Streak.none(),
+          recentPlayed: RecentPlayed.zero(),
         ),
-      ).thenAnswer((_) async => const RecentPlayed.zero());
-      when(
-        () => profileRepository.totalMatchesPlayed(
-          playerId: 'p1',
-          gameType: null,
-        ),
-      ).thenAnswer((_) async => 0);
+      );
       when(
         () => matchRepository.recentForPlayer(playerId: 'p1', gameType: null),
       ).thenAnswer((_) async => const []);
-      when(
-        () => profileRepository.bestRating(playerId: 'p1', gameType: null),
-      ).thenAnswer((_) async => 0);
       when(
         () => leaderboardRepository.medals('c1', gameType: null),
       ).thenAnswer((_) async => const []);

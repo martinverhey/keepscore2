@@ -292,7 +292,9 @@ Kept here because the code cannot express them and they cost real debugging:
   streaks, rating history, totals) takes `{GameType? gameType}` and picks
   between the combined table/view and its `game_type_*` sibling, and any
   cubit that surfaces such data re-fetches on every `GameTypeFilterCubit`
-  emission (see `LeaderboardCubit._applyGameType`, `ProfileCubit._applyGameType`).
+  emission (see `LeaderboardCubit._applyGameType`,
+  `ProfileOverviewCubit._applyGameType`, and its `ProfileVersusCubit`/
+  `ProfileSeasonHistoryCubit` siblings, each with the same pattern).
   New match-derived data follows the same two-part contract: a `game_type_*`
   sibling read model, plus a repository method/cubit fetch that's parameterized
   on `gameType` and re-runs when the shared filter changes — grep either
@@ -308,10 +310,34 @@ Kept here because the code cannot express them and they cost real debugging:
   fix — and the rule going forward — is that a widget showing match-derived,
   filter-sensitive data must read it from its own cubit's state, never take
   it as a value handed down from a parent screen's (possibly differently
-  filtered, possibly stale) state. `ProfileCubit` now fetches medals itself,
-  the same way it already picks `mine` out of `leaderboards`: fetch the
-  competition-wide list for the selected `gameType`, find this `playerId` in
-  it.
+  filtered, possibly stale) state. `ProfileOverviewCubit` now fetches medals
+  itself, the same way it already picks `mine` out of `leaderboards`: fetch
+  the competition-wide list for the selected `gameType`, find this `playerId`
+  in it.
+- **`ProfileSheet` has three cubits, one per tab, not one `ProfileCubit`.**
+  Overview, Versus, and Season History are never visible at once, so only
+  Overview (the default tab) loads eagerly, the same way the old single
+  cubit did. `ProfileVersusCubit`/`ProfileSeasonHistoryCubit` are built
+  lazily by `ProfileSheet` itself via `getIt` — the first time a tab is
+  actually opened, not when the sheet is — and closed by the sheet's
+  `dispose()` since nothing else owns them. All three still subscribe to the
+  shared `GameTypeFilterCubit` independently and follow the same
+  `state.status != ready` guard against acting on a filter change before
+  their first `load()`; a tab that's never opened never fetches anything and
+  never reacts to the filter either. `ProfileOverviewCubit.hasOpponent` is
+  computed once at `load()` time from `viewerPlayerId != playerId` — no
+  fetch needed to decide whether the Versus segment even appears.
+  `ProfileOverviewCubit.profileStats` bundles what used to be five separate
+  round trips (`totalMatchesPlayed`/`bestStreaks`/`bestRating`/
+  `currentStreak`/`recentPlayed`, all single-row results for the same
+  `(player, season, game_type)`) into one `player_profile_stats` RPC
+  (20260816130000); `leaderboards`/`recentForPlayer`/`medals`/`ratingHistory`
+  stay separate calls, since those are genuinely different, list-shaped
+  fetches. `ProfileRepository.profileStats` accepts a nullable `seasonId` —
+  the RPC treats "no season yet" as "no matches" (same as `player_streak`/
+  `player_recent_played` already did), so the Dart side no longer needs to
+  gate this specific call on `seasonId != null` the way `leaderboards`/
+  `ratingHistory` still do.
 
 ## Commands
 

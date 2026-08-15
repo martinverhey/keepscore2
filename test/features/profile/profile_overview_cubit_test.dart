@@ -13,6 +13,7 @@ import 'package:keepscore2/features/match/domain/match_repository.dart';
 import 'package:keepscore2/features/match/presentation/cubit/game_type_filter_cubit.dart';
 import 'package:keepscore2/features/profile/domain/best_streaks.model.dart';
 import 'package:keepscore2/features/profile/domain/profile_repository.dart';
+import 'package:keepscore2/features/profile/domain/profile_stats.model.dart';
 import 'package:keepscore2/features/profile/domain/rating_point.model.dart';
 import 'package:keepscore2/features/profile/domain/recent_played.model.dart';
 import 'package:keepscore2/features/profile/domain/streak.model.dart';
@@ -112,32 +113,23 @@ void main() {
       ),
     ).thenAnswer((_) async => history);
     when(
-      () => profileRepository.currentStreak(
-        seasonId: 's-august',
+      () => profileRepository.profileStats(
         playerId: 'p1',
+        seasonId: any(named: 'seasonId'),
         gameType: type,
       ),
-    ).thenAnswer((_) async => streak);
-    when(
-      () => profileRepository.bestStreaks(playerId: 'p1', gameType: type),
-    ).thenAnswer((_) async => bestStreaks);
-    when(
-      () => profileRepository.recentPlayed(
-        seasonId: 's-august',
-        playerId: 'p1',
-        gameType: type,
+    ).thenAnswer(
+      (_) async => ProfileStats(
+        totalPlayed: totalPlayed,
+        bestStreaks: bestStreaks,
+        bestRating: bestRating,
+        streak: streak,
+        recentPlayed: recentPlayed,
       ),
-    ).thenAnswer((_) async => recentPlayed);
-    when(
-      () =>
-          profileRepository.totalMatchesPlayed(playerId: 'p1', gameType: type),
-    ).thenAnswer((_) async => totalPlayed);
+    );
     when(
       () => matchRepository.recentForPlayer(playerId: 'p1', gameType: type),
     ).thenAnswer((_) async => recentMatches);
-    when(
-      () => profileRepository.bestRating(playerId: 'p1', gameType: type),
-    ).thenAnswer((_) async => bestRating);
   }
 
   setUp(() {

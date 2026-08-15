@@ -10,11 +10,9 @@ import '../../../match/domain/game_type.enum.dart';
 import '../../../match/domain/match_entry.model.dart';
 import '../../../match/domain/match_repository.dart';
 import '../../../match/presentation/cubit/game_type_filter_cubit.dart';
-import '../../domain/best_streaks.model.dart';
 import '../../domain/profile_repository.dart';
+import '../../domain/profile_stats.model.dart';
 import '../../domain/rating_point.model.dart';
-import '../../domain/recent_played.model.dart';
-import '../../domain/streak.model.dart';
 import 'profile_overview_state.dart';
 
 export 'profile_overview_state.dart';
@@ -88,14 +86,13 @@ class ProfileOverviewCubit extends Cubit<ProfileOverviewState> {
     final seasonId = _seasonId;
 
     final results = await Future.wait<Object?>([
-      _profileRepository.totalMatchesPlayed(
+      _profileRepository.profileStats(
         playerId: playerId,
+        seasonId: seasonId,
         gameType: gameType,
       ),
       _matchRepository.recentForPlayer(playerId: playerId, gameType: gameType),
-      _profileRepository.bestStreaks(playerId: playerId, gameType: gameType),
       _leaderboardRepository.medals(competitionId, gameType: gameType),
-      _profileRepository.bestRating(playerId: playerId, gameType: gameType),
       if (seasonId != null)
         _leaderboardRepository.leaderboards(
           competitionId: competitionId,
@@ -108,25 +105,11 @@ class ProfileOverviewCubit extends Cubit<ProfileOverviewState> {
           playerId: playerId,
           gameType: gameType,
         ),
-      if (seasonId != null)
-        _profileRepository.currentStreak(
-          seasonId: seasonId,
-          playerId: playerId,
-          gameType: gameType,
-        ),
-      if (seasonId != null)
-        _profileRepository.recentPlayed(
-          seasonId: seasonId,
-          playerId: playerId,
-          gameType: gameType,
-        ),
     ]);
 
-    final totalPlayed = results[0] as int;
+    final stats = results[0] as ProfileStats;
     final recentMatches = results[1] as List<MatchEntry>;
-    final bestStreaks = results[2] as BestStreaks;
-    final allMedals = results[3] as List<Medals>;
-    final bestRating = results[4] as double;
+    final allMedals = results[2] as List<Medals>;
 
     Medals? medals;
     for (final tally in allMedals) {
@@ -139,15 +122,10 @@ class ProfileOverviewCubit extends Cubit<ProfileOverviewState> {
     Leaderboard? mine;
     var playerCount = 0;
     var history = const <RatingPoint>[];
-    var streak = const Streak.none();
-    var recentPlayed = const RecentPlayed.zero();
 
     if (seasonId != null) {
-      var next = 5;
-      final leaderboards = results[next++] as List<Leaderboard>;
-      history = results[next++] as List<RatingPoint>;
-      streak = results[next++] as Streak;
-      recentPlayed = results[next++] as RecentPlayed;
+      final leaderboards = results[3] as List<Leaderboard>;
+      history = results[4] as List<RatingPoint>;
 
       playerCount = leaderboards.length;
       for (final leaderboard in leaderboards) {
@@ -163,13 +141,13 @@ class ProfileOverviewCubit extends Cubit<ProfileOverviewState> {
       selectedGameType: gameType,
       leaderboard: mine,
       medals: medals,
-      bestRating: bestRating,
+      bestRating: stats.bestRating,
       playerCount: playerCount,
       history: history,
-      totalPlayed: totalPlayed,
-      streak: streak,
-      bestStreaks: bestStreaks,
-      recentPlayed: recentPlayed,
+      totalPlayed: stats.totalPlayed,
+      streak: stats.streak,
+      bestStreaks: stats.bestStreaks,
+      recentPlayed: stats.recentPlayed,
       recentMatches: recentMatches,
       hasOpponent: _hasOpponent,
     );
