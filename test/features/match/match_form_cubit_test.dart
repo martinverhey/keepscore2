@@ -316,7 +316,9 @@ void main() {
           scoreA: any(named: 'scoreA'),
           scoreB: any(named: 'scoreB'),
         ),
-      ).thenThrow(const ValidationFailure('Create an account to log matches'));
+      ).thenThrow(
+        const ValidationFailure('Create an account to create matches'),
+      );
     },
     build: build,
     act: (cubit) async {

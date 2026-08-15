@@ -553,7 +553,7 @@ declare
   v_all       uuid[];
 begin
   if not public.is_registered() then
-    raise exception 'Create an account to log matches' using errcode = 'P0001';
+    raise exception 'Create an account to create matches' using errcode = 'P0001';
   end if;
   if not public.is_member(p_competition_id) then
     raise exception 'You are not in this competition' using errcode = 'P0001';

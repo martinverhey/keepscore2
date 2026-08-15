@@ -57,7 +57,7 @@ pops.
 - **Edits/deletes replay the season** via `recalc_season`.
 - **Auth**: Apple, Google, email OTP code. No passwords.
 - **Guests** (Supabase anonymous) may join a competition and read it. They may
-  not create competitions, add players, or log matches. Enforced in Postgres.
+  not create competitions, add players, or create matches. Enforced in Postgres.
 - Online only. English + Dutch. Cupertino on iOS/macOS, Material 3 elsewhere.
 
 ### Guest-gated features

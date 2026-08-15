@@ -39,7 +39,7 @@
   "authSignOut": "Sign out",
   "authGuestBadge": "Guest",
   "authUpgradeTitle": "Create an account",
-  "authUpgradeBody": "Guests can look around, but you need an account to create competitions and log matches. Your history stays with you.",
+  "authUpgradeBody": "Guests can look around, but you need an account to create competitions and create matches. Your history stays with you.",
 
   "competitionsTitle": "Competitions",
   "competitionsEmpty": "You're not in any competition yet.",

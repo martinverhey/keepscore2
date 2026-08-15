@@ -110,7 +110,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authUpgradeBody =>
-      'Guests can look around, but you need an account to create competitions and log matches. Your history stays with you.';
+      'Guests can look around, but you need an account to create competitions and create matches. Your history stays with you.';
 
   @override
   String get competitionsTitle => 'Competitions';

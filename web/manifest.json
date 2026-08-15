@@ -5,7 +5,7 @@
     "display": "standalone",
     "background_color": "#BC4D08",
     "theme_color": "#BC4D08",
-    "description": "Run your own competition ladder — log matches, get an Elo leaderboard.",
+    "description": "Create your own competition ladder — create matches, get an Elo leaderboard.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

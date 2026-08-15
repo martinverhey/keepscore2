@@ -9,8 +9,9 @@ import 'package:keepscore2/l10n/app_localizations.dart';
 void main() {
   tearDown(() => AppPlatform.debugOverrideCupertino = null);
 
-  testWidgets('a guest is offered a way out, not just a refusal',
-      (tester) async {
+  testWidgets('a guest is offered a way out, not just a refusal', (
+    tester,
+  ) async {
     AppPlatform.debugOverrideCupertino = false;
 
     final router = GoRouter(
@@ -18,7 +19,7 @@ void main() {
         GoRoute(
           path: '/',
           builder: (_, _) => const Scaffold(
-            body: GuestNotice(message: 'Guests may not log matches'),
+            body: GuestNotice(message: 'Guests may not create matches'),
           ),
         ),
         GoRoute(
@@ -37,7 +38,7 @@ void main() {
       ),
     );
 
-    expect(find.text('Guests may not log matches'), findsOneWidget);
+    expect(find.text('Guests may not create matches'), findsOneWidget);
     expect(find.text('Guest'), findsOneWidget);
 
     await tester.tap(find.text('Create an account'));

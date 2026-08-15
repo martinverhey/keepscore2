@@ -293,7 +293,7 @@ abstract class AppLocalizations {
   /// No description provided for @authUpgradeBody.
   ///
   /// In en, this message translates to:
-  /// **'Guests can look around, but you need an account to create competitions and log matches. Your history stays with you.'**
+  /// **'Guests can look around, but you need an account to create competitions and create matches. Your history stays with you.'**
   String get authUpgradeBody;
 
   /// No description provided for @competitionsTitle.
