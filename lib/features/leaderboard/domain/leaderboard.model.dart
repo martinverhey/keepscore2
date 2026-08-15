@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../profile/domain/streak_type.enum.dart';
+import 'season_standing.model.dart';
 
 export '../../profile/domain/streak_type.enum.dart';
 
@@ -40,6 +41,22 @@ class Leaderboard extends Equatable {
     streakCount: (map['streak_count'] as num?)?.toInt() ?? 0,
     todayDelta: _toDouble(map['today_delta']),
   );
+
+  factory Leaderboard.fromSeasonStanding(SeasonStanding standing) =>
+      Leaderboard(
+        seasonId: standing.seasonId,
+        competitionId: standing.competitionId,
+        playerId: standing.playerId,
+        displayName: standing.displayName,
+        isClaimed: standing.isClaimed,
+        isOwner: false,
+        rating: standing.rating,
+        played: standing.played,
+        wins: standing.wins,
+        losses: standing.losses,
+        draws: standing.draws,
+        rank: standing.rank,
+      );
 
   factory Leaderboard.forRosterPlayer(
     Map<String, dynamic> map, {
