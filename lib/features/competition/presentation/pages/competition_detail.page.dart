@@ -297,7 +297,7 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
         Expanded(
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
-            onTap: _openSettings,
+            onTap: () => context.push(Routes.home),
             child: Row(
               children: [
                 Flexible(
