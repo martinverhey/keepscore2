@@ -54,7 +54,9 @@ pops.
   monthly / quarterly / yearly in the competition's timezone.
 - **Draws allowed**, scored 0.5.
 - **No match confirmation** — a submitted result counts immediately.
-- **Edits/deletes replay the season** via `recalc_season`.
+- **Edits/deletes replay the season from the affected match forward** via
+  `recalc_season_from`/`recalc_season_game_type_from`, not from scratch —
+  see the note under Testing.
 - **Auth**: Apple, Google, email OTP code. No passwords.
 - **Guests** (Supabase anonymous) may join a competition and read it. They may
   not create competitions, add players, or create matches. Enforced in Postgres.
@@ -211,12 +213,15 @@ code; don't relitigate them.
   owner to decide who may delete.
 - **Realtime is a tick, never a payload.** `core/data/realtime.dart` turns a
   `postgres_changes` subscription into a `Stream<void>`; the cubit debounces
-  it by 400 ms and refetches. This is not laziness: one `create_match` on the
-  demo competition emitted **36** `player_ratings` events and 14 `matches`
-  events, because a back-dated match replays the whole season and every
-  replayed match rewrites its own rating snapshot. Reconciling that stream
-  row by row would cost more than the refetch and could not keep `rank`
-  consistent anyway.
+  it by 400 ms and refetches. This is not laziness: reconciling a stream of
+  per-row payloads would cost more than the refetch and could not keep `rank`
+  consistent anyway — a single write's fan-out can still be many rows, even
+  after `recalc_season_from`/no-op write guards (20260815170000,
+  20260816110000) cut the `matches`/`match_players` side of it down to just
+  the affected match(es): `player_ratings`/`player_game_type_ratings` are
+  still fully deleted and rebuilt per season on every edit/delete (see the
+  comment on `recalc_season_from`), so every player in the season still gets
+  a fresh event on every write, back-dated or not.
 - **A write blocked by an RLS policy is not an error.** `update … where`
   simply matches no rows, so repositories end those calls with
   `.select().maybeSingle()` and raise `PermissionFailure` on null. Getting
@@ -316,6 +321,7 @@ flutter build apk --debug        # verified green
 ./scripts/db.sh -f supabase/tests/rls_check.sql      # RLS verification, rolls back
 ./scripts/db.sh -f supabase/tests/players_check.sql  # roster + settings writes
 ./scripts/db.sh -f supabase/tests/no_op_recalc_check.sql  # no-op write guards, rolls back
+./scripts/db.sh -f supabase/tests/incremental_recalc_check.sql  # boundary-scoped replay, rolls back
 ```
 
 ## Git workflow
@@ -395,6 +401,36 @@ from the project-root `.env`.
   `matches`/`match_players` rows (checked via `xmin`), not just arrive at
   the same final ratings. Self-contained (creates its own throwaway
   competition), rolls back.
+- **`recalc_season`/`recalc_season_game_type` (full, from-scratch replay) are
+  no longer on any write path** — `create_match`/`update_match_score`/
+  `delete_match` call `recalc_season_from`/`recalc_season_game_type_from`
+  instead, which seed `player_ratings`/`player_game_type_ratings` from each
+  player's state as of the last match strictly before the boundary (their
+  `rating_after`/`type_rating_after` plus a `played`/`wins`/`losses`/`draws`
+  count over everything before it — the only historical record available,
+  since `player_ratings` itself only ever stores the current total) and then
+  replay only matches at/after it. The boundary is the earliest position the
+  write could possibly affect: the new match's own position for a create, the
+  earlier of a match's old/new position for a score edit (same match id
+  either side, so the tuple comparison reduces to comparing `played_at`), the
+  deleted match's old position for a delete, and — if a score edit moves a
+  match to a different season — both seasons replayed independently from
+  their own boundary. `player_ratings`/`player_game_type_ratings` themselves
+  are still fully deleted and rebuilt per season on every write (that part
+  wasn't worth the extra complexity to make incremental too); it's
+  `matches`/`match_players` that this actually shrinks, from every row in the
+  season down to just the affected match(es). The full versions stay
+  available as a genuine full-rebuild primitive — `supabase/seed.sql`'s
+  incremental-build-equals-replay invariant exercises them directly, and nothing
+  else calls them. `supabase/tests/incremental_recalc_check.sql` is the
+  correctness gate: after every write RPC's boundary-scoped replay, a
+  from-scratch `recalc_season`/`recalc_season_game_type` on the same season
+  must land on byte-identical `player_ratings`, `player_game_type_ratings`,
+  and `match_players` — checked at several boundary positions (an ordinary
+  create, a back-dated create, editing an early match, deleting a
+  non-final match, moving a match to a different season) plus once more
+  directly against the live seeded competition's real match history.
+  Self-contained, rolls back.
 - **The guest → account upgrade is the one flow still unverified server-side.**
   It cannot be checked the way the RPCs were: `verifyUpgradeCode` needs a token
   that only arrives by email. Seeding `auth.users.email_change_token_new` by
