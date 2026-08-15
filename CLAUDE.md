@@ -60,6 +60,26 @@ pops.
   not create competitions, add players, or log matches. Enforced in Postgres.
 - Online only. English + Dutch. Cupertino on iOS/macOS, Material 3 elsewhere.
 
+### Guest-gated features
+
+Enforced in Postgres (source of truth) and mirrored in the UI at every
+write-capable surface, gated on `session.canWrite` from `AuthBloc` (passed
+down as `isRegistered`). Keep this list current when a gated surface is added
+or moved:
+
+- **Create competition** — `competitions.page.dart`, `canCreate: session.canWrite`.
+- **Add/manage players, owner settings** — `players.page.dart` →
+  `widgets/players.dart`, `isRegistered: session.canWrite`.
+- **Create a match** — the "new match" bottom tab item is omitted entirely for
+  guests in `competition_detail.page.dart`; `matches.page.dart` shows
+  `GuestNotice` instead of the log affordance.
+- **Edit/delete a match** — `match_detail.page.dart`,
+  `session.canWrite && state.isManageableBy(session.user?.id)` (creator or
+  owner only, not just registered).
+- **Season History** (`competition_menu.page.dart`) is deliberately *outside*
+  this gate — it's read-only historical data a guest may read. Competition
+  Settings and Manage players in the same menu stay gated.
+
 ## Architecture
 
 ```
@@ -96,6 +116,24 @@ code; don't relitigate them.
 - **No freezed, no build_runner, no json_serializable.** Plain classes with
   `Equatable` and hand-written `fromMap`. (Explicit user preference.)
 - **No usecase layer.** Blocs call repositories directly.
+- **Widget structure:**
+  - Nested `Row`/`Column`/`Wrap`/`Stack` with multiple children or a
+    conditional gets extracted into a small private method named for what it
+    renders, not its widget type (`_playerName(context)`, not `_row1()`).
+    Leave single, already-flat widget calls inline — `build()` itself should
+    read as a short, flat assembly of these named pieces.
+  - A new private local widget (`class _Foo extends StatelessWidget` /
+    `StatefulWidget` inside a feature file) that takes only
+    primitives/`Color`/callbacks — no `Player`, `Match`, `Competition`, etc. —
+    and isn't tied to one screen's layout gets promoted to its own public file
+    under `core/widgets/` (or `core/widgets/adaptive/` for a Cupertino/Material
+    split) and imported back. Keep it private otherwise.
+  - **New modal sheets build on `core/widgets/sheet.dart`'s `Sheet`**, not ad
+    hoc `Column`s: title/subtitle/avatar pinned at top, `content` scrolls in
+    between (capped at 85% of screen height), primary/secondary buttons
+    pinned at bottom. For an action-sheet shape (a variable-length column of
+    choices plus Cancel), the choice column is `content` and only Cancel is
+    `secondaryButton`.
 - **One class or enum per file.** This applies to Cubit states and to domain
   enums/models alike:
   - **Every Cubit's state lives in its own `<name>_state.dart` file**, next to
@@ -201,7 +239,7 @@ Kept here because the code cannot express them and they cost real debugging:
 - **The current calendar season has no `seasons` row until its first match is
   created** (`season_window()` returns `season_id = null`), so the `leaderboard`
   view — inner-joined from `seasons` — cannot be queried for it. Before a
-  season starts, `SupabaseLeaderboardRepository.standings()` falls back to a
+  season starts, `SupabaseLeaderboardRepository.leaderboards()` falls back to a
   roster read (`players` embedding `competitions(starting_rating)`) so the
   page still shows everyone at the starting rating instead of an empty list.
   `Leaderboard.seasonId` is nullable for exactly this synthetic case.
@@ -224,7 +262,40 @@ Kept here because the code cannot express them and they cost real debugging:
   built from `leaderboard`. `SeasonHistoryPage` carries its own
   `GameTypeFilterDropdown`/`selectGameTypeFilter`, independent of the
   leaderboard tab's filter — they're different cubits with their own
-  `selectedGameType`.
+  `selectedGameType`. `game_type_player_medals` is the same trick again,
+  one level further: `player_medals` groups `season_history` by medal,
+  `game_type_player_medals` groups `game_type_season_history` by `(game_type,
+  medal)` instead. This is the general shape for anything derived from
+  match history — the `leaderboard`/`season_history`/`player_medals` combined
+  views and their `game_type_*` siblings are pairs, not one view with an
+  optional filter, because a per-type view can only be built by replaying
+  just that type's matches.
+- **The game-type filter is one global, shared value — `GameTypeFilterCubit`
+  is a `registerLazySingleton`, not scoped per screen.** Any repository
+  method that reads match-derived data (leaderboards, season history, medals,
+  streaks, rating history, totals) takes `{GameType? gameType}` and picks
+  between the combined table/view and its `game_type_*` sibling, and any
+  cubit that surfaces such data re-fetches on every `GameTypeFilterCubit`
+  emission (see `LeaderboardCubit._applyGameType`, `ProfileCubit._applyGameType`).
+  New match-derived data follows the same two-part contract: a `game_type_*`
+  sibling read model, plus a repository method/cubit fetch that's parameterized
+  on `gameType` and re-runs when the shared filter changes — grep either
+  existing cubit for the pattern before adding a new one.
+  The trap this catches: `ProfileSheet` used to take `Medals? medals` as a
+  plain constructor argument, supplied by whichever screen opened it
+  (`LeaderboardRow`, `ProfileSection`) from *its own* already-loaded,
+  unfiltered `LeaderboardCubit.state.medals`. Because the filter is global,
+  changing it *inside* an already-open profile sheet updated every other
+  field in `ProfileState` (all owned by `ProfileCubit`, all reacting to
+  `GameTypeFilterCubit.stream`) except that one prop, which had been
+  snapshotted at the moment the sheet was built and never touched again. The
+  fix — and the rule going forward — is that a widget showing match-derived,
+  filter-sensitive data must read it from its own cubit's state, never take
+  it as a value handed down from a parent screen's (possibly differently
+  filtered, possibly stale) state. `ProfileCubit` now fetches medals itself,
+  the same way it already picks `mine` out of `leaderboards`: fetch the
+  competition-wide list for the selected `gameType`, find this `playerId` in
+  it.
 
 ## Commands
 
@@ -245,6 +316,14 @@ flutter build apk --debug        # verified green
 ./scripts/db.sh -f supabase/tests/rls_check.sql      # RLS verification, rolls back
 ./scripts/db.sh -f supabase/tests/players_check.sql  # roster + settings writes
 ```
+
+## Git workflow
+
+- Commit messages follow **Conventional Commits**: `<type>(<scope>): <description>`
+  (e.g. `feat(competition): add leave-competition action`, `fix(auth): ...`).
+  Common types: feat, fix, refactor, chore, docs, test, style, perf, build, ci.
+- **Commit straight to `main`.** This is a solo repo — skip branching before
+  committing even though `main` is the default branch.
 
 ## Database workflow — read this before touching SQL
 
