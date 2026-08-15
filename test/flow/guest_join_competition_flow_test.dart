@@ -230,7 +230,10 @@ void main() {
         ),
       ).thenAnswer((_) => const Stream.empty());
       when(
-        () => leaderboard.medals(_competitionId),
+        () => leaderboard.medals(
+          _competitionId,
+          gameType: any(named: 'gameType'),
+        ),
       ).thenAnswer((_) async => const []);
 
       final authBloc = AuthBloc(auth);
