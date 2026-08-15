@@ -141,7 +141,9 @@ class _NewMatchPageState extends State<NewMatchPage> {
           children: [
             Expanded(
               child: AdaptiveTextField(
-                label: context.l10n.matchScoreTeam(context.l10n.matchTeamA),
+                label: context.l10n.matchScoreTeam(
+                  context.l10n.matchTeamA.toUpperCase(),
+                ),
                 controller: _scoreA,
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -153,7 +155,9 @@ class _NewMatchPageState extends State<NewMatchPage> {
             const SizedBox(width: AppSpacing.md),
             Expanded(
               child: AdaptiveTextField(
-                label: context.l10n.matchScoreTeam(context.l10n.matchTeamB),
+                label: context.l10n.matchScoreTeam(
+                  context.l10n.matchTeamB.toUpperCase(),
+                ),
                 controller: _scoreB,
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -270,25 +274,32 @@ class _NewMatchPageState extends State<NewMatchPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: Text(
-                    title,
+                    title.toUpperCase(),
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
+                      letterSpacing: 1.2,
                       color: color,
                     ),
                   ),
                 ),
                 if (members.isNotEmpty)
-                  Text(
-                    formatRating(rating),
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: color,
-                      fontFeatures: const [FontFeature.tabularFigures()],
+                  TweenAnimationBuilder<double>(
+                    tween: Tween<double>(end: rating),
+                    duration: const Duration(milliseconds: 500),
+                    curve: Curves.easeOutCubic,
+                    builder: (_, value, _) => Text(
+                      formatRating(value),
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                        color: color,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
                     ),
                   ),
               ],
