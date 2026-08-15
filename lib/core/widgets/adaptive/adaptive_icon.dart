@@ -16,7 +16,7 @@ class AdaptiveIcon extends StatelessWidget {
   IconData get _cupertino => switch (glyph) {
     AdaptiveGlyph.leaderboard => CupertinoIcons.chart_bar_alt_fill,
     AdaptiveGlyph.newMatch => CupertinoIcons.add_circled_solid,
-    AdaptiveGlyph.matches => CupertinoIcons.clock,
+    AdaptiveGlyph.matches => CupertinoIcons.list_bullet,
     AdaptiveGlyph.settings => CupertinoIcons.gear,
     AdaptiveGlyph.chevronRight => CupertinoIcons.chevron_right,
     AdaptiveGlyph.chevronDown => CupertinoIcons.chevron_down,
@@ -35,7 +35,7 @@ class AdaptiveIcon extends StatelessWidget {
   IconData get _material => switch (glyph) {
     AdaptiveGlyph.leaderboard => Icons.leaderboard,
     AdaptiveGlyph.newMatch => Icons.add_circle,
-    AdaptiveGlyph.matches => Icons.history,
+    AdaptiveGlyph.matches => Icons.format_list_bulleted,
     AdaptiveGlyph.settings => Icons.settings,
     AdaptiveGlyph.chevronRight => Icons.chevron_right,
     AdaptiveGlyph.chevronDown => Icons.keyboard_arrow_down,
