@@ -1196,6 +1196,18 @@ abstract class AppLocalizations {
   /// **'Win rate'**
   String get profileWinRateLabel;
 
+  /// No description provided for @profileWinStreakLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Win streak'**
+  String get profileWinStreakLabel;
+
+  /// No description provided for @profileLossStreakLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Loss streak'**
+  String get profileLossStreakLabel;
+
   /// No description provided for @profileTrendTitle.
   ///
   /// In en, this message translates to:

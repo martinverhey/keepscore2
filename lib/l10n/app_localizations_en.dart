@@ -638,6 +638,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileWinRateLabel => 'Win rate';
 
   @override
+  String get profileWinStreakLabel => 'Win streak';
+
+  @override
+  String get profileLossStreakLabel => 'Loss streak';
+
+  @override
   String get profileTrendTitle => 'Recent form';
 
   @override

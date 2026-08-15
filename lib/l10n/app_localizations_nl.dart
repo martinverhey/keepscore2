@@ -641,6 +641,12 @@ class AppLocalizationsNl extends AppLocalizations {
   String get profileWinRateLabel => 'Winstpercentage';
 
   @override
+  String get profileWinStreakLabel => 'Winreeks';
+
+  @override
+  String get profileLossStreakLabel => 'Verliesreeks';
+
+  @override
   String get profileTrendTitle => 'Recente vorm';
 
   @override

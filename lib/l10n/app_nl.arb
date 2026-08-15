@@ -268,6 +268,8 @@
   "profileLossesLabel": "Verloren",
   "profileDrawsLabel": "Gelijk",
   "profileWinRateLabel": "Winstpercentage",
+  "profileWinStreakLabel": "Winreeks",
+  "profileLossStreakLabel": "Verliesreeks",
   "profileTrendTitle": "Recente vorm",
   "profileNotEnoughMatches": "Speel nog een paar wedstrijden om je trend te zien.",
   "profileTabOverview": "Overzicht",

@@ -162,6 +162,9 @@ class ProfileSection extends StatelessWidget {
     final winRatePercent = leaderboard.played == 0
         ? 0
         : (leaderboard.winRate * 100).round();
+    final hasStreak =
+        leaderboard.streakCount >= 2 &&
+        leaderboard.streakType != StreakType.none;
 
     return Row(
       children: [
@@ -174,7 +177,75 @@ class ProfileSection extends StatelessWidget {
           '${leaderboard.played}',
           context.l10n.profileSeasonGamesLabel,
         ),
+        if (hasStreak) _streakBlock(context, leaderboard),
       ],
+    );
+  }
+
+  Widget _streakBlock(BuildContext context, Leaderboard leaderboard) {
+    final isWin = leaderboard.streakType == StreakType.win;
+
+    return Expanded(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _streakTag(context, isWin: isWin, count: leaderboard.streakCount),
+          const SizedBox(height: 2),
+          Text(
+            isWin
+                ? context.l10n.profileWinStreakLabel
+                : context.l10n.profileLossStreakLabel,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 11, color: AppColors.neutral),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _streakTag(
+    BuildContext context, {
+    required bool isWin,
+    required int count,
+  }) {
+    final color = isWin ? AppColors.fireCore : AppColors.iceCore;
+
+    return Semantics(
+      label: isWin
+          ? context.l10n.profileStreakWin(count)
+          : context.l10n.profileStreakLoss(count),
+      child: ExcludeSemantics(
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.sm,
+            vertical: 2,
+          ),
+          decoration: BoxDecoration(
+            borderRadius: AppRadius.pill,
+            color: color.withValues(alpha: 0.16),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AdaptiveIcon(
+                isWin ? AdaptiveGlyph.fire : AdaptiveGlyph.ice,
+                color: color,
+                size: 13,
+              ),
+              const SizedBox(width: 2),
+              Text(
+                '$count',
+                style: TextStyle(
+                  color: color,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

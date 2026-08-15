@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/medals.model.dart';
@@ -91,7 +92,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('omits the stats row when there is no leaderboard at all', (
+  testWidgets('omits the stats row when there is no standing at all', (
     tester,
   ) async {
     await _pump(tester, null);
@@ -100,16 +101,53 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('shows medals in the header but never a streak', (tester) async {
+  testWidgets('shows medals in the header and the streak in the stat row', (
+    tester,
+  ) async {
     await _pump(
       tester,
       _leaderboard(streakType: StreakType.win, streakCount: 7),
       medals: const Medals(playerId: 'p1', gold: 2, silver: 0, bronze: 1),
     );
 
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(ProfileSection)),
+    );
+
     expect(find.text('2'), findsOneWidget);
     expect(find.text('1'), findsOneWidget);
-    expect(find.text('7'), findsNothing);
+    expect(find.text('7'), findsOneWidget);
+    expect(find.text(l10n.profileWinStreakLabel), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(ProfileSection),
+        matching: find.byWidgetPredicate(
+          (widget) =>
+              widget is AdaptiveIcon && widget.glyph == AdaptiveGlyph.fire,
+        ),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.bySemanticsLabel(RegExp(RegExp.escape(l10n.profileStreakWin(7)))),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('omits the streak block when the streak is a single game', (
+    tester,
+  ) async {
+    await _pump(
+      tester,
+      _leaderboard(streakType: StreakType.loss, streakCount: 1),
+    );
+
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(ProfileSection)),
+    );
+
+    expect(find.text(l10n.profileLossStreakLabel), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }
