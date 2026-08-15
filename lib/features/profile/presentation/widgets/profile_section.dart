@@ -10,7 +10,7 @@ import '../../../../core/widgets/rating_delta.dart';
 import '../../../competition/domain/competition.model.dart';
 import '../../../leaderboard/domain/leaderboard.model.dart';
 import '../../../leaderboard/domain/medals.model.dart';
-import '../cubit/profile_cubit.dart';
+import '../cubit/profile_overview_cubit.dart';
 import 'initials_circle.dart';
 import 'profile_sheet.dart';
 
@@ -45,9 +45,10 @@ class ProfileSection extends StatelessWidget {
       onTap: () => showAdaptiveSheet<void>(
         context,
         builder: (_) => BlocProvider(
-          create: (_) =>
-              getIt<ProfileCubit>(param1: competitionId, param2: playerId)
-                ..load(viewerPlayerId: playerId),
+          create: (_) => getIt<ProfileOverviewCubit>(
+            param1: competitionId,
+            param2: playerId,
+          )..load(viewerPlayerId: playerId),
           child: ProfileSheet(
             displayName: displayName,
             seasonLength: seasonLength,

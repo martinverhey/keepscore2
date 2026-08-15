@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keepscore2/app/dependency_injection/injector.dart';
 import 'package:keepscore2/core/widgets/medal_chip.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard.model.dart';
@@ -16,7 +17,9 @@ import 'package:keepscore2/features/profile/domain/head_to_head_record.model.dar
 import 'package:keepscore2/features/profile/domain/profile_repository.dart';
 import 'package:keepscore2/features/profile/domain/recent_played.model.dart';
 import 'package:keepscore2/features/profile/domain/streak.model.dart';
-import 'package:keepscore2/features/profile/presentation/cubit/profile_cubit.dart';
+import 'package:keepscore2/features/profile/presentation/cubit/profile_overview_cubit.dart';
+import 'package:keepscore2/features/profile/presentation/cubit/profile_season_history_cubit.dart';
+import 'package:keepscore2/features/profile/presentation/cubit/profile_versus_cubit.dart';
 import 'package:keepscore2/features/profile/presentation/widgets/profile_sheet.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
@@ -80,20 +83,91 @@ MatchEntry _matchAgainstTheo() => MatchEntry(
 );
 
 void main() {
-  testWidgets(
-    'the whole overview respects the selected game type, top to bottom',
-    (tester) async {
-      SharedPreferences.setMockInitialValues({});
-      final leaderboardRepository = MockLeaderboardRepository();
-      final profileRepository = MockProfileRepository();
-      final matchRepository = MockMatchRepository();
+  late MockLeaderboardRepository leaderboardRepository;
+  late MockProfileRepository profileRepository;
+  late MockMatchRepository matchRepository;
+  late GameTypeFilterCubit gameTypeFilterCubit;
 
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+    leaderboardRepository = MockLeaderboardRepository();
+    profileRepository = MockProfileRepository();
+    matchRepository = MockMatchRepository();
+    gameTypeFilterCubit = GameTypeFilterCubit();
+
+    // The Versus and Season History tabs build their cubits lazily through
+    // getIt, exactly the way the app does — registering them here means a
+    // test only pays for the round trips of a tab it actually opens.
+    getIt.registerFactoryParam<ProfileVersusCubit, String, String>(
+      (playerId, opponentId) => ProfileVersusCubit(
+        profileRepository,
+        matchRepository,
+        gameTypeFilterCubit,
+        playerId,
+        opponentId,
+      ),
+    );
+    getIt.registerFactoryParam<ProfileSeasonHistoryCubit, String, String>(
+      (competitionId, playerId) => ProfileSeasonHistoryCubit(
+        leaderboardRepository,
+        gameTypeFilterCubit,
+        competitionId,
+        playerId,
+      ),
+    );
+  });
+
+  tearDown(() async {
+    await getIt.reset();
+    await gameTypeFilterCubit.close();
+  });
+
+  ProfileOverviewCubit buildOverviewCubit() => ProfileOverviewCubit(
+    leaderboardRepository,
+    profileRepository,
+    matchRepository,
+    gameTypeFilterCubit,
+    'c1',
+    'p1',
+  );
+
+  Future<void> pumpSheet(
+    WidgetTester tester,
+    ProfileOverviewCubit cubit, {
+    String displayName = 'Nora',
+    String? myPlayerId,
+  }) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: cubit),
+            BlocProvider<GameTypeFilterCubit>.value(value: gameTypeFilterCubit),
+          ],
+          child: ProfileSheet(
+            displayName: displayName,
+            seasonLength: SeasonLength.monthly,
+            myPlayerId: myPlayerId,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets(
+    'the whole overview respects the selected game type, top to bottom, '
+    'and never touches the versus or season-history repositories',
+    (tester) async {
       void stubGameType(
         GameType? type, {
         required Leaderboard leaderboard,
         required int totalPlayed,
         List<MatchEntry> recentMatches = const [],
         List<Medals> medals = const [],
+        double bestRating = 0,
       }) {
         when(
           () => leaderboardRepository.leaderboards(
@@ -138,18 +212,15 @@ void main() {
         when(
           () => matchRepository.recentForPlayer(playerId: 'p1', gameType: type),
         ).thenAnswer((_) async => recentMatches);
+        when(
+          () => profileRepository.bestRating(playerId: 'p1', gameType: type),
+        ).thenAnswer((_) async => bestRating);
       }
 
       when(() => leaderboardRepository.currentSeason('c1')).thenAnswer(
         (_) async =>
             SeasonWindow(id: 's1', startsAt: _august, endsAt: _september),
       );
-      when(
-        () => leaderboardRepository.seasonHistory(
-          competitionId: 'c1',
-          playerId: 'p1',
-        ),
-      ).thenAnswer((_) async => const []);
 
       stubGameType(
         null,
@@ -163,6 +234,7 @@ void main() {
         totalPlayed: 20,
         recentMatches: [_matchAgainstTheo()],
         medals: const [Medals(playerId: 'p1', gold: 1, silver: 0, bronze: 0)],
+        bestRating: 1050,
       );
       stubGameType(
         GameType.oneVOne,
@@ -175,47 +247,14 @@ void main() {
         ),
         totalPlayed: 9,
         medals: const [Medals(playerId: 'p1', gold: 0, silver: 3, bronze: 0)],
+        bestRating: 1090,
       );
-      when(
-        () => leaderboardRepository.seasonHistory(
-          competitionId: 'c1',
-          playerId: 'p1',
-          gameType: GameType.oneVOne,
-        ),
-      ).thenAnswer((_) async => const []);
 
-      final gameTypeFilterCubit = GameTypeFilterCubit();
-      addTearDown(gameTypeFilterCubit.close);
-
-      final cubit = ProfileCubit(
-        leaderboardRepository,
-        profileRepository,
-        matchRepository,
-        gameTypeFilterCubit,
-        'c1',
-        'p1',
+      final cubit = buildOverviewCubit()..load();
+      await cubit.stream.firstWhere(
+        (s) => s.status == ProfileOverviewStatus.ready,
       );
-      await cubit.load();
-
-      await tester.pumpWidget(
-        MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: MultiBlocProvider(
-            providers: [
-              BlocProvider.value(value: cubit),
-              BlocProvider<GameTypeFilterCubit>.value(
-                value: gameTypeFilterCubit,
-              ),
-            ],
-            child: const ProfileSheet(
-              displayName: 'Nora',
-              seasonLength: SeasonLength.monthly,
-            ),
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
+      await pumpSheet(tester, cubit);
 
       final l10n = AppLocalizations.of(
         tester.element(find.byType(ProfileSheet)),
@@ -261,6 +300,20 @@ void main() {
       expect(find.text(l10n.profileRecentMatchesTitle), findsNothing);
       expect(tester.widget<MedalChip>(find.byType(MedalChip)).count, 3);
 
+      // Neither Versus nor Season History was ever opened.
+      verifyNever(
+        () => profileRepository.headToHead(
+          playerId: any(named: 'playerId'),
+          opponentId: any(named: 'opponentId'),
+        ),
+      );
+      verifyNever(
+        () => leaderboardRepository.seasonHistory(
+          competitionId: any(named: 'competitionId'),
+          playerId: any(named: 'playerId'),
+        ),
+      );
+
       expect(tester.takeException(), isNull);
       await cubit.close();
     },
@@ -274,11 +327,6 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
-
-      SharedPreferences.setMockInitialValues({});
-      final leaderboardRepository = MockLeaderboardRepository();
-      final profileRepository = MockProfileRepository();
-      final matchRepository = MockMatchRepository();
 
       const longName = 'Bartholomewski Alexandertononovich-Vandermeulen';
       final mine = Leaderboard(
@@ -358,49 +406,19 @@ void main() {
         () => matchRepository.recentForPlayer(playerId: 'p1', gameType: null),
       ).thenAnswer((_) async => const []);
       when(
-        () => leaderboardRepository.seasonHistory(
-          competitionId: 'c1',
-          playerId: 'p1',
-        ),
-      ).thenAnswer((_) async => const []);
+        () => profileRepository.bestRating(playerId: 'p1', gameType: null),
+      ).thenAnswer((_) async => 1234);
       when(() => leaderboardRepository.medals('c1', gameType: null)).thenAnswer(
         (_) async => const [
           Medals(playerId: 'p1', gold: 12, silver: 34, bronze: 56),
         ],
       );
 
-      final gameTypeFilterCubit = GameTypeFilterCubit();
-      addTearDown(gameTypeFilterCubit.close);
-
-      final cubit = ProfileCubit(
-        leaderboardRepository,
-        profileRepository,
-        matchRepository,
-        gameTypeFilterCubit,
-        'c1',
-        'p1',
+      final cubit = buildOverviewCubit()..load();
+      await cubit.stream.firstWhere(
+        (s) => s.status == ProfileOverviewStatus.ready,
       );
-      await cubit.load();
-
-      await tester.pumpWidget(
-        MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: MultiBlocProvider(
-            providers: [
-              BlocProvider.value(value: cubit),
-              BlocProvider<GameTypeFilterCubit>.value(
-                value: gameTypeFilterCubit,
-              ),
-            ],
-            child: ProfileSheet(
-              displayName: longName,
-              seasonLength: SeasonLength.monthly,
-            ),
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
+      await pumpSheet(tester, cubit, displayName: longName);
 
       final l10n = AppLocalizations.of(
         tester.element(find.byType(ProfileSheet)),
@@ -419,11 +437,6 @@ void main() {
   testWidgets("today's rating delta shows next to the season rating", (
     tester,
   ) async {
-    SharedPreferences.setMockInitialValues({});
-    final leaderboardRepository = MockLeaderboardRepository();
-    final profileRepository = MockProfileRepository();
-    final matchRepository = MockMatchRepository();
-
     final mine = Leaderboard(
       seasonId: 's1',
       competitionId: 'c1',
@@ -483,45 +496,17 @@ void main() {
       () => matchRepository.recentForPlayer(playerId: 'p1', gameType: null),
     ).thenAnswer((_) async => const []);
     when(
-      () => leaderboardRepository.seasonHistory(
-        competitionId: 'c1',
-        playerId: 'p1',
-      ),
-    ).thenAnswer((_) async => const []);
+      () => profileRepository.bestRating(playerId: 'p1', gameType: null),
+    ).thenAnswer((_) async => 1050);
     when(
       () => leaderboardRepository.medals('c1', gameType: null),
     ).thenAnswer((_) async => const []);
 
-    final gameTypeFilterCubit = GameTypeFilterCubit();
-    addTearDown(gameTypeFilterCubit.close);
-
-    final cubit = ProfileCubit(
-      leaderboardRepository,
-      profileRepository,
-      matchRepository,
-      gameTypeFilterCubit,
-      'c1',
-      'p1',
+    final cubit = buildOverviewCubit()..load();
+    await cubit.stream.firstWhere(
+      (s) => s.status == ProfileOverviewStatus.ready,
     );
-    await cubit.load();
-
-    await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: MultiBlocProvider(
-          providers: [
-            BlocProvider.value(value: cubit),
-            BlocProvider<GameTypeFilterCubit>.value(value: gameTypeFilterCubit),
-          ],
-          child: const ProfileSheet(
-            displayName: 'Nora',
-            seasonLength: SeasonLength.monthly,
-          ),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await pumpSheet(tester, cubit);
 
     final l10n = AppLocalizations.of(tester.element(find.byType(ProfileSheet)));
 
@@ -538,14 +523,9 @@ void main() {
   });
 
   testWidgets(
-    'a versus tab appears only when there is someone to compare against, and '
-    'shows just the aggregated record table',
+    'a versus tab appears only when there is someone to compare against, '
+    'and lazily loads its own record — only once opened',
     (tester) async {
-      SharedPreferences.setMockInitialValues({});
-      final leaderboardRepository = MockLeaderboardRepository();
-      final profileRepository = MockProfileRepository();
-      final matchRepository = MockMatchRepository();
-
       when(() => leaderboardRepository.currentSeason('c1')).thenAnswer(
         (_) async =>
             SeasonWindow(id: 's1', startsAt: _august, endsAt: _september),
@@ -591,11 +571,8 @@ void main() {
         () => matchRepository.recentForPlayer(playerId: 'p1', gameType: null),
       ).thenAnswer((_) async => const []);
       when(
-        () => leaderboardRepository.seasonHistory(
-          competitionId: 'c1',
-          playerId: 'p1',
-        ),
-      ).thenAnswer((_) async => const []);
+        () => profileRepository.bestRating(playerId: 'p1', gameType: null),
+      ).thenAnswer((_) async => 0);
       when(
         () => leaderboardRepository.medals('c1', gameType: null),
       ).thenAnswer((_) async => const []);
@@ -626,44 +603,24 @@ void main() {
         ),
       ).thenAnswer((_) async => [_matchAgainstTheo()]);
 
-      final gameTypeFilterCubit = GameTypeFilterCubit();
-      addTearDown(gameTypeFilterCubit.close);
-
-      final cubit = ProfileCubit(
-        leaderboardRepository,
-        profileRepository,
-        matchRepository,
-        gameTypeFilterCubit,
-        'c1',
-        'p1',
+      final cubit = buildOverviewCubit()..load(viewerPlayerId: 'viewer');
+      await cubit.stream.firstWhere(
+        (s) => s.status == ProfileOverviewStatus.ready,
       );
-      await cubit.load(viewerPlayerId: 'viewer');
-
-      await tester.pumpWidget(
-        MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: MultiBlocProvider(
-            providers: [
-              BlocProvider.value(value: cubit),
-              BlocProvider<GameTypeFilterCubit>.value(
-                value: gameTypeFilterCubit,
-              ),
-            ],
-            child: const ProfileSheet(
-              displayName: 'Nora',
-              seasonLength: SeasonLength.monthly,
-            ),
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
+      await pumpSheet(tester, cubit, myPlayerId: 'viewer');
 
       final l10n = AppLocalizations.of(
         tester.element(find.byType(ProfileSheet)),
       );
 
       expect(find.text(l10n.profileTabVersus), findsOneWidget);
+      // Nothing versus-shaped has been fetched before the tab is opened.
+      verifyNever(
+        () => profileRepository.headToHead(
+          playerId: any(named: 'playerId'),
+          opponentId: any(named: 'opponentId'),
+        ),
+      );
 
       await tester.tap(find.text(l10n.profileTabVersus));
       await tester.pumpAndSettle();
@@ -684,6 +641,108 @@ void main() {
       // The versus-specific recent matches, same list style as overview.
       expect(find.text(l10n.profileRecentMatchesTitle), findsOneWidget);
       expect(find.text('Theo'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+
+      verify(
+        () => profileRepository.headToHead(
+          playerId: 'p1',
+          opponentId: 'viewer',
+        ),
+      ).called(1);
+
+      await cubit.close();
+    },
+  );
+
+  testWidgets(
+    'the season history tab lazily loads standings only once opened',
+    (tester) async {
+      when(() => leaderboardRepository.currentSeason('c1')).thenAnswer(
+        (_) async =>
+            SeasonWindow(id: 's1', startsAt: _august, endsAt: _september),
+      );
+      when(
+        () => leaderboardRepository.leaderboards(
+          competitionId: 'c1',
+          seasonId: 's1',
+          gameType: null,
+        ),
+      ).thenAnswer((_) async => const []);
+      when(
+        () => profileRepository.ratingHistory(
+          seasonId: 's1',
+          playerId: 'p1',
+          gameType: null,
+        ),
+      ).thenAnswer((_) async => const []);
+      when(
+        () => profileRepository.currentStreak(
+          seasonId: 's1',
+          playerId: 'p1',
+          gameType: null,
+        ),
+      ).thenAnswer((_) async => const Streak.none());
+      when(
+        () => profileRepository.bestStreaks(playerId: 'p1', gameType: null),
+      ).thenAnswer((_) async => const BestStreaks.zero());
+      when(
+        () => profileRepository.recentPlayed(
+          seasonId: 's1',
+          playerId: 'p1',
+          gameType: null,
+        ),
+      ).thenAnswer((_) async => const RecentPlayed.zero());
+      when(
+        () => profileRepository.totalMatchesPlayed(
+          playerId: 'p1',
+          gameType: null,
+        ),
+      ).thenAnswer((_) async => 0);
+      when(
+        () => matchRepository.recentForPlayer(playerId: 'p1', gameType: null),
+      ).thenAnswer((_) async => const []);
+      when(
+        () => profileRepository.bestRating(playerId: 'p1', gameType: null),
+      ).thenAnswer((_) async => 0);
+      when(
+        () => leaderboardRepository.medals('c1', gameType: null),
+      ).thenAnswer((_) async => const []);
+      when(
+        () => leaderboardRepository.seasonHistory(
+          competitionId: 'c1',
+          playerId: 'p1',
+          gameType: null,
+        ),
+      ).thenAnswer((_) async => const []);
+
+      final cubit = buildOverviewCubit()..load();
+      await cubit.stream.firstWhere(
+        (s) => s.status == ProfileOverviewStatus.ready,
+      );
+      await pumpSheet(tester, cubit);
+
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ProfileSheet)),
+      );
+
+      verifyNever(
+        () => leaderboardRepository.seasonHistory(
+          competitionId: any(named: 'competitionId'),
+          playerId: any(named: 'playerId'),
+        ),
+      );
+
+      await tester.tap(find.text(l10n.profileTabSeasonHistory));
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n.profileSeasonHistoryEmpty), findsOneWidget);
+      verify(
+        () => leaderboardRepository.seasonHistory(
+          competitionId: 'c1',
+          playerId: 'p1',
+          gameType: null,
+        ),
+      ).called(1);
       expect(tester.takeException(), isNull);
 
       await cubit.close();

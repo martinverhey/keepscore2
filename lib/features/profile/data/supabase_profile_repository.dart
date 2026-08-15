@@ -128,4 +128,17 @@ class SupabaseProfileRepository implements ProfileRepository {
         .map((row) => HeadToHeadRecord.fromMap(row as Map<String, dynamic>))
         .toList(growable: false);
   });
+
+  @override
+  Future<double> bestRating({required String playerId, GameType? gameType}) =>
+      guard(() async {
+        final result = await _client.rpc<num>(
+          'player_best_rating',
+          params: {
+            'p_player_id': playerId,
+            if (gameType != null) 'p_game_type': gameType.wireValue,
+          },
+        );
+        return result.toDouble();
+      });
 }

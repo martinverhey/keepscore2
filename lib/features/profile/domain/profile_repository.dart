@@ -39,4 +39,6 @@ abstract interface class ProfileRepository {
     required String playerId,
     required String opponentId,
   });
+
+  Future<double> bestRating({required String playerId, GameType? gameType});
 }

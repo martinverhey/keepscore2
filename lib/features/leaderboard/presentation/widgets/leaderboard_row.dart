@@ -10,7 +10,7 @@ import '../../../../core/widgets/rating_delta.dart';
 import '../../../../core/widgets/tag.dart';
 import '../../../../core/widgets/today_delta_badge.dart';
 import '../../../competition/domain/competition.model.dart';
-import '../../../profile/presentation/cubit/profile_cubit.dart';
+import '../../../profile/presentation/cubit/profile_overview_cubit.dart';
 import '../../../profile/presentation/widgets/profile_sheet.dart';
 import '../../domain/leaderboard.model.dart';
 import '../../domain/medals.model.dart';
@@ -43,7 +43,7 @@ class LeaderboardRow extends StatelessWidget {
   void _openProfile(BuildContext context) => showAdaptiveSheet<void>(
     context,
     builder: (_) => BlocProvider(
-      create: (_) => getIt<ProfileCubit>(
+      create: (_) => getIt<ProfileOverviewCubit>(
         param1: competitionId,
         param2: leaderboard.playerId,
       )..load(viewerPlayerId: myPlayerId),

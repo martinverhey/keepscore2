@@ -27,7 +27,9 @@ import '../../features/player/domain/player_repository.dart';
 import '../../features/player/presentation/cubit/players_cubit.dart';
 import '../../features/profile/data/supabase_profile_repository.dart';
 import '../../features/profile/domain/profile_repository.dart';
-import '../../features/profile/presentation/cubit/profile_cubit.dart';
+import '../../features/profile/presentation/cubit/profile_overview_cubit.dart';
+import '../../features/profile/presentation/cubit/profile_season_history_cubit.dart';
+import '../../features/profile/presentation/cubit/profile_versus_cubit.dart';
 import '../../features/settings/presentation/cubit/theme_cubit.dart';
 
 final getIt = GetIt.instance;
@@ -116,11 +118,28 @@ Future<void> configureDependencies() async {
     ..registerLazySingleton<ProfileRepository>(
       () => SupabaseProfileRepository(getIt<SupabaseClient>()),
     )
-    ..registerFactoryParam<ProfileCubit, String, String>(
-      (competitionId, playerId) => ProfileCubit(
+    ..registerFactoryParam<ProfileOverviewCubit, String, String>(
+      (competitionId, playerId) => ProfileOverviewCubit(
         getIt<LeaderboardRepository>(),
         getIt<ProfileRepository>(),
         getIt<MatchRepository>(),
+        getIt<GameTypeFilterCubit>(),
+        competitionId,
+        playerId,
+      ),
+    )
+    ..registerFactoryParam<ProfileVersusCubit, String, String>(
+      (playerId, opponentId) => ProfileVersusCubit(
+        getIt<ProfileRepository>(),
+        getIt<MatchRepository>(),
+        getIt<GameTypeFilterCubit>(),
+        playerId,
+        opponentId,
+      ),
+    )
+    ..registerFactoryParam<ProfileSeasonHistoryCubit, String, String>(
+      (competitionId, playerId) => ProfileSeasonHistoryCubit(
+        getIt<LeaderboardRepository>(),
         getIt<GameTypeFilterCubit>(),
         competitionId,
         playerId,

@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../app/dependency_injection/injector.dart';
 import '../../../../app/router/app_router.dart';
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context_l10n.dart';
@@ -21,7 +22,9 @@ import '../../../leaderboard/presentation/widgets/season_label.dart';
 import '../../../match/domain/match_entry.model.dart';
 import '../../../match/presentation/cubit/game_type_filter_cubit.dart';
 import '../../../match/presentation/widgets/match_tile.dart';
-import '../cubit/profile_cubit.dart';
+import '../cubit/profile_overview_cubit.dart';
+import '../cubit/profile_season_history_cubit.dart';
+import '../cubit/profile_versus_cubit.dart';
 import 'initials_circle.dart';
 import 'rating_trend_chart.dart';
 
@@ -45,12 +48,45 @@ class ProfileSheet extends StatefulWidget {
 
 class _ProfileSheetState extends State<ProfileSheet> {
   ProfileTab _tab = ProfileTab.overview;
+  ProfileVersusCubit? _versusCubit;
+  ProfileSeasonHistoryCubit? _seasonHistoryCubit;
+
+  @override
+  void dispose() {
+    _versusCubit?.close();
+    _seasonHistoryCubit?.close();
+    super.dispose();
+  }
+
+  ProfileVersusCubit _ensureVersusCubit(BuildContext context) {
+    final cubit = _versusCubit;
+    if (cubit != null) return cubit;
+    final overview = context.read<ProfileOverviewCubit>();
+    return _versusCubit =
+        getIt<ProfileVersusCubit>(
+            param1: overview.playerId,
+            param2: widget.myPlayerId,
+          )
+          ..load();
+  }
+
+  ProfileSeasonHistoryCubit _ensureSeasonHistoryCubit(BuildContext context) {
+    final cubit = _seasonHistoryCubit;
+    if (cubit != null) return cubit;
+    final overview = context.read<ProfileOverviewCubit>();
+    return _seasonHistoryCubit =
+        getIt<ProfileSeasonHistoryCubit>(
+            param1: overview.competitionId,
+            param2: overview.playerId,
+          )
+          ..load();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final cubit = context.read<ProfileCubit>();
+    final cubit = context.read<ProfileOverviewCubit>();
 
-    return BlocBuilder<ProfileCubit, ProfileState>(
+    return BlocBuilder<ProfileOverviewCubit, ProfileOverviewState>(
       builder: (context, state) {
         return Sheet(
           title: widget.displayName,
@@ -58,30 +94,30 @@ class _ProfileSheetState extends State<ProfileSheet> {
           subtitleWidget: state.leaderboard == null
               ? null
               : _rankSummary(context, state),
-          headerTrailing: state.status == ProfileStatus.loading
+          headerTrailing: state.status == ProfileOverviewStatus.loading
               ? null
               : GameTypeFilterDropdown(
                   selected: context.watch<GameTypeFilterCubit>().state,
                   onSelected: context.read<GameTypeFilterCubit>().select,
                 ),
           content: switch (state.status) {
-            ProfileStatus.loading => const Padding(
+            ProfileOverviewStatus.loading => const Padding(
               padding: EdgeInsets.all(AppSpacing.xl),
               child: AdaptiveLoader(),
             ),
-            ProfileStatus.failed => ErrorRetry(
+            ProfileOverviewStatus.failed => ErrorRetry(
               message: state.failure!.localized(context.l10n),
               retryLabel: context.l10n.commonRetry,
               onRetry: cubit.load,
             ),
-            ProfileStatus.ready => _ready(context, state),
+            ProfileOverviewStatus.ready => _ready(context, state),
           },
         );
       },
     );
   }
 
-  Widget _ready(BuildContext context, ProfileState state) {
+  Widget _ready(BuildContext context, ProfileOverviewState state) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -98,14 +134,14 @@ class _ProfileSheetState extends State<ProfileSheet> {
         const SizedBox(height: AppSpacing.lg),
         switch (_tab) {
           ProfileTab.overview => _overview(context, state),
-          ProfileTab.versus => _versus(context, state),
-          ProfileTab.seasonHistory => _seasonHistory(context, state),
+          ProfileTab.versus => _versusTab(context),
+          ProfileTab.seasonHistory => _seasonHistoryTab(context),
         },
       ],
     );
   }
 
-  Widget _overview(BuildContext context, ProfileState state) {
+  Widget _overview(BuildContext context, ProfileOverviewState state) {
     final leaderboard = state.leaderboard;
 
     return Column(
@@ -156,8 +192,28 @@ class _ProfileSheetState extends State<ProfileSheet> {
     );
   }
 
-  Widget _versus(BuildContext context, ProfileState state) {
-    final records = state.versusRecords;
+  Widget _versusTab(BuildContext context) {
+    final cubit = _ensureVersusCubit(context);
+
+    return BlocBuilder<ProfileVersusCubit, ProfileVersusState>(
+      bloc: cubit,
+      builder: (context, state) => switch (state.status) {
+        ProfileVersusStatus.loading => const Padding(
+          padding: EdgeInsets.all(AppSpacing.xl),
+          child: AdaptiveLoader(),
+        ),
+        ProfileVersusStatus.failed => ErrorRetry(
+          message: state.failure!.localized(context.l10n),
+          retryLabel: context.l10n.commonRetry,
+          onRetry: cubit.load,
+        ),
+        ProfileVersusStatus.ready => _versus(context, state),
+      },
+    );
+  }
+
+  Widget _versus(BuildContext context, ProfileVersusState state) {
+    final records = state.records;
     if (records.isEmpty) {
       return EmptyState(
         message: context.l10n.profileVersusEmpty(widget.displayName),
@@ -173,15 +229,15 @@ class _ProfileSheetState extends State<ProfileSheet> {
           losses: records.fold(0, (sum, record) => sum + record.losses),
           draws: records.fold(0, (sum, record) => sum + record.draws),
         ),
-        if (state.versusRecentMatches.isNotEmpty) ...[
+        if (state.recentMatches.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.lg),
-          _recentMatches(context, state.versusRecentMatches),
+          _recentMatches(context, state.recentMatches),
         ],
       ],
     );
   }
 
-  Widget _rankSummary(BuildContext context, ProfileState state) {
+  Widget _rankSummary(BuildContext context, ProfileOverviewState state) {
     final leaderboard = state.leaderboard!;
     final tally = state.medals;
 
@@ -229,7 +285,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
 
   Widget _ratingSummary(
     BuildContext context,
-    ProfileState state,
+    ProfileOverviewState state,
     Leaderboard leaderboard,
   ) {
     return _statCard([
@@ -333,7 +389,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
     );
   }
 
-  Widget _gamesRow(BuildContext context, ProfileState state) {
+  Widget _gamesRow(BuildContext context, ProfileOverviewState state) {
     return _statCard([
       _statBlock(
         context.l10n.profileTodayGamesLabel,
@@ -351,7 +407,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
     ]);
   }
 
-  Widget _streaksRow(BuildContext context, ProfileState state) {
+  Widget _streaksRow(BuildContext context, ProfileOverviewState state) {
     final streak = state.streak;
     final winStreak = streak.type == StreakType.win ? streak.count : 0;
     final lossStreak = streak.type == StreakType.loss ? streak.count : 0;
@@ -392,15 +448,35 @@ class _ProfileSheetState extends State<ProfileSheet> {
     );
   }
 
-  Widget _seasonHistory(BuildContext context, ProfileState state) {
-    if (state.seasonHistory.isEmpty) {
+  Widget _seasonHistoryTab(BuildContext context) {
+    final cubit = _ensureSeasonHistoryCubit(context);
+
+    return BlocBuilder<ProfileSeasonHistoryCubit, ProfileSeasonHistoryState>(
+      bloc: cubit,
+      builder: (context, state) => switch (state.status) {
+        ProfileSeasonHistoryStatus.loading => const Padding(
+          padding: EdgeInsets.all(AppSpacing.xl),
+          child: AdaptiveLoader(),
+        ),
+        ProfileSeasonHistoryStatus.failed => ErrorRetry(
+          message: state.failure!.localized(context.l10n),
+          retryLabel: context.l10n.commonRetry,
+          onRetry: cubit.load,
+        ),
+        ProfileSeasonHistoryStatus.ready => _seasonHistory(context, state),
+      },
+    );
+  }
+
+  Widget _seasonHistory(BuildContext context, ProfileSeasonHistoryState state) {
+    if (state.standings.isEmpty) {
       return EmptyState(message: context.l10n.profileSeasonHistoryEmpty);
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        for (final standing in state.seasonHistory)
+        for (final standing in state.standings)
           _seasonHistoryRow(context, standing),
       ],
     );

@@ -3,20 +3,18 @@ import 'package:equatable/equatable.dart';
 import '../../../../core/error/failure.dart';
 import '../../../leaderboard/domain/leaderboard.model.dart';
 import '../../../leaderboard/domain/medals.model.dart';
-import '../../../leaderboard/domain/season_standing.model.dart';
 import '../../../match/domain/game_type.enum.dart';
 import '../../../match/domain/match_entry.model.dart';
 import '../../domain/best_streaks.model.dart';
-import '../../domain/head_to_head_record.model.dart';
 import '../../domain/rating_point.model.dart';
 import '../../domain/recent_played.model.dart';
 import '../../domain/streak.model.dart';
 
-enum ProfileStatus { loading, ready, failed }
+enum ProfileOverviewStatus { loading, ready, failed }
 
-class ProfileState extends Equatable {
-  const ProfileState({
-    this.status = ProfileStatus.loading,
+class ProfileOverviewState extends Equatable {
+  const ProfileOverviewState({
+    this.status = ProfileOverviewStatus.loading,
     this.selectedGameType,
     this.leaderboard,
     this.medals,
@@ -27,15 +25,12 @@ class ProfileState extends Equatable {
     this.streak = const Streak.none(),
     this.bestStreaks = const BestStreaks.zero(),
     this.recentPlayed = const RecentPlayed.zero(),
-    this.seasonHistory = const [],
-    this.hasOpponent = false,
-    this.headToHead = const [],
     this.recentMatches = const [],
-    this.versusRecentMatches = const [],
+    this.hasOpponent = false,
     this.failure,
   });
 
-  final ProfileStatus status;
+  final ProfileOverviewStatus status;
   final GameType? selectedGameType;
   final Leaderboard? leaderboard;
   final Medals? medals;
@@ -46,21 +41,12 @@ class ProfileState extends Equatable {
   final Streak streak;
   final BestStreaks bestStreaks;
   final RecentPlayed recentPlayed;
-  final List<SeasonStanding> seasonHistory;
-  final bool hasOpponent;
-  final List<HeadToHeadRecord> headToHead;
   final List<MatchEntry> recentMatches;
-  final List<MatchEntry> versusRecentMatches;
+  final bool hasOpponent;
   final Failure? failure;
 
-  List<HeadToHeadRecord> get versusRecords => selectedGameType == null
-      ? headToHead
-      : headToHead
-            .where((record) => record.gameType == selectedGameType)
-            .toList(growable: false);
-
-  ProfileState copyWith({
-    ProfileStatus? status,
+  ProfileOverviewState copyWith({
+    ProfileOverviewStatus? status,
     GameType? selectedGameType,
     Leaderboard? leaderboard,
     Medals? medals,
@@ -71,20 +57,15 @@ class ProfileState extends Equatable {
     Streak? streak,
     BestStreaks? bestStreaks,
     RecentPlayed? recentPlayed,
-    List<SeasonStanding>? seasonHistory,
-    bool? hasOpponent,
-    List<HeadToHeadRecord>? headToHead,
     List<MatchEntry>? recentMatches,
-    List<MatchEntry>? versusRecentMatches,
+    bool? hasOpponent,
     Failure? failure,
-    bool clearLeaderboard = false,
-    bool clearMedals = false,
   }) {
-    return ProfileState(
+    return ProfileOverviewState(
       status: status ?? this.status,
       selectedGameType: selectedGameType ?? this.selectedGameType,
-      leaderboard: clearLeaderboard ? null : (leaderboard ?? this.leaderboard),
-      medals: clearMedals ? null : (medals ?? this.medals),
+      leaderboard: leaderboard ?? this.leaderboard,
+      medals: medals ?? this.medals,
       bestRating: bestRating ?? this.bestRating,
       playerCount: playerCount ?? this.playerCount,
       history: history ?? this.history,
@@ -92,11 +73,8 @@ class ProfileState extends Equatable {
       streak: streak ?? this.streak,
       bestStreaks: bestStreaks ?? this.bestStreaks,
       recentPlayed: recentPlayed ?? this.recentPlayed,
-      seasonHistory: seasonHistory ?? this.seasonHistory,
-      hasOpponent: hasOpponent ?? this.hasOpponent,
-      headToHead: headToHead ?? this.headToHead,
       recentMatches: recentMatches ?? this.recentMatches,
-      versusRecentMatches: versusRecentMatches ?? this.versusRecentMatches,
+      hasOpponent: hasOpponent ?? this.hasOpponent,
       failure: failure ?? this.failure,
     );
   }
@@ -114,11 +92,8 @@ class ProfileState extends Equatable {
     streak,
     bestStreaks,
     recentPlayed,
-    seasonHistory,
-    hasOpponent,
-    headToHead,
     recentMatches,
-    versusRecentMatches,
+    hasOpponent,
     failure,
   ];
 }
