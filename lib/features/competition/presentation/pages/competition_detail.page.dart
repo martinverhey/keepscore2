@@ -242,6 +242,7 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
                 isRegistered: isRegistered,
                 hasPlayers: hasPlayers,
                 isOwner: isOwner,
+                myPlayerId: myPlayerId,
                 onOpenMatch: (matchId) =>
                     _openAndReload(Routes.match(widget.competitionId, matchId)),
                 onCreateMatch: _openNewMatch,

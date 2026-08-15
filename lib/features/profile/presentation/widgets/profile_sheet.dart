@@ -34,10 +34,12 @@ class ProfileSheet extends StatefulWidget {
     super.key,
     required this.displayName,
     required this.seasonLength,
+    this.myPlayerId,
   });
 
   final String displayName;
   final SeasonLength seasonLength;
+  final String? myPlayerId;
 
   @override
   State<ProfileSheet> createState() => _ProfileSheetState();
@@ -366,6 +368,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
   Widget _recentMatchTile(MatchEntry match) {
     return MatchTile(
       match: match,
+      myPlayerId: widget.myPlayerId,
       onTap: () => context.push(Routes.match(match.competitionId, match.id)),
     );
   }

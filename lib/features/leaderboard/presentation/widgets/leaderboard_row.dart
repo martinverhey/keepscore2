@@ -50,6 +50,7 @@ class LeaderboardRow extends StatelessWidget {
       child: ProfileSheet(
         displayName: leaderboard.displayName,
         seasonLength: seasonLength,
+        myPlayerId: myPlayerId,
       ),
     ),
   );

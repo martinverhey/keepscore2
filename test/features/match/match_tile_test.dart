@@ -45,4 +45,48 @@ void main() {
     expect(text.overflow, TextOverflow.ellipsis);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('draws an accent rail on the side the player is on', (
+    tester,
+  ) async {
+    final match = MatchEntry(
+      id: 'm1',
+      competitionId: 'c1',
+      seasonId: 's1',
+      playedAt: DateTime(2026, 8, 1),
+      teamAScore: 7,
+      teamBScore: 11,
+      teamARating: 1000,
+      teamBRating: 1000,
+      teamA: [_participant('Zoe')],
+      teamB: [_participant('Theo')],
+    );
+
+    Future<Border?> pumpAndFindBorder(String? myPlayerId) async {
+      await tester.pumpWidget(
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: MatchTile(
+            match: match,
+            myPlayerId: myPlayerId,
+            onTap: () {},
+          ),
+        ),
+      );
+      final container = tester.widget<Container>(find.byType(Container).first);
+      return (container.decoration! as BoxDecoration).border as Border?;
+    }
+
+    expect(await pumpAndFindBorder(null), isNull);
+
+    final zoesBorder = await pumpAndFindBorder('Zoe');
+    expect(zoesBorder!.left.width, 1);
+    expect(zoesBorder.right, BorderSide.none);
+
+    final theosBorder = await pumpAndFindBorder('Theo');
+    expect(theosBorder!.right.width, 1);
+    expect(theosBorder.left, BorderSide.none);
+
+    expect(tester.takeException(), isNull);
+  });
 }

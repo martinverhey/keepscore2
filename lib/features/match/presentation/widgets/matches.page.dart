@@ -20,6 +20,7 @@ class MatchesPage extends StatelessWidget {
     required this.isRegistered,
     required this.hasPlayers,
     required this.isOwner,
+    required this.myPlayerId,
     required this.onOpenMatch,
     required this.onCreateMatch,
   });
@@ -27,6 +28,7 @@ class MatchesPage extends StatelessWidget {
   final bool isRegistered;
   final bool hasPlayers;
   final bool isOwner;
+  final String? myPlayerId;
   final void Function(String matchId) onOpenMatch;
   final VoidCallback onCreateMatch;
 
@@ -96,7 +98,11 @@ class MatchesPage extends StatelessWidget {
               for (final group in groupByDay(state.matches)) ...[
                 DayHeader(day: group.day),
                 for (final match in group.matches)
-                  MatchTile(match: match, onTap: () => onOpenMatch(match.id)),
+                  MatchTile(
+                    match: match,
+                    myPlayerId: myPlayerId,
+                    onTap: () => onOpenMatch(match.id),
+                  ),
               ],
 
             if (state.hasMore)

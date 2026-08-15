@@ -1,17 +1,37 @@
 import 'package:flutter/widgets.dart';
 
 import '../../../../core/theme/app_tokens.dart';
+import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/rating_delta.dart';
 import '../../domain/match_entry.model.dart';
 
 class MatchTile extends StatelessWidget {
-  const MatchTile({super.key, required this.match, required this.onTap});
+  const MatchTile({
+    super.key,
+    required this.match,
+    required this.onTap,
+    this.myPlayerId,
+  });
 
   final MatchEntry match;
   final VoidCallback onTap;
+  final String? myPlayerId;
+
+  MatchTeam? get _myTeam {
+    if (myPlayerId == null) return null;
+    if (match.teamA.any((entry) => entry.playerId == myPlayerId)) {
+      return MatchTeam.a;
+    }
+    if (match.teamB.any((entry) => entry.playerId == myPlayerId)) {
+      return MatchTeam.b;
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final rail = BorderSide(color: AdaptiveColors.accent(context), width: 1);
+
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: GestureDetector(
@@ -25,6 +45,11 @@ class MatchTile extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: AppRadius.card,
             color: AppColors.neutral.withValues(alpha: 0.08),
+            border: switch (_myTeam) {
+              MatchTeam.a => Border(left: rail),
+              MatchTeam.b => Border(right: rail),
+              null => null,
+            },
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
