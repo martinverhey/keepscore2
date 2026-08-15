@@ -5,14 +5,12 @@ import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
-import '../../../../core/widgets/rating_delta.dart';
 import '../../../../core/widgets/state_views.dart';
-import '../../../leaderboard/domain/medal.enum.dart';
+import '../../../leaderboard/domain/leaderboard.model.dart';
 import '../../../leaderboard/domain/season.model.dart';
-import '../../../leaderboard/domain/season_standing.model.dart';
 import '../../../leaderboard/presentation/widgets/game_type_filter_dropdown.dart';
-import '../../../leaderboard/presentation/widgets/season_label.dart';
-import '../../../leaderboard/presentation/widgets/season_sheet.dart';
+import '../../../leaderboard/presentation/widgets/leaderboard_row.dart';
+import '../../../leaderboard/presentation/widgets/season_dropdown.dart';
 import '../../../profile/presentation/widgets/game_type_label.dart';
 import '../../domain/competition.model.dart';
 import '../cubit/competition_detail_cubit.dart';
@@ -35,11 +33,12 @@ class _SeasonHistoryPageState extends State<SeasonHistoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    final seasonLength = context
+    final competition = context
         .watch<CompetitionDetailCubit>()
         .state
-        .competition
-        ?.seasonLength;
+        .competition;
+    final myPlayerId = context.watch<CompetitionDetailCubit>().state.myPlayerId;
+    final seasonLength = competition?.seasonLength;
 
     return BlocBuilder<SeasonHistoryCubit, SeasonHistoryState>(
       builder: (context, state) {
@@ -47,9 +46,13 @@ class _SeasonHistoryPageState extends State<SeasonHistoryPage> {
 
         return AdaptiveScaffold(
           title: context.l10n.seasonHistoryTitle,
-          trailing: GameTypeFilterDropdown(
-            selected: state.selectedGameType,
-            onSelected: cubit.selectGameTypeFilter,
+          trailing: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerRight,
+            child: GameTypeFilterDropdown(
+              selected: state.selectedGameType,
+              onSelected: cubit.selectGameTypeFilter,
+            ),
           ),
           hasScrollBody: true,
           body: switch (state.status) {
@@ -65,6 +68,8 @@ class _SeasonHistoryPageState extends State<SeasonHistoryPage> {
               context,
               state,
               cubit,
+              cubit.competitionId,
+              myPlayerId,
               seasonLength!,
             ),
           },
@@ -77,6 +82,8 @@ class _SeasonHistoryPageState extends State<SeasonHistoryPage> {
     BuildContext context,
     SeasonHistoryState state,
     SeasonHistoryCubit cubit,
+    String competitionId,
+    String? myPlayerId,
     SeasonLength seasonLength,
   ) {
     return Column(
@@ -90,53 +97,27 @@ class _SeasonHistoryPageState extends State<SeasonHistoryPage> {
               AppSpacing.md,
               0,
             ),
-            child: _seasonBar(context, state, cubit, seasonLength),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: SeasonDropdown(
+                seasons: [for (final g in state.groups) _seasonOf(g)],
+                selected: _seasonOf(state.selectedGroup!),
+                seasonLength: seasonLength,
+                onSelected: cubit.selectSeason,
+              ),
+            ),
           ),
-        Expanded(child: _content(context, state, seasonLength)),
-      ],
-    );
-  }
-
-  Widget _seasonBar(
-    BuildContext context,
-    SeasonHistoryState state,
-    SeasonHistoryCubit cubit,
-    SeasonLength seasonLength,
-  ) {
-    return Row(
-      children: [
         Expanded(
-          child: Text(
-            seasonLabel(context, _seasonOf(state.selectedGroup!), seasonLength),
-            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+          child: _content(
+            context,
+            state,
+            competitionId,
+            myPlayerId,
+            seasonLength,
           ),
         ),
-        if (state.hasHistory)
-          AdaptiveButton(
-            label: context.l10n.leaderboardPickSeason,
-            kind: AdaptiveButtonKind.plain,
-            expand: false,
-            onPressed: () => _pickSeason(context, state, cubit, seasonLength),
-          ),
       ],
     );
-  }
-
-  Future<void> _pickSeason(
-    BuildContext context,
-    SeasonHistoryState state,
-    SeasonHistoryCubit cubit,
-    SeasonLength seasonLength,
-  ) async {
-    final seasonId = await showAdaptiveSheet<String>(
-      context,
-      builder: (_) => SeasonSheet(
-        seasons: [for (final group in state.groups) _seasonOf(group)],
-        selected: _seasonOf(state.selectedGroup!),
-        seasonLength: seasonLength,
-      ),
-    );
-    if (seasonId != null) cubit.selectSeason(seasonId);
   }
 
   Season _seasonOf(SeasonHistoryGroup group) => Season(
@@ -148,6 +129,8 @@ class _SeasonHistoryPageState extends State<SeasonHistoryPage> {
   Widget _content(
     BuildContext context,
     SeasonHistoryState state,
+    String competitionId,
+    String? myPlayerId,
     SeasonLength seasonLength,
   ) {
     if (state.busy) return const Center(child: AdaptiveLoader());
@@ -166,57 +149,15 @@ class _SeasonHistoryPageState extends State<SeasonHistoryPage> {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.md),
       children: [
-        for (final standing in group.standings) _playerRow(context, standing),
+        for (final standing in group.standings)
+          LeaderboardRow(
+            competitionId: competitionId,
+            leaderboard: Leaderboard.fromSeasonStanding(standing),
+            isMe: standing.playerId == myPlayerId,
+            myPlayerId: myPlayerId,
+            seasonLength: seasonLength,
+          ),
       ],
     );
   }
-
-  Widget _playerRow(BuildContext context, SeasonStanding standing) {
-    final medal = standing.medal;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 28,
-            child: Text(
-              '${standing.rank}',
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color: medal == null ? AppColors.neutral : _medalColor(medal),
-                fontFeatures: const [FontFeature.tabularFigures()],
-              ),
-            ),
-          ),
-          if (medal != null) ...[
-            AdaptiveIcon(
-              AdaptiveGlyph.medal,
-              color: _medalColor(medal),
-              size: 16,
-            ),
-            const SizedBox(width: AppSpacing.sm),
-          ],
-          Expanded(
-            child: Text(
-              standing.displayName,
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          Text(
-            formatRating(standing.rating),
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Color _medalColor(Medal medal) => switch (medal) {
-    Medal.gold => AppColors.gold,
-    Medal.silver => AppColors.silver,
-    Medal.bronze => AppColors.bronze,
-  };
 }
