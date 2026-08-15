@@ -10,7 +10,7 @@ import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/rating_delta.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
-import '../../domain/match_entry.dart';
+import '../../domain/match_entry.model.dart';
 import '../cubit/match_detail_cubit.dart';
 import '../widgets/match_score_sheet.dart';
 

@@ -1,7 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/error/failure.dart';
-import 'package:keepscore2/features/competition/domain/competition.dart';
+import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_settings_cubit.dart';
 import 'package:mocktail/mocktail.dart';
@@ -15,27 +15,26 @@ Competition _competition({
   bool movEnabled = true,
   double movCap = 2.5,
   bool allowDraws = true,
-}) =>
-    Competition(
-      id: 'c1',
-      joinCode: 'HDHS39',
-      name: name,
-      ownerId: 'user-1',
-      seasonLength: seasonLength,
-      timezone: 'Europe/Amsterdam',
-      startingRating: 1000,
-      kFactor: kFactor,
-      movEnabled: movEnabled,
-      movCap: movCap,
-      allowDraws: allowDraws,
-      createdAt: DateTime.utc(2026, 8, 9),
-    );
+}) => Competition(
+  id: 'c1',
+  joinCode: 'HDHS39',
+  name: name,
+  ownerId: 'user-1',
+  seasonLength: seasonLength,
+  timezone: 'Europe/Amsterdam',
+  startingRating: 1000,
+  kFactor: kFactor,
+  movEnabled: movEnabled,
+  movCap: movCap,
+  allowDraws: allowDraws,
+  createdAt: DateTime.utc(2026, 8, 9),
+);
 
 CompetitionOverview _overview(Competition competition) => CompetitionOverview(
-      competition: competition,
-      playerCount: 5,
-      matchCount: 11,
-    );
+  competition: competition,
+  playerCount: 5,
+  matchCount: 11,
+);
 
 void main() {
   late MockCompetitionRepository repository;
@@ -45,8 +44,9 @@ void main() {
   setUp(() => repository = MockCompetitionRepository());
 
   void stubLoad([Competition? competition]) {
-    when(() => repository.overview('c1'))
-        .thenAnswer((_) async => _overview(competition ?? _competition()));
+    when(
+      () => repository.overview('c1'),
+    ).thenAnswer((_) async => _overview(competition ?? _competition()));
   }
 
   blocTest<CompetitionSettingsCubit, CompetitionSettingsState>(
@@ -113,15 +113,17 @@ void main() {
     'saving sends the parsed values and re-seeds from the saved row',
     setUp: () {
       stubLoad();
-      when(() => repository.updateSettings(
-            competitionId: any(named: 'competitionId'),
-            name: any(named: 'name'),
-            seasonLength: any(named: 'seasonLength'),
-            kFactor: any(named: 'kFactor'),
-            movEnabled: any(named: 'movEnabled'),
-            movCap: any(named: 'movCap'),
-            allowDraws: any(named: 'allowDraws'),
-          )).thenAnswer(
+      when(
+        () => repository.updateSettings(
+          competitionId: any(named: 'competitionId'),
+          name: any(named: 'name'),
+          seasonLength: any(named: 'seasonLength'),
+          kFactor: any(named: 'kFactor'),
+          movEnabled: any(named: 'movEnabled'),
+          movCap: any(named: 'movCap'),
+          allowDraws: any(named: 'allowDraws'),
+        ),
+      ).thenAnswer(
         (_) async => _competition(
           name: 'Table Tennis',
           seasonLength: SeasonLength.quarterly,
@@ -144,15 +146,17 @@ void main() {
       await cubit.submit();
     },
     verify: (cubit) {
-      verify(() => repository.updateSettings(
-            competitionId: 'c1',
-            name: '  Table Tennis  ',
-            seasonLength: SeasonLength.quarterly,
-            kFactor: 24,
-            movEnabled: false,
-            movCap: 2.0,
-            allowDraws: false,
-          )).called(1);
+      verify(
+        () => repository.updateSettings(
+          competitionId: 'c1',
+          name: '  Table Tennis  ',
+          seasonLength: SeasonLength.quarterly,
+          kFactor: 24,
+          movEnabled: false,
+          movCap: 2.0,
+          allowDraws: false,
+        ),
+      ).called(1);
 
       expect(cubit.state.saved, isTrue);
       expect(cubit.state.busy, isFalse);
@@ -165,15 +169,17 @@ void main() {
     'editing after a save retracts the confirmation',
     setUp: () {
       stubLoad();
-      when(() => repository.updateSettings(
-            competitionId: any(named: 'competitionId'),
-            name: any(named: 'name'),
-            seasonLength: any(named: 'seasonLength'),
-            kFactor: any(named: 'kFactor'),
-            movEnabled: any(named: 'movEnabled'),
-            movCap: any(named: 'movCap'),
-            allowDraws: any(named: 'allowDraws'),
-          )).thenAnswer((_) async => _competition());
+      when(
+        () => repository.updateSettings(
+          competitionId: any(named: 'competitionId'),
+          name: any(named: 'name'),
+          seasonLength: any(named: 'seasonLength'),
+          kFactor: any(named: 'kFactor'),
+          movEnabled: any(named: 'movEnabled'),
+          movCap: any(named: 'movCap'),
+          allowDraws: any(named: 'allowDraws'),
+        ),
+      ).thenAnswer((_) async => _competition());
     },
     build: () => CompetitionSettingsCubit(repository, 'c1'),
     act: (cubit) async {
@@ -189,15 +195,17 @@ void main() {
     'a rejected save keeps the form and shows why',
     setUp: () {
       stubLoad();
-      when(() => repository.updateSettings(
-            competitionId: any(named: 'competitionId'),
-            name: any(named: 'name'),
-            seasonLength: any(named: 'seasonLength'),
-            kFactor: any(named: 'kFactor'),
-            movEnabled: any(named: 'movEnabled'),
-            movCap: any(named: 'movCap'),
-            allowDraws: any(named: 'allowDraws'),
-          )).thenThrow(const PermissionFailure());
+      when(
+        () => repository.updateSettings(
+          competitionId: any(named: 'competitionId'),
+          name: any(named: 'name'),
+          seasonLength: any(named: 'seasonLength'),
+          kFactor: any(named: 'kFactor'),
+          movEnabled: any(named: 'movEnabled'),
+          movCap: any(named: 'movCap'),
+          allowDraws: any(named: 'allowDraws'),
+        ),
+      ).thenThrow(const PermissionFailure());
     },
     build: () => CompetitionSettingsCubit(repository, 'c1'),
     act: (cubit) async {

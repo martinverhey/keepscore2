@@ -2,10 +2,10 @@ import 'package:bloc/bloc.dart';
 
 import '../../../../core/error/failure.dart';
 import '../../domain/auth_repository.dart';
-import 'sign_in_mode.dart';
+import 'sign_in_mode.enum.dart';
 import 'sign_in_state.dart';
 
-export 'sign_in_mode.dart';
+export 'sign_in_mode.enum.dart';
 export 'sign_in_state.dart';
 
 class SignInCubit extends Cubit<SignInState> {

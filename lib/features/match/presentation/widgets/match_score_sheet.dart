@@ -5,7 +5,7 @@ import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/sheet.dart';
-import '../../domain/match_entry.dart';
+import '../../domain/match_entry.model.dart';
 
 class MatchScoreSheet extends StatefulWidget {
   const MatchScoreSheet({super.key, required this.match});

@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/failure.dart';
-import '../../domain/player.dart';
+import '../../domain/player.model.dart';
 
 enum PlayersStatus { loading, ready, failed }
 

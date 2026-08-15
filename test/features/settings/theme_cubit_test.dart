@@ -1,6 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:keepscore2/features/settings/domain/theme_preference.dart';
+import 'package:keepscore2/features/settings/domain/theme_preference.enum.dart';
 import 'package:keepscore2/features/settings/presentation/cubit/theme_cubit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -15,9 +15,8 @@ void main() {
 
   blocTest<ThemeCubit, ThemeState>(
     'loads a previously stored preference',
-    setUp: () => SharedPreferences.setMockInitialValues({
-      'theme_preference': 'dark',
-    }),
+    setUp: () =>
+        SharedPreferences.setMockInitialValues({'theme_preference': 'dark'}),
     build: ThemeCubit.new,
     act: (cubit) => cubit.load(),
     expect: () => [const ThemeState(preference: ThemePreference.dark)],

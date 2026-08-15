@@ -1,10 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'adaptive_glyph.dart';
+import 'adaptive_glyph.enum.dart';
 import 'app_platform.dart';
 
-export 'adaptive_glyph.dart';
+export 'adaptive_glyph.enum.dart';
 
 class AdaptiveIcon extends StatelessWidget {
   const AdaptiveIcon(this.glyph, {super.key, this.color, this.size});

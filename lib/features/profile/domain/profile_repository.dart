@@ -1,7 +1,7 @@
-import '../../match/domain/game_type.dart';
-import 'head_to_head_record.dart';
-import 'rating_point.dart';
-import 'streak.dart';
+import '../../match/domain/game_type.enum.dart';
+import 'head_to_head_record.model.dart';
+import 'rating_point.model.dart';
+import 'streak.model.dart';
 
 abstract interface class ProfileRepository {
   Future<List<RatingPoint>> ratingHistory({

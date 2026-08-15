@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/features/auth/domain/auth_repository.dart';
-import 'package:keepscore2/features/auth/domain/auth_user.dart';
+import 'package:keepscore2/features/auth/domain/auth_user.model.dart';
 import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
-import 'package:keepscore2/features/competition/domain/competition.dart';
+import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_detail_cubit.dart';
-import 'package:keepscore2/features/competition/presentation/pages/competition_menu_page.dart';
+import 'package:keepscore2/features/competition/presentation/pages/competition_menu.page.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
 

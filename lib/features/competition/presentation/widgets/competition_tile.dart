@@ -4,7 +4,7 @@ import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/tag.dart';
-import '../../domain/competition.dart';
+import '../../domain/competition.model.dart';
 import 'invite_sheet.dart';
 
 class CompetitionTile extends StatelessWidget {

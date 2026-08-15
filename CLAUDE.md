@@ -26,7 +26,7 @@ with `SignInMode.upgrade`, which routes the two email steps to
 renders `GuestNotice`, which carries the refusal *and* the way out; the page pops
 itself when `AuthBloc` reports the user is no longer anonymous.
 
-`/competition/:id` is the tab shell (`features/competition/.../competition_detail_page.dart`):
+`/competition/:id` is the tab shell (`features/competition/.../competition_detail.page.dart`):
 Leaderboard (default), Matches, Players. The leaderboard tab always shows the
 current calendar window — which has no row until the first match lands in it —
 and carries a game-type filter (`GameTypeFilterDropdown`, next to the title in
@@ -105,31 +105,48 @@ code; don't relitigate them.
     formatter). This applies to Cubits. `AuthBloc` is a `Bloc` (state *and*
     events tightly coupled, one small file) and stays as-is.
   - **Domain enums and secondary models get their own file too**, out of
-    whichever file originally bundled them (e.g. `match_team.dart` and
-    `match_participant.dart` came out of `match_entry.dart`; `season_length.dart`
-    and `competition_overview.dart` came out of `competition.dart`). A private
-    helper used by more than one of the split files (e.g. a `_toDouble` map
-    coercion) is duplicated into each file that needs it rather than shared —
-    matching how the codebase already handled this before the split.
+    whichever file originally bundled them (e.g. `match_team.enum.dart` and
+    `match_participant.model.dart` came out of `match_entry.model.dart`;
+    `season_length.enum.dart` and `competition_overview.model.dart` came out
+    of `competition.model.dart`). A private helper used by more than one of
+    the split files (e.g. a `_toDouble` map coercion) is duplicated into each
+    file that needs it rather than shared — matching how the codebase already
+    handled this before the split.
   - **An enum used from more than one file gets its own file** (e.g.
-    `adaptive_button_kind.dart`, `adaptive_glyph.dart`, `sign_in_mode.dart`).
-    **An enum referenced only within the single file that declares it may stay
-    there** — a sheet-result enum like `CompetitionAction` in
-    `competitions_page.dart` or `PlayerAction` in `players.dart` doesn't earn
-    its own file just for being an enum. Either way, **name it `Enum`, never
-    `_Enum`** — Dart privacy is per-file, so a leading underscore would block
-    the file-splitting `export` pattern above the moment a second file needs
-    it; starting public avoids a rename later.
+    `adaptive_button_kind.enum.dart`, `adaptive_glyph.enum.dart`,
+    `sign_in_mode.enum.dart`). **An enum referenced only within the single
+    file that declares it may stay there** — a tab enum like `CompetitionTab`
+    in `competition_detail.page.dart` or `ProfileTab` in `profile_sheet.dart`
+    doesn't earn its own file just for being an enum. Either way, **name it
+    `Enum`, never `_Enum`** — Dart privacy is per-file, so a leading
+    underscore would block the file-splitting `export` pattern above the
+    moment a second file needs it; starting public avoids a rename later.
   - **The file that keeps the original name re-`export`s the ones that moved
     out of it**, so every other file's import of it keeps working unchanged —
-    e.g. `import '.../competition.dart'` still yields `SeasonLength` and
+    e.g. `import '.../competition.model.dart'` still yields `SeasonLength` and
     `CompetitionOverview`. `import` what you actually reference directly in
     that file (a type in a cast, a method parameter, a constructor arg type);
     don't rely on the split-out file's own imports being visible
     transitively — `export` only re-exports what the exported file declares,
     not what it imports. A re-exporting file importing a file that imports it
-    back (e.g. `competition.dart` ⇄ `competition_overview.dart`) is a cycle
-    Dart permits; if in doubt, `flutter analyze` will catch anything it doesn't.
+    back (e.g. `competition.model.dart` ⇄ `competition_overview.model.dart`)
+    is a cycle Dart permits; if in doubt, `flutter analyze` will catch
+    anything it doesn't.
+  - **Filenames carry what kind of file it is, as a dotted suffix before
+    `.dart`.** A domain file whose only declaration is a plain data
+    class (`Equatable`, `fromMap`, no behaviour beyond that) is
+    `<name>.model.dart` (e.g. `leaderboard.model.dart`, `season.model.dart`,
+    `player.model.dart`). A file whose only declaration is an enum is
+    `<name>.enum.dart` (e.g. `game_type.enum.dart`, `medal.enum.dart`,
+    `streak_type.enum.dart`) — this applies everywhere a dedicated enum file
+    exists, not just under `domain/`. A widget that is the root of a routed
+    page, or that fills an entire tab the way `LeaderboardPage` and
+    `MatchesPage` do inside the competition shell, is `<name>.page.dart`
+    (e.g. `competition_detail.page.dart`, `leaderboard.page.dart`,
+    `matches.page.dart`). Repository interfaces, calculators/services, and
+    widgets that are neither a page nor a tab stay unsuffixed
+    (`leaderboard_repository.dart`, `elo_calculator.dart`,
+    `leaderboard_row.dart`).
 - **Feature code never imports `package:flutter/cupertino.dart` or Material
   widgets directly.** Everything platform-specific goes through
   `core/widgets/adaptive/adaptive.dart`. `AppPlatform.useCupertino` is the

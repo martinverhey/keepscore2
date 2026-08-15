@@ -1,8 +1,8 @@
 import 'package:equatable/equatable.dart';
 
-import 'streak_type.dart';
+import 'streak_type.enum.dart';
 
-export 'streak_type.dart';
+export 'streak_type.enum.dart';
 
 class Streak extends Equatable {
   const Streak({required this.type, required this.count});

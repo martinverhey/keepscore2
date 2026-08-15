@@ -1,18 +1,18 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/error/failure.dart';
-import 'package:keepscore2/features/leaderboard/domain/leaderboard.dart';
+import 'package:keepscore2/features/leaderboard/domain/leaderboard.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
-import 'package:keepscore2/features/leaderboard/domain/season_standing.dart';
-import 'package:keepscore2/features/leaderboard/domain/season_window.dart';
-import 'package:keepscore2/features/match/domain/game_type.dart';
-import 'package:keepscore2/features/match/domain/match_entry.dart';
+import 'package:keepscore2/features/leaderboard/domain/season_standing.model.dart';
+import 'package:keepscore2/features/leaderboard/domain/season_window.model.dart';
+import 'package:keepscore2/features/match/domain/game_type.enum.dart';
+import 'package:keepscore2/features/match/domain/match_entry.model.dart';
 import 'package:keepscore2/features/match/domain/match_repository.dart';
 import 'package:keepscore2/features/match/presentation/cubit/game_type_filter_cubit.dart';
-import 'package:keepscore2/features/profile/domain/head_to_head_record.dart';
+import 'package:keepscore2/features/profile/domain/head_to_head_record.model.dart';
 import 'package:keepscore2/features/profile/domain/profile_repository.dart';
-import 'package:keepscore2/features/profile/domain/rating_point.dart';
-import 'package:keepscore2/features/profile/domain/streak.dart';
+import 'package:keepscore2/features/profile/domain/rating_point.model.dart';
+import 'package:keepscore2/features/profile/domain/streak.model.dart';
 import 'package:keepscore2/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -127,7 +127,8 @@ void main() {
       ),
     ).thenAnswer((_) async => streak);
     when(
-      () => profileRepository.totalMatchesPlayed(playerId: 'p1', gameType: type),
+      () =>
+          profileRepository.totalMatchesPlayed(playerId: 'p1', gameType: type),
     ).thenAnswer((_) async => totalPlayed);
     when(
       () => matchRepository.recentForPlayer(playerId: 'p1', gameType: type),
@@ -258,10 +259,8 @@ void main() {
       stubSeason();
       stubGameType(null, standings: [_standing('p1', 1040, 1)]);
       when(
-        () => profileRepository.headToHead(
-          playerId: 'p1',
-          opponentId: 'viewer',
-        ),
+        () =>
+            profileRepository.headToHead(playerId: 'p1', opponentId: 'viewer'),
       ).thenAnswer(
         (_) async => const [
           HeadToHeadRecord(
@@ -302,8 +301,9 @@ void main() {
 
   blocTest<ProfileCubit, ProfileState>(
     'a failed load surfaces the error',
-    setUp: () => when(() => leaderboardRepository.currentSeason('c1'))
-        .thenThrow(const NetworkFailure()),
+    setUp: () => when(
+      () => leaderboardRepository.currentSeason('c1'),
+    ).thenThrow(const NetworkFailure()),
     build: build,
     act: (cubit) => cubit.load(),
     verify: (cubit) {
@@ -384,10 +384,7 @@ void main() {
       await cubit.selectGameTypeFilter(null);
       await _settle();
     },
-    expect: () => [
-      isA<ProfileState>(),
-      isA<ProfileState>(),
-    ],
+    expect: () => [isA<ProfileState>(), isA<ProfileState>()],
   );
 
   blocTest<ProfileCubit, ProfileState>(

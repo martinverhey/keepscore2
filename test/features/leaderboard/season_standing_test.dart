@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:keepscore2/features/leaderboard/domain/medal.dart';
-import 'package:keepscore2/features/leaderboard/domain/medals.dart';
-import 'package:keepscore2/features/leaderboard/domain/season_standing.dart';
+import 'package:keepscore2/features/leaderboard/domain/medal.enum.dart';
+import 'package:keepscore2/features/leaderboard/domain/medals.model.dart';
+import 'package:keepscore2/features/leaderboard/domain/season_standing.model.dart';
 
 Map<String, dynamic> _row({Object? medal = 'gold'}) => {
   'season_id': 's1',

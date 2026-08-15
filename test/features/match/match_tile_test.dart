@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:keepscore2/features/match/domain/match_entry.dart';
+import 'package:keepscore2/features/match/domain/match_entry.model.dart';
 import 'package:keepscore2/features/match/presentation/widgets/match_tile.dart';
 
 MatchParticipant _participant(String name) => MatchParticipant(
@@ -11,7 +11,9 @@ MatchParticipant _participant(String name) => MatchParticipant(
 );
 
 void main() {
-  testWidgets('a long player name is truncated to a single line', (tester) async {
+  testWidgets('a long player name is truncated to a single line', (
+    tester,
+  ) async {
     final match = MatchEntry(
       id: 'm1',
       competitionId: 'c1',

@@ -1,7 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/error/failure.dart';
-import '../domain/player.dart';
+import '../domain/player.model.dart';
 import '../domain/player_repository.dart';
 
 class SupabasePlayerRepository implements PlayerRepository {

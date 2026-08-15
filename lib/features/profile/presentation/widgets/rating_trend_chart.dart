@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/widgets.dart';
 
 import '../../../../core/widgets/adaptive/adaptive.dart';
-import '../../domain/rating_point.dart';
+import '../../domain/rating_point.model.dart';
 
 class RatingTrendChart extends StatelessWidget {
   const RatingTrendChart({super.key, required this.points});

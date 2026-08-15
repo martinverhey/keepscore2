@@ -1,10 +1,10 @@
 import 'package:equatable/equatable.dart';
 
-import 'match_participant.dart';
-import 'match_team.dart';
+import 'match_participant.model.dart';
+import 'match_team.enum.dart';
 
-export 'match_participant.dart';
-export 'match_team.dart';
+export 'match_participant.model.dart';
+export 'match_team.enum.dart';
 
 class MatchEntry extends Equatable {
   const MatchEntry({

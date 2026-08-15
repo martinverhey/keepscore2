@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:keepscore2/features/match/domain/match_entry.dart';
+import 'package:keepscore2/features/match/domain/match_entry.model.dart';
 
 Map<String, dynamic> _row({Object? teamARating = 1002.5}) => {
   'id': 'm1',

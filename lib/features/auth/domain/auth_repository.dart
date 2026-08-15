@@ -1,7 +1,7 @@
-import 'auth_providers.dart';
-import 'auth_user.dart';
+import 'auth_providers.model.dart';
+import 'auth_user.model.dart';
 
-export 'auth_providers.dart';
+export 'auth_providers.model.dart';
 
 abstract interface class AuthRepository {
   Stream<AuthUser?> watchUser();

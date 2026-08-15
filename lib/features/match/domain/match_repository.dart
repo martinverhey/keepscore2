@@ -1,5 +1,5 @@
-import 'game_type.dart';
-import 'match_entry.dart';
+import 'game_type.enum.dart';
+import 'match_entry.model.dart';
 
 abstract interface class MatchRepository {
   Future<List<MatchEntry>> feed({

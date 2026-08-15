@@ -9,11 +9,11 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/rating_delta.dart';
 import '../../../../core/widgets/state_views.dart';
-import '../../../player/domain/player.dart';
-import '../../domain/match_entry.dart';
+import '../../../player/domain/player.model.dart';
+import '../../domain/match_entry.model.dart';
 import '../cubit/match_form_cubit.dart';
 import '../widgets/team_picker_sheet.dart';
-import 'new_match_keys_enum.dart';
+import 'new_match_keys.enum.dart';
 
 class NewMatchPage extends StatefulWidget {
   const NewMatchPage({super.key});

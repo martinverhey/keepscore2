@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 
 import '../../../../core/error/failure.dart';
-import '../../domain/player.dart';
+import '../../domain/player.model.dart';
 import '../../domain/player_repository.dart';
 import 'players_state.dart';
 

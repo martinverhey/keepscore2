@@ -2,9 +2,9 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/error/failure.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
-import 'package:keepscore2/features/competition/domain/join_preview.dart';
+import 'package:keepscore2/features/competition/domain/join_preview.model.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/join_competition_cubit.dart';
-import 'package:keepscore2/features/player/domain/player.dart';
+import 'package:keepscore2/features/player/domain/player.model.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockCompetitionRepository extends Mock implements CompetitionRepository {}
@@ -35,16 +35,24 @@ void main() {
   setUp(() {
     repository = MockCompetitionRepository();
     when(() => repository.preview(any())).thenAnswer((_) async => _preview);
-    when(() => repository.join(
-          joinCode: any(named: 'joinCode'),
-          displayName: any(named: 'displayName'),
-          claimPlayerId: any(named: 'claimPlayerId'),
-        )).thenAnswer((_) async => _joined);
+    when(
+      () => repository.join(
+        joinCode: any(named: 'joinCode'),
+        displayName: any(named: 'displayName'),
+        claimPlayerId: any(named: 'claimPlayerId'),
+      ),
+    ).thenAnswer((_) async => _joined);
   });
 
   group('code normalisation', () {
     test('accepts the ways people actually type a code', () {
-      for (final input in ['HDHS39', 'hdhs39', ' hdhs39 ', 'HDH-S39', 'hd hs 39']) {
+      for (final input in [
+        'HDHS39',
+        'hdhs39',
+        ' hdhs39 ',
+        'HDH-S39',
+        'hd hs 39',
+      ]) {
         final state = JoinCompetitionState(code: input);
         expect(state.normalizedCode, 'HDHS39', reason: 'for "$input"');
         expect(state.codeIsValid, isTrue, reason: 'for "$input"');
@@ -86,8 +94,9 @@ void main() {
 
     blocTest<JoinCompetitionCubit, JoinCompetitionState>(
       'an unknown code stays on the code step with the failure shown',
-      setUp: () => when(() => repository.preview(any()))
-          .thenThrow(const ValidationFailure('No competition with that code')),
+      setUp: () => when(
+        () => repository.preview(any()),
+      ).thenThrow(const ValidationFailure('No competition with that code')),
       build: () => JoinCompetitionCubit(repository),
       act: (cubit) async {
         cubit.codeChanged('ZZZZZZ');
@@ -131,11 +140,13 @@ void main() {
         await cubit.join();
       },
       verify: (cubit) {
-        verify(() => repository.join(
-              joinCode: 'hdhs39',
-              claimPlayerId: 'p-fleur',
-              displayName: null,
-            )).called(1);
+        verify(
+          () => repository.join(
+            joinCode: 'hdhs39',
+            claimPlayerId: 'p-fleur',
+            displayName: null,
+          ),
+        ).called(1);
         expect(cubit.state.joined, _joined);
       },
     );
@@ -152,11 +163,13 @@ void main() {
       },
       verify: (cubit) {
         expect(cubit.state.selectedClaimId, isNull);
-        verify(() => repository.join(
-              joinCode: 'hdhs39',
-              claimPlayerId: null,
-              displayName: null,
-            )).called(1);
+        verify(
+          () => repository.join(
+            joinCode: 'hdhs39',
+            claimPlayerId: null,
+            displayName: null,
+          ),
+        ).called(1);
       },
     );
 
@@ -169,23 +182,28 @@ void main() {
         await cubit.join(displayName: 'Bram');
       },
       verify: (cubit) {
-        verify(() => repository.join(
-              joinCode: 'hdhs39',
-              claimPlayerId: null,
-              displayName: 'Bram',
-            )).called(1);
+        verify(
+          () => repository.join(
+            joinCode: 'hdhs39',
+            claimPlayerId: null,
+            displayName: 'Bram',
+          ),
+        ).called(1);
       },
     );
 
     blocTest<JoinCompetitionCubit, JoinCompetitionState>(
       'losing the race for a placeholder surfaces the server message',
-      setUp: () => when(() => repository.join(
-            joinCode: any(named: 'joinCode'),
-            displayName: any(named: 'displayName'),
-            claimPlayerId: any(named: 'claimPlayerId'),
-          )).thenThrow(
-        const ValidationFailure('That player has already been claimed'),
-      ),
+      setUp: () =>
+          when(
+            () => repository.join(
+              joinCode: any(named: 'joinCode'),
+              displayName: any(named: 'displayName'),
+              claimPlayerId: any(named: 'claimPlayerId'),
+            ),
+          ).thenThrow(
+            const ValidationFailure('That player has already been claimed'),
+          ),
       build: () => JoinCompetitionCubit(repository),
       act: (cubit) async {
         cubit.codeChanged('hdhs39');

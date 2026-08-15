@@ -1,7 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/error/failure.dart';
-import 'package:keepscore2/features/player/domain/player.dart';
+import 'package:keepscore2/features/player/domain/player.model.dart';
 import 'package:keepscore2/features/player/domain/player_repository.dart';
 import 'package:keepscore2/features/player/presentation/cubit/players_cubit.dart';
 import 'package:mocktail/mocktail.dart';
@@ -13,14 +13,13 @@ Player _player(
   String name, {
   String? userId,
   bool isActive = true,
-}) =>
-    Player(
-      id: id,
-      competitionId: 'c1',
-      displayName: name,
-      isActive: isActive,
-      userId: userId,
-    );
+}) => Player(
+  id: id,
+  competitionId: 'c1',
+  displayName: name,
+  isActive: isActive,
+  userId: userId,
+);
 
 void main() {
   late MockPlayerRepository repository;
@@ -74,8 +73,8 @@ void main() {
 
   blocTest<PlayersCubit, PlayersState>(
     'a failed load surfaces the error',
-    setUp: () => when(() => repository.roster('c1'))
-        .thenThrow(const NetworkFailure()),
+    setUp: () =>
+        when(() => repository.roster('c1')).thenThrow(const NetworkFailure()),
     build: () => PlayersCubit(repository, 'c1'),
     act: (cubit) => cubit.load(),
     verify: (cubit) {
@@ -105,10 +104,12 @@ void main() {
     'an added placeholder lands in name order without a refetch',
     setUp: () {
       stubRoster([_player('p1', 'Ada'), _player('p3', 'Zoe')]);
-      when(() => repository.addPlaceholder(
-            competitionId: any(named: 'competitionId'),
-            displayName: any(named: 'displayName'),
-          )).thenAnswer((_) async => _player('p2', 'Grace'));
+      when(
+        () => repository.addPlaceholder(
+          competitionId: any(named: 'competitionId'),
+          displayName: any(named: 'displayName'),
+        ),
+      ).thenAnswer((_) async => _player('p2', 'Grace'));
     },
     build: () => PlayersCubit(repository, 'c1'),
     act: (cubit) async {
@@ -116,10 +117,11 @@ void main() {
       await cubit.addPlaceholder('Grace');
     },
     verify: (cubit) {
-      expect(
-        cubit.state.players.map((player) => player.displayName),
-        ['Ada', 'Grace', 'Zoe'],
-      );
+      expect(cubit.state.players.map((player) => player.displayName), [
+        'Ada',
+        'Grace',
+        'Zoe',
+      ]);
       verify(() => repository.roster('c1')).called(1);
     },
   );
@@ -128,10 +130,9 @@ void main() {
     'a rename replaces the row and re-sorts it',
     setUp: () {
       stubRoster([_player('p1', 'Ada'), _player('p2', 'Grace')]);
-      when(() => repository.rename(
-            playerId: 'p1',
-            displayName: 'Zoe',
-          )).thenAnswer((_) async => _player('p1', 'Zoe'));
+      when(
+        () => repository.rename(playerId: 'p1', displayName: 'Zoe'),
+      ).thenAnswer((_) async => _player('p1', 'Zoe'));
     },
     build: () => PlayersCubit(repository, 'c1'),
     act: (cubit) async {
@@ -148,8 +149,9 @@ void main() {
     'removing a player moves them out of the active roster',
     setUp: () {
       stubRoster([_player('p1', 'Ada'), _player('p2', 'Grace')]);
-      when(() => repository.setActive(playerId: 'p2', isActive: false))
-          .thenAnswer((_) async => _player('p2', 'Grace', isActive: false));
+      when(
+        () => repository.setActive(playerId: 'p2', isActive: false),
+      ).thenAnswer((_) async => _player('p2', 'Grace', isActive: false));
     },
     build: () => PlayersCubit(repository, 'c1'),
     act: (cubit) async {
@@ -166,10 +168,12 @@ void main() {
     'a refused edit is reported without disturbing the roster',
     setUp: () {
       stubRoster([_player('p1', 'Ada')]);
-      when(() => repository.rename(
-            playerId: any(named: 'playerId'),
-            displayName: any(named: 'displayName'),
-          )).thenThrow(const PermissionFailure());
+      when(
+        () => repository.rename(
+          playerId: any(named: 'playerId'),
+          displayName: any(named: 'displayName'),
+        ),
+      ).thenThrow(const PermissionFailure());
     },
     build: () => PlayersCubit(repository, 'c1'),
     act: (cubit) async {

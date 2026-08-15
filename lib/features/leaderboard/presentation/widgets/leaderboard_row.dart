@@ -9,11 +9,11 @@ import '../../../../core/widgets/medal_chip.dart';
 import '../../../../core/widgets/rating_delta.dart';
 import '../../../../core/widgets/tag.dart';
 import '../../../../core/widgets/today_delta_badge.dart';
-import '../../../competition/domain/competition.dart';
+import '../../../competition/domain/competition.model.dart';
 import '../../../profile/presentation/cubit/profile_cubit.dart';
 import '../../../profile/presentation/widgets/profile_sheet.dart';
-import '../../domain/leaderboard.dart';
-import '../../domain/medals.dart';
+import '../../domain/leaderboard.model.dart';
+import '../../domain/medals.model.dart';
 
 class LeaderboardRow extends StatelessWidget {
   const LeaderboardRow({

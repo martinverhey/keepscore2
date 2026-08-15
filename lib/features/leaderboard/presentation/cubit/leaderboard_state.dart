@@ -1,10 +1,10 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/failure.dart';
-import '../../../match/domain/game_type.dart';
-import '../../domain/leaderboard.dart';
-import '../../domain/medals.dart';
-import '../../domain/season.dart';
+import '../../../match/domain/game_type.enum.dart';
+import '../../domain/leaderboard.model.dart';
+import '../../domain/medals.model.dart';
+import '../../domain/season.model.dart';
 
 enum LeaderboardStatus { loading, ready, failed }
 

@@ -1,9 +1,9 @@
 import 'package:equatable/equatable.dart';
 
-import 'season_length.dart';
+import 'season_length.enum.dart';
 
-export 'competition_overview.dart';
-export 'season_length.dart';
+export 'competition_overview.model.dart';
+export 'season_length.enum.dart';
 
 class Competition extends Equatable {
   const Competition({

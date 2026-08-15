@@ -4,7 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
 import '../../domain/auth_repository.dart';
-import '../../domain/auth_user.dart';
+import '../../domain/auth_user.model.dart';
 
 enum AuthStatus { unknown, unauthenticated, authenticated }
 

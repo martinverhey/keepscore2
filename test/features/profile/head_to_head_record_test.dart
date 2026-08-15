@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:keepscore2/features/match/domain/game_type.dart';
-import 'package:keepscore2/features/profile/domain/head_to_head_record.dart';
-import 'package:keepscore2/features/profile/domain/streak.dart';
+import 'package:keepscore2/features/match/domain/game_type.enum.dart';
+import 'package:keepscore2/features/profile/domain/head_to_head_record.model.dart';
+import 'package:keepscore2/features/profile/domain/streak.model.dart';
 
 void main() {
   test('GameType.fromWire maps each known shape and defaults to mixed', () {

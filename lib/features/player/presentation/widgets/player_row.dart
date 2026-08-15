@@ -5,9 +5,9 @@ import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/tag.dart';
-import '../../domain/player.dart';
+import '../../domain/player.model.dart';
 import '../cubit/players_cubit.dart';
-import 'player_action.dart';
+import 'player_action.enum.dart';
 import 'player_action_sheet.dart';
 import 'player_name_sheet.dart';
 

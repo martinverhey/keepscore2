@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/features/auth/domain/auth_repository.dart';
-import 'package:keepscore2/features/auth/domain/auth_user.dart';
+import 'package:keepscore2/features/auth/domain/auth_user.model.dart';
 import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
 import 'package:mocktail/mocktail.dart';
 

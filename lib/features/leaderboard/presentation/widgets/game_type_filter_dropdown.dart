@@ -4,7 +4,7 @@ import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/sheet.dart';
-import '../../../match/domain/game_type.dart';
+import '../../../match/domain/game_type.enum.dart';
 import '../../../profile/presentation/widgets/game_type_label.dart';
 
 enum GameTypeFilterOption {

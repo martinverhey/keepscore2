@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 
 import '../../../../core/error/failure.dart';
-import '../../domain/competition.dart';
+import '../../domain/competition.model.dart';
 import '../../domain/competition_repository.dart';
 import 'competition_settings_state.dart';
 

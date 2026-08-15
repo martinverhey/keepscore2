@@ -1,8 +1,8 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/failure.dart';
-import '../../domain/game_type.dart';
-import '../../domain/match_entry.dart';
+import '../../domain/game_type.enum.dart';
+import '../../domain/match_entry.model.dart';
 
 enum MatchListStatus { loading, ready, failed }
 

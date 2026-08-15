@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:keepscore2/features/competition/domain/competition.dart';
-import 'package:keepscore2/features/leaderboard/domain/leaderboard.dart';
-import 'package:keepscore2/features/leaderboard/domain/medals.dart';
+import 'package:keepscore2/features/competition/domain/competition.model.dart';
+import 'package:keepscore2/features/leaderboard/domain/leaderboard.model.dart';
+import 'package:keepscore2/features/leaderboard/domain/medals.model.dart';
 import 'package:keepscore2/features/profile/presentation/widgets/profile_section.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 

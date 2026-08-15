@@ -2,11 +2,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../theme/app_tokens.dart';
-import 'adaptive_button_kind.dart';
+import 'adaptive_button_kind.enum.dart';
 import 'adaptive_colors.dart';
 import 'app_platform.dart';
 
-export 'adaptive_button_kind.dart';
+export 'adaptive_button_kind.enum.dart';
 
 class AdaptiveButton extends StatelessWidget {
   const AdaptiveButton({

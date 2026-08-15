@@ -1,7 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/error/failure.dart';
-import 'package:keepscore2/features/competition/domain/competition.dart';
+import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/create_competition_cubit.dart';
 import 'package:mocktail/mocktail.dart';
@@ -29,11 +29,13 @@ void main() {
   setUp(() {
     repository = MockCompetitionRepository();
     registerFallbackValue(SeasonLength.monthly);
-    when(() => repository.create(
-          name: any(named: 'name'),
-          seasonLength: any(named: 'seasonLength'),
-          displayName: any(named: 'displayName'),
-        )).thenAnswer((_) async => _created);
+    when(
+      () => repository.create(
+        name: any(named: 'name'),
+        seasonLength: any(named: 'seasonLength'),
+        displayName: any(named: 'displayName'),
+      ),
+    ).thenAnswer((_) async => _created);
   });
 
   test('a name needs at least two characters', () {
@@ -56,10 +58,12 @@ void main() {
       await cubit.submit();
     },
     verify: (cubit) {
-      verify(() => repository.create(
-            name: 'Office Table Tennis',
-            seasonLength: SeasonLength.quarterly,
-          )).called(1);
+      verify(
+        () => repository.create(
+          name: 'Office Table Tennis',
+          seasonLength: SeasonLength.quarterly,
+        ),
+      ).called(1);
       expect(cubit.state.created, _created);
     },
   );
@@ -71,21 +75,26 @@ void main() {
       cubit.nameChanged('X');
       await cubit.submit();
     },
-    verify: (_) => verifyNever(() => repository.create(
-          name: any(named: 'name'),
-          seasonLength: any(named: 'seasonLength'),
-        )),
+    verify: (_) => verifyNever(
+      () => repository.create(
+        name: any(named: 'name'),
+        seasonLength: any(named: 'seasonLength'),
+      ),
+    ),
   );
 
   blocTest<CreateCompetitionCubit, CreateCompetitionState>(
     'surfaces the server refusal when a guest gets this far',
-    setUp: () => when(() => repository.create(
-          name: any(named: 'name'),
-          seasonLength: any(named: 'seasonLength'),
-          displayName: any(named: 'displayName'),
-        )).thenThrow(
-      const ValidationFailure('Create an account to start a competition'),
-    ),
+    setUp: () =>
+        when(
+          () => repository.create(
+            name: any(named: 'name'),
+            seasonLength: any(named: 'seasonLength'),
+            displayName: any(named: 'displayName'),
+          ),
+        ).thenThrow(
+          const ValidationFailure('Create an account to start a competition'),
+        ),
     build: () => CreateCompetitionCubit(repository),
     act: (cubit) async {
       cubit.nameChanged('Office Table Tennis');

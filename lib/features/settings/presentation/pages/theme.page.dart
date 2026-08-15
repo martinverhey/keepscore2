@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
-import '../../domain/theme_preference.dart';
+import '../../domain/theme_preference.enum.dart';
 import '../cubit/theme_cubit.dart';
 
 class ThemePage extends StatelessWidget {

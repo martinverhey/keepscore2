@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:keepscore2/features/competition/domain/competition.dart';
+import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
-import 'package:keepscore2/features/leaderboard/domain/season_window.dart';
+import 'package:keepscore2/features/leaderboard/domain/season_window.model.dart';
 import 'package:keepscore2/features/match/domain/match_repository.dart';
 import 'package:keepscore2/features/match/presentation/cubit/match_form_cubit.dart';
-import 'package:keepscore2/features/match/presentation/pages/new_match_keys_enum.dart';
-import 'package:keepscore2/features/match/presentation/pages/new_match_page.dart';
-import 'package:keepscore2/features/player/domain/player.dart';
+import 'package:keepscore2/features/match/presentation/pages/new_match_keys.enum.dart';
+import 'package:keepscore2/features/match/presentation/pages/new_match.page.dart';
+import 'package:keepscore2/features/player/domain/player.model.dart';
 import 'package:keepscore2/features/player/domain/player_repository.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
@@ -37,12 +37,8 @@ Competition _competition() => Competition(
   createdAt: DateTime(2026),
 );
 
-Player _player(String id, String name) => Player(
-  id: id,
-  competitionId: 'c1',
-  displayName: name,
-  isActive: true,
-);
+Player _player(String id, String name) =>
+    Player(id: id, competitionId: 'c1', displayName: name, isActive: true);
 
 void main() {
   testWidgets(
@@ -78,17 +74,20 @@ void main() {
         () => leaderboard.standings(competitionId: 'c1', seasonId: 's1'),
       ).thenAnswer((_) async => []);
 
-      final cubit = MatchFormCubit(matches, competitions, players, leaderboard, 'c1');
+      final cubit = MatchFormCubit(
+        matches,
+        competitions,
+        players,
+        leaderboard,
+        'c1',
+      );
       addTearDown(cubit.close);
 
       await tester.pumpWidget(
         MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: BlocProvider.value(
-            value: cubit,
-            child: const NewMatchPage(),
-          ),
+          home: BlocProvider.value(value: cubit, child: const NewMatchPage()),
         ),
       );
       await tester.pumpAndSettle();

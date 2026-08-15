@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import 'competition.dart';
+import 'competition.model.dart';
 
 class CompetitionOverview extends Equatable {
   const CompetitionOverview({

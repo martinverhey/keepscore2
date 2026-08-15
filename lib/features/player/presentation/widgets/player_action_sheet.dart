@@ -4,8 +4,8 @@ import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/sheet.dart';
-import '../../domain/player.dart';
-import 'player_action.dart';
+import '../../domain/player.model.dart';
+import 'player_action.enum.dart';
 
 class PlayerActionSheet extends StatelessWidget {
   const PlayerActionSheet({

@@ -1,9 +1,9 @@
 import 'package:bloc/bloc.dart';
 
 import '../../../../core/error/failure.dart';
-import '../../../competition/domain/competition.dart';
+import '../../../competition/domain/competition.model.dart';
 import '../../../competition/domain/competition_repository.dart';
-import '../../domain/match_entry.dart';
+import '../../domain/match_entry.model.dart';
 import '../../domain/match_repository.dart';
 import 'match_detail_state.dart';
 

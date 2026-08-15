@@ -3,15 +3,15 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 
 import '../../../../core/error/failure.dart';
-import '../../../leaderboard/domain/leaderboard.dart';
+import '../../../leaderboard/domain/leaderboard.model.dart';
 import '../../../leaderboard/domain/leaderboard_repository.dart';
-import '../../../match/domain/game_type.dart';
+import '../../../match/domain/game_type.enum.dart';
 import '../../../match/domain/match_repository.dart';
 import '../../../match/presentation/cubit/game_type_filter_cubit.dart';
-import '../../domain/head_to_head_record.dart';
+import '../../domain/head_to_head_record.model.dart';
 import '../../domain/profile_repository.dart';
-import '../../domain/rating_point.dart';
-import '../../domain/streak.dart';
+import '../../domain/rating_point.model.dart';
+import '../../domain/streak.model.dart';
 import 'profile_state.dart';
 
 export 'profile_state.dart';

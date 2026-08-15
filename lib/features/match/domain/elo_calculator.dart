@@ -1,32 +1,10 @@
 import 'dart:math' as math;
 
-class EloSettings {
-  const EloSettings({
-    this.kFactor = 32,
-    this.movEnabled = true,
-    this.movCap = 2.5,
-    this.startingRating = 1000,
-  });
+import 'elo_preview.model.dart';
+import 'elo_settings.model.dart';
 
-  final int kFactor;
-  final bool movEnabled;
-  final double movCap;
-  final int startingRating;
-}
-
-class EloPreview {
-  const EloPreview({
-    required this.teamARating,
-    required this.teamBRating,
-    required this.deltaA,
-  });
-
-  final double teamARating;
-  final double teamBRating;
-  final double deltaA;
-
-  double get deltaB => -deltaA;
-}
+export 'elo_preview.model.dart';
+export 'elo_settings.model.dart';
 
 abstract final class EloCalculator {
   static double teamRating(Iterable<double> ratings) {

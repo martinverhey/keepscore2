@@ -7,7 +7,7 @@ import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
-import '../../domain/competition.dart';
+import '../../domain/competition.model.dart';
 import '../cubit/create_competition_cubit.dart';
 
 class CreateCompetitionPage extends StatefulWidget {

@@ -11,7 +11,7 @@ import '../../../../core/widgets/section_label.dart';
 import '../../../../core/widgets/settings_switch_row.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
-import '../../domain/competition.dart';
+import '../../domain/competition.model.dart';
 import '../cubit/competition_settings_cubit.dart';
 
 class CompetitionSettingsPage extends StatefulWidget {

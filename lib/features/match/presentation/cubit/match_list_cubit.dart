@@ -4,7 +4,7 @@ import 'package:bloc/bloc.dart';
 
 import '../../../../core/data/realtime.dart';
 import '../../../../core/error/failure.dart';
-import '../../domain/game_type.dart';
+import '../../domain/game_type.enum.dart';
 import '../../domain/match_repository.dart';
 import 'game_type_filter_cubit.dart';
 import 'match_list_state.dart';
@@ -12,8 +12,11 @@ import 'match_list_state.dart';
 export 'match_list_state.dart';
 
 class MatchListCubit extends Cubit<MatchListState> {
-  MatchListCubit(this._repository, this._gameTypeFilterCubit, this.competitionId)
-    : super(const MatchListState()) {
+  MatchListCubit(
+    this._repository,
+    this._gameTypeFilterCubit,
+    this.competitionId,
+  ) : super(const MatchListState()) {
     _gameTypeSubscription = _gameTypeFilterCubit.stream.listen(_applyGameType);
   }
 

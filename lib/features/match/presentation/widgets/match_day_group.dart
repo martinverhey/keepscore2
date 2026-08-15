@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../../domain/match_entry.dart';
+import '../../domain/match_entry.model.dart';
 
 class MatchDayGroup extends Equatable {
   const MatchDayGroup({required this.day, required this.matches});

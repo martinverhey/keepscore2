@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../../match/domain/game_type.dart';
+import '../../match/domain/game_type.enum.dart';
 
 class HeadToHeadRecord extends Equatable {
   const HeadToHeadRecord({

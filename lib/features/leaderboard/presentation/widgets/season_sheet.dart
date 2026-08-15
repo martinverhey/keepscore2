@@ -3,8 +3,8 @@ import 'package:flutter/widgets.dart';
 import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/sheet.dart';
-import '../../../competition/domain/competition.dart';
-import '../../domain/season.dart';
+import '../../../competition/domain/competition.model.dart';
+import '../../domain/season.model.dart';
 import 'season_label.dart';
 
 class SeasonSheet extends StatelessWidget {

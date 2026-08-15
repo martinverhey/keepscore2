@@ -1,8 +1,8 @@
 import 'package:equatable/equatable.dart';
 
-import '../../profile/domain/streak_type.dart';
+import '../../profile/domain/streak_type.enum.dart';
 
-export '../../profile/domain/streak_type.dart';
+export '../../profile/domain/streak_type.enum.dart';
 
 class Leaderboard extends Equatable {
   const Leaderboard({

@@ -4,12 +4,12 @@ import 'package:bloc/bloc.dart';
 
 import '../../../../core/data/realtime.dart';
 import '../../../../core/error/failure.dart';
-import '../../../match/domain/game_type.dart';
+import '../../../match/domain/game_type.enum.dart';
 import '../../../match/presentation/cubit/game_type_filter_cubit.dart';
 import '../../domain/leaderboard_repository.dart';
-import '../../domain/medals.dart';
-import '../../domain/season.dart';
-import '../../domain/season_window.dart';
+import '../../domain/medals.model.dart';
+import '../../domain/season.model.dart';
+import '../../domain/season_window.model.dart';
 import 'leaderboard_state.dart';
 
 export 'leaderboard_state.dart';

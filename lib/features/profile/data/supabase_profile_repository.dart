@@ -1,11 +1,11 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/error/failure.dart';
-import '../../match/domain/game_type.dart';
-import '../domain/head_to_head_record.dart';
+import '../../match/domain/game_type.enum.dart';
+import '../domain/head_to_head_record.model.dart';
 import '../domain/profile_repository.dart';
-import '../domain/rating_point.dart';
-import '../domain/streak.dart';
+import '../domain/rating_point.model.dart';
+import '../domain/streak.model.dart';
 
 class SupabaseProfileRepository implements ProfileRepository {
   SupabaseProfileRepository(this._client);
@@ -48,8 +48,13 @@ class SupabaseProfileRepository implements ProfileRepository {
     required String playerId,
     GameType? gameType,
   }) => guard(() async {
-    final table = gameType == null ? 'player_totals' : 'player_game_type_totals';
-    var query = _client.from(table).select('total_played').eq('player_id', playerId);
+    final table = gameType == null
+        ? 'player_totals'
+        : 'player_game_type_totals';
+    var query = _client
+        .from(table)
+        .select('total_played')
+        .eq('player_id', playerId);
     if (gameType != null) query = query.eq('game_type', gameType.wireValue);
 
     final row = await query.maybeSingle();

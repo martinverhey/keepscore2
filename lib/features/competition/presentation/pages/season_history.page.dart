@@ -7,14 +7,14 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/rating_delta.dart';
 import '../../../../core/widgets/state_views.dart';
-import '../../../leaderboard/domain/medal.dart';
-import '../../../leaderboard/domain/season.dart';
-import '../../../leaderboard/domain/season_standing.dart';
+import '../../../leaderboard/domain/medal.enum.dart';
+import '../../../leaderboard/domain/season.model.dart';
+import '../../../leaderboard/domain/season_standing.model.dart';
 import '../../../leaderboard/presentation/widgets/game_type_filter_dropdown.dart';
 import '../../../leaderboard/presentation/widgets/season_label.dart';
 import '../../../leaderboard/presentation/widgets/season_sheet.dart';
 import '../../../profile/presentation/widgets/game_type_label.dart';
-import '../../domain/competition.dart';
+import '../../domain/competition.model.dart';
 import '../cubit/competition_detail_cubit.dart';
 import '../cubit/season_history_cubit.dart';
 
@@ -139,8 +139,11 @@ class _SeasonHistoryPageState extends State<SeasonHistoryPage> {
     if (seasonId != null) cubit.selectSeason(seasonId);
   }
 
-  Season _seasonOf(SeasonHistoryGroup group) =>
-      Season(id: group.seasonId, startsAt: group.startsAt, endsAt: group.endsAt);
+  Season _seasonOf(SeasonHistoryGroup group) => Season(
+    id: group.seasonId,
+    startsAt: group.startsAt,
+    endsAt: group.endsAt,
+  );
 
   Widget _content(
     BuildContext context,
@@ -188,7 +191,11 @@ class _SeasonHistoryPageState extends State<SeasonHistoryPage> {
             ),
           ),
           if (medal != null) ...[
-            AdaptiveIcon(AdaptiveGlyph.medal, color: _medalColor(medal), size: 16),
+            AdaptiveIcon(
+              AdaptiveGlyph.medal,
+              color: _medalColor(medal),
+              size: 16,
+            ),
             const SizedBox(width: AppSpacing.sm),
           ],
           Expanded(

@@ -1,13 +1,13 @@
 import 'package:bloc/bloc.dart';
 
 import '../../../../core/error/failure.dart';
-import '../../../competition/domain/competition.dart';
+import '../../../competition/domain/competition.model.dart';
 import '../../../competition/domain/competition_repository.dart';
 import '../../../leaderboard/domain/leaderboard_repository.dart';
-import '../../../leaderboard/domain/season_window.dart';
-import '../../../player/domain/player.dart';
+import '../../../leaderboard/domain/season_window.model.dart';
+import '../../../player/domain/player.model.dart';
 import '../../../player/domain/player_repository.dart';
-import '../../domain/match_entry.dart';
+import '../../domain/match_entry.model.dart';
 import '../../domain/match_repository.dart';
 import 'match_form_state.dart';
 

@@ -1,19 +1,19 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:keepscore2/features/match/domain/match_entry.dart';
+import 'package:keepscore2/features/match/domain/match_entry.model.dart';
 import 'package:keepscore2/features/match/presentation/widgets/match_day_group.dart';
 
 MatchEntry matchAt(String id, DateTime playedAt) => MatchEntry(
-      id: id,
-      competitionId: 'c1',
-      seasonId: 's1',
-      playedAt: playedAt,
-      teamAScore: 11,
-      teamBScore: 9,
-      teamARating: 1000,
-      teamBRating: 1000,
-      teamA: const [],
-      teamB: const [],
-    );
+  id: id,
+  competitionId: 'c1',
+  seasonId: 's1',
+  playedAt: playedAt,
+  teamAScore: 11,
+  teamBScore: 9,
+  teamARating: 1000,
+  teamBRating: 1000,
+  teamA: const [],
+  teamB: const [],
+);
 
 void main() {
   group('groupByDay', () {

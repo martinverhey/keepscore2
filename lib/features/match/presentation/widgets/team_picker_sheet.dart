@@ -7,7 +7,7 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/selectable_row.dart';
 import '../../../../core/widgets/sheet.dart';
-import '../../../player/domain/player.dart';
+import '../../../player/domain/player.model.dart';
 
 List<Player> _sortedByName(List<Player> players) {
   final sorted = List<Player>.of(players);

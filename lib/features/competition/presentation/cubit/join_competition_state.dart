@@ -1,8 +1,8 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/failure.dart';
-import '../../../player/domain/player.dart';
-import '../../domain/join_preview.dart';
+import '../../../player/domain/player.model.dart';
+import '../../domain/join_preview.model.dart';
 
 enum JoinStep { code, confirm }
 

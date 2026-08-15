@@ -1,6 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../domain/theme_preference.dart';
+import '../domain/theme_preference.enum.dart';
 
 abstract final class ThemePreferenceStore {
   static const _key = 'theme_preference';

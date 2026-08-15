@@ -4,7 +4,7 @@ import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/sheet.dart';
-import '../pages/competition_action.dart';
+import 'competition_action.enum.dart';
 
 class CompetitionActionSheet extends StatelessWidget {
   const CompetitionActionSheet({

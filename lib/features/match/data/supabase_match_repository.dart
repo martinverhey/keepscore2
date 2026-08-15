@@ -2,8 +2,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/data/realtime.dart';
 import '../../../core/error/failure.dart';
-import '../domain/game_type.dart';
-import '../domain/match_entry.dart';
+import '../domain/game_type.enum.dart';
+import '../domain/match_entry.model.dart';
 import '../domain/match_repository.dart';
 
 class SupabaseMatchRepository implements MatchRepository {

@@ -10,7 +10,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' hide AuthUser;
 import '../../../core/config/env.dart';
 import '../../../core/error/failure.dart';
 import '../domain/auth_repository.dart';
-import '../domain/auth_user.dart';
+import '../domain/auth_user.model.dart';
 
 class SupabaseAuthRepository implements AuthRepository {
   SupabaseAuthRepository(this._client);

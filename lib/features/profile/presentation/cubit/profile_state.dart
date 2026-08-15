@@ -1,13 +1,13 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/failure.dart';
-import '../../../leaderboard/domain/leaderboard.dart';
-import '../../../leaderboard/domain/season_standing.dart';
-import '../../../match/domain/game_type.dart';
-import '../../../match/domain/match_entry.dart';
-import '../../domain/head_to_head_record.dart';
-import '../../domain/rating_point.dart';
-import '../../domain/streak.dart';
+import '../../../leaderboard/domain/leaderboard.model.dart';
+import '../../../leaderboard/domain/season_standing.model.dart';
+import '../../../match/domain/game_type.enum.dart';
+import '../../../match/domain/match_entry.model.dart';
+import '../../domain/head_to_head_record.model.dart';
+import '../../domain/rating_point.model.dart';
+import '../../domain/streak.model.dart';
 
 enum ProfileStatus { loading, ready, failed }
 

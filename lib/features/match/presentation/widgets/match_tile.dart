@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/rating_delta.dart';
-import '../../domain/match_entry.dart';
+import '../../domain/match_entry.model.dart';
 
 class MatchTile extends StatelessWidget {
   const MatchTile({super.key, required this.match, required this.onTap});

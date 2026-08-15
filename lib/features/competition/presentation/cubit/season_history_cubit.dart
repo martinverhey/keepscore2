@@ -2,8 +2,8 @@ import 'package:bloc/bloc.dart';
 
 import '../../../../core/error/failure.dart';
 import '../../../leaderboard/domain/leaderboard_repository.dart';
-import '../../../leaderboard/domain/season_standing.dart';
-import '../../../match/domain/game_type.dart';
+import '../../../leaderboard/domain/season_standing.model.dart';
+import '../../../match/domain/game_type.enum.dart';
 import 'season_history_state.dart';
 
 export 'season_history_state.dart';
@@ -19,7 +19,10 @@ class SeasonHistoryCubit extends Cubit<SeasonHistoryState> {
     final gameType = state.selectedGameType;
     final seasonId = state.selectedSeasonId;
     emit(
-      SeasonHistoryState(selectedGameType: gameType, selectedSeasonId: seasonId),
+      SeasonHistoryState(
+        selectedGameType: gameType,
+        selectedSeasonId: seasonId,
+      ),
     );
     try {
       final standings = await _repository.seasonHistory(

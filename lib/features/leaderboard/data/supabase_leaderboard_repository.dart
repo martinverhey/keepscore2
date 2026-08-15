@@ -2,12 +2,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/data/realtime.dart';
 import '../../../core/error/failure.dart';
-import '../../match/domain/game_type.dart';
-import '../domain/leaderboard.dart';
+import '../../match/domain/game_type.enum.dart';
+import '../domain/leaderboard.model.dart';
 import '../domain/leaderboard_repository.dart';
-import '../domain/medals.dart';
-import '../domain/season_standing.dart';
-import '../domain/season_window.dart';
+import '../domain/medals.model.dart';
+import '../domain/season_standing.model.dart';
+import '../domain/season_window.model.dart';
 
 class SupabaseLeaderboardRepository implements LeaderboardRepository {
   SupabaseLeaderboardRepository(this._client);

@@ -1,8 +1,8 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/failure.dart';
-import '../../../leaderboard/domain/season_standing.dart';
-import '../../../match/domain/game_type.dart';
+import '../../../leaderboard/domain/season_standing.model.dart';
+import '../../../match/domain/game_type.enum.dart';
 
 typedef SeasonHistoryGroup = ({
   String seasonId,

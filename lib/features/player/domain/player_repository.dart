@@ -1,4 +1,4 @@
-import 'player.dart';
+import 'player.model.dart';
 
 abstract interface class PlayerRepository {
   Future<List<Player>> roster(String competitionId);

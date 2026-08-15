@@ -1,8 +1,8 @@
-import '../../match/domain/game_type.dart';
-import 'leaderboard.dart';
-import 'medals.dart';
-import 'season_standing.dart';
-import 'season_window.dart';
+import '../../match/domain/game_type.enum.dart';
+import 'leaderboard.model.dart';
+import 'medals.model.dart';
+import 'season_standing.model.dart';
+import 'season_window.model.dart';
 
 abstract interface class LeaderboardRepository {
   Future<SeasonWindow> currentSeason(String competitionId, {DateTime? at});

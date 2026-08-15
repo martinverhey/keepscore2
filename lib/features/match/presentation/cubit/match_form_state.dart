@@ -1,10 +1,10 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/failure.dart';
-import '../../../competition/domain/competition.dart';
-import '../../../player/domain/player.dart';
+import '../../../competition/domain/competition.model.dart';
+import '../../../player/domain/player.model.dart';
 import '../../domain/elo_calculator.dart';
-import '../../domain/match_entry.dart';
+import '../../domain/match_entry.model.dart';
 
 enum MatchFormStatus { loading, ready, missing, failed }
 

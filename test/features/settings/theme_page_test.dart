@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:keepscore2/features/settings/domain/theme_preference.dart';
+import 'package:keepscore2/features/settings/domain/theme_preference.enum.dart';
 import 'package:keepscore2/features/settings/presentation/cubit/theme_cubit.dart';
-import 'package:keepscore2/features/settings/presentation/pages/theme_page.dart';
+import 'package:keepscore2/features/settings/presentation/pages/theme.page.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

@@ -1,15 +1,15 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/error/failure.dart';
-import 'package:keepscore2/features/competition/domain/competition.dart';
+import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
-import 'package:keepscore2/features/leaderboard/domain/season_window.dart';
-import 'package:keepscore2/features/leaderboard/domain/leaderboard.dart';
-import 'package:keepscore2/features/match/domain/match_entry.dart';
+import 'package:keepscore2/features/leaderboard/domain/season_window.model.dart';
+import 'package:keepscore2/features/leaderboard/domain/leaderboard.model.dart';
+import 'package:keepscore2/features/match/domain/match_entry.model.dart';
 import 'package:keepscore2/features/match/domain/match_repository.dart';
 import 'package:keepscore2/features/match/presentation/cubit/match_form_cubit.dart';
-import 'package:keepscore2/features/player/domain/player.dart';
+import 'package:keepscore2/features/player/domain/player.model.dart';
 import 'package:keepscore2/features/player/domain/player_repository.dart';
 import 'package:mocktail/mocktail.dart';
 

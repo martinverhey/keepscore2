@@ -1,10 +1,10 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/error/failure.dart';
-import '../../player/domain/player.dart';
-import '../domain/competition.dart';
+import '../../player/domain/player.model.dart';
+import '../domain/competition.model.dart';
 import '../domain/competition_repository.dart';
-import '../domain/join_preview.dart';
+import '../domain/join_preview.model.dart';
 
 class SupabaseCompetitionRepository implements CompetitionRepository {
   SupabaseCompetitionRepository(this._client);

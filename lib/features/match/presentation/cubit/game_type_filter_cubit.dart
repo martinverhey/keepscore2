@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 
 import '../../../../core/data/game_type_filter_store.dart';
-import '../../domain/game_type.dart';
+import '../../domain/game_type.enum.dart';
 
 class GameTypeFilterCubit extends Cubit<GameType?> {
   GameTypeFilterCubit() : super(null);

@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 
 import '../../data/theme_preference_store.dart';
-import '../../domain/theme_preference.dart';
+import '../../domain/theme_preference.enum.dart';
 import 'theme_state.dart';
 
 export 'theme_state.dart';

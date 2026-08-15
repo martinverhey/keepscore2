@@ -2,8 +2,8 @@ import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../l10n/app_localizations.dart';
-import '../../../competition/domain/competition.dart';
-import '../../domain/season.dart';
+import '../../../competition/domain/competition.model.dart';
+import '../../domain/season.model.dart';
 
 String seasonLabel(BuildContext context, Season season, SeasonLength length) {
   final locale = Localizations.localeOf(context).toLanguageTag();

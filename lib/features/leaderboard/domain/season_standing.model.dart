@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 
-import 'medal.dart';
-import 'season.dart';
+import 'medal.enum.dart';
+import 'season.model.dart';
 
 class SeasonStanding extends Equatable {
   const SeasonStanding({
@@ -53,8 +53,7 @@ class SeasonStanding extends Equatable {
   final DateTime endsAt;
   final Medal? medal;
 
-  Season get season =>
-      Season(id: seasonId, startsAt: startsAt, endsAt: endsAt);
+  Season get season => Season(id: seasonId, startsAt: startsAt, endsAt: endsAt);
 
   @override
   List<Object?> get props => [

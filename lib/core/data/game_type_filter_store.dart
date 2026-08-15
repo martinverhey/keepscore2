@@ -1,6 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../features/match/domain/game_type.dart';
+import '../../features/match/domain/game_type.enum.dart';
 
 abstract final class GameTypeFilterStore {
   static const _key = 'selected_game_type';

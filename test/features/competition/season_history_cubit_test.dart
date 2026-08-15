@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/error/failure.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/season_history_cubit.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
-import 'package:keepscore2/features/leaderboard/domain/season_standing.dart';
-import 'package:keepscore2/features/match/domain/game_type.dart';
+import 'package:keepscore2/features/leaderboard/domain/season_standing.model.dart';
+import 'package:keepscore2/features/match/domain/game_type.enum.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockLeaderboardRepository extends Mock implements LeaderboardRepository {}
@@ -42,30 +42,29 @@ void main() {
 
   blocTest<SeasonHistoryCubit, SeasonHistoryState>(
     'groups standings by season, newest first, keeping rank order within a season',
-    setUp: () => when(
-      () => repository.seasonHistory(competitionId: 'c1'),
-    ).thenAnswer(
-      (_) async => [
-        _standing(
-          seasonId: 's-june',
-          startsAt: DateTime.utc(2026, 5, 31, 22),
-          playerId: 'p1',
-          rank: 1,
+    setUp: () =>
+        when(() => repository.seasonHistory(competitionId: 'c1')).thenAnswer(
+          (_) async => [
+            _standing(
+              seasonId: 's-june',
+              startsAt: DateTime.utc(2026, 5, 31, 22),
+              playerId: 'p1',
+              rank: 1,
+            ),
+            _standing(
+              seasonId: 's-june',
+              startsAt: DateTime.utc(2026, 5, 31, 22),
+              playerId: 'p2',
+              rank: 2,
+            ),
+            _standing(
+              seasonId: 's-july',
+              startsAt: DateTime.utc(2026, 6, 30, 22),
+              playerId: 'p2',
+              rank: 1,
+            ),
+          ],
         ),
-        _standing(
-          seasonId: 's-june',
-          startsAt: DateTime.utc(2026, 5, 31, 22),
-          playerId: 'p2',
-          rank: 2,
-        ),
-        _standing(
-          seasonId: 's-july',
-          startsAt: DateTime.utc(2026, 6, 30, 22),
-          playerId: 'p2',
-          rank: 1,
-        ),
-      ],
-    ),
     build: build,
     act: (cubit) => cubit.load(),
     verify: (cubit) {
@@ -73,33 +72,32 @@ void main() {
       expect(cubit.state.groups, hasLength(2));
       expect(cubit.state.groups.first.seasonId, 's-july');
       expect(cubit.state.groups.last.seasonId, 's-june');
-      expect(
-        cubit.state.groups.last.standings.map((s) => s.playerId),
-        ['p1', 'p2'],
-      );
+      expect(cubit.state.groups.last.standings.map((s) => s.playerId), [
+        'p1',
+        'p2',
+      ]);
     },
   );
 
   blocTest<SeasonHistoryCubit, SeasonHistoryState>(
     'defaults to the most recent season and selectSeason switches within the loaded data',
-    setUp: () => when(
-      () => repository.seasonHistory(competitionId: 'c1'),
-    ).thenAnswer(
-      (_) async => [
-        _standing(
-          seasonId: 's-june',
-          startsAt: DateTime.utc(2026, 5, 31, 22),
-          playerId: 'p1',
-          rank: 1,
+    setUp: () =>
+        when(() => repository.seasonHistory(competitionId: 'c1')).thenAnswer(
+          (_) async => [
+            _standing(
+              seasonId: 's-june',
+              startsAt: DateTime.utc(2026, 5, 31, 22),
+              playerId: 'p1',
+              rank: 1,
+            ),
+            _standing(
+              seasonId: 's-july',
+              startsAt: DateTime.utc(2026, 6, 30, 22),
+              playerId: 'p2',
+              rank: 1,
+            ),
+          ],
         ),
-        _standing(
-          seasonId: 's-july',
-          startsAt: DateTime.utc(2026, 6, 30, 22),
-          playerId: 'p2',
-          rank: 1,
-        ),
-      ],
-    ),
     build: build,
     act: (cubit) async {
       await cubit.load();
@@ -116,9 +114,7 @@ void main() {
   blocTest<SeasonHistoryCubit, SeasonHistoryState>(
     'a season missing from a filtered game type falls back to the most recent one',
     setUp: () {
-      when(
-        () => repository.seasonHistory(competitionId: 'c1'),
-      ).thenAnswer(
+      when(() => repository.seasonHistory(competitionId: 'c1')).thenAnswer(
         (_) async => [
           _standing(
             seasonId: 's-june',
@@ -177,8 +173,9 @@ void main() {
 
   blocTest<SeasonHistoryCubit, SeasonHistoryState>(
     'a failed load surfaces the error',
-    setUp: () => when(() => repository.seasonHistory(competitionId: 'c1'))
-        .thenThrow(const NetworkFailure()),
+    setUp: () => when(
+      () => repository.seasonHistory(competitionId: 'c1'),
+    ).thenThrow(const NetworkFailure()),
     build: build,
     act: (cubit) => cubit.load(),
     verify: (cubit) {
@@ -190,9 +187,7 @@ void main() {
   blocTest<SeasonHistoryCubit, SeasonHistoryState>(
     'filtering by game type fetches that game type\'s season history',
     setUp: () {
-      when(
-        () => repository.seasonHistory(competitionId: 'c1'),
-      ).thenAnswer(
+      when(() => repository.seasonHistory(competitionId: 'c1')).thenAnswer(
         (_) async => [
           _standing(
             seasonId: 's-june',
@@ -233,9 +228,7 @@ void main() {
   blocTest<SeasonHistoryCubit, SeasonHistoryState>(
     'clearing the game type filter goes back to combined history',
     setUp: () {
-      when(
-        () => repository.seasonHistory(competitionId: 'c1'),
-      ).thenAnswer(
+      when(() => repository.seasonHistory(competitionId: 'c1')).thenAnswer(
         (_) async => [
           _standing(
             seasonId: 's-june',

@@ -9,7 +9,7 @@ import '../core/theme/app_theme.dart';
 import '../core/widgets/adaptive/app_platform.dart';
 import '../features/auth/presentation/cubit/auth_bloc.dart';
 import '../features/match/presentation/cubit/game_type_filter_cubit.dart';
-import '../features/settings/domain/theme_preference.dart';
+import '../features/settings/domain/theme_preference.enum.dart';
 import '../features/settings/presentation/cubit/theme_cubit.dart';
 import '../l10n/app_localizations.dart';
 import 'dependency_injection/injector.dart';
@@ -76,6 +76,7 @@ class _KeepScoreAppState extends State<KeepScoreApp> {
         routerConfig: _router,
         localizationsDelegates: _localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
+        debugShowCheckedModeBanner: false,
         builder: (context, child) => Material(
           color: CupertinoTheme.of(context).scaffoldBackgroundColor,
           child: child,
@@ -91,6 +92,7 @@ class _KeepScoreAppState extends State<KeepScoreApp> {
       routerConfig: _router,
       localizationsDelegates: _localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
+      debugShowCheckedModeBanner: false,
     );
   }
 }

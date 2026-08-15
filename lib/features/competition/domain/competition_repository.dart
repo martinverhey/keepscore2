@@ -1,6 +1,6 @@
-import '../../player/domain/player.dart';
-import 'competition.dart';
-import 'join_preview.dart';
+import '../../player/domain/player.model.dart';
+import 'competition.model.dart';
+import 'join_preview.model.dart';
 
 abstract interface class CompetitionRepository {
   Future<List<CompetitionOverview>> myCompetitions();

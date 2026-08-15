@@ -1,8 +1,8 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/failure.dart';
-import '../../../competition/domain/competition.dart';
-import '../../domain/match_entry.dart';
+import '../../../competition/domain/competition.model.dart';
+import '../../domain/match_entry.model.dart';
 
 enum MatchDetailStatus { loading, ready, missing, failed }
 

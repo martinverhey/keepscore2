@@ -1,8 +1,8 @@
 import 'package:equatable/equatable.dart';
 
-import 'claimable_player.dart';
+import 'claimable_player.model.dart';
 
-export 'claimable_player.dart';
+export 'claimable_player.model.dart';
 
 class JoinPreview extends Equatable {
   const JoinPreview({

@@ -1,7 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/error/failure.dart';
-import 'package:keepscore2/features/competition/domain/competition.dart';
+import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_list_cubit.dart';
 import 'package:mocktail/mocktail.dart';
@@ -9,23 +9,23 @@ import 'package:mocktail/mocktail.dart';
 class MockCompetitionRepository extends Mock implements CompetitionRepository {}
 
 CompetitionOverview _overview(String id, String name) => CompetitionOverview(
-      competition: Competition(
-        id: id,
-        joinCode: 'HDHS39',
-        name: name,
-        ownerId: 'user-1',
-        seasonLength: SeasonLength.monthly,
-        timezone: 'Europe/Amsterdam',
-        startingRating: 1000,
-        kFactor: 32,
-        movEnabled: true,
-        movCap: 2.5,
-        allowDraws: true,
-        createdAt: DateTime.utc(2026, 8, 9),
-      ),
-      playerCount: 5,
-      matchCount: 11,
-    );
+  competition: Competition(
+    id: id,
+    joinCode: 'HDHS39',
+    name: name,
+    ownerId: 'user-1',
+    seasonLength: SeasonLength.monthly,
+    timezone: 'Europe/Amsterdam',
+    startingRating: 1000,
+    kFactor: 32,
+    movEnabled: true,
+    movCap: 2.5,
+    allowDraws: true,
+    createdAt: DateTime.utc(2026, 8, 9),
+  ),
+  playerCount: 5,
+  matchCount: 11,
+);
 
 void main() {
   late MockCompetitionRepository repository;
@@ -34,8 +34,9 @@ void main() {
 
   blocTest<CompetitionListCubit, CompetitionListState>(
     'loads the list',
-    setUp: () => when(() => repository.myCompetitions())
-        .thenAnswer((_) async => [_overview('c1', 'Office Table Tennis')]),
+    setUp: () => when(
+      () => repository.myCompetitions(),
+    ).thenAnswer((_) async => [_overview('c1', 'Office Table Tennis')]),
     build: () => CompetitionListCubit(repository),
     act: (cubit) => cubit.load(),
     verify: (cubit) {
@@ -56,8 +57,9 @@ void main() {
 
   blocTest<CompetitionListCubit, CompetitionListState>(
     'a failed first load surfaces the error',
-    setUp: () => when(() => repository.myCompetitions())
-        .thenThrow(const NetworkFailure()),
+    setUp: () => when(
+      () => repository.myCompetitions(),
+    ).thenThrow(const NetworkFailure()),
     build: () => CompetitionListCubit(repository),
     act: (cubit) => cubit.load(),
     verify: (cubit) {
@@ -88,8 +90,9 @@ void main() {
 
   blocTest<CompetitionListCubit, CompetitionListState>(
     'a refresh does not flash the loading state',
-    setUp: () => when(() => repository.myCompetitions())
-        .thenAnswer((_) async => [_overview('c1', 'Office Table Tennis')]),
+    setUp: () => when(
+      () => repository.myCompetitions(),
+    ).thenAnswer((_) async => [_overview('c1', 'Office Table Tennis')]),
     build: () => CompetitionListCubit(repository),
     act: (cubit) async {
       await cubit.load();
@@ -113,15 +116,19 @@ void main() {
           ),
         ];
       });
-      when(() => repository.updateSettings(
-            competitionId: 'c1',
-            name: 'Table Tennis League',
-            seasonLength: SeasonLength.monthly,
-            kFactor: 32,
-            movEnabled: true,
-            movCap: 2.5,
-            allowDraws: true,
-          )).thenAnswer((_) async => _overview('c1', 'Table Tennis League').competition);
+      when(
+        () => repository.updateSettings(
+          competitionId: 'c1',
+          name: 'Table Tennis League',
+          seasonLength: SeasonLength.monthly,
+          kFactor: 32,
+          movEnabled: true,
+          movCap: 2.5,
+          allowDraws: true,
+        ),
+      ).thenAnswer(
+        (_) async => _overview('c1', 'Table Tennis League').competition,
+      );
     },
     build: () => CompetitionListCubit(repository),
     act: (cubit) async {
@@ -130,7 +137,10 @@ void main() {
       expect(ok, isTrue);
     },
     verify: (cubit) {
-      expect(cubit.state.competitions.single.competition.name, 'Table Tennis League');
+      expect(
+        cubit.state.competitions.single.competition.name,
+        'Table Tennis League',
+      );
       expect(cubit.state.busy, isFalse);
       verify(() => repository.myCompetitions()).called(2);
     },
@@ -177,8 +187,9 @@ void main() {
   blocTest<CompetitionListCubit, CompetitionListState>(
     'a refused delete is reported without disturbing the list',
     setUp: () {
-      when(() => repository.myCompetitions())
-          .thenAnswer((_) async => [_overview('c1', 'Office Table Tennis')]);
+      when(
+        () => repository.myCompetitions(),
+      ).thenAnswer((_) async => [_overview('c1', 'Office Table Tennis')]);
       when(() => repository.delete('c1')).thenThrow(const PermissionFailure());
     },
     build: () => CompetitionListCubit(repository),
