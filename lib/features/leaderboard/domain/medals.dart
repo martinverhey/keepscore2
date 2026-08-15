@@ -1,14 +1,14 @@
 import 'package:equatable/equatable.dart';
 
-class MedalTally extends Equatable {
-  const MedalTally({
+class Medals extends Equatable {
+  const Medals({
     required this.playerId,
     required this.gold,
     required this.silver,
     required this.bronze,
   });
 
-  factory MedalTally.fromMap(Map<String, dynamic> map) => MedalTally(
+  factory Medals.fromMap(Map<String, dynamic> map) => Medals(
     playerId: map['player_id'] as String,
     gold: (map['gold'] as num?)?.toInt() ?? 0,
     silver: (map['silver'] as num?)?.toInt() ?? 0,

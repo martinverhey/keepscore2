@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/features/competition/domain/competition.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
-import 'package:keepscore2/features/leaderboard/domain/medal_tally.dart';
+import 'package:keepscore2/features/leaderboard/domain/medals.dart';
 import 'package:keepscore2/features/leaderboard/domain/season_window.dart';
 import 'package:keepscore2/features/match/domain/game_type.dart';
 import 'package:keepscore2/features/match/domain/match_entry.dart';
@@ -358,7 +358,7 @@ void main() {
             child: ProfileSheet(
               displayName: longName,
               seasonLength: SeasonLength.monthly,
-              medals: const MedalTally(
+              medals: const Medals(
                 playerId: 'p1',
                 gold: 12,
                 silver: 34,
@@ -383,4 +383,111 @@ void main() {
       await cubit.close();
     },
   );
+
+  testWidgets("today's rating delta shows next to the season rating", (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final leaderboardRepository = MockLeaderboardRepository();
+    final profileRepository = MockProfileRepository();
+    final matchRepository = MockMatchRepository();
+
+    final mine = Leaderboard(
+      seasonId: 's1',
+      competitionId: 'c1',
+      playerId: 'p1',
+      displayName: 'Nora',
+      isClaimed: true,
+      isOwner: false,
+      rating: 1050,
+      played: 5,
+      wins: 3,
+      losses: 1,
+      draws: 1,
+      rank: 1,
+      todayDelta: 12.5,
+    );
+
+    when(() => leaderboardRepository.currentSeason('c1')).thenAnswer(
+      (_) async =>
+          SeasonWindow(id: 's1', startsAt: _august, endsAt: _september),
+    );
+    when(
+      () => leaderboardRepository.standings(
+        competitionId: 'c1',
+        seasonId: 's1',
+        gameType: null,
+      ),
+    ).thenAnswer((_) async => [mine]);
+    when(
+      () => profileRepository.ratingHistory(
+        seasonId: 's1',
+        playerId: 'p1',
+        gameType: null,
+      ),
+    ).thenAnswer((_) async => const []);
+    when(
+      () => profileRepository.currentStreak(
+        seasonId: 's1',
+        playerId: 'p1',
+        gameType: null,
+      ),
+    ).thenAnswer((_) async => const Streak.none());
+    when(
+      () =>
+          profileRepository.totalMatchesPlayed(playerId: 'p1', gameType: null),
+    ).thenAnswer((_) async => 20);
+    when(
+      () => matchRepository.recentForPlayer(playerId: 'p1', gameType: null),
+    ).thenAnswer((_) async => const []);
+    when(
+      () => leaderboardRepository.seasonHistory(
+        competitionId: 'c1',
+        playerId: 'p1',
+      ),
+    ).thenAnswer((_) async => const []);
+
+    final gameTypeFilterCubit = GameTypeFilterCubit();
+    addTearDown(gameTypeFilterCubit.close);
+
+    final cubit = ProfileCubit(
+      leaderboardRepository,
+      profileRepository,
+      matchRepository,
+      gameTypeFilterCubit,
+      'c1',
+      'p1',
+    );
+    await cubit.load();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: cubit),
+            BlocProvider<GameTypeFilterCubit>.value(value: gameTypeFilterCubit),
+          ],
+          child: const ProfileSheet(
+            displayName: 'Nora',
+            seasonLength: SeasonLength.monthly,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final l10n = AppLocalizations.of(tester.element(find.byType(ProfileSheet)));
+
+    expect(find.text('1050'), findsNWidgets(2));
+    expect(find.text('12.5'), findsOneWidget);
+    expect(
+      find.bySemanticsLabel(l10n.leaderboardTodayGain('12.5')),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+
+    await cubit.close();
+  });
 }

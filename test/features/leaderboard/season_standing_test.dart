@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/features/leaderboard/domain/medal.dart';
-import 'package:keepscore2/features/leaderboard/domain/medal_tally.dart';
+import 'package:keepscore2/features/leaderboard/domain/medals.dart';
 import 'package:keepscore2/features/leaderboard/domain/season_standing.dart';
 
 Map<String, dynamic> _row({Object? medal = 'gold'}) => {
@@ -36,8 +36,8 @@ void main() {
     expect(standing.medal, isNull);
   });
 
-  test('MedalTally reads gold/silver/bronze counts', () {
-    final tally = MedalTally.fromMap({
+  test('Medals reads gold/silver/bronze counts', () {
+    final tally = Medals.fromMap({
       'player_id': 'p1',
       'gold': 2,
       'silver': 0,
@@ -49,7 +49,7 @@ void main() {
   });
 
   test('a tally with nothing won reports hasAny as false', () {
-    final tally = MedalTally.fromMap({
+    final tally = Medals.fromMap({
       'player_id': 'p1',
       'gold': 0,
       'silver': 0,

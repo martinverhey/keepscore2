@@ -3,7 +3,7 @@ import 'package:equatable/equatable.dart';
 import '../../../../core/error/failure.dart';
 import '../../../match/domain/game_type.dart';
 import '../../domain/leaderboard.dart';
-import '../../domain/medal_tally.dart';
+import '../../domain/medals.dart';
 import '../../domain/season.dart';
 
 enum LeaderboardStatus { loading, ready, failed }
@@ -24,7 +24,7 @@ class LeaderboardState extends Equatable {
   final Season? season;
   final GameType? selectedGameType;
   final List<Leaderboard> standings;
-  final Map<String, MedalTally> medals;
+  final Map<String, Medals> medals;
 
   final bool busy;
 
@@ -35,7 +35,7 @@ class LeaderboardState extends Equatable {
     Season? season,
     GameType? selectedGameType,
     List<Leaderboard>? standings,
-    Map<String, MedalTally>? medals,
+    Map<String, Medals>? medals,
     bool? busy,
     Failure? failure,
     bool clearFailure = false,

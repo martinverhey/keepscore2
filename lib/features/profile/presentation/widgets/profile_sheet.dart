@@ -12,10 +12,11 @@ import '../../../../core/widgets/rating_delta.dart';
 import '../../../../core/widgets/sheet.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../../core/widgets/streak_badge.dart';
+import '../../../../core/widgets/today_delta_badge.dart';
 import '../../../competition/domain/competition.dart';
 import '../../../leaderboard/domain/leaderboard.dart';
 import '../../../leaderboard/domain/medal.dart';
-import '../../../leaderboard/domain/medal_tally.dart';
+import '../../../leaderboard/domain/medals.dart';
 import '../../../leaderboard/domain/season_standing.dart';
 import '../../../leaderboard/presentation/widgets/game_type_filter_dropdown.dart';
 import '../../../leaderboard/presentation/widgets/season_label.dart';
@@ -40,7 +41,7 @@ class ProfileSheet extends StatefulWidget {
 
   final String displayName;
   final SeasonLength seasonLength;
-  final MedalTally? medals;
+  final Medals? medals;
 
   @override
   State<ProfileSheet> createState() => _ProfileSheetState();
@@ -189,7 +190,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
     );
   }
 
-  Widget _medalRow(MedalTally medals) {
+  Widget _medalRow(Medals medals) {
     final chips = _medalChips(medals);
 
     return Row(
@@ -203,7 +204,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
     );
   }
 
-  List<Widget> _medalChips(MedalTally medals) {
+  List<Widget> _medalChips(Medals medals) {
     return [
       if (medals.gold > 0) MedalChip(color: AppColors.gold, count: medals.gold),
       if (medals.silver > 0)
@@ -226,13 +227,42 @@ class _ProfileSheetState extends State<ProfileSheet> {
       ),
       child: Row(
         children: [
-          _statBlock(
-            context.l10n.profileSeasonRatingLabel,
-            formatRating(standing.rating),
-          ),
+          _seasonRatingBlock(context, standing),
           _statBlock(
             context.l10n.profileBestRatingLabel,
             formatRating(state.bestRating),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _seasonRatingBlock(BuildContext context, Leaderboard standing) {
+    return Expanded(
+      child: Column(
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                formatRating(standing.rating),
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  fontFeatures: [FontFeature.tabularFigures()],
+                ),
+              ),
+              if (standing.todayDelta != 0) ...[
+                const SizedBox(width: AppSpacing.xs),
+                TodayDeltaBadge(delta: standing.todayDelta),
+              ],
+            ],
+          ),
+          const SizedBox(height: 2),
+          Text(
+            context.l10n.profileSeasonRatingLabel,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 11, color: AppColors.neutral),
           ),
         ],
       ),

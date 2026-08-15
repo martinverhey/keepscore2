@@ -9,7 +9,7 @@ import '../../../../core/widgets/medal_chip.dart';
 import '../../../../core/widgets/rating_delta.dart';
 import '../../../competition/domain/competition.dart';
 import '../../../leaderboard/domain/leaderboard.dart';
-import '../../../leaderboard/domain/medal_tally.dart';
+import '../../../leaderboard/domain/medals.dart';
 import '../cubit/profile_cubit.dart';
 import 'initials_circle.dart';
 import 'profile_sheet.dart';
@@ -32,7 +32,7 @@ class ProfileSection extends StatelessWidget {
   final SeasonLength seasonLength;
   final int playerCount;
   final Leaderboard? standing;
-  final MedalTally? medals;
+  final Medals? medals;
 
   @override
   Widget build(BuildContext context) {
@@ -133,7 +133,7 @@ class ProfileSection extends StatelessWidget {
     );
   }
 
-  Widget _medalRow(MedalTally medals) {
+  Widget _medalRow(Medals medals) {
     final chips = _medalChips(medals);
 
     return Row(
@@ -147,7 +147,7 @@ class ProfileSection extends StatelessWidget {
     );
   }
 
-  List<Widget> _medalChips(MedalTally medals) {
+  List<Widget> _medalChips(Medals medals) {
     final chips = [
       if (medals.gold > 0) MedalChip(color: AppColors.gold, count: medals.gold),
       if (medals.silver > 0)

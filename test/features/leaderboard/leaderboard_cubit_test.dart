@@ -6,7 +6,7 @@ import 'package:keepscore2/core/error/failure.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
 import 'package:keepscore2/features/leaderboard/domain/season_window.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard.dart';
-import 'package:keepscore2/features/leaderboard/domain/medal_tally.dart';
+import 'package:keepscore2/features/leaderboard/domain/medals.dart';
 import 'package:keepscore2/features/leaderboard/presentation/cubit/leaderboard_cubit.dart';
 import 'package:keepscore2/features/match/domain/game_type.dart';
 import 'package:keepscore2/features/match/presentation/cubit/game_type_filter_cubit.dart';
@@ -81,9 +81,7 @@ void main() {
         gameType: any(named: 'gameType'),
       ),
     ).thenAnswer((_) => ticks.stream);
-    when(
-      () => repository.medalTallies('c1'),
-    ).thenAnswer((_) async => const []);
+    when(() => repository.medals('c1')).thenAnswer((_) async => const []);
   });
 
   tearDown(() {
@@ -114,9 +112,9 @@ void main() {
     setUp: () {
       stubSeason();
       stubStandings('s-august', [_standing('p1', 1040, 1)]);
-      when(() => repository.medalTallies('c1')).thenAnswer(
+      when(() => repository.medals('c1')).thenAnswer(
         (_) async => const [
-          MedalTally(playerId: 'p1', gold: 2, silver: 0, bronze: 1),
+          Medals(playerId: 'p1', gold: 2, silver: 0, bronze: 1),
         ],
       );
     },
@@ -192,7 +190,9 @@ void main() {
     build: build,
     act: (cubit) async {
       await cubit.load();
-      when(() => repository.currentSeason('c1')).thenThrow(const NetworkFailure());
+      when(
+        () => repository.currentSeason('c1'),
+      ).thenThrow(const NetworkFailure());
       await cubit.refresh();
     },
     verify: (cubit) {

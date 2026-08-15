@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/features/competition/domain/competition.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard.dart';
-import 'package:keepscore2/features/leaderboard/domain/medal_tally.dart';
+import 'package:keepscore2/features/leaderboard/domain/medals.dart';
 import 'package:keepscore2/features/profile/presentation/widgets/profile_section.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 
@@ -33,7 +33,7 @@ Leaderboard _standing({
 Future<void> _pump(
   WidgetTester tester,
   Leaderboard? standing, {
-  MedalTally? medals,
+  Medals? medals,
 }) async {
   await tester.pumpWidget(
     WidgetsApp(
@@ -104,7 +104,7 @@ void main() {
     await _pump(
       tester,
       _standing(streakType: StreakType.win, streakCount: 7),
-      medals: const MedalTally(playerId: 'p1', gold: 2, silver: 0, bronze: 1),
+      medals: const Medals(playerId: 'p1', gold: 2, silver: 0, bronze: 1),
     );
 
     expect(find.text('2'), findsOneWidget);

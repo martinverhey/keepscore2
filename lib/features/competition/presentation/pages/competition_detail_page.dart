@@ -12,7 +12,7 @@ import '../../../../core/widgets/state_views.dart';
 import '../../../../core/widgets/tag.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../leaderboard/domain/leaderboard.dart';
-import '../../../leaderboard/domain/medal_tally.dart';
+import '../../../leaderboard/domain/medals.dart';
 import '../../../leaderboard/presentation/cubit/leaderboard_cubit.dart';
 import '../../../leaderboard/presentation/widgets/game_type_filter_dropdown.dart';
 import '../../../leaderboard/presentation/widgets/Leaderboard.page.dart';
@@ -213,7 +213,7 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
     required String? myPlayerId,
     required String? myDisplayName,
     required Leaderboard? myStanding,
-    required MedalTally? myMedals,
+    required Medals? myMedals,
     required int playerCount,
   }) {
     return LayoutBuilder(
@@ -260,7 +260,7 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
     required String? myPlayerId,
     required String? myDisplayName,
     required Leaderboard? myStanding,
-    required MedalTally? myMedals,
+    required Medals? myMedals,
     required int playerCount,
   }) {
     return Column(

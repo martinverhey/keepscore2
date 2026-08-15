@@ -1,6 +1,6 @@
 import '../../match/domain/game_type.dart';
 import 'leaderboard.dart';
-import 'medal_tally.dart';
+import 'medals.dart';
 import 'season_standing.dart';
 import 'season_window.dart';
 
@@ -25,5 +25,5 @@ abstract interface class LeaderboardRepository {
     GameType? gameType,
   });
 
-  Future<List<MedalTally>> medalTallies(String competitionId);
+  Future<List<Medals>> medals(String competitionId);
 }

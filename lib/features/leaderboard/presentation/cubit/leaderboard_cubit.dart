@@ -7,7 +7,7 @@ import '../../../../core/error/failure.dart';
 import '../../../match/domain/game_type.dart';
 import '../../../match/presentation/cubit/game_type_filter_cubit.dart';
 import '../../domain/leaderboard_repository.dart';
-import '../../domain/medal_tally.dart';
+import '../../domain/medals.dart';
 import '../../domain/season.dart';
 import '../../domain/season_window.dart';
 import 'leaderboard_state.dart';
@@ -15,8 +15,11 @@ import 'leaderboard_state.dart';
 export 'leaderboard_state.dart';
 
 class LeaderboardCubit extends Cubit<LeaderboardState> {
-  LeaderboardCubit(this._repository, this._gameTypeFilterCubit, this.competitionId)
-    : super(const LeaderboardState()) {
+  LeaderboardCubit(
+    this._repository,
+    this._gameTypeFilterCubit,
+    this.competitionId,
+  ) : super(const LeaderboardState()) {
     _gameTypeSubscription = _gameTypeFilterCubit.stream.listen(_applyGameType);
   }
 
@@ -35,7 +38,7 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
     try {
       final results = await Future.wait<Object?>([
         _repository.currentSeason(competitionId),
-        _repository.medalTallies(competitionId),
+        _repository.medals(competitionId),
       ]);
       if (isClosed) return;
 
@@ -46,8 +49,7 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
         endsAt: window.endsAt.toLocal(),
       );
       final medals = {
-        for (final tally in results[1] as List<MedalTally>)
-          tally.playerId: tally,
+        for (final tally in results[1] as List<Medals>) tally.playerId: tally,
       };
 
       final standings = await _repository.standings(

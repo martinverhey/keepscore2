@@ -8,11 +8,12 @@ import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/medal_chip.dart';
 import '../../../../core/widgets/rating_delta.dart';
 import '../../../../core/widgets/tag.dart';
+import '../../../../core/widgets/today_delta_badge.dart';
 import '../../../competition/domain/competition.dart';
 import '../../../profile/presentation/cubit/profile_cubit.dart';
 import '../../../profile/presentation/widgets/profile_sheet.dart';
 import '../../domain/leaderboard.dart';
-import '../../domain/medal_tally.dart';
+import '../../domain/medals.dart';
 
 class LeaderboardRow extends StatelessWidget {
   const LeaderboardRow({
@@ -30,7 +31,7 @@ class LeaderboardRow extends StatelessWidget {
   final bool isMe;
   final String? myPlayerId;
   final SeasonLength seasonLength;
-  final MedalTally? medals;
+  final Medals? medals;
 
   Color? get _rankColor => switch (standing.rank) {
     1 => AppColors.gold,
@@ -164,44 +165,9 @@ class LeaderboardRow extends StatelessWidget {
         ),
         if (standing.todayDelta != 0) ...[
           const SizedBox(height: 2),
-          _todayDeltaBadge(context),
+          TodayDeltaBadge(delta: standing.todayDelta),
         ],
       ],
-    );
-  }
-
-  Widget _todayDeltaBadge(BuildContext context) {
-    final delta = standing.todayDelta;
-    final isGain = delta > 0;
-    final color = isGain ? AppColors.positive : AppColors.negative;
-    final amount = delta.abs().toStringAsFixed(1);
-
-    return Semantics(
-      label: isGain
-          ? context.l10n.leaderboardTodayGain(amount)
-          : context.l10n.leaderboardTodayLoss(amount),
-      child: ExcludeSemantics(
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AdaptiveIcon(
-              isGain ? AdaptiveGlyph.triangleUp : AdaptiveGlyph.triangleDown,
-              color: color,
-              size: 13,
-            ),
-            const SizedBox(width: 2),
-            Text(
-              amount,
-              style: TextStyle(
-                color: color,
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                fontFeatures: const [FontFeature.tabularFigures()],
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -248,7 +214,7 @@ class LeaderboardRow extends StatelessWidget {
     );
   }
 
-  List<Widget> _medalChips(MedalTally medals) {
+  List<Widget> _medalChips(Medals medals) {
     final chips = [
       if (medals.gold > 0) MedalChip(color: AppColors.gold, count: medals.gold),
       if (medals.silver > 0)

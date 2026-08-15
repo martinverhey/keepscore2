@@ -230,7 +230,7 @@ void main() {
         ),
       ).thenAnswer((_) => const Stream.empty());
       when(
-        () => leaderboard.medalTallies(_competitionId),
+        () => leaderboard.medals(_competitionId),
       ).thenAnswer((_) async => const []);
 
       final authBloc = AuthBloc(auth);
@@ -353,9 +353,7 @@ GoRouter _buildRouter(
                 create: (_) =>
                     CompetitionDetailCubit(competitionRepository, id),
               ),
-              BlocProvider(
-                create: (_) => PlayersCubit(playerRepository, id),
-              ),
+              BlocProvider(create: (_) => PlayersCubit(playerRepository, id)),
               BlocProvider(
                 create: (_) =>
                     MatchListCubit(matchRepository, gameTypeFilterCubit, id),
