@@ -11,11 +11,9 @@ import '../../../../core/widgets/medal_chip.dart';
 import '../../../../core/widgets/rating_delta.dart';
 import '../../../../core/widgets/sheet.dart';
 import '../../../../core/widgets/state_views.dart';
-import '../../../../core/widgets/streak_badge.dart';
 import '../../../../core/widgets/today_delta_badge.dart';
 import '../../../competition/domain/competition.model.dart';
 import '../../../leaderboard/domain/leaderboard.model.dart';
-import '../../../leaderboard/domain/medal.enum.dart';
 import '../../../leaderboard/domain/medals.model.dart';
 import '../../../leaderboard/domain/season_standing.model.dart';
 import '../../../leaderboard/presentation/widgets/game_type_filter_dropdown.dart';
@@ -109,7 +107,6 @@ class _ProfileSheetState extends State<ProfileSheet> {
 
   Widget _overview(BuildContext context, ProfileState state) {
     final leaderboard = state.leaderboard;
-    final streak = state.streak;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -125,8 +122,15 @@ class _ProfileSheetState extends State<ProfileSheet> {
             losses: leaderboard.losses,
             draws: leaderboard.draws,
           ),
+          const SizedBox(height: AppSpacing.lg),
+          Text(
+            context.l10n.profileGamesTitle,
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          _gamesRow(context, state),
           const SizedBox(height: AppSpacing.md),
-          _gamesCountRow(context, state),
+          _streaksRow(context, state),
           const SizedBox(height: AppSpacing.lg),
           Text(
             context.l10n.profileTrendTitle,
@@ -143,18 +147,6 @@ class _ProfileSheetState extends State<ProfileSheet> {
               children: [RatingDelta(value: state.history.last.ratingDelta)],
             ),
           ],
-        ],
-        if (streak.type != StreakType.none) ...[
-          const SizedBox(height: AppSpacing.lg),
-          Align(
-            alignment: Alignment.centerRight,
-            child: StreakBadge(
-              isWin: streak.type == StreakType.win,
-              label: streak.type == StreakType.win
-                  ? context.l10n.profileStreakWin(streak.count)
-                  : context.l10n.profileStreakLoss(streak.count),
-            ),
-          ),
         ],
         if (state.recentMatches.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.lg),
@@ -240,21 +232,23 @@ class _ProfileSheetState extends State<ProfileSheet> {
     ProfileState state,
     Leaderboard leaderboard,
   ) {
+    return _statCard([
+      _seasonRatingBlock(context, leaderboard),
+      _statBlock(
+        context.l10n.profileBestRatingLabel,
+        formatRating(state.bestRating),
+      ),
+    ]);
+  }
+
+  Widget _statCard(List<Widget> children) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: AppColors.neutral.withValues(alpha: 0.08),
         borderRadius: AppRadius.card,
       ),
-      child: Row(
-        children: [
-          _seasonRatingBlock(context, leaderboard),
-          _statBlock(
-            context.l10n.profileBestRatingLabel,
-            formatRating(state.bestRating),
-          ),
-        ],
-      ),
+      child: Row(children: children),
     );
   }
 
@@ -339,16 +333,41 @@ class _ProfileSheetState extends State<ProfileSheet> {
     );
   }
 
-  Widget _gamesCountRow(BuildContext context, ProfileState state) {
-    return Row(
-      children: [
-        _statBlock(
-          context.l10n.profileSeasonGamesLabel,
-          '${state.leaderboard?.played ?? 0}',
-        ),
-        _statBlock(context.l10n.profileTotalGamesLabel, '${state.totalPlayed}'),
-      ],
-    );
+  Widget _gamesRow(BuildContext context, ProfileState state) {
+    return _statCard([
+      _statBlock(
+        context.l10n.profileTodayGamesLabel,
+        '${state.recentPlayed.today}',
+      ),
+      _statBlock(
+        context.l10n.profileThisWeekGamesLabel,
+        '${state.recentPlayed.week}',
+      ),
+      _statBlock(
+        context.l10n.profileSeasonGamesLabel,
+        '${state.leaderboard?.played ?? 0}',
+      ),
+      _statBlock(context.l10n.profileTotalGamesLabel, '${state.totalPlayed}'),
+    ]);
+  }
+
+  Widget _streaksRow(BuildContext context, ProfileState state) {
+    final streak = state.streak;
+    final winStreak = streak.type == StreakType.win ? streak.count : 0;
+    final lossStreak = streak.type == StreakType.loss ? streak.count : 0;
+
+    return _statCard([
+      _statBlock(context.l10n.profileWinStreakLabel, '$winStreak'),
+      _statBlock(
+        context.l10n.profileBestWinStreakLabel,
+        '${state.bestStreaks.win}',
+      ),
+      _statBlock(context.l10n.profileLossStreakLabel, '$lossStreak'),
+      _statBlock(
+        context.l10n.profileBestLossStreakLabel,
+        '${state.bestStreaks.loss}',
+      ),
+    ]);
   }
 
   Widget _recentMatches(BuildContext context, List<MatchEntry> matches) {

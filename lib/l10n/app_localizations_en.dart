@@ -644,6 +644,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileLossStreakLabel => 'Loss streak';
 
   @override
+  String get profileBestWinStreakLabel => 'Best win streak';
+
+  @override
+  String get profileBestLossStreakLabel => 'Best loss streak';
+
+  @override
   String get profileTrendTitle => 'Recent form';
 
   @override
@@ -692,10 +698,19 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get profileSeasonGamesLabel => 'Games';
+  String get profileGamesTitle => 'Games';
 
   @override
-  String get profileTotalGamesLabel => 'Total games';
+  String get profileTodayGamesLabel => 'Today';
+
+  @override
+  String get profileThisWeekGamesLabel => 'This week';
+
+  @override
+  String get profileSeasonGamesLabel => 'Season';
+
+  @override
+  String get profileTotalGamesLabel => 'Total';
 
   @override
   String get profileRecentMatchesTitle => 'Recent matches';

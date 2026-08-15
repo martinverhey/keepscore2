@@ -11,8 +11,10 @@ import 'package:keepscore2/features/match/domain/game_type.enum.dart';
 import 'package:keepscore2/features/match/domain/match_entry.model.dart';
 import 'package:keepscore2/features/match/domain/match_repository.dart';
 import 'package:keepscore2/features/match/presentation/cubit/game_type_filter_cubit.dart';
+import 'package:keepscore2/features/profile/domain/best_streaks.model.dart';
 import 'package:keepscore2/features/profile/domain/head_to_head_record.model.dart';
 import 'package:keepscore2/features/profile/domain/profile_repository.dart';
+import 'package:keepscore2/features/profile/domain/recent_played.model.dart';
 import 'package:keepscore2/features/profile/domain/streak.model.dart';
 import 'package:keepscore2/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:keepscore2/features/profile/presentation/widgets/profile_sheet.dart';
@@ -117,6 +119,16 @@ void main() {
             gameType: type,
           ),
         ).thenAnswer((_) async => const Streak.none());
+        when(
+          () => profileRepository.bestStreaks(playerId: 'p1', gameType: type),
+        ).thenAnswer((_) async => const BestStreaks.zero());
+        when(
+          () => profileRepository.recentPlayed(
+            seasonId: 's1',
+            playerId: 'p1',
+            gameType: type,
+          ),
+        ).thenAnswer((_) async => const RecentPlayed.zero());
         when(
           () => profileRepository.totalMatchesPlayed(
             playerId: 'p1',
@@ -327,6 +339,16 @@ void main() {
         ),
       ).thenAnswer((_) async => const Streak.none());
       when(
+        () => profileRepository.bestStreaks(playerId: 'p1', gameType: null),
+      ).thenAnswer((_) async => const BestStreaks.zero());
+      when(
+        () => profileRepository.recentPlayed(
+          seasonId: 's1',
+          playerId: 'p1',
+          gameType: null,
+        ),
+      ).thenAnswer((_) async => const RecentPlayed.zero());
+      when(
         () => profileRepository.totalMatchesPlayed(
           playerId: 'p1',
           gameType: null,
@@ -444,6 +466,16 @@ void main() {
       ),
     ).thenAnswer((_) async => const Streak.none());
     when(
+      () => profileRepository.bestStreaks(playerId: 'p1', gameType: null),
+    ).thenAnswer((_) async => const BestStreaks.zero());
+    when(
+      () => profileRepository.recentPlayed(
+        seasonId: 's1',
+        playerId: 'p1',
+        gameType: null,
+      ),
+    ).thenAnswer((_) async => const RecentPlayed.zero());
+    when(
       () =>
           profileRepository.totalMatchesPlayed(playerId: 'p1', gameType: null),
     ).thenAnswer((_) async => 20);
@@ -539,6 +571,16 @@ void main() {
           gameType: null,
         ),
       ).thenAnswer((_) async => const Streak.none());
+      when(
+        () => profileRepository.bestStreaks(playerId: 'p1', gameType: null),
+      ).thenAnswer((_) async => const BestStreaks.zero());
+      when(
+        () => profileRepository.recentPlayed(
+          seasonId: 's1',
+          playerId: 'p1',
+          gameType: null,
+        ),
+      ).thenAnswer((_) async => const RecentPlayed.zero());
       when(
         () => profileRepository.totalMatchesPlayed(
           playerId: 'p1',

@@ -6,8 +6,10 @@ import '../../../leaderboard/domain/medals.model.dart';
 import '../../../leaderboard/domain/season_standing.model.dart';
 import '../../../match/domain/game_type.enum.dart';
 import '../../../match/domain/match_entry.model.dart';
+import '../../domain/best_streaks.model.dart';
 import '../../domain/head_to_head_record.model.dart';
 import '../../domain/rating_point.model.dart';
+import '../../domain/recent_played.model.dart';
 import '../../domain/streak.model.dart';
 
 enum ProfileStatus { loading, ready, failed }
@@ -23,6 +25,8 @@ class ProfileState extends Equatable {
     this.history = const [],
     this.totalPlayed = 0,
     this.streak = const Streak.none(),
+    this.bestStreaks = const BestStreaks.zero(),
+    this.recentPlayed = const RecentPlayed.zero(),
     this.seasonHistory = const [],
     this.hasOpponent = false,
     this.headToHead = const [],
@@ -40,6 +44,8 @@ class ProfileState extends Equatable {
   final List<RatingPoint> history;
   final int totalPlayed;
   final Streak streak;
+  final BestStreaks bestStreaks;
+  final RecentPlayed recentPlayed;
   final List<SeasonStanding> seasonHistory;
   final bool hasOpponent;
   final List<HeadToHeadRecord> headToHead;
@@ -63,6 +69,8 @@ class ProfileState extends Equatable {
     List<RatingPoint>? history,
     int? totalPlayed,
     Streak? streak,
+    BestStreaks? bestStreaks,
+    RecentPlayed? recentPlayed,
     List<SeasonStanding>? seasonHistory,
     bool? hasOpponent,
     List<HeadToHeadRecord>? headToHead,
@@ -82,6 +90,8 @@ class ProfileState extends Equatable {
       history: history ?? this.history,
       totalPlayed: totalPlayed ?? this.totalPlayed,
       streak: streak ?? this.streak,
+      bestStreaks: bestStreaks ?? this.bestStreaks,
+      recentPlayed: recentPlayed ?? this.recentPlayed,
       seasonHistory: seasonHistory ?? this.seasonHistory,
       hasOpponent: hasOpponent ?? this.hasOpponent,
       headToHead: headToHead ?? this.headToHead,
@@ -102,6 +112,8 @@ class ProfileState extends Equatable {
     history,
     totalPlayed,
     streak,
+    bestStreaks,
+    recentPlayed,
     seasonHistory,
     hasOpponent,
     headToHead,

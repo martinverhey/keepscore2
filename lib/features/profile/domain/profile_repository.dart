@@ -1,6 +1,8 @@
 import '../../match/domain/game_type.enum.dart';
+import 'best_streaks.model.dart';
 import 'head_to_head_record.model.dart';
 import 'rating_point.model.dart';
+import 'recent_played.model.dart';
 import 'streak.model.dart';
 
 abstract interface class ProfileRepository {
@@ -17,6 +19,17 @@ abstract interface class ProfileRepository {
   });
 
   Future<Streak> currentStreak({
+    required String seasonId,
+    required String playerId,
+    GameType? gameType,
+  });
+
+  Future<BestStreaks> bestStreaks({
+    required String playerId,
+    GameType? gameType,
+  });
+
+  Future<RecentPlayed> recentPlayed({
     required String seasonId,
     required String playerId,
     GameType? gameType,

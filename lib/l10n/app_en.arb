@@ -270,6 +270,8 @@
   "profileWinRateLabel": "Win rate",
   "profileWinStreakLabel": "Win streak",
   "profileLossStreakLabel": "Loss streak",
+  "profileBestWinStreakLabel": "Best win streak",
+  "profileBestLossStreakLabel": "Best loss streak",
   "profileTrendTitle": "Recent form",
   "profileNotEnoughMatches": "Play a couple more matches to see your trend.",
   "profileTabOverview": "Overview",
@@ -291,8 +293,11 @@
   "@profileVersusEmpty": {
     "placeholders": { "name": { "type": "String" } }
   },
-  "profileSeasonGamesLabel": "Games",
-  "profileTotalGamesLabel": "Total games",
+  "profileGamesTitle": "Games",
+  "profileTodayGamesLabel": "Today",
+  "profileThisWeekGamesLabel": "This week",
+  "profileSeasonGamesLabel": "Season",
+  "profileTotalGamesLabel": "Total",
   "profileRecentMatchesTitle": "Recent matches",
   "profileSeasonHistoryEmpty": "No past seasons yet.",
 

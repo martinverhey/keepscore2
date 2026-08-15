@@ -1208,6 +1208,18 @@ abstract class AppLocalizations {
   /// **'Loss streak'**
   String get profileLossStreakLabel;
 
+  /// No description provided for @profileBestWinStreakLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Best win streak'**
+  String get profileBestWinStreakLabel;
+
+  /// No description provided for @profileBestLossStreakLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Best loss streak'**
+  String get profileBestLossStreakLabel;
+
   /// No description provided for @profileTrendTitle.
   ///
   /// In en, this message translates to:
@@ -1262,16 +1274,34 @@ abstract class AppLocalizations {
   /// **'No matches against {name} yet.'**
   String profileVersusEmpty(String name);
 
-  /// No description provided for @profileSeasonGamesLabel.
+  /// No description provided for @profileGamesTitle.
   ///
   /// In en, this message translates to:
   /// **'Games'**
+  String get profileGamesTitle;
+
+  /// No description provided for @profileTodayGamesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get profileTodayGamesLabel;
+
+  /// No description provided for @profileThisWeekGamesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get profileThisWeekGamesLabel;
+
+  /// No description provided for @profileSeasonGamesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Season'**
   String get profileSeasonGamesLabel;
 
   /// No description provided for @profileTotalGamesLabel.
   ///
   /// In en, this message translates to:
-  /// **'Total games'**
+  /// **'Total'**
   String get profileTotalGamesLabel;
 
   /// No description provided for @profileRecentMatchesTitle.

@@ -2,9 +2,11 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/error/failure.dart';
 import '../../match/domain/game_type.enum.dart';
+import '../domain/best_streaks.model.dart';
 import '../domain/head_to_head_record.model.dart';
 import '../domain/profile_repository.dart';
 import '../domain/rating_point.model.dart';
+import '../domain/recent_played.model.dart';
 import '../domain/streak.model.dart';
 
 class SupabaseProfileRepository implements ProfileRepository {
@@ -77,6 +79,40 @@ class SupabaseProfileRepository implements ProfileRepository {
     );
     if (rows.isEmpty) return const Streak.none();
     return Streak.fromMap(rows.first as Map<String, dynamic>);
+  });
+
+  @override
+  Future<BestStreaks> bestStreaks({
+    required String playerId,
+    GameType? gameType,
+  }) => guard(() async {
+    final rows = await _client.rpc<List<dynamic>>(
+      'player_best_streaks',
+      params: {
+        'p_player_id': playerId,
+        if (gameType != null) 'p_game_type': gameType.wireValue,
+      },
+    );
+    if (rows.isEmpty) return const BestStreaks.zero();
+    return BestStreaks.fromMap(rows.first as Map<String, dynamic>);
+  });
+
+  @override
+  Future<RecentPlayed> recentPlayed({
+    required String seasonId,
+    required String playerId,
+    GameType? gameType,
+  }) => guard(() async {
+    final rows = await _client.rpc<List<dynamic>>(
+      'player_recent_played',
+      params: {
+        'p_season_id': seasonId,
+        'p_player_id': playerId,
+        if (gameType != null) 'p_game_type': gameType.wireValue,
+      },
+    );
+    if (rows.isEmpty) return const RecentPlayed.zero();
+    return RecentPlayed.fromMap(rows.first as Map<String, dynamic>);
   });
 
   @override

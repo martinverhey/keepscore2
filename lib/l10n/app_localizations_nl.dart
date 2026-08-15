@@ -647,6 +647,12 @@ class AppLocalizationsNl extends AppLocalizations {
   String get profileLossStreakLabel => 'Verliesreeks';
 
   @override
+  String get profileBestWinStreakLabel => 'Beste winreeks';
+
+  @override
+  String get profileBestLossStreakLabel => 'Beste verliesreeks';
+
+  @override
   String get profileTrendTitle => 'Recente vorm';
 
   @override
@@ -695,10 +701,19 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
-  String get profileSeasonGamesLabel => 'Wedstrijden';
+  String get profileGamesTitle => 'Wedstrijden';
 
   @override
-  String get profileTotalGamesLabel => 'Totaal aantal wedstrijden';
+  String get profileTodayGamesLabel => 'Vandaag';
+
+  @override
+  String get profileThisWeekGamesLabel => 'Deze week';
+
+  @override
+  String get profileSeasonGamesLabel => 'Seizoen';
+
+  @override
+  String get profileTotalGamesLabel => 'Totaal';
 
   @override
   String get profileRecentMatchesTitle => 'Recente wedstrijden';

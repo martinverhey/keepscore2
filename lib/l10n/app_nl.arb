@@ -270,6 +270,8 @@
   "profileWinRateLabel": "Winstpercentage",
   "profileWinStreakLabel": "Winreeks",
   "profileLossStreakLabel": "Verliesreeks",
+  "profileBestWinStreakLabel": "Beste winreeks",
+  "profileBestLossStreakLabel": "Beste verliesreeks",
   "profileTrendTitle": "Recente vorm",
   "profileNotEnoughMatches": "Speel nog een paar wedstrijden om je trend te zien.",
   "profileTabOverview": "Overzicht",
@@ -291,8 +293,11 @@
   "@profileVersusEmpty": {
     "placeholders": { "name": { "type": "String" } }
   },
-  "profileSeasonGamesLabel": "Wedstrijden",
-  "profileTotalGamesLabel": "Totaal aantal wedstrijden",
+  "profileGamesTitle": "Wedstrijden",
+  "profileTodayGamesLabel": "Vandaag",
+  "profileThisWeekGamesLabel": "Deze week",
+  "profileSeasonGamesLabel": "Seizoen",
+  "profileTotalGamesLabel": "Totaal",
   "profileRecentMatchesTitle": "Recente wedstrijden",
   "profileSeasonHistoryEmpty": "Nog geen eerdere seizoenen.",
 
