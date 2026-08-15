@@ -324,6 +324,9 @@ flutter build apk --debug        # verified green
   Common types: feat, fix, refactor, chore, docs, test, style, perf, build, ci.
 - **Commit straight to `main`.** This is a solo repo — skip branching before
   committing even though `main` is the default branch.
+- **When a chunk of work is done and the user starts on a new feature or
+  area, ask whether to commit before continuing.** Don't commit unprompted —
+  offer, and wait for a yes.
 
 ## Database workflow — read this before touching SQL
 
