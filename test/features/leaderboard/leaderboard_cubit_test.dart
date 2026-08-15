@@ -81,7 +81,9 @@ void main() {
         gameType: any(named: 'gameType'),
       ),
     ).thenAnswer((_) => ticks.stream);
-    when(() => repository.medals('c1')).thenAnswer((_) async => const []);
+    when(
+      () => repository.medals('c1', gameType: any(named: 'gameType')),
+    ).thenAnswer((_) async => const []);
   });
 
   tearDown(() {
@@ -112,7 +114,9 @@ void main() {
     setUp: () {
       stubSeason();
       stubLeaderboards('s-august', [_leaderboard('p1', 1040, 1)]);
-      when(() => repository.medals('c1')).thenAnswer(
+      when(
+        () => repository.medals('c1', gameType: null),
+      ).thenAnswer(
         (_) async => const [
           Medals(playerId: 'p1', gold: 2, silver: 0, bronze: 1),
         ],
@@ -228,6 +232,98 @@ void main() {
           gameType: GameType.oneVOne,
         ),
       ).called(1);
+    },
+  );
+
+  blocTest<LeaderboardCubit, LeaderboardState>(
+    'filtering by game type also refetches medal tallies for that game type',
+    setUp: () {
+      stubSeason();
+      stubLeaderboards('s-august', [_leaderboard('p1', 1040, 1)]);
+      when(
+        () => repository.medals('c1', gameType: null),
+      ).thenAnswer(
+        (_) async => const [
+          Medals(playerId: 'p1', gold: 1, silver: 0, bronze: 0),
+        ],
+      );
+      stubGameTypeLeaderboards('s-august', GameType.oneVOne, [
+        _leaderboard('p2', 1100, 1),
+      ]);
+      when(
+        () => repository.medals('c1', gameType: GameType.oneVOne),
+      ).thenAnswer(
+        (_) async => const [
+          Medals(playerId: 'p2', gold: 0, silver: 4, bronze: 0),
+        ],
+      );
+    },
+    build: build,
+    act: (cubit) async {
+      await cubit.load();
+      await cubit.selectGameTypeFilter(GameType.oneVOne);
+      await _settle();
+    },
+    verify: (cubit) {
+      expect(cubit.state.medals['p1'], isNull);
+      expect(cubit.state.medals['p2']?.silver, 4);
+    },
+  );
+
+  blocTest<LeaderboardCubit, LeaderboardState>(
+    'a slower response for an abandoned game type does not clobber a '
+    'faster one for the type selected after it',
+    setUp: () {
+      stubSeason();
+      stubLeaderboards('s-august', [_leaderboard('p1', 1040, 1)]);
+    },
+    build: build,
+    act: (cubit) async {
+      await cubit.load();
+
+      stubGameTypeLeaderboards('s-august', GameType.oneVOne, [
+        _leaderboard('p2', 1100, 1),
+      ]);
+      when(
+        () => repository.medals('c1', gameType: GameType.oneVOne),
+      ).thenAnswer(
+        (_) async => const [
+          Medals(playerId: 'p2', gold: 2, silver: 0, bronze: 0),
+        ],
+      );
+      final slowLeaderboards = Completer<List<Leaderboard>>();
+      when(
+        () => repository.leaderboards(
+          competitionId: 'c1',
+          seasonId: 's-august',
+          gameType: GameType.oneVOne,
+        ),
+      ).thenAnswer((_) => slowLeaderboards.future);
+
+      stubGameTypeLeaderboards('s-august', GameType.twoVTwo, [
+        _leaderboard('p3', 1010, 1),
+      ]);
+      when(
+        () => repository.medals('c1', gameType: GameType.twoVTwo),
+      ).thenAnswer(
+        (_) async => const [
+          Medals(playerId: 'p3', gold: 1, silver: 0, bronze: 0),
+        ],
+      );
+
+      unawaited(cubit.selectGameTypeFilter(GameType.oneVOne));
+      await _settle();
+      await cubit.selectGameTypeFilter(GameType.twoVTwo);
+      await _settle();
+
+      slowLeaderboards.complete([_leaderboard('p2', 1100, 1)]);
+      await _settle();
+    },
+    verify: (cubit) {
+      expect(cubit.state.selectedGameType, GameType.twoVTwo);
+      expect(cubit.state.leaderboards.single.playerId, 'p3');
+      expect(cubit.state.medals['p3']?.gold, 1);
+      expect(cubit.state.medals['p2'], isNull);
     },
   );
 

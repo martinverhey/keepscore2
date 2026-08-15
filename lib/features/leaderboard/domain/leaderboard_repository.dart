@@ -25,5 +25,5 @@ abstract interface class LeaderboardRepository {
     GameType? gameType,
   });
 
-  Future<List<Medals>> medals(String competitionId);
+  Future<List<Medals>> medals(String competitionId, {GameType? gameType});
 }

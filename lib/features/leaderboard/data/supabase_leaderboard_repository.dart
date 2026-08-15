@@ -111,12 +111,17 @@ class SupabaseLeaderboardRepository implements LeaderboardRepository {
   });
 
   @override
-  Future<List<Medals>> medals(String competitionId) => guard(() async {
-    final rows = await _client
-        .from('player_medals')
-        .select()
-        .eq('competition_id', competitionId);
+  Future<List<Medals>> medals(String competitionId, {GameType? gameType}) =>
+      guard(() async {
+        var query = _client
+            .from(gameType == null ? 'player_medals' : 'game_type_player_medals')
+            .select()
+            .eq('competition_id', competitionId);
+        if (gameType != null) {
+          query = query.eq('game_type', gameType.wireValue);
+        }
 
-    return rows.map((row) => Medals.fromMap(row)).toList(growable: false);
-  });
+        final rows = await query;
+        return rows.map((row) => Medals.fromMap(row)).toList(growable: false);
+      });
 }
