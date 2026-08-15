@@ -734,6 +734,18 @@ abstract class AppLocalizations {
   /// **'Choose a season'**
   String get leaderboardPickSeason;
 
+  /// No description provided for @leaderboardTodayGain.
+  ///
+  /// In en, this message translates to:
+  /// **'Gained {amount} points today'**
+  String leaderboardTodayGain(String amount);
+
+  /// No description provided for @leaderboardTodayLoss.
+  ///
+  /// In en, this message translates to:
+  /// **'Lost {amount} points today'**
+  String leaderboardTodayLoss(String amount);
+
   /// No description provided for @seasonQuarterLabel.
   ///
   /// In en, this message translates to:
@@ -1019,7 +1031,7 @@ abstract class AppLocalizations {
   /// No description provided for @playersTitle.
   ///
   /// In en, this message translates to:
-  /// **'Players'**
+  /// **'Manage Players'**
   String get playersTitle;
 
   /// No description provided for @playersAddDummy.

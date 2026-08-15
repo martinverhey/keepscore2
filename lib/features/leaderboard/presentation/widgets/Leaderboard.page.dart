@@ -1,16 +1,13 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../app/router/app_router.dart';
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../competition/domain/competition.dart';
-import '../../../competition/presentation/widgets/invite_sheet.dart';
 import '../../../profile/presentation/widgets/game_type_label.dart';
 import '../../domain/season.dart';
 import '../cubit/leaderboard_cubit.dart';
@@ -24,14 +21,14 @@ class LeaderboardPage extends StatelessWidget {
     required this.seasonLength,
     required this.myPlayerId,
     required this.isOwner,
-    required this.joinCode,
+    required this.onManagePlayers,
   });
 
   final String competitionId;
   final SeasonLength seasonLength;
   final String? myPlayerId;
   final bool isOwner;
-  final String joinCode;
+  final VoidCallback onManagePlayers;
 
   @override
   Widget build(BuildContext context) {
@@ -58,17 +55,7 @@ class LeaderboardPage extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: state.season == null
-                      ? const SizedBox.shrink()
-                      : _seasonBar(context, state.season!),
-                ),
-                _inviteButton(context),
-              ],
-            ),
+            if (state.season != null) _seasonBar(context, state.season!),
             const SizedBox(height: AppSpacing.md),
 
             if (state.busy)
@@ -100,26 +87,12 @@ class LeaderboardPage extends StatelessWidget {
               AdaptiveButton(
                 label: context.l10n.playersManageTitle,
                 kind: AdaptiveButtonKind.tinted,
-                onPressed: () => context.push(Routes.players(competitionId)),
+                onPressed: onManagePlayers,
               ),
             ],
           ],
         );
       },
-    );
-  }
-
-  Widget _inviteButton(BuildContext context) {
-    return AdaptiveButton(
-      label: context.l10n.competitionInviteAction,
-      icon: AdaptiveIcon(
-        AdaptiveGlyph.invite,
-        size: 18,
-        color: AdaptiveColors.accent(context),
-      ),
-      kind: AdaptiveButtonKind.plain,
-      expand: false,
-      onPressed: () => showInviteSheet(context, code: joinCode),
     );
   }
 

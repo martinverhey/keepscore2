@@ -68,9 +68,9 @@ class _TeamPickerSheetState extends State<TeamPickerSheet> {
           AdaptiveButton(
             label: context.l10n.playersManageTitle,
             kind: AdaptiveButtonKind.tinted,
-            onPressed: () {
-              Navigator.of(context).pop();
-              context.push(Routes.players(widget.competitionId));
+            onPressed: () async {
+              await context.push(Routes.players(widget.competitionId));
+              if (context.mounted) Navigator.of(context).pop(_selected);
             },
           ),
         ],

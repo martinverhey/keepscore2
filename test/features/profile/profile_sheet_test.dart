@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/features/competition/domain/competition.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
+import 'package:keepscore2/features/leaderboard/domain/medal_tally.dart';
 import 'package:keepscore2/features/leaderboard/domain/season_window.dart';
 import 'package:keepscore2/features/match/domain/game_type.dart';
 import 'package:keepscore2/features/match/domain/match_entry.dart';
@@ -238,6 +239,147 @@ void main() {
       expect(find.text(l10n.profileRecentMatchesTitle), findsNothing);
 
       expect(tester.takeException(), isNull);
+      await cubit.close();
+    },
+  );
+
+  testWidgets(
+    'the rank + medals header subtitle does not overflow on a narrow phone '
+    'with a long name and large counts',
+    (tester) async {
+      tester.view.physicalSize = const Size(360, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      SharedPreferences.setMockInitialValues({});
+      final leaderboardRepository = MockLeaderboardRepository();
+      final profileRepository = MockProfileRepository();
+      final matchRepository = MockMatchRepository();
+
+      const longName = 'Bartholomewski Alexandertononovich-Vandermeulen';
+      final mine = Leaderboard(
+        seasonId: 's1',
+        competitionId: 'c1',
+        playerId: 'p1',
+        displayName: longName,
+        isClaimed: true,
+        isOwner: false,
+        rating: 1234,
+        played: 42,
+        wins: 20,
+        losses: 15,
+        draws: 7,
+        rank: 12,
+      );
+      final filler = List.generate(
+        86,
+        (i) => Leaderboard(
+          seasonId: 's1',
+          competitionId: 'c1',
+          playerId: 'p$i',
+          displayName: 'Player $i',
+          isClaimed: true,
+          isOwner: false,
+          rating: 1000,
+          played: 1,
+          wins: 1,
+          losses: 0,
+          draws: 0,
+          rank: i + 13,
+        ),
+      );
+
+      when(() => leaderboardRepository.currentSeason('c1')).thenAnswer(
+        (_) async =>
+            SeasonWindow(id: 's1', startsAt: _august, endsAt: _september),
+      );
+      when(
+        () => leaderboardRepository.standings(
+          competitionId: 'c1',
+          seasonId: 's1',
+          gameType: null,
+        ),
+      ).thenAnswer((_) async => [mine, ...filler]);
+      when(
+        () => profileRepository.ratingHistory(
+          seasonId: 's1',
+          playerId: 'p1',
+          gameType: null,
+        ),
+      ).thenAnswer((_) async => const []);
+      when(
+        () => profileRepository.currentStreak(
+          seasonId: 's1',
+          playerId: 'p1',
+          gameType: null,
+        ),
+      ).thenAnswer((_) async => const Streak.none());
+      when(
+        () => profileRepository.totalMatchesPlayed(
+          playerId: 'p1',
+          gameType: null,
+        ),
+      ).thenAnswer((_) async => 42);
+      when(
+        () => matchRepository.recentForPlayer(playerId: 'p1', gameType: null),
+      ).thenAnswer((_) async => const []);
+      when(
+        () => leaderboardRepository.seasonHistory(
+          competitionId: 'c1',
+          playerId: 'p1',
+        ),
+      ).thenAnswer((_) async => const []);
+
+      final gameTypeFilterCubit = GameTypeFilterCubit();
+      addTearDown(gameTypeFilterCubit.close);
+
+      final cubit = ProfileCubit(
+        leaderboardRepository,
+        profileRepository,
+        matchRepository,
+        gameTypeFilterCubit,
+        'c1',
+        'p1',
+      );
+      await cubit.load();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: MultiBlocProvider(
+            providers: [
+              BlocProvider.value(value: cubit),
+              BlocProvider<GameTypeFilterCubit>.value(
+                value: gameTypeFilterCubit,
+              ),
+            ],
+            child: ProfileSheet(
+              displayName: longName,
+              seasonLength: SeasonLength.monthly,
+              medals: const MedalTally(
+                playerId: 'p1',
+                gold: 12,
+                silver: 34,
+                bronze: 56,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ProfileSheet)),
+      );
+
+      expect(find.text(l10n.profileRank(12, 87)), findsOneWidget);
+      expect(find.text('12'), findsOneWidget);
+      expect(find.text('34'), findsOneWidget);
+      expect(find.text('56'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+
       await cubit.close();
     },
   );

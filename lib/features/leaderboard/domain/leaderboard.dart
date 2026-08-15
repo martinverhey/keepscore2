@@ -20,6 +20,7 @@ class Leaderboard extends Equatable {
     required this.rank,
     this.streakType = StreakType.none,
     this.streakCount = 0,
+    this.todayDelta = 0,
   });
 
   factory Leaderboard.fromMap(Map<String, dynamic> map) => Leaderboard(
@@ -37,6 +38,7 @@ class Leaderboard extends Equatable {
     rank: (map['rank'] as num?)?.toInt() ?? 0,
     streakType: StreakType.fromWire(map['streak_type'] as String? ?? 'none'),
     streakCount: (map['streak_count'] as num?)?.toInt() ?? 0,
+    todayDelta: _toDouble(map['today_delta']),
   );
 
   factory Leaderboard.forRosterPlayer(
@@ -75,6 +77,7 @@ class Leaderboard extends Equatable {
   final int rank;
   final StreakType streakType;
   final int streakCount;
+  final double todayDelta;
 
   double get winRate => played == 0 ? 0 : wins / played;
 
@@ -94,6 +97,7 @@ class Leaderboard extends Equatable {
     rank,
     streakType,
     streakCount,
+    todayDelta,
   ];
 }
 

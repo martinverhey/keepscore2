@@ -5,6 +5,7 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/tag.dart';
 import '../../domain/competition.dart';
+import 'invite_sheet.dart';
 
 class CompetitionTile extends StatelessWidget {
   const CompetitionTile({
@@ -46,6 +47,13 @@ class CompetitionTile extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
+                AdaptiveIconButton(
+                  glyph: AdaptiveGlyph.invite,
+                  semanticLabel: context.l10n.competitionInviteAction,
+                  onPressed: () =>
+                      showInviteSheet(context, code: competition.joinCode),
+                ),
+                const SizedBox(width: AppSpacing.xs),
                 Tag(
                   competition.joinCode,
                   color: AdaptiveColors.accent(context),

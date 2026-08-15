@@ -69,6 +69,22 @@ class MatchFormCubit extends Cubit<MatchFormState> {
     }
   }
 
+  Future<void> refreshPlayers() async {
+    try {
+      final players = await _players.roster(competitionId);
+      if (isClosed) return;
+      emit(
+        state.copyWith(
+          players: players
+              .where((player) => player.isActive)
+              .toList(growable: false),
+        ),
+      );
+    } on Failure {
+      return;
+    }
+  }
+
   void assign(String playerId, MatchTeam side) {
     final assignments = Map<String, MatchTeam>.from(state.assignments);
     if (assignments[playerId] == side) {

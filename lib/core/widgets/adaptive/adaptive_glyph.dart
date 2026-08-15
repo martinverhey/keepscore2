@@ -12,4 +12,6 @@ enum AdaptiveGlyph {
   medal,
   fire,
   ice,
+  triangleUp,
+  triangleDown,
 }

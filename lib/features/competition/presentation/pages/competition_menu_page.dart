@@ -76,26 +76,25 @@ class _CompetitionMenuPageState extends State<CompetitionMenuPage> {
                     ),
                   const SizedBox(height: AppSpacing.lg),
                   SectionLabel(context.l10n.competitionMenuSectionCompetition),
+                  if (session.canWrite && isOwner)
+                    NavRow(
+                      label: context.l10n.competitionSettingsTitle,
+                      onTap: () => context.push(
+                        Routes.competitionSettings(widget.competitionId),
+                      ),
+                    ),
                   NavRow(
                     label: context.l10n.seasonHistoryTitle,
                     onTap: () => context.push(
                       Routes.seasonHistory(widget.competitionId),
                     ),
                   ),
-                  if (session.canWrite) ...[
-                    if (isOwner)
-                      NavRow(
-                        label: context.l10n.competitionSettingsTitle,
-                        onTap: () => context.push(
-                          Routes.competitionSettings(widget.competitionId),
-                        ),
-                      ),
+                  if (session.canWrite)
                     NavRow(
                       label: context.l10n.playersManageTitle,
                       onTap: () =>
                           context.push(Routes.players(widget.competitionId)),
                     ),
-                  ],
                   const SizedBox(height: AppSpacing.md),
                   SectionLabel(context.l10n.competitionMenuSectionUser),
                   NavRow(

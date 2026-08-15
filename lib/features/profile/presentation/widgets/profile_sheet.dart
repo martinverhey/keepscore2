@@ -58,6 +58,9 @@ class _ProfileSheetState extends State<ProfileSheet> {
         return Sheet(
           title: widget.displayName,
           avatar: InitialsCircle(displayName: widget.displayName, size: 48),
+          subtitleWidget: state.standing == null
+              ? null
+              : _rankSummary(context, state),
           headerTrailing: state.status == ProfileStatus.loading
               ? null
               : GameTypeFilterDropdown(
@@ -85,10 +88,6 @@ class _ProfileSheetState extends State<ProfileSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (state.standing != null) ...[
-          _rankSummary(context, state),
-          const SizedBox(height: AppSpacing.md),
-        ],
         AdaptiveSegmented<ProfileTab>(
           value: _tab,
           onChanged: (tab) => setState(() => _tab = tab),
@@ -181,11 +180,25 @@ class _ProfileSheetState extends State<ProfileSheet> {
             overflow: TextOverflow.ellipsis,
           ),
         ),
-        if (tally != null && tally.hasAny)
-          for (final chip in _medalChips(tally)) ...[
-            const SizedBox(width: AppSpacing.sm),
-            chip,
-          ],
+        if (tally != null && tally.hasAny) ...[
+          const Spacer(),
+          _medalRow(tally),
+          const Spacer(),
+        ],
+      ],
+    );
+  }
+
+  Widget _medalRow(MedalTally medals) {
+    final chips = _medalChips(medals);
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (var i = 0; i < chips.length; i++) ...[
+          if (i > 0) const SizedBox(width: AppSpacing.sm),
+          chips[i],
+        ],
       ],
     );
   }

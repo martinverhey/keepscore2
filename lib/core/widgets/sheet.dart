@@ -10,6 +10,7 @@ class Sheet extends StatelessWidget {
     this.title,
     this.titleColor,
     this.subtitle,
+    this.subtitleWidget,
     this.avatar,
     this.headerTrailing,
     required this.content,
@@ -20,13 +21,18 @@ class Sheet extends StatelessWidget {
   final String? title;
   final Color? titleColor;
   final String? subtitle;
+  final Widget? subtitleWidget;
   final Widget? avatar;
   final Widget? headerTrailing;
   final Widget content;
   final AdaptiveButton? primaryButton;
   final AdaptiveButton? secondaryButton;
 
-  bool get _hasHeader => title != null || subtitle != null || avatar != null;
+  bool get _hasHeader =>
+      title != null ||
+      subtitle != null ||
+      subtitleWidget != null ||
+      avatar != null;
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +80,8 @@ class Sheet extends StatelessWidget {
             ),
             overflow: TextOverflow.ellipsis,
           );
-    final subtitleWidget = subtitle == null ? null : HelpText(subtitle!);
+    final resolvedSubtitle =
+        subtitleWidget ?? (subtitle == null ? null : HelpText(subtitle!));
 
     if (avatar == null) {
       return Column(
@@ -82,9 +89,9 @@ class Sheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           ?titleWidget,
-          if (subtitleWidget != null) ...[
+          if (resolvedSubtitle != null) ...[
             const SizedBox(height: AppSpacing.xs),
-            subtitleWidget,
+            resolvedSubtitle,
           ],
         ],
       );
@@ -100,9 +107,9 @@ class Sheet extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               ?titleWidget,
-              if (subtitleWidget != null) ...[
+              if (resolvedSubtitle != null) ...[
                 const SizedBox(height: 2),
-                subtitleWidget,
+                resolvedSubtitle,
               ],
             ],
           ),

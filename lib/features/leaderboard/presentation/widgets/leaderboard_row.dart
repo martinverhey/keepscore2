@@ -77,9 +77,9 @@ class LeaderboardRow extends StatelessWidget {
           child: Row(
             children: [
               _rank(),
-              Expanded(child: _nameColumn(context)),
+              Expanded(child: _nameColumn(context, hasStreak)),
               const SizedBox(width: AppSpacing.sm),
-              _ratingColumn(context, hasStreak),
+              _ratingColumn(context),
             ],
           ),
         ),
@@ -100,7 +100,9 @@ class LeaderboardRow extends StatelessWidget {
     ),
   );
 
-  Widget _nameColumn(BuildContext context) {
+  Widget _nameColumn(BuildContext context, bool hasStreak) {
+    final hasMedals = medals != null && medals!.hasAny;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -130,15 +132,24 @@ class LeaderboardRow extends StatelessWidget {
             ],
           ],
         ),
-        if (medals != null && medals!.hasAny) ...[
+        if (hasMedals || hasStreak) ...[
           const SizedBox(height: 2),
-          Row(children: _medalChips(medals!)),
+          Row(
+            children: [
+              if (hasMedals) ..._medalChips(medals!),
+              if (hasStreak) ...[
+                const Spacer(),
+                _streakBadge(context),
+                const Spacer(),
+              ],
+            ],
+          ),
         ],
       ],
     );
   }
 
-  Widget _ratingColumn(BuildContext context, bool hasStreak) {
+  Widget _ratingColumn(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       mainAxisSize: MainAxisSize.min,
@@ -151,8 +162,46 @@ class LeaderboardRow extends StatelessWidget {
             fontFeatures: [FontFeature.tabularFigures()],
           ),
         ),
-        if (hasStreak) ...[const SizedBox(height: 2), _streakBadge(context)],
+        if (standing.todayDelta != 0) ...[
+          const SizedBox(height: 2),
+          _todayDeltaBadge(context),
+        ],
       ],
+    );
+  }
+
+  Widget _todayDeltaBadge(BuildContext context) {
+    final delta = standing.todayDelta;
+    final isGain = delta > 0;
+    final color = isGain ? AppColors.positive : AppColors.negative;
+    final amount = delta.abs().toStringAsFixed(1);
+
+    return Semantics(
+      label: isGain
+          ? context.l10n.leaderboardTodayGain(amount)
+          : context.l10n.leaderboardTodayLoss(amount),
+      child: ExcludeSemantics(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AdaptiveIcon(
+              isGain ? AdaptiveGlyph.triangleUp : AdaptiveGlyph.triangleDown,
+              color: color,
+              size: 13,
+            ),
+            const SizedBox(width: 2),
+            Text(
+              amount,
+              style: TextStyle(
+                color: color,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -165,25 +214,35 @@ class LeaderboardRow extends StatelessWidget {
           ? context.l10n.profileStreakWin(standing.streakCount)
           : context.l10n.profileStreakLoss(standing.streakCount),
       child: ExcludeSemantics(
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AdaptiveIcon(
-              isWin ? AdaptiveGlyph.fire : AdaptiveGlyph.ice,
-              color: color,
-              size: 13,
-            ),
-            const SizedBox(width: 2),
-            Text(
-              '${standing.streakCount}',
-              style: TextStyle(
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.sm,
+            vertical: 2,
+          ),
+          decoration: BoxDecoration(
+            borderRadius: AppRadius.pill,
+            color: color.withValues(alpha: 0.16),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AdaptiveIcon(
+                isWin ? AdaptiveGlyph.fire : AdaptiveGlyph.ice,
                 color: color,
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                fontFeatures: const [FontFeature.tabularFigures()],
+                size: 13,
               ),
-            ),
-          ],
+              const SizedBox(width: 2),
+              Text(
+                '${standing.streakCount}',
+                style: TextStyle(
+                  color: color,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -9,6 +9,7 @@ import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/state_views.dart';
+import '../../../../core/widgets/tag.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../leaderboard/domain/leaderboard.dart';
 import '../../../leaderboard/domain/medal_tally.dart';
@@ -22,6 +23,7 @@ import '../../../player/presentation/cubit/players_cubit.dart';
 import '../../../profile/presentation/widgets/profile_section.dart';
 import '../../domain/competition.dart';
 import '../cubit/competition_detail_cubit.dart';
+import '../widgets/invite_sheet.dart';
 
 enum CompetitionTab { leaderboard, matches }
 
@@ -70,14 +72,13 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
 
   Future<void> _reload() => Future.wait([
     context.read<CompetitionDetailCubit>().refresh(),
+    context.read<PlayersCubit>().refresh(),
     context.read<MatchListCubit>().refresh(),
     context.read<LeaderboardCubit>().refresh(),
   ]);
 
-  void _openSettingsThenCompetitions() {
-    context.push(Routes.competitionMenu(widget.competitionId));
-    context.push(Routes.home);
-  }
+  Future<void> _openSettings() =>
+      _openAndReload(Routes.competitionMenu(widget.competitionId));
 
   @override
   Widget build(BuildContext context) {
@@ -137,9 +138,7 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
                 const SizedBox(width: AppSpacing.xs),
                 AdaptiveIconButton(
                   glyph: AdaptiveGlyph.settings,
-                  onPressed: () => context.push(
-                    Routes.competitionMenu(widget.competitionId),
-                  ),
+                  onPressed: _openSettings,
                 ),
               ],
             ),
@@ -285,36 +284,60 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
           seasonLength: competition.seasonLength,
           myPlayerId: myPlayerId,
           isOwner: isOwner,
-          joinCode: competition.joinCode,
+          onManagePlayers: () =>
+              _openAndReload(Routes.players(widget.competitionId)),
         ),
       ],
     );
   }
 
   Widget _competitionHeader(BuildContext context, Competition competition) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: _openSettingsThenCompetitions,
-      child: Row(
-        children: [
-          Flexible(
-            child: Text(
-              competition.name,
-              style: const TextStyle(
-                color: AppColors.neutral,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
-              overflow: TextOverflow.ellipsis,
+    return Row(
+      children: [
+        Expanded(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: _openSettings,
+            child: Row(
+              children: [
+                Flexible(
+                  child: Text(
+                    competition.name,
+                    style: const TextStyle(
+                      color: AppColors.neutral,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.xs),
+                const AdaptiveIcon(
+                  AdaptiveGlyph.chevronRight,
+                  color: AppColors.neutral,
+                  size: 16,
+                ),
+              ],
             ),
           ),
-          const AdaptiveIcon(
-            AdaptiveGlyph.chevronRight,
-            color: AppColors.neutral,
-            size: 16,
-          ),
-        ],
-      ),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        _inviteButton(context, competition.joinCode),
+        const SizedBox(width: AppSpacing.xs),
+        Tag(
+          competition.joinCode,
+          color: AdaptiveColors.accent(context),
+          style: TagStyle.code,
+        ),
+      ],
+    );
+  }
+
+  Widget _inviteButton(BuildContext context, String joinCode) {
+    return AdaptiveIconButton(
+      glyph: AdaptiveGlyph.invite,
+      semanticLabel: context.l10n.competitionInviteAction,
+      onPressed: () => showInviteSheet(context, code: joinCode),
     );
   }
 }

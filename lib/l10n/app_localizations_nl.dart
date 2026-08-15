@@ -377,6 +377,16 @@ class AppLocalizationsNl extends AppLocalizations {
   String get leaderboardPickSeason => 'Kies een seizoen';
 
   @override
+  String leaderboardTodayGain(String amount) {
+    return 'Vandaag $amount punten gewonnen';
+  }
+
+  @override
+  String leaderboardTodayLoss(String amount) {
+    return 'Vandaag $amount punten verloren';
+  }
+
+  @override
   String seasonQuarterLabel(int quarter, String year) {
     return 'K$quarter $year';
   }
@@ -538,7 +548,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get matchLoadMore => 'Meer laden';
 
   @override
-  String get playersTitle => 'Spelers';
+  String get playersTitle => 'Spelers beheren';
 
   @override
   String get playersAddDummy => 'Dummy toevoegen';

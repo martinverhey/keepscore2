@@ -36,12 +36,8 @@ Competition _competition({bool allowDraws = true}) => Competition(
   createdAt: DateTime(2026),
 );
 
-Player _player(String id, String name, {bool isActive = true}) => Player(
-  id: id,
-  competitionId: 'c1',
-  displayName: name,
-  isActive: isActive,
-);
+Player _player(String id, String name, {bool isActive = true}) =>
+    Player(id: id, competitionId: 'c1', displayName: name, isActive: isActive);
 
 Leaderboard _standing(String playerId, double rating) => Leaderboard(
   seasonId: 's1',
@@ -80,8 +76,7 @@ void main() {
       ),
     );
     when(() => players.roster('c1')).thenAnswer(
-      (_) async =>
-          roster ?? [_player('p1', 'Ada'), _player('p2', 'Grace')],
+      (_) async => roster ?? [_player('p1', 'Ada'), _player('p2', 'Grace')],
     );
     when(() => leaderboard.currentSeason('c1')).thenAnswer(
       (_) async => SeasonWindow(
@@ -133,6 +128,44 @@ void main() {
     verify: (cubit) {
       expect(cubit.state.status, MatchFormStatus.failed);
       expect(cubit.state.failure, isA<NetworkFailure>());
+    },
+  );
+
+  blocTest<MatchFormCubit, MatchFormState>(
+    'refreshing players picks up a rename without disturbing assignments',
+    setUp: () =>
+        stubLoad(roster: [_player('p1', 'Ada'), _player('p2', 'Grace')]),
+    build: build,
+    act: (cubit) async {
+      await cubit.load();
+      cubit.assign('p1', MatchTeam.a);
+      cubit.scoreAChanged('11');
+      when(() => players.roster('c1')).thenAnswer(
+        (_) async => [_player('p1', 'Adaeze'), _player('p2', 'Grace')],
+      );
+      await cubit.refreshPlayers();
+    },
+    verify: (cubit) {
+      expect(cubit.state.players.map((player) => player.displayName), [
+        'Adaeze',
+        'Grace',
+      ]);
+      expect(cubit.state.teamA.map((player) => player.id), ['p1']);
+      expect(cubit.state.scoreA, '11');
+    },
+  );
+
+  blocTest<MatchFormCubit, MatchFormState>(
+    'a failed refresh keeps the roster already on screen',
+    setUp: stubLoad,
+    build: build,
+    act: (cubit) async {
+      await cubit.load();
+      when(() => players.roster('c1')).thenThrow(const NetworkFailure());
+      await cubit.refreshPlayers();
+    },
+    verify: (cubit) {
+      expect(cubit.state.players.map((player) => player.id), ['p1', 'p2']);
     },
   );
 

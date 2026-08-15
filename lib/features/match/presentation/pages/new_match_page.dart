@@ -237,6 +237,8 @@ class _NewMatchPageState extends State<NewMatchPage> {
         competitionId: cubit.competitionId,
       ),
     );
+    if (!context.mounted) return;
+    await cubit.refreshPlayers();
     if (selected != null) cubit.setTeam(side, selected);
   }
 

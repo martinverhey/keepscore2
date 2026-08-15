@@ -77,8 +77,6 @@ class ProfileSection extends StatelessWidget {
   }
 
   Widget _header(BuildContext context, Leaderboard? s) {
-    final tally = medals;
-
     return Row(
       children: [
         InitialsCircle(displayName: displayName, size: 44),
@@ -99,26 +97,38 @@ class ProfileSection extends StatelessWidget {
               ),
               if (s != null && s.played > 0) ...[
                 const SizedBox(height: 2),
-                Text(
-                  context.l10n.profileRank(s.rank, playerCount),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.neutral,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
+                _rankAndMedalsRow(context, s),
               ],
             ],
           ),
         ),
-        if (tally != null && tally.hasAny)
-          Expanded(child: Center(child: _medalRow(tally))),
         const SizedBox(width: AppSpacing.sm),
         const AdaptiveIcon(
           AdaptiveGlyph.chevronRight,
           size: 18,
           color: AppColors.neutral,
         ),
+      ],
+    );
+  }
+
+  Widget _rankAndMedalsRow(BuildContext context, Leaderboard s) {
+    final tally = medals;
+
+    return Row(
+      children: [
+        Flexible(
+          child: Text(
+            context.l10n.profileRank(s.rank, playerCount),
+            style: const TextStyle(fontSize: 12, color: AppColors.neutral),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        if (tally != null && tally.hasAny) ...[
+          const Spacer(),
+          _medalRow(tally),
+          const Spacer(),
+        ],
       ],
     );
   }

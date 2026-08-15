@@ -376,6 +376,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get leaderboardPickSeason => 'Choose a season';
 
   @override
+  String leaderboardTodayGain(String amount) {
+    return 'Gained $amount points today';
+  }
+
+  @override
+  String leaderboardTodayLoss(String amount) {
+    return 'Lost $amount points today';
+  }
+
+  @override
   String seasonQuarterLabel(int quarter, String year) {
     return 'Q$quarter $year';
   }
@@ -535,7 +545,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get matchLoadMore => 'Load more';
 
   @override
-  String get playersTitle => 'Players';
+  String get playersTitle => 'Manage Players';
 
   @override
   String get playersAddDummy => 'Add a dummy';
