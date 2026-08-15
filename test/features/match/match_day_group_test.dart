@@ -31,6 +31,30 @@ void main() {
       expect(groups.last.matches.map((m) => m.id), ['c']);
     });
 
+    test('sorts matches within a day newest first, regardless of input order', () {
+      final groups = groupByDay([
+        matchAt('a', DateTime(2026, 8, 11, 9, 5)),
+        matchAt('b', DateTime(2026, 8, 11, 21, 30)),
+        matchAt('c', DateTime(2026, 8, 11, 14, 0)),
+      ]);
+
+      expect(groups.single.matches.map((m) => m.id), ['b', 'c', 'a']);
+    });
+
+    test(
+      'breaks a same-instant tie within a day deterministically, by id',
+      () {
+        final tied = DateTime(2026, 8, 11, 12);
+        final groups = groupByDay([
+          matchAt('a', tied),
+          matchAt('c', tied),
+          matchAt('b', tied),
+        ]);
+
+        expect(groups.single.matches.map((m) => m.id), ['c', 'b', 'a']);
+      },
+    );
+
     test('splits midnight-adjacent matches into their own days', () {
       final groups = groupByDay([
         matchAt('a', DateTime(2026, 8, 11, 0, 1)),

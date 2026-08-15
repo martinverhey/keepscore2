@@ -14,6 +14,11 @@ class MatchDayGroup extends Equatable {
 
 DateTime dayOf(DateTime at) => DateTime(at.year, at.month, at.day);
 
+int _newestFirst(MatchEntry a, MatchEntry b) {
+  final byTime = b.playedAt.compareTo(a.playedAt);
+  return byTime != 0 ? byTime : b.id.compareTo(a.id);
+}
+
 List<MatchDayGroup> groupByDay(List<MatchEntry> matches) {
   final groups = <MatchDayGroup>[];
 
@@ -24,6 +29,10 @@ List<MatchDayGroup> groupByDay(List<MatchEntry> matches) {
     } else {
       groups.add(MatchDayGroup(day: day, matches: [match]));
     }
+  }
+
+  for (final group in groups) {
+    group.matches.sort(_newestFirst);
   }
 
   return groups;
