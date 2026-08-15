@@ -3,11 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/data/recent_competition_store.dart';
+import '../../core/error/failure.dart';
 import '../../core/widgets/adaptive/adaptive.dart';
 import '../../features/auth/presentation/cubit/auth_bloc.dart';
 import '../../features/auth/presentation/cubit/sign_in_cubit.dart';
 import '../../features/auth/presentation/pages/sign_in.page.dart';
 import '../../features/auth/presentation/pages/upgrade_account.page.dart';
+import '../../features/competition/domain/competition_repository.dart';
 import '../../features/competition/presentation/cubit/competition_detail_cubit.dart';
 import '../../features/competition/presentation/cubit/competition_list_cubit.dart';
 import '../../features/competition/presentation/cubit/competition_settings_cubit.dart';
@@ -64,11 +66,28 @@ GoRouter createRouter(AuthBloc authBloc) {
   Future<String?>? pendingRecentCompetitionTarget;
   var recentCompetitionResolvedOnce = false;
 
+  // Resolves to a competition route only once membership is confirmed, so a
+  // stale id (left the competition, or a guest's anonymous session was
+  // replaced by a new one) never gets a chance to render the competition
+  // shell before bouncing back to Routes.home — it goes straight there.
   Future<String?> resolveRecentCompetitionTarget() {
-    final future = pendingRecentCompetitionTarget ??=
-        RecentCompetitionStore.get().then(
-          (recentId) => recentId == null ? null : Routes.competition(recentId),
+    final future = pendingRecentCompetitionTarget ??= () async {
+      final recentId = await RecentCompetitionStore.get();
+      if (recentId == null) return null;
+
+      try {
+        final overview = await getIt<CompetitionRepository>().overview(
+          recentId,
         );
+        if (overview == null) {
+          await RecentCompetitionStore.clear();
+          return null;
+        }
+        return Routes.competition(recentId);
+      } on Failure {
+        return null;
+      }
+    }();
     future.whenComplete(() {
       pendingRecentCompetitionTarget = null;
       recentCompetitionResolvedOnce = true;
