@@ -10,15 +10,18 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
+import '../../../leaderboard/domain/leaderboard.dart';
+import '../../../leaderboard/domain/medal_tally.dart';
 import '../../../leaderboard/presentation/cubit/leaderboard_cubit.dart';
-import '../../../leaderboard/presentation/widgets/leaderboard.dart';
+import '../../../leaderboard/presentation/widgets/game_type_filter_dropdown.dart';
+import '../../../leaderboard/presentation/widgets/Leaderboard.page.dart';
+import '../../../match/presentation/cubit/game_type_filter_cubit.dart';
 import '../../../match/presentation/cubit/match_list_cubit.dart';
 import '../../../match/presentation/widgets/matches_page.dart';
 import '../../../player/presentation/cubit/players_cubit.dart';
-import '../../../profile/presentation/widgets/profile_avatar_button.dart';
+import '../../../profile/presentation/widgets/profile_section.dart';
 import '../../domain/competition.dart';
 import '../cubit/competition_detail_cubit.dart';
-import '../widgets/invite_sheet.dart';
 
 enum CompetitionTab { leaderboard, matches }
 
@@ -80,6 +83,8 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
   Widget build(BuildContext context) {
     final session = context.watch<AuthBloc>().state;
     final roster = context.watch<PlayersCubit>().state;
+    final leaderboardState = context.watch<LeaderboardCubit>().state;
+    final standings = leaderboardState.standings;
 
     return BlocConsumer<CompetitionDetailCubit, CompetitionDetailState>(
       listener: (context, state) {
@@ -103,16 +108,41 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
           }
         }
 
+        Leaderboard? myStanding;
+        for (final standing in standings) {
+          if (standing.playerId == myPlayerId) {
+            myStanding = standing;
+            break;
+          }
+        }
+        final myMedals = leaderboardState.medals[myPlayerId];
+
         return AdaptiveScaffold(
           title: switch (_tab) {
             CompetitionTab.leaderboard => context.l10n.leaderboardTitle,
             CompetitionTab.matches => context.l10n.matchesTitle,
           },
           onRefresh: _refresh,
-          trailing: AdaptiveIconButton(
-            glyph: AdaptiveGlyph.settings,
-            onPressed: () =>
-                context.push(Routes.competitionMenu(widget.competitionId)),
+          hasScrollBody: true,
+          trailing: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerRight,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                GameTypeFilterDropdown(
+                  selected: context.watch<GameTypeFilterCubit>().state,
+                  onSelected: context.read<GameTypeFilterCubit>().select,
+                ),
+                const SizedBox(width: AppSpacing.xs),
+                AdaptiveIconButton(
+                  glyph: AdaptiveGlyph.settings,
+                  onPressed: () => context.push(
+                    Routes.competitionMenu(widget.competitionId),
+                  ),
+                ),
+              ],
+            ),
           ),
           bottomBar: AdaptiveBottomTabBar(
             items: [
@@ -165,6 +195,9 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
               hasPlayers: hasPlayers,
               myPlayerId: myPlayerId,
               myDisplayName: myDisplayName,
+              myStanding: myStanding,
+              myMedals: myMedals,
+              playerCount: standings.length,
             ),
           },
         );
@@ -180,81 +213,79 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
     required bool hasPlayers,
     required String? myPlayerId,
     required String? myDisplayName,
+    required Leaderboard? myStanding,
+    required MedalTally? myMedals,
+    required int playerCount,
   }) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.md,
-        AppSpacing.sm,
-        AppSpacing.md,
-        AppSpacing.xl,
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              AppSpacing.sm,
+              AppSpacing.md,
+              AppSpacing.xl,
+            ),
+            child: switch (_tab) {
+              CompetitionTab.leaderboard => _leaderboardTab(
+                context,
+                competition,
+                isOwner: isOwner,
+                myPlayerId: myPlayerId,
+                myDisplayName: myDisplayName,
+                myStanding: myStanding,
+                myMedals: myMedals,
+                playerCount: playerCount,
+              ),
+              CompetitionTab.matches => MatchesPage(
+                isRegistered: isRegistered,
+                hasPlayers: hasPlayers,
+                isOwner: isOwner,
+                onOpenMatch: (matchId) =>
+                    _openAndReload(Routes.match(widget.competitionId, matchId)),
+                onCreateMatch: _openNewMatch,
+              ),
+            },
+          ),
+        ),
       ),
-      child: switch (_tab) {
-        CompetitionTab.leaderboard => _leaderboardTab(
-          context,
-          competition,
-          isRegistered: isRegistered,
-          isOwner: isOwner,
-          myPlayerId: myPlayerId,
-          myDisplayName: myDisplayName,
-        ),
-        CompetitionTab.matches => MatchesPage(
-          isRegistered: isRegistered,
-          hasPlayers: hasPlayers,
-          isOwner: isOwner,
-          onOpenMatch: (matchId) =>
-              _openAndReload(Routes.match(widget.competitionId, matchId)),
-          onCreateMatch: _openNewMatch,
-        ),
-      },
     );
   }
 
   Widget _leaderboardTab(
     BuildContext context,
     Competition competition, {
-    required bool isRegistered,
     required bool isOwner,
     required String? myPlayerId,
     required String? myDisplayName,
+    required Leaderboard? myStanding,
+    required MedalTally? myMedals,
+    required int playerCount,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (isRegistered) ...[
-          _competitionHeader(context, competition),
-          const SizedBox(height: AppSpacing.sm),
-          if (myPlayerId != null && myDisplayName != null)
-            Align(
-              alignment: Alignment.centerLeft,
-              child: ProfileAvatarButton(
-                competitionId: widget.competitionId,
-                playerId: myPlayerId,
-                displayName: myDisplayName,
-                seasonLength: competition.seasonLength,
-              ),
-            ),
-          const SizedBox(height: AppSpacing.lg),
-          Align(
-            alignment: Alignment.centerRight,
-            child: AdaptiveButton(
-              label: context.l10n.competitionInviteAction,
-              icon: AdaptiveIcon(
-                AdaptiveGlyph.invite,
-                size: 18,
-                color: AdaptiveColors.accent(context),
-              ),
-              kind: AdaptiveButtonKind.plain,
-              expand: false,
-              onPressed: () =>
-                  showInviteSheet(context, code: competition.joinCode),
-            ),
+        _competitionHeader(context, competition),
+        const SizedBox(height: AppSpacing.sm),
+        if (myPlayerId != null && myDisplayName != null)
+          ProfileSection(
+            competitionId: widget.competitionId,
+            playerId: myPlayerId,
+            displayName: myDisplayName,
+            seasonLength: competition.seasonLength,
+            standing: myStanding,
+            medals: myMedals,
+            playerCount: playerCount,
           ),
-        ],
-        LeaderboardView(
+        const SizedBox(height: AppSpacing.lg),
+        LeaderboardPage(
           competitionId: widget.competitionId,
           seasonLength: competition.seasonLength,
           myPlayerId: myPlayerId,
           isOwner: isOwner,
+          joinCode: competition.joinCode,
         ),
       ],
     );

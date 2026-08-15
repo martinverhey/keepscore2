@@ -1,13 +1,21 @@
+import 'game_type.dart';
 import 'match_entry.dart';
 
 abstract interface class MatchRepository {
   Future<List<MatchEntry>> feed({
     required String competitionId,
+    GameType? gameType,
     int limit = 20,
     int offset = 0,
   });
 
   Future<MatchEntry?> byId(String matchId);
+
+  Future<List<MatchEntry>> recentForPlayer({
+    required String playerId,
+    GameType? gameType,
+    int limit = 3,
+  });
 
   Future<String> create({
     required String competitionId,

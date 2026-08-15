@@ -2,6 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/data/realtime.dart';
 import '../../../core/error/failure.dart';
+import '../domain/game_type.dart';
 import '../domain/match_entry.dart';
 import '../domain/match_repository.dart';
 
@@ -13,13 +14,19 @@ class SupabaseMatchRepository implements MatchRepository {
   @override
   Future<List<MatchEntry>> feed({
     required String competitionId,
+    GameType? gameType,
     int limit = 20,
     int offset = 0,
   }) => guard(() async {
-    final rows = await _client
+    var query = _client
         .from('match_feed')
         .select()
-        .eq('competition_id', competitionId)
+        .eq('competition_id', competitionId);
+    if (gameType != null) {
+      query = query.eq('game_type', gameType.wireValue);
+    }
+
+    final rows = await query
         .order('played_at', ascending: false)
         .order('id', ascending: false)
         .range(offset, offset + limit - 1);
@@ -36,6 +43,37 @@ class SupabaseMatchRepository implements MatchRepository {
         .maybeSingle();
 
     return row == null ? null : MatchEntry.fromMap(row);
+  });
+
+  @override
+  Future<List<MatchEntry>> recentForPlayer({
+    required String playerId,
+    GameType? gameType,
+    int limit = 3,
+  }) => guard(() async {
+    var query = _client
+        .from('match_players')
+        .select('match_id, matches!inner(played_at)')
+        .eq('player_id', playerId);
+    if (gameType != null) {
+      query = query.eq('matches.game_type', gameType.wireValue);
+    }
+
+    final links = await query
+        .order('played_at', referencedTable: 'matches', ascending: false)
+        .limit(limit);
+
+    if (links.isEmpty) return const <MatchEntry>[];
+
+    final ids = links.map((row) => row['match_id'] as String).toList();
+    final rows = await _client
+        .from('match_feed')
+        .select()
+        .inFilter('id', ids)
+        .order('played_at', ascending: false)
+        .order('id', ascending: false);
+
+    return rows.map((row) => MatchEntry.fromMap(row)).toList(growable: false);
   });
 
   @override

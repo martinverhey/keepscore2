@@ -29,12 +29,13 @@ itself when `AuthBloc` reports the user is no longer anonymous.
 `/competition/:id` is the tab shell (`features/competition/.../competition_detail_page.dart`):
 Leaderboard (default), Matches, Players. The leaderboard tab always shows the
 current calendar window — which has no row until the first match lands in it —
-and carries a game-type filter (`GameTypeFilterBar`) — combined (default) or
-one of `1v1`/`2v2`/`3v3`/`4v4`/`mixed`. It has no season picker: that moved to
+and carries a game-type filter (`GameTypeFilterDropdown`, next to the title in
+the scaffold's `trailing`) — combined (default) or one of
+`1v1`/`2v2`/`3v3`/`4v4`/`mixed`. It has no season picker: that moved to
 `/competition/:id/settings/history` (`SeasonHistoryPage`), which shows one
 finished season at a time — `SeasonSheet` picks among `SeasonHistoryState.groups`
 (the already-loaded, already-finished seasons; no separate fetch) — and
-carries its own, independent `GameTypeFilterBar`.
+carries its own, independent `GameTypeFilterDropdown`, same placement.
 
 `/competition/:id/match/new` builds the teams and submits; `/competition/:id/match/:matchId` shows
 the per-player before → after and lets the creator or the owner change the
@@ -204,7 +205,7 @@ Kept here because the code cannot express them and they cost real debugging:
   l.*, s.starts_at, s.ends_at, medal … from game_type_leaderboard l join
   seasons s … where s.ends_at <= now()`, exactly how `season_history` is
   built from `leaderboard`. `SeasonHistoryPage` carries its own
-  `GameTypeFilterBar`/`selectGameTypeFilter`, independent of the
+  `GameTypeFilterDropdown`/`selectGameTypeFilter`, independent of the
   leaderboard tab's filter — they're different cubits with their own
   `selectedGameType`.
 

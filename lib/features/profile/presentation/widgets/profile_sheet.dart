@@ -1,21 +1,28 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/app_router.dart';
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
+import '../../../../core/widgets/medal_chip.dart';
 import '../../../../core/widgets/rating_delta.dart';
 import '../../../../core/widgets/sheet.dart';
-import '../../../../core/widgets/stat_label.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../../core/widgets/streak_badge.dart';
 import '../../../competition/domain/competition.dart';
+import '../../../leaderboard/domain/leaderboard.dart';
 import '../../../leaderboard/domain/medal.dart';
+import '../../../leaderboard/domain/medal_tally.dart';
 import '../../../leaderboard/domain/season_standing.dart';
+import '../../../leaderboard/presentation/widgets/game_type_filter_dropdown.dart';
 import '../../../leaderboard/presentation/widgets/season_label.dart';
+import '../../../match/domain/match_entry.dart';
+import '../../../match/presentation/cubit/game_type_filter_cubit.dart';
+import '../../../match/presentation/widgets/match_tile.dart';
 import '../../domain/head_to_head_record.dart';
-import '../../domain/streak.dart';
 import '../cubit/profile_cubit.dart';
 import 'game_type_label.dart';
 import 'initials_circle.dart';
@@ -28,10 +35,12 @@ class ProfileSheet extends StatefulWidget {
     super.key,
     required this.displayName,
     required this.seasonLength,
+    this.medals,
   });
 
   final String displayName;
   final SeasonLength seasonLength;
+  final MedalTally? medals;
 
   @override
   State<ProfileSheet> createState() => _ProfileSheetState();
@@ -49,6 +58,12 @@ class _ProfileSheetState extends State<ProfileSheet> {
         return Sheet(
           title: widget.displayName,
           avatar: InitialsCircle(displayName: widget.displayName, size: 48),
+          headerTrailing: state.status == ProfileStatus.loading
+              ? null
+              : GameTypeFilterDropdown(
+                  selected: context.watch<GameTypeFilterCubit>().state,
+                  onSelected: context.read<GameTypeFilterCubit>().select,
+                ),
           content: switch (state.status) {
             ProfileStatus.loading => const Padding(
               padding: EdgeInsets.all(AppSpacing.xl),
@@ -70,6 +85,10 @@ class _ProfileSheetState extends State<ProfileSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (state.standing != null) ...[
+          _rankSummary(context, state),
+          const SizedBox(height: AppSpacing.md),
+        ],
         AdaptiveSegmented<ProfileTab>(
           value: _tab,
           onChanged: (tab) => setState(() => _tab = tab),
@@ -97,31 +116,11 @@ class _ProfileSheetState extends State<ProfileSheet> {
         if (standing == null)
           EmptyState(message: context.l10n.profileNotEnoughMatches)
         else ...[
-          Row(
-            children: [
-              StatLabel(
-                label: context.l10n.profileRank(
-                  standing.rank,
-                  state.playerCount,
-                ),
-              ),
-              StatLabel(label: formatRating(standing.rating)),
-              StatLabel(
-                label: context.l10n.leaderboardRecord(
-                  standing.wins,
-                  standing.losses,
-                  standing.draws,
-                ),
-              ),
-              StatLabel(
-                label: context.l10n.profileWinRate(
-                  standing.played == 0
-                      ? 0
-                      : (standing.wins / standing.played * 100).round(),
-                ),
-              ),
-            ],
-          ),
+          _ratingSummary(context, state, standing),
+          const SizedBox(height: AppSpacing.md),
+          _recordTable(context, standing),
+          const SizedBox(height: AppSpacing.md),
+          _gamesCountRow(context, state),
           const SizedBox(height: AppSpacing.lg),
           Text(
             context.l10n.profileTrendTitle,
@@ -139,28 +138,22 @@ class _ProfileSheetState extends State<ProfileSheet> {
             ),
           ],
         ],
-        const SizedBox(height: AppSpacing.lg),
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                context.l10n.profileMatchesPlayed(state.totalPlayed),
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+        if (streak.type != StreakType.none) ...[
+          const SizedBox(height: AppSpacing.lg),
+          Align(
+            alignment: Alignment.centerRight,
+            child: StreakBadge(
+              isWin: streak.type == StreakType.win,
+              label: streak.type == StreakType.win
+                  ? context.l10n.profileStreakWin(streak.count)
+                  : context.l10n.profileStreakLoss(streak.count),
             ),
-            if (streak.type != StreakType.none)
-              StreakBadge(
-                isWin: streak.type == StreakType.win,
-                label: streak.type == StreakType.win
-                    ? context.l10n.profileStreakWin(streak.count)
-                    : context.l10n.profileStreakLoss(streak.count),
-              ),
-          ],
-        ),
+          ),
+        ],
+        if (state.recentMatches.isNotEmpty) ...[
+          const SizedBox(height: AppSpacing.lg),
+          _recentMatches(context, state),
+        ],
         if (state.headToHead.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.lg),
           Text(
@@ -172,6 +165,142 @@ class _ProfileSheetState extends State<ProfileSheet> {
             _headToHeadRow(context, record),
         ],
       ],
+    );
+  }
+
+  Widget _rankSummary(BuildContext context, ProfileState state) {
+    final standing = state.standing!;
+    final tally = widget.medals;
+
+    return Row(
+      children: [
+        Flexible(
+          child: Text(
+            context.l10n.profileRank(standing.rank, state.playerCount),
+            style: const TextStyle(fontSize: 12, color: AppColors.neutral),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        if (tally != null && tally.hasAny)
+          for (final chip in _medalChips(tally)) ...[
+            const SizedBox(width: AppSpacing.sm),
+            chip,
+          ],
+      ],
+    );
+  }
+
+  List<Widget> _medalChips(MedalTally medals) {
+    return [
+      if (medals.gold > 0) MedalChip(color: AppColors.gold, count: medals.gold),
+      if (medals.silver > 0)
+        MedalChip(color: AppColors.silver, count: medals.silver),
+      if (medals.bronze > 0)
+        MedalChip(color: AppColors.bronze, count: medals.bronze),
+    ];
+  }
+
+  Widget _ratingSummary(
+    BuildContext context,
+    ProfileState state,
+    Leaderboard standing,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.neutral.withValues(alpha: 0.08),
+        borderRadius: AppRadius.card,
+      ),
+      child: Row(
+        children: [
+          _statBlock(
+            context.l10n.profileSeasonRatingLabel,
+            formatRating(standing.rating),
+          ),
+          _statBlock(
+            context.l10n.profileBestRatingLabel,
+            formatRating(state.bestRating),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _recordTable(BuildContext context, Leaderboard standing) {
+    final winRatePercent = standing.played == 0
+        ? 0
+        : (standing.winRate * 100).round();
+
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: AppColors.neutral.withValues(alpha: 0.08),
+        borderRadius: AppRadius.card,
+      ),
+      child: Row(
+        children: [
+          _statBlock(context.l10n.profileWinsLabel, '${standing.wins}'),
+          _statBlock(context.l10n.profileLossesLabel, '${standing.losses}'),
+          _statBlock(context.l10n.profileDrawsLabel, '${standing.draws}'),
+          _statBlock(context.l10n.profileWinRateLabel, '$winRatePercent%'),
+        ],
+      ),
+    );
+  }
+
+  Widget _statBlock(String label, String value) {
+    return Expanded(
+      child: Column(
+        children: [
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              fontFeatures: [FontFeature.tabularFigures()],
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 11, color: AppColors.neutral),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _gamesCountRow(BuildContext context, ProfileState state) {
+    return Row(
+      children: [
+        _statBlock(
+          context.l10n.profileSeasonGamesLabel,
+          '${state.standing?.played ?? 0}',
+        ),
+        _statBlock(context.l10n.profileTotalGamesLabel, '${state.totalPlayed}'),
+      ],
+    );
+  }
+
+  Widget _recentMatches(BuildContext context, ProfileState state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          context.l10n.profileRecentMatchesTitle,
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        for (final match in state.recentMatches) _recentMatchTile(match),
+      ],
+    );
+  }
+
+  Widget _recentMatchTile(MatchEntry match) {
+    return MatchTile(
+      match: match,
+      onTap: () => context.push(Routes.match(match.competitionId, match.id)),
     );
   }
 

@@ -4,6 +4,7 @@ enum AdaptiveGlyph {
   matches,
   settings,
   chevronRight,
+  chevronDown,
   check,
   invite,
   star,

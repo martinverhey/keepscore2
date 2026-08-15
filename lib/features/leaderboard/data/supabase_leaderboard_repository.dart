@@ -55,7 +55,9 @@ class SupabaseLeaderboardRepository implements LeaderboardRepository {
   Future<List<Leaderboard>> _rosterStandings(String competitionId) async {
     final rows = await _client
         .from('players')
-        .select('id, display_name, user_id, competitions!inner(starting_rating)')
+        .select(
+          'id, display_name, user_id, competitions!inner(starting_rating, owner_id)',
+        )
         .eq('competition_id', competitionId)
         .eq('is_active', true)
         .order('display_name', ascending: true);

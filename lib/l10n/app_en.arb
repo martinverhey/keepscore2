@@ -118,7 +118,7 @@
   "joinSubtitle": "Enter the six-character code from whoever set it up.",
   "joinLookUp": "Find competition",
   "joinCodeInvalid": "A code is six characters.",
-  "joinConfirmTitle": "Join {name}?",
+  "joinConfirmTitle": "Join {name}",
   "@joinConfirmTitle": {
     "placeholders": { "name": { "type": "String" } }
   },
@@ -142,7 +142,6 @@
     "placeholders": { "date": { "type": "String" } }
   },
   "leaderboardPickSeason": "Choose a season",
-  "leaderboardUnplayed": "Not played yet",
   "seasonQuarterLabel": "Q{quarter} {year}",
   "@seasonQuarterLabel": {
     "placeholders": {
@@ -158,10 +157,6 @@
       "draws": { "type": "int" }
     }
   },
-  "leaderboardWinRate": "{percent}%",
-  "@leaderboardWinRate": {
-    "placeholders": { "percent": { "type": "int" } }
-  },
   "gameType1v1": "1v1",
   "gameType2v2": "2v2",
   "gameType3v3": "3v3",
@@ -176,9 +171,14 @@
   "@seasonHistoryFilterEmpty": {
     "placeholders": { "gameType": { "type": "String" } }
   },
+  "gameTypeFilterPick": "Filter by game type",
 
   "matchesTitle": "Matches",
   "matchesEmpty": "No matches yet.",
+  "matchesFilterEmpty": "No {gameType} matches yet.",
+  "@matchesFilterEmpty": {
+    "placeholders": { "gameType": { "type": "String" } }
+  },
   "matchesCreateHint": "Create your first match.",
   "matchesCreateHintAction": "Create Match",
   "matchDayToday": "Today",
@@ -222,7 +222,6 @@
   "playersTitle": "Players",
   "playersAddDummy": "Add a dummy",
   "playersDisplayNameLabel": "Name",
-  "playersUnclaimed": "Not claimed",
   "playersEmpty": "No players yet.",
   "playersYou": "You",
   "playersOwner": "Owner",
@@ -255,18 +254,16 @@
   "@profileWinRate": {
     "placeholders": { "percent": { "type": "int" } }
   },
+  "profileSeasonRatingLabel": "Season rating",
+  "profileBestRatingLabel": "Best rating",
+  "profileWinsLabel": "Wins",
+  "profileLossesLabel": "Losses",
+  "profileDrawsLabel": "Draws",
+  "profileWinRateLabel": "Win rate",
   "profileTrendTitle": "Recent form",
   "profileNotEnoughMatches": "Play a couple more matches to see your trend.",
-  "profileGreeting": "Hello, {name}",
-  "@profileGreeting": {
-    "placeholders": { "name": { "type": "String" } }
-  },
   "profileTabOverview": "Overview",
   "profileTabSeasonHistory": "Season history",
-  "profileMatchesPlayed": "{count, plural, =1{1 match played} other{{count} matches played}}",
-  "@profileMatchesPlayed": {
-    "placeholders": { "count": { "type": "int" } }
-  },
   "profileStreakWin": "{count, plural, =1{1 win in a row} other{{count} wins in a row}}",
   "@profileStreakWin": {
     "placeholders": { "count": { "type": "int" } }
@@ -279,6 +276,9 @@
   "@profileHeadToHeadTitle": {
     "placeholders": { "name": { "type": "String" } }
   },
+  "profileSeasonGamesLabel": "Games",
+  "profileTotalGamesLabel": "Total games",
+  "profileRecentMatchesTitle": "Recent matches",
   "profileSeasonHistoryEmpty": "No past seasons yet.",
 
   "settingsThemeTitle": "Theme",

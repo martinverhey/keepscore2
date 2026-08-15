@@ -11,6 +11,7 @@ class Leaderboard extends Equatable {
     required this.playerId,
     required this.displayName,
     required this.isClaimed,
+    required this.isOwner,
     required this.rating,
     required this.played,
     required this.wins,
@@ -27,6 +28,7 @@ class Leaderboard extends Equatable {
     playerId: map['player_id'] as String,
     displayName: map['display_name'] as String,
     isClaimed: map['is_claimed'] as bool? ?? false,
+    isOwner: map['is_owner'] as bool? ?? false,
     rating: _toDouble(map['rating']),
     played: (map['played'] as num?)?.toInt() ?? 0,
     wins: (map['wins'] as num?)?.toInt() ?? 0,
@@ -48,6 +50,8 @@ class Leaderboard extends Equatable {
       playerId: map['id'] as String,
       displayName: map['display_name'] as String,
       isClaimed: map['user_id'] != null,
+      isOwner:
+          map['user_id'] != null && map['user_id'] == competition['owner_id'],
       rating: _toDouble(competition['starting_rating']),
       played: 0,
       wins: 0,
@@ -62,6 +66,7 @@ class Leaderboard extends Equatable {
   final String playerId;
   final String displayName;
   final bool isClaimed;
+  final bool isOwner;
   final double rating;
   final int played;
   final int wins;
@@ -80,6 +85,7 @@ class Leaderboard extends Equatable {
     playerId,
     displayName,
     isClaimed,
+    isOwner,
     rating,
     played,
     wins,

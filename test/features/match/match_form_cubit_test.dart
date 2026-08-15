@@ -49,6 +49,7 @@ Leaderboard _standing(String playerId, double rating) => Leaderboard(
   playerId: playerId,
   displayName: playerId,
   isClaimed: true,
+  isOwner: false,
   rating: rating,
   played: 1,
   wins: 1,

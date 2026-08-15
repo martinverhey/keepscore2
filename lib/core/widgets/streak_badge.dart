@@ -11,7 +11,7 @@ class StreakBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isWin ? AppColors.positive : AppColors.negative;
+    final color = isWin ? AppColors.fireCore : AppColors.iceCore;
 
     return Row(
       mainAxisSize: MainAxisSize.min,

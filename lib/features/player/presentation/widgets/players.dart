@@ -52,9 +52,6 @@ class Players extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _header(context, state),
-            const SizedBox(height: AppSpacing.md),
-
             if (!isRegistered) ...[
               GuestNotice(message: context.l10n.playersGuestCannotAdd),
               const SizedBox(height: AppSpacing.md),
@@ -106,23 +103,6 @@ class Players extends StatelessWidget {
           ],
         );
       },
-    );
-  }
-
-  Widget _header(BuildContext context, PlayersState state) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            context.l10n.playersTitle,
-            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
-          ),
-        ),
-        Text(
-          context.l10n.competitionPlayers(state.active.length),
-          style: const TextStyle(color: AppColors.neutral, fontSize: 13),
-        ),
-      ],
     );
   }
 

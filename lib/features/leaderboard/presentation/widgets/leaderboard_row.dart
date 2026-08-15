@@ -13,7 +13,6 @@ import '../../../profile/presentation/cubit/profile_cubit.dart';
 import '../../../profile/presentation/widgets/profile_sheet.dart';
 import '../../domain/leaderboard.dart';
 import '../../domain/medal_tally.dart';
-import 'streak_row_glow.dart';
 
 class LeaderboardRow extends StatelessWidget {
   const LeaderboardRow({
@@ -49,39 +48,37 @@ class LeaderboardRow extends StatelessWidget {
       child: ProfileSheet(
         displayName: standing.displayName,
         seasonLength: seasonLength,
+        medals: medals,
       ),
     ),
   );
 
   @override
   Widget build(BuildContext context) {
-    final badges = [
-      if (isMe) context.l10n.playersYou,
-      if (!standing.isClaimed) context.l10n.playersUnclaimed,
-    ];
-    final hasStreak = isRowStreak(standing.streakType, standing.streakCount);
+    final hasStreak =
+        standing.streakCount >= 2 && standing.streakType != StreakType.none;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () => _openProfile(context),
-        child: StreakRowGlow(
-          type: standing.streakType,
-          count: standing.streakCount,
-          fallbackColor: isMe
-              ? AdaptiveColors.accent(context).withValues(alpha: 0.12)
-              : AppColors.neutral.withValues(alpha: 0.08),
-          borderRadius: AppRadius.card,
+        child: Container(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.md,
             vertical: AppSpacing.sm,
           ),
+          decoration: BoxDecoration(
+            borderRadius: AppRadius.card,
+            color: isMe
+                ? AdaptiveColors.accent(context).withValues(alpha: 0.12)
+                : AppColors.neutral.withValues(alpha: 0.08),
+          ),
           child: Row(
             children: [
               _rank(),
-              Expanded(flex: 3, child: _nameColumn(badges)),
-              Expanded(flex: 2, child: Center(child: _winRate(context))),
+              Expanded(child: _nameColumn(context)),
+              const SizedBox(width: AppSpacing.sm),
               _ratingColumn(context, hasStreak),
             ],
           ),
@@ -103,7 +100,7 @@ class LeaderboardRow extends StatelessWidget {
     ),
   );
 
-  Widget _nameColumn(List<String> badges) {
+  Widget _nameColumn(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -113,13 +110,23 @@ class LeaderboardRow extends StatelessWidget {
             Flexible(
               child: Text(
                 standing.displayName,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            for (final badge in badges) ...[
+            if (standing.isOwner) ...[
               const SizedBox(width: AppSpacing.xs),
-              Tag(badge, color: AppColors.neutral),
+              Tag(context.l10n.playersOwner, color: AppColors.gold),
+            ],
+            if (isMe) ...[
+              const SizedBox(width: AppSpacing.xs),
+              Tag(
+                context.l10n.playersYou,
+                color: AdaptiveColors.accent(context),
+              ),
             ],
           ],
         ),
@@ -128,30 +135,6 @@ class LeaderboardRow extends StatelessWidget {
           Row(children: _medalChips(medals!)),
         ],
       ],
-    );
-  }
-
-  Widget _winRate(BuildContext context) {
-    final unplayed = standing.played == 0;
-
-    return Semantics(
-      label: unplayed ? context.l10n.leaderboardUnplayed : null,
-      child: ExcludeSemantics(
-        excluding: unplayed,
-        child: Text(
-          unplayed
-              ? '—'
-              : context.l10n.leaderboardWinRate(
-                  (standing.winRate * 100).round(),
-                ),
-          style: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-            color: AppColors.neutral,
-            fontFeatures: [FontFeature.tabularFigures()],
-          ),
-        ),
-      ),
     );
   }
 
@@ -168,17 +151,14 @@ class LeaderboardRow extends StatelessWidget {
             fontFeatures: [FontFeature.tabularFigures()],
           ),
         ),
-        if (hasStreak) ...[
-          const SizedBox(height: 2),
-          _streakBadge(context),
-        ],
+        if (hasStreak) ...[const SizedBox(height: 2), _streakBadge(context)],
       ],
     );
   }
 
   Widget _streakBadge(BuildContext context) {
     final isWin = standing.streakType == StreakType.win;
-    final color = streakCoreColor(standing.streakType);
+    final color = isWin ? AppColors.fireCore : AppColors.iceCore;
 
     return Semantics(
       label: isWin

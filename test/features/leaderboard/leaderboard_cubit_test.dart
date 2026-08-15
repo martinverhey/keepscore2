@@ -9,7 +9,11 @@ import 'package:keepscore2/features/leaderboard/domain/leaderboard.dart';
 import 'package:keepscore2/features/leaderboard/domain/medal_tally.dart';
 import 'package:keepscore2/features/leaderboard/presentation/cubit/leaderboard_cubit.dart';
 import 'package:keepscore2/features/match/domain/game_type.dart';
+import 'package:keepscore2/features/match/presentation/cubit/game_type_filter_cubit.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+Future<void> _settle() => Future<void>.delayed(Duration.zero);
 
 class MockLeaderboardRepository extends Mock implements LeaderboardRepository {}
 
@@ -22,6 +26,7 @@ Leaderboard _standing(String playerId, double rating, int rank) => Leaderboard(
   playerId: playerId,
   displayName: playerId,
   isClaimed: true,
+  isOwner: false,
   rating: rating,
   played: 3,
   wins: 2,
@@ -32,9 +37,11 @@ Leaderboard _standing(String playerId, double rating, int rank) => Leaderboard(
 
 void main() {
   late MockLeaderboardRepository repository;
+  late GameTypeFilterCubit gameTypeFilterCubit;
   late StreamController<void> ticks;
 
-  LeaderboardCubit build() => LeaderboardCubit(repository, 'c1');
+  LeaderboardCubit build() =>
+      LeaderboardCubit(repository, gameTypeFilterCubit, 'c1');
 
   void stubSeason({String? id = 's-august'}) {
     when(() => repository.currentSeason('c1')).thenAnswer(
@@ -63,7 +70,9 @@ void main() {
   }
 
   setUp(() {
+    SharedPreferences.setMockInitialValues({});
     repository = MockLeaderboardRepository();
+    gameTypeFilterCubit = GameTypeFilterCubit();
     ticks = StreamController<void>.broadcast();
     when(
       () => repository.watchStandings(
@@ -77,7 +86,10 @@ void main() {
     ).thenAnswer((_) async => const []);
   });
 
-  tearDown(() => ticks.close());
+  tearDown(() {
+    ticks.close();
+    gameTypeFilterCubit.close();
+  });
 
   blocTest<LeaderboardCubit, LeaderboardState>(
     'loads the current season and its standings',
@@ -203,6 +215,7 @@ void main() {
     act: (cubit) async {
       await cubit.load();
       await cubit.selectGameTypeFilter(GameType.oneVOne);
+      await _settle();
     },
     verify: (cubit) {
       expect(cubit.state.selectedGameType, GameType.oneVOne);
@@ -219,6 +232,24 @@ void main() {
   );
 
   blocTest<LeaderboardCubit, LeaderboardState>(
+    'loading hydrates the filter from the last remembered game type',
+    setUp: () async {
+      SharedPreferences.setMockInitialValues({'selected_game_type': '1v1'});
+      await gameTypeFilterCubit.load();
+      stubSeason();
+      stubGameTypeStandings('s-august', GameType.oneVOne, [
+        _standing('p2', 1100, 1),
+      ]);
+    },
+    build: build,
+    act: (cubit) => cubit.load(),
+    verify: (cubit) {
+      expect(cubit.state.selectedGameType, GameType.oneVOne);
+      expect(cubit.state.standings.single.playerId, 'p2');
+    },
+  );
+
+  blocTest<LeaderboardCubit, LeaderboardState>(
     'clearing the game type filter goes back to combined standings',
     setUp: () {
       stubSeason();
@@ -231,11 +262,34 @@ void main() {
     act: (cubit) async {
       await cubit.load();
       await cubit.selectGameTypeFilter(GameType.oneVOne);
+      await _settle();
       await cubit.selectGameTypeFilter(null);
+      await _settle();
     },
     verify: (cubit) {
       expect(cubit.state.selectedGameType, isNull);
       expect(cubit.state.standings.single.playerId, 'p1');
+    },
+  );
+
+  blocTest<LeaderboardCubit, LeaderboardState>(
+    'a game type selected elsewhere (e.g. on the profile page) is picked up immediately',
+    setUp: () {
+      stubSeason();
+      stubStandings('s-august', [_standing('p1', 1040, 1)]);
+      stubGameTypeStandings('s-august', GameType.oneVOne, [
+        _standing('p2', 1100, 1),
+      ]);
+    },
+    build: build,
+    act: (cubit) async {
+      await cubit.load();
+      await gameTypeFilterCubit.select(GameType.oneVOne);
+      await _settle();
+    },
+    verify: (cubit) {
+      expect(cubit.state.selectedGameType, GameType.oneVOne);
+      expect(cubit.state.standings.single.playerId, 'p2');
     },
   );
 }

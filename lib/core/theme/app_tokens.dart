@@ -34,6 +34,9 @@ abstract final class AppColors {
   static const Color gold = Color(0xFFD4A017);
   static const Color silver = Color(0xFF9AA0A6);
   static const Color bronze = Color(0xFFB07A46);
+
+  static const Color fireCore = Color(0xFFFF6D00);
+  static const Color iceCore = Color(0xFF29B6F6);
 }
 
 const double kContentMaxWidth = 640;

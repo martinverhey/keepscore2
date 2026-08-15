@@ -653,7 +653,7 @@ abstract class AppLocalizations {
   /// No description provided for @joinConfirmTitle.
   ///
   /// In en, this message translates to:
-  /// **'Join {name}?'**
+  /// **'Join {name}'**
   String joinConfirmTitle(String name);
 
   /// No description provided for @joinRunBy.
@@ -734,12 +734,6 @@ abstract class AppLocalizations {
   /// **'Choose a season'**
   String get leaderboardPickSeason;
 
-  /// No description provided for @leaderboardUnplayed.
-  ///
-  /// In en, this message translates to:
-  /// **'Not played yet'**
-  String get leaderboardUnplayed;
-
   /// No description provided for @seasonQuarterLabel.
   ///
   /// In en, this message translates to:
@@ -751,12 +745,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{wins}W · {losses}L · {draws}D'**
   String leaderboardRecord(int wins, int losses, int draws);
-
-  /// No description provided for @leaderboardWinRate.
-  ///
-  /// In en, this message translates to:
-  /// **'{percent}%'**
-  String leaderboardWinRate(int percent);
 
   /// No description provided for @gameType1v1.
   ///
@@ -806,6 +794,12 @@ abstract class AppLocalizations {
   /// **'No finished {gameType} seasons yet.'**
   String seasonHistoryFilterEmpty(String gameType);
 
+  /// No description provided for @gameTypeFilterPick.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter by game type'**
+  String get gameTypeFilterPick;
+
   /// No description provided for @matchesTitle.
   ///
   /// In en, this message translates to:
@@ -817,6 +811,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No matches yet.'**
   String get matchesEmpty;
+
+  /// No description provided for @matchesFilterEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No {gameType} matches yet.'**
+  String matchesFilterEmpty(String gameType);
 
   /// No description provided for @matchesCreateHint.
   ///
@@ -1034,12 +1034,6 @@ abstract class AppLocalizations {
   /// **'Name'**
   String get playersDisplayNameLabel;
 
-  /// No description provided for @playersUnclaimed.
-  ///
-  /// In en, this message translates to:
-  /// **'Not claimed'**
-  String get playersUnclaimed;
-
   /// No description provided for @playersEmpty.
   ///
   /// In en, this message translates to:
@@ -1154,6 +1148,42 @@ abstract class AppLocalizations {
   /// **'{percent}% win rate'**
   String profileWinRate(int percent);
 
+  /// No description provided for @profileSeasonRatingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Season rating'**
+  String get profileSeasonRatingLabel;
+
+  /// No description provided for @profileBestRatingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Best rating'**
+  String get profileBestRatingLabel;
+
+  /// No description provided for @profileWinsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Wins'**
+  String get profileWinsLabel;
+
+  /// No description provided for @profileLossesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Losses'**
+  String get profileLossesLabel;
+
+  /// No description provided for @profileDrawsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Draws'**
+  String get profileDrawsLabel;
+
+  /// No description provided for @profileWinRateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Win rate'**
+  String get profileWinRateLabel;
+
   /// No description provided for @profileTrendTitle.
   ///
   /// In en, this message translates to:
@@ -1166,12 +1196,6 @@ abstract class AppLocalizations {
   /// **'Play a couple more matches to see your trend.'**
   String get profileNotEnoughMatches;
 
-  /// No description provided for @profileGreeting.
-  ///
-  /// In en, this message translates to:
-  /// **'Hello, {name}'**
-  String profileGreeting(String name);
-
   /// No description provided for @profileTabOverview.
   ///
   /// In en, this message translates to:
@@ -1183,12 +1207,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Season history'**
   String get profileTabSeasonHistory;
-
-  /// No description provided for @profileMatchesPlayed.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 match played} other{{count} matches played}}'**
-  String profileMatchesPlayed(int count);
 
   /// No description provided for @profileStreakWin.
   ///
@@ -1207,6 +1225,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your record vs {name}'**
   String profileHeadToHeadTitle(String name);
+
+  /// No description provided for @profileSeasonGamesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Games'**
+  String get profileSeasonGamesLabel;
+
+  /// No description provided for @profileTotalGamesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total games'**
+  String get profileTotalGamesLabel;
+
+  /// No description provided for @profileRecentMatchesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent matches'**
+  String get profileRecentMatchesTitle;
 
   /// No description provided for @profileSeasonHistoryEmpty.
   ///

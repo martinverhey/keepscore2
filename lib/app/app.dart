@@ -8,6 +8,7 @@ import '../core/extensions/build_context_l10n.dart';
 import '../core/theme/app_theme.dart';
 import '../core/widgets/adaptive/app_platform.dart';
 import '../features/auth/presentation/cubit/auth_bloc.dart';
+import '../features/match/presentation/cubit/game_type_filter_cubit.dart';
 import '../features/settings/domain/theme_preference.dart';
 import '../features/settings/presentation/cubit/theme_cubit.dart';
 import '../l10n/app_localizations.dart';
@@ -38,6 +39,8 @@ class KeepScoreApp extends StatefulWidget {
 class _KeepScoreAppState extends State<KeepScoreApp> {
   late final AuthBloc _authBloc = getIt<AuthBloc>();
   late final ThemeCubit _themeCubit = getIt<ThemeCubit>();
+  late final GameTypeFilterCubit _gameTypeFilterCubit =
+      getIt<GameTypeFilterCubit>();
   late final GoRouter _router = createRouter(_authBloc);
 
   static const _localizationsDelegates = <LocalizationsDelegate<Object?>>[
@@ -53,6 +56,7 @@ class _KeepScoreAppState extends State<KeepScoreApp> {
       providers: [
         BlocProvider<AuthBloc>.value(value: _authBloc),
         BlocProvider<ThemeCubit>.value(value: _themeCubit),
+        BlocProvider<GameTypeFilterCubit>.value(value: _gameTypeFilterCubit),
       ],
       child: BlocBuilder<ThemeCubit, ThemeState>(
         builder: (context, themeState) =>

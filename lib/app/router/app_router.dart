@@ -52,8 +52,7 @@ abstract final class Routes {
 
   static String players(String id) => '/competition/$id/settings/players';
 
-  static String seasonHistory(String id) =>
-      '/competition/$id/settings/history';
+  static String seasonHistory(String id) => '/competition/$id/settings/history';
 
   static String newMatch(String id) => '/competition/$id/match/new';
 
@@ -62,6 +61,21 @@ abstract final class Routes {
 }
 
 GoRouter createRouter(AuthBloc authBloc) {
+  Future<String?>? pendingRecentCompetitionTarget;
+  var recentCompetitionResolvedOnce = false;
+
+  Future<String?> resolveRecentCompetitionTarget() {
+    final future = pendingRecentCompetitionTarget ??=
+        RecentCompetitionStore.get().then(
+          (recentId) => recentId == null ? null : Routes.competition(recentId),
+        );
+    future.whenComplete(() {
+      pendingRecentCompetitionTarget = null;
+      recentCompetitionResolvedOnce = true;
+    });
+    return future;
+  }
+
   return GoRouter(
     initialLocation: Routes.home,
     refreshListenable: GoRouterRefreshStream(authBloc.stream),
@@ -77,9 +91,17 @@ GoRouter createRouter(AuthBloc authBloc) {
         return location == Routes.signIn ? null : Routes.signIn;
       }
 
-      if (location == Routes.signIn || location == Routes.splash) {
-        final recentId = await RecentCompetitionStore.get();
-        return recentId == null ? Routes.home : Routes.competition(recentId);
+      final isEntryPoint =
+          location == Routes.signIn || location == Routes.splash;
+      final isUnsettledHome =
+          location == Routes.home &&
+          (pendingRecentCompetitionTarget != null ||
+              !recentCompetitionResolvedOnce);
+
+      if (isEntryPoint || isUnsettledHome) {
+        final target = await resolveRecentCompetitionTarget();
+        if (target != null) return target;
+        return location == Routes.home ? null : Routes.home;
       }
       return null;
     },

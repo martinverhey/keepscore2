@@ -18,6 +18,7 @@ import '../../features/leaderboard/domain/leaderboard_repository.dart';
 import '../../features/leaderboard/presentation/cubit/leaderboard_cubit.dart';
 import '../../features/match/data/supabase_match_repository.dart';
 import '../../features/match/domain/match_repository.dart';
+import '../../features/match/presentation/cubit/game_type_filter_cubit.dart';
 import '../../features/match/presentation/cubit/match_detail_cubit.dart';
 import '../../features/match/presentation/cubit/match_form_cubit.dart';
 import '../../features/match/presentation/cubit/match_list_cubit.dart';
@@ -80,13 +81,20 @@ Future<void> configureDependencies() async {
     ..registerLazySingleton<MatchRepository>(
       () => SupabaseMatchRepository(getIt<SupabaseClient>()),
     )
+    ..registerLazySingleton<GameTypeFilterCubit>(() => GameTypeFilterCubit())
     ..registerFactoryParam<LeaderboardCubit, String, void>(
-      (competitionId, _) =>
-          LeaderboardCubit(getIt<LeaderboardRepository>(), competitionId),
+      (competitionId, _) => LeaderboardCubit(
+        getIt<LeaderboardRepository>(),
+        getIt<GameTypeFilterCubit>(),
+        competitionId,
+      ),
     )
     ..registerFactoryParam<MatchListCubit, String, void>(
-      (competitionId, _) =>
-          MatchListCubit(getIt<MatchRepository>(), competitionId),
+      (competitionId, _) => MatchListCubit(
+        getIt<MatchRepository>(),
+        getIt<GameTypeFilterCubit>(),
+        competitionId,
+      ),
     )
     ..registerFactoryParam<MatchFormCubit, String, void>(
       (competitionId, _) => MatchFormCubit(
@@ -112,6 +120,8 @@ Future<void> configureDependencies() async {
       (competitionId, playerId) => ProfileCubit(
         getIt<LeaderboardRepository>(),
         getIt<ProfileRepository>(),
+        getIt<MatchRepository>(),
+        getIt<GameTypeFilterCubit>(),
         competitionId,
         playerId,
       ),

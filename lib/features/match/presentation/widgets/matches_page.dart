@@ -8,6 +8,7 @@ import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/hint_card.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../auth/presentation/widgets/guest_notice.dart';
+import '../../../profile/presentation/widgets/game_type_label.dart';
 import '../cubit/match_list_cubit.dart';
 import 'day_header.dart';
 import 'match_day_group.dart';
@@ -70,9 +71,20 @@ class MatchesPage extends StatelessWidget {
 
             const SizedBox(height: AppSpacing.lg),
 
-            if (state.matches.isEmpty) ...[
-              EmptyState(message: context.l10n.matchesEmpty),
-              if (isOwner) ...[
+            if (state.busy)
+              const Padding(
+                padding: EdgeInsets.all(AppSpacing.xl),
+                child: AdaptiveLoader(),
+              )
+            else if (state.matches.isEmpty) ...[
+              EmptyState(
+                message: state.selectedGameType == null
+                    ? context.l10n.matchesEmpty
+                    : context.l10n.matchesFilterEmpty(
+                        gameTypeLabel(context, state.selectedGameType!),
+                      ),
+              ),
+              if (isOwner && state.selectedGameType == null) ...[
                 const SizedBox(height: AppSpacing.sm),
                 HintCard(
                   message: context.l10n.matchesCreateHint,

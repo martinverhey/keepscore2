@@ -10,7 +10,7 @@ import '../../../../core/widgets/state_views.dart';
 import '../../../leaderboard/domain/medal.dart';
 import '../../../leaderboard/domain/season.dart';
 import '../../../leaderboard/domain/season_standing.dart';
-import '../../../leaderboard/presentation/widgets/game_type_filter_bar.dart';
+import '../../../leaderboard/presentation/widgets/game_type_filter_dropdown.dart';
 import '../../../leaderboard/presentation/widgets/season_label.dart';
 import '../../../leaderboard/presentation/widgets/season_sheet.dart';
 import '../../../profile/presentation/widgets/game_type_label.dart';
@@ -47,6 +47,10 @@ class _SeasonHistoryPageState extends State<SeasonHistoryPage> {
 
         return AdaptiveScaffold(
           title: context.l10n.seasonHistoryTitle,
+          trailing: GameTypeFilterDropdown(
+            selected: state.selectedGameType,
+            onSelected: cubit.selectGameTypeFilter,
+          ),
           hasScrollBody: true,
           body: switch (state.status) {
             SeasonHistoryStatus.loading => const AdaptiveLoader(),
@@ -78,27 +82,16 @@ class _SeasonHistoryPageState extends State<SeasonHistoryPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.md,
-            AppSpacing.md,
-            AppSpacing.md,
-            0,
+        if (state.selectedGroup != null)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              AppSpacing.md,
+              AppSpacing.md,
+              0,
+            ),
+            child: _seasonBar(context, state, cubit, seasonLength),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (state.selectedGroup != null) ...[
-                _seasonBar(context, state, cubit, seasonLength),
-                const SizedBox(height: AppSpacing.md),
-              ],
-              GameTypeFilterBar(
-                selected: state.selectedGameType,
-                onSelected: cubit.selectGameTypeFilter,
-              ),
-            ],
-          ),
-        ),
         Expanded(child: _content(context, state, seasonLength)),
       ],
     );

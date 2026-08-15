@@ -24,6 +24,7 @@ import 'package:keepscore2/features/leaderboard/domain/season_window.dart';
 import 'package:keepscore2/features/leaderboard/presentation/cubit/leaderboard_cubit.dart';
 import 'package:keepscore2/features/match/domain/match_entry.dart';
 import 'package:keepscore2/features/match/domain/match_repository.dart';
+import 'package:keepscore2/features/match/presentation/cubit/game_type_filter_cubit.dart';
 import 'package:keepscore2/features/match/presentation/cubit/match_list_cubit.dart';
 import 'package:keepscore2/features/player/domain/player.dart';
 import 'package:keepscore2/features/player/domain/player_repository.dart';
@@ -62,6 +63,9 @@ void main() {
 
       final authEvents = StreamController<AuthUser?>.broadcast();
       addTearDown(authEvents.close);
+
+      final gameTypeFilterCubit = GameTypeFilterCubit();
+      addTearDown(gameTypeFilterCubit.close);
 
       when(() => auth.currentUser).thenReturn(null);
       when(() => auth.watchUser()).thenAnswer((_) => authEvents.stream);
@@ -195,6 +199,7 @@ void main() {
             playerId: 'p-ada',
             displayName: 'Ada',
             isClaimed: true,
+            isOwner: false,
             rating: 1050,
             played: 3,
             wins: 2,
@@ -208,6 +213,7 @@ void main() {
             playerId: 'p-chris',
             displayName: 'Chris',
             isClaimed: true,
+            isOwner: false,
             rating: 950,
             played: 3,
             wins: 1,
@@ -237,11 +243,15 @@ void main() {
         playerRepository: players,
         matchRepository: matches,
         leaderboardRepository: leaderboard,
+        gameTypeFilterCubit: gameTypeFilterCubit,
       );
 
       await tester.pumpWidget(
-        BlocProvider<AuthBloc>.value(
-          value: authBloc,
+        MultiBlocProvider(
+          providers: [
+            BlocProvider<AuthBloc>.value(value: authBloc),
+            BlocProvider<GameTypeFilterCubit>.value(value: gameTypeFilterCubit),
+          ],
           child: MaterialApp.router(
             routerConfig: router,
             localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -304,6 +314,7 @@ GoRouter _buildRouter(
   required PlayerRepository playerRepository,
   required MatchRepository matchRepository,
   required LeaderboardRepository leaderboardRepository,
+  required GameTypeFilterCubit gameTypeFilterCubit,
 }) {
   return GoRouter(
     initialLocation: '/sign-in',
@@ -346,10 +357,15 @@ GoRouter _buildRouter(
                 create: (_) => PlayersCubit(playerRepository, id),
               ),
               BlocProvider(
-                create: (_) => MatchListCubit(matchRepository, id),
+                create: (_) =>
+                    MatchListCubit(matchRepository, gameTypeFilterCubit, id),
               ),
               BlocProvider(
-                create: (_) => LeaderboardCubit(leaderboardRepository, id),
+                create: (_) => LeaderboardCubit(
+                  leaderboardRepository,
+                  gameTypeFilterCubit,
+                  id,
+                ),
               ),
             ],
             child: CompetitionDetailPage(competitionId: id),

@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 
 import '../../../../core/data/realtime.dart';
 import '../../../../core/error/failure.dart';
 import '../../../match/domain/game_type.dart';
+import '../../../match/presentation/cubit/game_type_filter_cubit.dart';
 import '../../domain/leaderboard_repository.dart';
 import '../../domain/medal_tally.dart';
 import '../../domain/season.dart';
@@ -12,19 +15,23 @@ import 'leaderboard_state.dart';
 export 'leaderboard_state.dart';
 
 class LeaderboardCubit extends Cubit<LeaderboardState> {
-  LeaderboardCubit(this._repository, this.competitionId)
-    : super(const LeaderboardState());
+  LeaderboardCubit(this._repository, this._gameTypeFilterCubit, this.competitionId)
+    : super(const LeaderboardState()) {
+    _gameTypeSubscription = _gameTypeFilterCubit.stream.listen(_applyGameType);
+  }
 
   final LeaderboardRepository _repository;
+  final GameTypeFilterCubit _gameTypeFilterCubit;
   final String competitionId;
 
+  StreamSubscription<GameType?>? _gameTypeSubscription;
   DebouncedTicks? _watcher;
   String? _watchedSeasonId;
   GameType? _watchedGameType;
 
   Future<void> load({bool silent = false}) async {
     if (!silent) emit(const LeaderboardState());
-    final gameType = state.selectedGameType;
+    final gameType = _gameTypeFilterCubit.state;
     try {
       final results = await Future.wait<Object?>([
         _repository.currentSeason(competitionId),
@@ -77,7 +84,10 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
 
   Future<void> refresh() => load(silent: true);
 
-  Future<void> selectGameTypeFilter(GameType? gameType) async {
+  Future<void> selectGameTypeFilter(GameType? gameType) =>
+      _gameTypeFilterCubit.select(gameType);
+
+  Future<void> _applyGameType(GameType? gameType) async {
     if (gameType == state.selectedGameType) return;
 
     emit(
@@ -128,6 +138,7 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
 
   @override
   Future<void> close() {
+    _gameTypeSubscription?.cancel();
     _watcher?.cancel();
     return super.close();
   }

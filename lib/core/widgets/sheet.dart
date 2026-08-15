@@ -11,6 +11,7 @@ class Sheet extends StatelessWidget {
     this.titleColor,
     this.subtitle,
     this.avatar,
+    this.headerTrailing,
     required this.content,
     this.primaryButton,
     this.secondaryButton,
@@ -20,6 +21,7 @@ class Sheet extends StatelessWidget {
   final Color? titleColor;
   final String? subtitle;
   final Widget? avatar;
+  final Widget? headerTrailing;
   final Widget content;
   final AdaptiveButton? primaryButton;
   final AdaptiveButton? secondaryButton;
@@ -105,6 +107,10 @@ class Sheet extends StatelessWidget {
             ],
           ),
         ),
+        if (headerTrailing != null) ...[
+          const SizedBox(width: AppSpacing.md),
+          headerTrailing!,
+        ],
       ],
     );
   }

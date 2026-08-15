@@ -17,8 +17,8 @@ import '../cubit/leaderboard_cubit.dart';
 import 'leaderboard_row.dart';
 import 'season_label.dart';
 
-class LeaderboardView extends StatelessWidget {
-  const LeaderboardView({
+class LeaderboardPage extends StatelessWidget {
+  const LeaderboardPage({
     super.key,
     required this.competitionId,
     required this.seasonLength,

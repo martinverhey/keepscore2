@@ -328,7 +328,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String joinConfirmTitle(String name) {
-    return 'Deelnemen aan $name?';
+    return 'Deelnemen aan $name';
   }
 
   @override
@@ -377,9 +377,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String get leaderboardPickSeason => 'Kies een seizoen';
 
   @override
-  String get leaderboardUnplayed => 'Nog niet gespeeld';
-
-  @override
   String seasonQuarterLabel(int quarter, String year) {
     return 'K$quarter $year';
   }
@@ -387,11 +384,6 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String leaderboardRecord(int wins, int losses, int draws) {
     return '${wins}W · ${losses}V · ${draws}G';
-  }
-
-  @override
-  String leaderboardWinRate(int percent) {
-    return '$percent%';
   }
 
   @override
@@ -423,10 +415,18 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
+  String get gameTypeFilterPick => 'Filter op speltype';
+
+  @override
   String get matchesTitle => 'Wedstrijden';
 
   @override
   String get matchesEmpty => 'Nog geen wedstrijden.';
+
+  @override
+  String matchesFilterEmpty(String gameType) {
+    return 'Nog geen $gameType-wedstrijden.';
+  }
 
   @override
   String get matchesCreateHint => 'Maak je eerste wedstrijd aan.';
@@ -547,9 +547,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String get playersDisplayNameLabel => 'Naam';
 
   @override
-  String get playersUnclaimed => 'Niet geclaimd';
-
-  @override
   String get playersEmpty => 'Nog geen spelers.';
 
   @override
@@ -616,6 +613,24 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
+  String get profileSeasonRatingLabel => 'Rating dit seizoen';
+
+  @override
+  String get profileBestRatingLabel => 'Beste rating';
+
+  @override
+  String get profileWinsLabel => 'Gewonnen';
+
+  @override
+  String get profileLossesLabel => 'Verloren';
+
+  @override
+  String get profileDrawsLabel => 'Gelijk';
+
+  @override
+  String get profileWinRateLabel => 'Winstpercentage';
+
+  @override
   String get profileTrendTitle => 'Recente vorm';
 
   @override
@@ -623,26 +638,10 @@ class AppLocalizationsNl extends AppLocalizations {
       'Speel nog een paar wedstrijden om je trend te zien.';
 
   @override
-  String profileGreeting(String name) {
-    return 'Hallo, $name';
-  }
-
-  @override
   String get profileTabOverview => 'Overzicht';
 
   @override
   String get profileTabSeasonHistory => 'Seizoensgeschiedenis';
-
-  @override
-  String profileMatchesPlayed(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count wedstrijden gespeeld',
-      one: '1 wedstrijd gespeeld',
-    );
-    return '$_temp0';
-  }
 
   @override
   String profileStreakWin(int count) {
@@ -670,6 +669,15 @@ class AppLocalizationsNl extends AppLocalizations {
   String profileHeadToHeadTitle(String name) {
     return 'Jouw resultaat tegen $name';
   }
+
+  @override
+  String get profileSeasonGamesLabel => 'Wedstrijden';
+
+  @override
+  String get profileTotalGamesLabel => 'Totaal aantal wedstrijden';
+
+  @override
+  String get profileRecentMatchesTitle => 'Recente wedstrijden';
 
   @override
   String get profileSeasonHistoryEmpty => 'Nog geen eerdere seizoenen.';

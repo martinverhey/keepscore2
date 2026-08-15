@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/error/failure.dart';
+import '../../match/domain/game_type.dart';
 import '../domain/head_to_head_record.dart';
 import '../domain/profile_repository.dart';
 import '../domain/rating_point.dart';
@@ -15,13 +16,23 @@ class SupabaseProfileRepository implements ProfileRepository {
   Future<List<RatingPoint>> ratingHistory({
     required String seasonId,
     required String playerId,
+    GameType? gameType,
     int limit = 10,
   }) => guard(() async {
-    final rows = await _client
+    final columns = gameType == null
+        ? 'rating_after, rating_delta'
+        : 'rating_after:type_rating_after, rating_delta:type_rating_delta';
+
+    var query = _client
         .from('match_players')
-        .select('rating_after, rating_delta, matches!inner(played_at)')
+        .select('$columns, matches!inner(played_at)')
         .eq('player_id', playerId)
-        .eq('matches.season_id', seasonId)
+        .eq('matches.season_id', seasonId);
+    if (gameType != null) {
+      query = query.eq('matches.game_type', gameType.wireValue);
+    }
+
+    final rows = await query
         .order('played_at', referencedTable: 'matches', ascending: false)
         .limit(limit);
 
@@ -33,25 +44,31 @@ class SupabaseProfileRepository implements ProfileRepository {
   });
 
   @override
-  Future<int> totalMatchesPlayed({required String playerId}) =>
-      guard(() async {
-        final row = await _client
-            .from('player_totals')
-            .select('total_played')
-            .eq('player_id', playerId)
-            .maybeSingle();
+  Future<int> totalMatchesPlayed({
+    required String playerId,
+    GameType? gameType,
+  }) => guard(() async {
+    final table = gameType == null ? 'player_totals' : 'player_game_type_totals';
+    var query = _client.from(table).select('total_played').eq('player_id', playerId);
+    if (gameType != null) query = query.eq('game_type', gameType.wireValue);
 
-        return (row?['total_played'] as num?)?.toInt() ?? 0;
-      });
+    final row = await query.maybeSingle();
+    return (row?['total_played'] as num?)?.toInt() ?? 0;
+  });
 
   @override
   Future<Streak> currentStreak({
     required String seasonId,
     required String playerId,
+    GameType? gameType,
   }) => guard(() async {
     final rows = await _client.rpc<List<dynamic>>(
       'player_streak',
-      params: {'p_season_id': seasonId, 'p_player_id': playerId},
+      params: {
+        'p_season_id': seasonId,
+        'p_player_id': playerId,
+        if (gameType != null) 'p_game_type': gameType.wireValue,
+      },
     );
     if (rows.isEmpty) return const Streak.none();
     return Streak.fromMap(rows.first as Map<String, dynamic>);

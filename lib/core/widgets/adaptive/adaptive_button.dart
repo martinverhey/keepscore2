@@ -56,11 +56,12 @@ class AdaptiveButton extends StatelessWidget {
   Widget _material(BuildContext context, bool enabled) {
     final scheme = Theme.of(context).colorScheme;
     final callback = enabled ? onPressed : null;
-    final size = expand ? const Size.fromHeight(52) : null;
+    final size = expand ? const Size.fromHeight(52) : Size.zero;
 
     final button = switch (kind) {
       AdaptiveButtonKind.filled => FilledButton(
         onPressed: callback,
+        style: FilledButton.styleFrom(minimumSize: size),
         child: _child(scheme.onPrimary),
       ),
       AdaptiveButtonKind.tinted => FilledButton.tonal(
