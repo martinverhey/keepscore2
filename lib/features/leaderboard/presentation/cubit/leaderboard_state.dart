@@ -13,7 +13,7 @@ class LeaderboardState extends Equatable {
     this.status = LeaderboardStatus.loading,
     this.season,
     this.selectedGameType,
-    this.standings = const [],
+    this.leaderboards = const [],
     this.medals = const {},
     this.busy = false,
     this.failure,
@@ -23,7 +23,7 @@ class LeaderboardState extends Equatable {
 
   final Season? season;
   final GameType? selectedGameType;
-  final List<Leaderboard> standings;
+  final List<Leaderboard> leaderboards;
   final Map<String, Medals> medals;
 
   final bool busy;
@@ -34,7 +34,7 @@ class LeaderboardState extends Equatable {
     LeaderboardStatus? status,
     Season? season,
     GameType? selectedGameType,
-    List<Leaderboard>? standings,
+    List<Leaderboard>? leaderboards,
     Map<String, Medals>? medals,
     bool? busy,
     Failure? failure,
@@ -47,7 +47,7 @@ class LeaderboardState extends Equatable {
       selectedGameType: clearGameType
           ? null
           : (selectedGameType ?? this.selectedGameType),
-      standings: standings ?? this.standings,
+      leaderboards: leaderboards ?? this.leaderboards,
       medals: medals ?? this.medals,
       busy: busy ?? this.busy,
       failure: clearFailure ? null : (failure ?? this.failure),
@@ -59,7 +59,7 @@ class LeaderboardState extends Equatable {
     status,
     season,
     selectedGameType,
-    standings,
+    leaderboards,
     medals,
     busy,
     failure,

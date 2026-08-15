@@ -27,7 +27,7 @@ class MockMatchRepository extends Mock implements MatchRepository {}
 final _august = DateTime.utc(2026, 7, 31, 22);
 final _september = DateTime.utc(2026, 8, 31, 22);
 
-Leaderboard _standing({
+Leaderboard _leaderboard({
   required double rating,
   required int played,
   required int wins,
@@ -86,17 +86,17 @@ void main() {
 
       void stubGameType(
         GameType? type, {
-        required Leaderboard standing,
+        required Leaderboard leaderboard,
         required int totalPlayed,
         List<MatchEntry> recentMatches = const [],
       }) {
         when(
-          () => leaderboardRepository.standings(
+          () => leaderboardRepository.leaderboards(
             competitionId: 'c1',
             seasonId: 's1',
             gameType: type,
           ),
-        ).thenAnswer((_) async => [standing]);
+        ).thenAnswer((_) async => [leaderboard]);
         when(
           () => profileRepository.ratingHistory(
             seasonId: 's1',
@@ -135,7 +135,7 @@ void main() {
 
       stubGameType(
         null,
-        standing: _standing(
+        leaderboard: _leaderboard(
           rating: 1050,
           played: 5,
           wins: 3,
@@ -147,7 +147,7 @@ void main() {
       );
       stubGameType(
         GameType.oneVOne,
-        standing: _standing(
+        leaderboard: _leaderboard(
           rating: 1090,
           played: 4,
           wins: 3,
@@ -295,7 +295,7 @@ void main() {
             SeasonWindow(id: 's1', startsAt: _august, endsAt: _september),
       );
       when(
-        () => leaderboardRepository.standings(
+        () => leaderboardRepository.leaderboards(
           competitionId: 'c1',
           seasonId: 's1',
           gameType: null,
@@ -413,7 +413,7 @@ void main() {
           SeasonWindow(id: 's1', startsAt: _august, endsAt: _september),
     );
     when(
-      () => leaderboardRepository.standings(
+      () => leaderboardRepository.leaderboards(
         competitionId: 'c1',
         seasonId: 's1',
         gameType: null,

@@ -52,7 +52,7 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
         for (final tally in results[1] as List<Medals>) tally.playerId: tally,
       };
 
-      final standings = await _repository.standings(
+      final leaderboards = await _repository.leaderboards(
         competitionId: competitionId,
         seasonId: season.id,
         gameType: gameType,
@@ -64,7 +64,7 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
           status: LeaderboardStatus.ready,
           season: season,
           selectedGameType: gameType,
-          standings: standings,
+          leaderboards: leaderboards,
           medals: medals,
         ),
       );
@@ -76,7 +76,7 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
           status: LeaderboardStatus.failed,
           season: silent ? state.season : null,
           selectedGameType: gameType,
-          standings: silent ? state.standings : const [],
+          leaderboards: silent ? state.leaderboards : const [],
           medals: silent ? state.medals : const {},
           failure: failure,
         ),
@@ -96,20 +96,20 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
       state.copyWith(
         selectedGameType: gameType,
         clearGameType: gameType == null,
-        standings: const [],
+        leaderboards: const [],
         busy: true,
         clearFailure: true,
       ),
     );
 
     try {
-      final standings = await _repository.standings(
+      final leaderboards = await _repository.leaderboards(
         competitionId: competitionId,
         seasonId: state.season?.id,
         gameType: gameType,
       );
       if (isClosed) return;
-      emit(state.copyWith(standings: standings, busy: false));
+      emit(state.copyWith(leaderboards: leaderboards, busy: false));
       _watch(state.season?.id, gameType);
     } on Failure catch (failure) {
       if (isClosed) return;
@@ -127,7 +127,7 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
     _watchedSeasonId = seasonId;
     _watchedGameType = gameType;
     _watcher = DebouncedTicks(
-      _repository.watchStandings(
+      _repository.watchLeaderboards(
         competitionId: competitionId,
         seasonId: seasonId,
         gameType: gameType,

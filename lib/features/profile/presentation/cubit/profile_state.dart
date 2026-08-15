@@ -15,7 +15,7 @@ class ProfileState extends Equatable {
   const ProfileState({
     this.status = ProfileStatus.loading,
     this.selectedGameType,
-    this.standing,
+    this.leaderboard,
     this.bestRating = 0,
     this.playerCount = 0,
     this.history = const [],
@@ -29,7 +29,7 @@ class ProfileState extends Equatable {
 
   final ProfileStatus status;
   final GameType? selectedGameType;
-  final Leaderboard? standing;
+  final Leaderboard? leaderboard;
   final double bestRating;
   final int playerCount;
   final List<RatingPoint> history;
@@ -43,7 +43,7 @@ class ProfileState extends Equatable {
   ProfileState copyWith({
     ProfileStatus? status,
     GameType? selectedGameType,
-    Leaderboard? standing,
+    Leaderboard? leaderboard,
     double? bestRating,
     int? playerCount,
     List<RatingPoint>? history,
@@ -53,12 +53,12 @@ class ProfileState extends Equatable {
     List<HeadToHeadRecord>? headToHead,
     List<MatchEntry>? recentMatches,
     Failure? failure,
-    bool clearStanding = false,
+    bool clearLeaderboard = false,
   }) {
     return ProfileState(
       status: status ?? this.status,
       selectedGameType: selectedGameType ?? this.selectedGameType,
-      standing: clearStanding ? null : (standing ?? this.standing),
+      leaderboard: clearLeaderboard ? null : (leaderboard ?? this.leaderboard),
       bestRating: bestRating ?? this.bestRating,
       playerCount: playerCount ?? this.playerCount,
       history: history ?? this.history,
@@ -75,7 +75,7 @@ class ProfileState extends Equatable {
   List<Object?> get props => [
     status,
     selectedGameType,
-    standing,
+    leaderboard,
     bestRating,
     playerCount,
     history,

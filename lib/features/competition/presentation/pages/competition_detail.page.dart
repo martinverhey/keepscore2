@@ -85,7 +85,7 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
     final session = context.watch<AuthBloc>().state;
     final roster = context.watch<PlayersCubit>().state;
     final leaderboardState = context.watch<LeaderboardCubit>().state;
-    final standings = leaderboardState.standings;
+    final leaderboards = leaderboardState.leaderboards;
 
     return BlocConsumer<CompetitionDetailCubit, CompetitionDetailState>(
       listener: (context, state) {
@@ -109,10 +109,10 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
           }
         }
 
-        Leaderboard? myStanding;
-        for (final standing in standings) {
-          if (standing.playerId == myPlayerId) {
-            myStanding = standing;
+        Leaderboard? myLeaderboard;
+        for (final leaderboard in leaderboards) {
+          if (leaderboard.playerId == myPlayerId) {
+            myLeaderboard = leaderboard;
             break;
           }
         }
@@ -194,9 +194,9 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
               hasPlayers: hasPlayers,
               myPlayerId: myPlayerId,
               myDisplayName: myDisplayName,
-              myStanding: myStanding,
+              myLeaderboard: myLeaderboard,
               myMedals: myMedals,
-              playerCount: standings.length,
+              playerCount: leaderboards.length,
             ),
           },
         );
@@ -212,7 +212,7 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
     required bool hasPlayers,
     required String? myPlayerId,
     required String? myDisplayName,
-    required Leaderboard? myStanding,
+    required Leaderboard? myLeaderboard,
     required Medals? myMedals,
     required int playerCount,
   }) {
@@ -234,7 +234,7 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
                 isOwner: isOwner,
                 myPlayerId: myPlayerId,
                 myDisplayName: myDisplayName,
-                myStanding: myStanding,
+                myLeaderboard: myLeaderboard,
                 myMedals: myMedals,
                 playerCount: playerCount,
               ),
@@ -259,7 +259,7 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
     required bool isOwner,
     required String? myPlayerId,
     required String? myDisplayName,
-    required Leaderboard? myStanding,
+    required Leaderboard? myLeaderboard,
     required Medals? myMedals,
     required int playerCount,
   }) {
@@ -274,7 +274,7 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
             playerId: myPlayerId,
             displayName: myDisplayName,
             seasonLength: competition.seasonLength,
-            standing: myStanding,
+            leaderboard: myLeaderboard,
             medals: myMedals,
             playerCount: playerCount,
           ),

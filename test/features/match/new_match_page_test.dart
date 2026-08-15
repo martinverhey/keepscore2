@@ -71,7 +71,7 @@ void main() {
         ),
       );
       when(
-        () => leaderboard.standings(competitionId: 'c1', seasonId: 's1'),
+        () => leaderboard.leaderboards(competitionId: 'c1', seasonId: 's1'),
       ).thenAnswer((_) async => []);
 
       final cubit = MatchFormCubit(

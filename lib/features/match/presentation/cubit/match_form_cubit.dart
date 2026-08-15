@@ -44,7 +44,7 @@ class MatchFormCubit extends Cubit<MatchFormState> {
         return;
       }
 
-      final standings = await _leaderboard.standings(
+      final leaderboards = await _leaderboard.leaderboards(
         competitionId: competitionId,
         seasonId: (results[2] as SeasonWindow).id,
       );
@@ -58,8 +58,8 @@ class MatchFormCubit extends Cubit<MatchFormState> {
               .where((player) => player.isActive)
               .toList(growable: false),
           ratings: {
-            for (final standing in standings)
-              standing.playerId: standing.rating,
+            for (final leaderboard in leaderboards)
+              leaderboard.playerId: leaderboard.rating,
           },
         ),
       );

@@ -187,7 +187,7 @@ void main() {
             SeasonWindow(id: 's1', startsAt: seasonStart, endsAt: seasonEnd),
       );
       when(
-        () => leaderboard.standings(
+        () => leaderboard.leaderboards(
           competitionId: _competitionId,
           seasonId: 's1',
         ),
@@ -224,7 +224,7 @@ void main() {
         ],
       );
       when(
-        () => leaderboard.watchStandings(
+        () => leaderboard.watchLeaderboards(
           competitionId: _competitionId,
           seasonId: 's1',
         ),

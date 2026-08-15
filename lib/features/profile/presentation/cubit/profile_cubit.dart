@@ -103,7 +103,7 @@ class ProfileCubit extends Cubit<ProfileState> {
     var streak = const Streak.none();
 
     if (_seasonId != null) {
-      final standings = await _leaderboardRepository.standings(
+      final leaderboards = await _leaderboardRepository.leaderboards(
         competitionId: competitionId,
         seasonId: _seasonId,
         gameType: gameType,
@@ -119,10 +119,10 @@ class ProfileCubit extends Cubit<ProfileState> {
         gameType: gameType,
       );
 
-      playerCount = standings.length;
-      for (final standing in standings) {
-        if (standing.playerId == playerId) {
-          mine = standing;
+      playerCount = leaderboards.length;
+      for (final leaderboard in leaderboards) {
+        if (leaderboard.playerId == playerId) {
+          mine = leaderboard;
           break;
         }
       }
@@ -136,7 +136,7 @@ class ProfileCubit extends Cubit<ProfileState> {
     return ProfileState(
       status: ProfileStatus.ready,
       selectedGameType: gameType,
-      standing: mine,
+      leaderboard: mine,
       bestRating: bestRating,
       playerCount: playerCount,
       history: history,

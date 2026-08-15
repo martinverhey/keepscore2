@@ -59,7 +59,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
         return Sheet(
           title: widget.displayName,
           avatar: InitialsCircle(displayName: widget.displayName, size: 48),
-          subtitleWidget: state.standing == null
+          subtitleWidget: state.leaderboard == null
               ? null
               : _rankSummary(context, state),
           headerTrailing: state.status == ProfileStatus.loading
@@ -107,18 +107,18 @@ class _ProfileSheetState extends State<ProfileSheet> {
   }
 
   Widget _overview(BuildContext context, ProfileState state) {
-    final standing = state.standing;
+    final leaderboard = state.leaderboard;
     final streak = state.streak;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (standing == null)
+        if (leaderboard == null)
           EmptyState(message: context.l10n.profileNotEnoughMatches)
         else ...[
-          _ratingSummary(context, state, standing),
+          _ratingSummary(context, state, leaderboard),
           const SizedBox(height: AppSpacing.md),
-          _recordTable(context, standing),
+          _recordTable(context, leaderboard),
           const SizedBox(height: AppSpacing.md),
           _gamesCountRow(context, state),
           const SizedBox(height: AppSpacing.lg),
@@ -169,14 +169,14 @@ class _ProfileSheetState extends State<ProfileSheet> {
   }
 
   Widget _rankSummary(BuildContext context, ProfileState state) {
-    final standing = state.standing!;
+    final leaderboard = state.leaderboard!;
     final tally = widget.medals;
 
     return Row(
       children: [
         Flexible(
           child: Text(
-            context.l10n.profileRank(standing.rank, state.playerCount),
+            context.l10n.profileRank(leaderboard.rank, state.playerCount),
             style: const TextStyle(fontSize: 12, color: AppColors.neutral),
             overflow: TextOverflow.ellipsis,
           ),
@@ -217,7 +217,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
   Widget _ratingSummary(
     BuildContext context,
     ProfileState state,
-    Leaderboard standing,
+    Leaderboard leaderboard,
   ) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -227,7 +227,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
       ),
       child: Row(
         children: [
-          _seasonRatingBlock(context, standing),
+          _seasonRatingBlock(context, leaderboard),
           _statBlock(
             context.l10n.profileBestRatingLabel,
             formatRating(state.bestRating),
@@ -237,7 +237,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
     );
   }
 
-  Widget _seasonRatingBlock(BuildContext context, Leaderboard standing) {
+  Widget _seasonRatingBlock(BuildContext context, Leaderboard leaderboard) {
     return Expanded(
       child: Column(
         children: [
@@ -245,16 +245,16 @@ class _ProfileSheetState extends State<ProfileSheet> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                formatRating(standing.rating),
+                formatRating(leaderboard.rating),
                 style: const TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w700,
                   fontFeatures: [FontFeature.tabularFigures()],
                 ),
               ),
-              if (standing.todayDelta != 0) ...[
+              if (leaderboard.todayDelta != 0) ...[
                 const SizedBox(width: AppSpacing.xs),
-                TodayDeltaBadge(delta: standing.todayDelta),
+                TodayDeltaBadge(delta: leaderboard.todayDelta),
               ],
             ],
           ),
@@ -269,10 +269,10 @@ class _ProfileSheetState extends State<ProfileSheet> {
     );
   }
 
-  Widget _recordTable(BuildContext context, Leaderboard standing) {
-    final winRatePercent = standing.played == 0
+  Widget _recordTable(BuildContext context, Leaderboard leaderboard) {
+    final winRatePercent = leaderboard.played == 0
         ? 0
-        : (standing.winRate * 100).round();
+        : (leaderboard.winRate * 100).round();
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
@@ -282,9 +282,9 @@ class _ProfileSheetState extends State<ProfileSheet> {
       ),
       child: Row(
         children: [
-          _statBlock(context.l10n.profileWinsLabel, '${standing.wins}'),
-          _statBlock(context.l10n.profileLossesLabel, '${standing.losses}'),
-          _statBlock(context.l10n.profileDrawsLabel, '${standing.draws}'),
+          _statBlock(context.l10n.profileWinsLabel, '${leaderboard.wins}'),
+          _statBlock(context.l10n.profileLossesLabel, '${leaderboard.losses}'),
+          _statBlock(context.l10n.profileDrawsLabel, '${leaderboard.draws}'),
           _statBlock(context.l10n.profileWinRateLabel, '$winRatePercent%'),
         ],
       ),
@@ -319,7 +319,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
       children: [
         _statBlock(
           context.l10n.profileSeasonGamesLabel,
-          '${state.standing?.played ?? 0}',
+          '${state.leaderboard?.played ?? 0}',
         ),
         _statBlock(context.l10n.profileTotalGamesLabel, '${state.totalPlayed}'),
       ],

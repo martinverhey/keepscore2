@@ -31,14 +31,14 @@ class SupabaseLeaderboardRepository implements LeaderboardRepository {
       });
 
   @override
-  Future<List<Leaderboard>> standings({
+  Future<List<Leaderboard>> leaderboards({
     required String competitionId,
     required String? seasonId,
     GameType? gameType,
   }) => guard(() async {
     if (seasonId == null) {
       return gameType == null
-          ? _rosterStandings(competitionId)
+          ? _rosterLeaderboards(competitionId)
           : <Leaderboard>[];
     }
 
@@ -54,7 +54,7 @@ class SupabaseLeaderboardRepository implements LeaderboardRepository {
     return rows.map((row) => Leaderboard.fromMap(row)).toList(growable: false);
   });
 
-  Future<List<Leaderboard>> _rosterStandings(String competitionId) async {
+  Future<List<Leaderboard>> _rosterLeaderboards(String competitionId) async {
     final rows = await _client
         .from('players')
         .select(
@@ -73,7 +73,7 @@ class SupabaseLeaderboardRepository implements LeaderboardRepository {
   }
 
   @override
-  Stream<void> watchStandings({
+  Stream<void> watchLeaderboards({
     required String competitionId,
     required String? seasonId,
     GameType? gameType,

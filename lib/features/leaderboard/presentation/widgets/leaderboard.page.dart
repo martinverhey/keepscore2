@@ -44,7 +44,7 @@ class LeaderboardPage extends StatelessWidget {
         }
 
         if (state.status == LeaderboardStatus.failed &&
-            state.standings.isEmpty) {
+            state.leaderboards.isEmpty) {
           return ErrorRetry(
             message: state.failure!.localized(context.l10n),
             retryLabel: context.l10n.commonRetry,
@@ -63,7 +63,7 @@ class LeaderboardPage extends StatelessWidget {
                 padding: EdgeInsets.all(AppSpacing.xl),
                 child: AdaptiveLoader(),
               )
-            else if (state.standings.isEmpty)
+            else if (state.leaderboards.isEmpty)
               EmptyState(
                 message: state.selectedGameType == null
                     ? context.l10n.leaderboardNoPlayers
@@ -72,14 +72,14 @@ class LeaderboardPage extends StatelessWidget {
                       ),
               )
             else
-              for (final standing in state.standings)
+              for (final leaderboard in state.leaderboards)
                 LeaderboardRow(
                   competitionId: competitionId,
-                  standing: standing,
-                  isMe: standing.playerId == myPlayerId,
+                  leaderboard: leaderboard,
+                  isMe: leaderboard.playerId == myPlayerId,
                   myPlayerId: myPlayerId,
                   seasonLength: seasonLength,
-                  medals: state.medals[standing.playerId],
+                  medals: state.medals[leaderboard.playerId],
                 ),
 
             if (isOwner) ...[

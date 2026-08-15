@@ -7,13 +7,13 @@ import 'season_window.model.dart';
 abstract interface class LeaderboardRepository {
   Future<SeasonWindow> currentSeason(String competitionId, {DateTime? at});
 
-  Future<List<Leaderboard>> standings({
+  Future<List<Leaderboard>> leaderboards({
     required String competitionId,
     required String? seasonId,
     GameType? gameType,
   });
 
-  Stream<void> watchStandings({
+  Stream<void> watchLeaderboards({
     required String competitionId,
     required String? seasonId,
     GameType? gameType,

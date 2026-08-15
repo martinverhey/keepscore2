@@ -6,7 +6,7 @@ import 'package:keepscore2/features/leaderboard/domain/medals.model.dart';
 import 'package:keepscore2/features/profile/presentation/widgets/profile_section.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 
-Leaderboard _standing({
+Leaderboard _leaderboard({
   int played = 5,
   int wins = 3,
   int losses = 1,
@@ -32,7 +32,7 @@ Leaderboard _standing({
 
 Future<void> _pump(
   WidgetTester tester,
-  Leaderboard? standing, {
+  Leaderboard? leaderboard, {
   Medals? medals,
 }) async {
   await tester.pumpWidget(
@@ -46,7 +46,7 @@ Future<void> _pump(
         displayName: 'Bartholomew Alexandertonovich',
         seasonLength: SeasonLength.monthly,
         playerCount: 6,
-        standing: standing,
+        leaderboard: leaderboard,
         medals: medals,
       ),
     ),
@@ -59,7 +59,7 @@ void main() {
     'shows the name without a greeting, and the rank, rating, win rate '
     'and games as text, with no streak or record',
     (tester) async {
-      await _pump(tester, _standing());
+      await _pump(tester, _leaderboard());
 
       final l10n = AppLocalizations.of(
         tester.element(find.byType(ProfileSection)),
@@ -80,7 +80,7 @@ void main() {
   testWidgets('omits the stats row when nothing has been played yet', (
     tester,
   ) async {
-    await _pump(tester, _standing(played: 0, wins: 0, losses: 0, draws: 0));
+    await _pump(tester, _leaderboard(played: 0, wins: 0, losses: 0, draws: 0));
 
     final l10n = AppLocalizations.of(
       tester.element(find.byType(ProfileSection)),
@@ -91,7 +91,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('omits the stats row when there is no standing at all', (
+  testWidgets('omits the stats row when there is no leaderboard at all', (
     tester,
   ) async {
     await _pump(tester, null);
@@ -103,7 +103,7 @@ void main() {
   testWidgets('shows medals in the header but never a streak', (tester) async {
     await _pump(
       tester,
-      _standing(streakType: StreakType.win, streakCount: 7),
+      _leaderboard(streakType: StreakType.win, streakCount: 7),
       medals: const Medals(playerId: 'p1', gold: 2, silver: 0, bronze: 1),
     );
 

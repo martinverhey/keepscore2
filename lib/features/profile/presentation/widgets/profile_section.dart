@@ -22,7 +22,7 @@ class ProfileSection extends StatelessWidget {
     required this.displayName,
     required this.seasonLength,
     required this.playerCount,
-    this.standing,
+    this.leaderboard,
     this.medals,
   });
 
@@ -31,14 +31,14 @@ class ProfileSection extends StatelessWidget {
   final String displayName;
   final SeasonLength seasonLength;
   final int playerCount;
-  final Leaderboard? standing;
+  final Leaderboard? leaderboard;
   final Medals? medals;
 
   @override
   Widget build(BuildContext context) {
     final accent = AdaptiveColors.accent(context);
-    final s = standing;
-    final hasStats = s != null && s.played > 0;
+    final leaderboard = this.leaderboard;
+    final hasStats = leaderboard != null && leaderboard.played > 0;
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -65,10 +65,10 @@ class ProfileSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _header(context, s),
+            _header(context, leaderboard),
             if (hasStats) ...[
               const SizedBox(height: AppSpacing.md),
-              _statRow(context, s),
+              _statRow(context, leaderboard),
             ],
           ],
         ),
@@ -76,7 +76,7 @@ class ProfileSection extends StatelessWidget {
     );
   }
 
-  Widget _header(BuildContext context, Leaderboard? s) {
+  Widget _header(BuildContext context, Leaderboard? leaderboard) {
     return Row(
       children: [
         InitialsCircle(displayName: displayName, size: 44),
@@ -95,9 +95,9 @@ class ProfileSection extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              if (s != null && s.played > 0) ...[
+              if (leaderboard != null && leaderboard.played > 0) ...[
                 const SizedBox(height: 2),
-                _rankAndMedalsRow(context, s),
+                _rankAndMedalsRow(context, leaderboard),
               ],
             ],
           ),
@@ -112,14 +112,14 @@ class ProfileSection extends StatelessWidget {
     );
   }
 
-  Widget _rankAndMedalsRow(BuildContext context, Leaderboard s) {
+  Widget _rankAndMedalsRow(BuildContext context, Leaderboard leaderboard) {
     final tally = medals;
 
     return Row(
       children: [
         Flexible(
           child: Text(
-            context.l10n.profileRank(s.rank, playerCount),
+            context.l10n.profileRank(leaderboard.rank, playerCount),
             style: const TextStyle(fontSize: 12, color: AppColors.neutral),
             overflow: TextOverflow.ellipsis,
           ),
@@ -158,17 +158,22 @@ class ProfileSection extends StatelessWidget {
     return chips;
   }
 
-  Widget _statRow(BuildContext context, Leaderboard s) {
-    final winRatePercent = s.played == 0 ? 0 : (s.winRate * 100).round();
+  Widget _statRow(BuildContext context, Leaderboard leaderboard) {
+    final winRatePercent = leaderboard.played == 0
+        ? 0
+        : (leaderboard.winRate * 100).round();
 
     return Row(
       children: [
         _statBlock(
-          formatRating(s.rating),
+          formatRating(leaderboard.rating),
           context.l10n.profileSeasonRatingLabel,
         ),
         _statBlock('$winRatePercent%', context.l10n.profileWinRateLabel),
-        _statBlock('${s.played}', context.l10n.profileSeasonGamesLabel),
+        _statBlock(
+          '${leaderboard.played}',
+          context.l10n.profileSeasonGamesLabel,
+        ),
       ],
     );
   }

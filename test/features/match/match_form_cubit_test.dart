@@ -39,7 +39,7 @@ Competition _competition({bool allowDraws = true}) => Competition(
 Player _player(String id, String name, {bool isActive = true}) =>
     Player(id: id, competitionId: 'c1', displayName: name, isActive: isActive);
 
-Leaderboard _standing(String playerId, double rating) => Leaderboard(
+Leaderboard _leaderboard(String playerId, double rating) => Leaderboard(
   seasonId: 's1',
   competitionId: 'c1',
   playerId: playerId,
@@ -66,7 +66,7 @@ void main() {
   void stubLoad({
     Competition? competition,
     List<Player>? roster,
-    List<Leaderboard> standings = const [],
+    List<Leaderboard> leaderboards = const [],
   }) {
     when(() => competitions.overview('c1')).thenAnswer(
       (_) async => CompetitionOverview(
@@ -86,8 +86,8 @@ void main() {
       ),
     );
     when(
-      () => leaderboard.standings(competitionId: 'c1', seasonId: 's1'),
-    ).thenAnswer((_) async => standings);
+      () => leaderboard.leaderboards(competitionId: 'c1', seasonId: 's1'),
+    ).thenAnswer((_) async => leaderboards);
   }
 
   setUp(() {
@@ -105,7 +105,7 @@ void main() {
         _player('p2', 'Grace'),
         _player('p3', 'Zoe', isActive: false),
       ],
-      standings: [_standing('p1', 1040)],
+      leaderboards: [_leaderboard('p1', 1040)],
     ),
     build: build,
     act: (cubit) => cubit.load(),

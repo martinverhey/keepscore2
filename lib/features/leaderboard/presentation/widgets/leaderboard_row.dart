@@ -19,7 +19,7 @@ class LeaderboardRow extends StatelessWidget {
   const LeaderboardRow({
     super.key,
     required this.competitionId,
-    required this.standing,
+    required this.leaderboard,
     required this.isMe,
     required this.myPlayerId,
     required this.seasonLength,
@@ -27,13 +27,13 @@ class LeaderboardRow extends StatelessWidget {
   });
 
   final String competitionId;
-  final Leaderboard standing;
+  final Leaderboard leaderboard;
   final bool isMe;
   final String? myPlayerId;
   final SeasonLength seasonLength;
   final Medals? medals;
 
-  Color? get _rankColor => switch (standing.rank) {
+  Color? get _rankColor => switch (leaderboard.rank) {
     1 => AppColors.gold,
     2 => AppColors.silver,
     3 => AppColors.bronze,
@@ -44,10 +44,10 @@ class LeaderboardRow extends StatelessWidget {
     context,
     builder: (_) => BlocProvider(
       create: (_) =>
-          getIt<ProfileCubit>(param1: competitionId, param2: standing.playerId)
+          getIt<ProfileCubit>(param1: competitionId, param2: leaderboard.playerId)
             ..load(viewerPlayerId: myPlayerId),
       child: ProfileSheet(
-        displayName: standing.displayName,
+        displayName: leaderboard.displayName,
         seasonLength: seasonLength,
         medals: medals,
       ),
@@ -57,7 +57,7 @@ class LeaderboardRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasStreak =
-        standing.streakCount >= 2 && standing.streakType != StreakType.none;
+        leaderboard.streakCount >= 2 && leaderboard.streakType != StreakType.none;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -91,7 +91,7 @@ class LeaderboardRow extends StatelessWidget {
   Widget _rank() => SizedBox(
     width: 32,
     child: Text(
-      '${standing.rank}',
+      '${leaderboard.rank}',
       style: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w700,
@@ -112,7 +112,7 @@ class LeaderboardRow extends StatelessWidget {
           children: [
             Flexible(
               child: Text(
-                standing.displayName,
+                leaderboard.displayName,
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -120,7 +120,7 @@ class LeaderboardRow extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            if (standing.isOwner) ...[
+            if (leaderboard.isOwner) ...[
               const SizedBox(width: AppSpacing.xs),
               Tag(context.l10n.playersOwner, color: AppColors.gold),
             ],
@@ -156,29 +156,29 @@ class LeaderboardRow extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          formatRating(standing.rating),
+          formatRating(leaderboard.rating),
           style: const TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w700,
             fontFeatures: [FontFeature.tabularFigures()],
           ),
         ),
-        if (standing.todayDelta != 0) ...[
+        if (leaderboard.todayDelta != 0) ...[
           const SizedBox(height: 2),
-          TodayDeltaBadge(delta: standing.todayDelta),
+          TodayDeltaBadge(delta: leaderboard.todayDelta),
         ],
       ],
     );
   }
 
   Widget _streakBadge(BuildContext context) {
-    final isWin = standing.streakType == StreakType.win;
+    final isWin = leaderboard.streakType == StreakType.win;
     final color = isWin ? AppColors.fireCore : AppColors.iceCore;
 
     return Semantics(
       label: isWin
-          ? context.l10n.profileStreakWin(standing.streakCount)
-          : context.l10n.profileStreakLoss(standing.streakCount),
+          ? context.l10n.profileStreakWin(leaderboard.streakCount)
+          : context.l10n.profileStreakLoss(leaderboard.streakCount),
       child: ExcludeSemantics(
         child: Container(
           padding: const EdgeInsets.symmetric(
@@ -199,7 +199,7 @@ class LeaderboardRow extends StatelessWidget {
               ),
               const SizedBox(width: 2),
               Text(
-                '${standing.streakCount}',
+                '${leaderboard.streakCount}',
                 style: TextStyle(
                   color: color,
                   fontSize: 12,
