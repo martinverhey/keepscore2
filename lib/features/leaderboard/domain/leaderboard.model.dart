@@ -1,9 +1,11 @@
 import 'package:equatable/equatable.dart';
 
 import '../../profile/domain/streak_type.enum.dart';
+import 'medal.enum.dart';
 import 'season_standing.model.dart';
 
 export '../../profile/domain/streak_type.enum.dart';
+export 'medal.enum.dart';
 
 class Leaderboard extends Equatable {
   const Leaderboard({
@@ -22,6 +24,7 @@ class Leaderboard extends Equatable {
     this.streakType = StreakType.none,
     this.streakCount = 0,
     this.todayDelta = 0,
+    this.medal,
   });
 
   factory Leaderboard.fromMap(Map<String, dynamic> map) => Leaderboard(
@@ -56,6 +59,7 @@ class Leaderboard extends Equatable {
         losses: standing.losses,
         draws: standing.draws,
         rank: standing.rank,
+        medal: standing.medal,
       );
 
   factory Leaderboard.forRosterPlayer(
@@ -95,6 +99,7 @@ class Leaderboard extends Equatable {
   final StreakType streakType;
   final int streakCount;
   final double todayDelta;
+  final Medal? medal;
 
   double get winRate => played == 0 ? 0 : wins / played;
 
@@ -115,6 +120,7 @@ class Leaderboard extends Equatable {
     streakType,
     streakCount,
     todayDelta,
+    medal,
   ];
 }
 

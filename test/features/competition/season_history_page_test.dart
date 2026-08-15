@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_detail_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/season_history_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/pages/season_history.page.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
+import 'package:keepscore2/features/leaderboard/domain/medal.enum.dart';
 import 'package:keepscore2/features/leaderboard/domain/season_standing.model.dart';
 import 'package:keepscore2/features/leaderboard/presentation/widgets/leaderboard_row.dart';
 import 'package:keepscore2/features/leaderboard/presentation/widgets/season_dropdown.dart';
@@ -26,6 +28,7 @@ SeasonStanding _standing({
   required String playerId,
   required String displayName,
   required int rank,
+  Medal? medal,
 }) => SeasonStanding(
   seasonId: seasonId,
   competitionId: 'c1',
@@ -40,7 +43,7 @@ SeasonStanding _standing({
   rank: rank,
   startsAt: startsAt,
   endsAt: startsAt.add(const Duration(days: 30)),
-  medal: null,
+  medal: medal,
 );
 
 CompetitionOverview _overview() => CompetitionOverview(
@@ -97,6 +100,7 @@ void main() {
             playerId: 'p2',
             displayName: 'Bram',
             rank: 1,
+            medal: Medal.gold,
           ),
         ],
       );
@@ -139,6 +143,16 @@ void main() {
       expect(find.byType(LeaderboardRow), findsOneWidget);
       expect(find.text('Bram'), findsOneWidget);
       expect(find.text(l10n.playersYou), findsNothing);
+      expect(
+        find.descendant(
+          of: find.byType(LeaderboardRow),
+          matching: find.byWidgetPredicate(
+            (widget) =>
+                widget is AdaptiveIcon && widget.glyph == AdaptiveGlyph.medal,
+          ),
+        ),
+        findsOneWidget,
+      );
 
       await tester.tap(find.byType(SeasonDropdown));
       await tester.pumpAndSettle();

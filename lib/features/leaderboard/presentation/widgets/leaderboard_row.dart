@@ -153,17 +153,28 @@ class LeaderboardRow extends StatelessWidget {
   }
 
   Widget _ratingColumn(BuildContext context) {
+    final medal = leaderboard.medal;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          formatRating(leaderboard.rating),
-          style: const TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w700,
-            fontFeatures: [FontFeature.tabularFigures()],
-          ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (medal != null) ...[
+              AdaptiveIcon(AdaptiveGlyph.medal, color: _medalColor(medal), size: 16),
+              const SizedBox(width: AppSpacing.xs),
+            ],
+            Text(
+              formatRating(leaderboard.rating),
+              style: const TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+                fontFeatures: [FontFeature.tabularFigures()],
+              ),
+            ),
+          ],
         ),
         if (leaderboard.todayDelta != 0) ...[
           const SizedBox(height: 2),
@@ -172,6 +183,12 @@ class LeaderboardRow extends StatelessWidget {
       ],
     );
   }
+
+  Color _medalColor(Medal medal) => switch (medal) {
+    Medal.gold => AppColors.gold,
+    Medal.silver => AppColors.silver,
+    Medal.bronze => AppColors.bronze,
+  };
 
   Widget _streakBadge(BuildContext context) {
     final isWin = leaderboard.streakType == StreakType.win;
