@@ -1214,6 +1214,12 @@ abstract class AppLocalizations {
   /// **'Overview'**
   String get profileTabOverview;
 
+  /// No description provided for @profileTabVersus.
+  ///
+  /// In en, this message translates to:
+  /// **'Versus'**
+  String get profileTabVersus;
+
   /// No description provided for @profileTabSeasonHistory.
   ///
   /// In en, this message translates to:
@@ -1237,6 +1243,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your record vs {name}'**
   String profileHeadToHeadTitle(String name);
+
+  /// No description provided for @profileVersusEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No matches against {name} yet.'**
+  String profileVersusEmpty(String name);
 
   /// No description provided for @profileSeasonGamesLabel.
   ///

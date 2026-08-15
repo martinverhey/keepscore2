@@ -271,6 +271,7 @@
   "profileTrendTitle": "Recent form",
   "profileNotEnoughMatches": "Play a couple more matches to see your trend.",
   "profileTabOverview": "Overview",
+  "profileTabVersus": "Versus",
   "profileTabSeasonHistory": "Season history",
   "profileStreakWin": "{count, plural, =1{1 win in a row} other{{count} wins in a row}}",
   "@profileStreakWin": {
@@ -282,6 +283,10 @@
   },
   "profileHeadToHeadTitle": "Your record vs {name}",
   "@profileHeadToHeadTitle": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "profileVersusEmpty": "No matches against {name} yet.",
+  "@profileVersusEmpty": {
     "placeholders": { "name": { "type": "String" } }
   },
   "profileSeasonGamesLabel": "Games",

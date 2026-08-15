@@ -5,7 +5,11 @@ import 'package:bloc/bloc.dart';
 import '../../../../core/error/failure.dart';
 import '../../../leaderboard/domain/leaderboard.model.dart';
 import '../../../leaderboard/domain/leaderboard_repository.dart';
+import '../../../leaderboard/domain/medals.model.dart';
+import '../../../leaderboard/domain/season_standing.model.dart';
+import '../../../leaderboard/domain/season_window.model.dart';
 import '../../../match/domain/game_type.enum.dart';
+import '../../../match/domain/match_entry.model.dart';
 import '../../../match/domain/match_repository.dart';
 import '../../../match/presentation/cubit/game_type_filter_cubit.dart';
 import '../../domain/head_to_head_record.model.dart';
@@ -37,27 +41,35 @@ class ProfileCubit extends Cubit<ProfileState> {
 
   StreamSubscription<GameType?>? _gameTypeSubscription;
   String? _seasonId;
+  String? _viewerPlayerId;
 
   Future<void> load({String? viewerPlayerId}) async {
     emit(const ProfileState());
+    _viewerPlayerId = viewerPlayerId;
     try {
-      final season = await _leaderboardRepository.currentSeason(competitionId);
-      _seasonId = season.id;
+      final hasOpponent = viewerPlayerId != null && viewerPlayerId != playerId;
+      final results = await Future.wait<Object?>([
+        _leaderboardRepository.currentSeason(competitionId),
+        if (hasOpponent)
+          _profileRepository.headToHead(
+            playerId: playerId,
+            opponentId: viewerPlayerId,
+          ),
+      ]);
       if (isClosed) return;
 
-      var headToHead = const <HeadToHeadRecord>[];
-      if (viewerPlayerId != null && viewerPlayerId != playerId) {
-        headToHead = await _profileRepository.headToHead(
-          playerId: playerId,
-          opponentId: viewerPlayerId,
-        );
-        if (isClosed) return;
-      }
+      _seasonId = (results[0] as SeasonWindow).id;
+      final headToHead = hasOpponent
+          ? results[1] as List<HeadToHeadRecord>
+          : const <HeadToHeadRecord>[];
 
-      final filtered = await _loadForGameType(_gameTypeFilterCubit.state);
-      if (isClosed) return;
+      final gameType = _gameTypeFilterCubit.state;
+      final filtered = await _loadForGameType(gameType);
+      if (isClosed || gameType != _gameTypeFilterCubit.state) return;
 
-      emit(filtered.copyWith(headToHead: headToHead));
+      emit(
+        filtered.copyWith(hasOpponent: hasOpponent, headToHead: headToHead),
+      );
     } on Failure catch (failure) {
       if (isClosed) return;
       emit(ProfileState(status: ProfileStatus.failed, failure: failure));
@@ -73,51 +85,89 @@ class ProfileCubit extends Cubit<ProfileState> {
 
     try {
       final filtered = await _loadForGameType(gameType);
-      if (isClosed) return;
+      if (isClosed || gameType != _gameTypeFilterCubit.state) return;
 
-      emit(filtered.copyWith(headToHead: state.headToHead));
+      emit(
+        filtered.copyWith(
+          hasOpponent: state.hasOpponent,
+          headToHead: state.headToHead,
+        ),
+      );
     } on Failure catch (failure) {
-      if (isClosed) return;
+      if (isClosed || gameType != _gameTypeFilterCubit.state) return;
       emit(state.copyWith(failure: failure));
     }
   }
 
   Future<ProfileState> _loadForGameType(GameType? gameType) async {
-    final totalPlayed = await _profileRepository.totalMatchesPlayed(
-      playerId: playerId,
-      gameType: gameType,
-    );
-    final recentMatches = await _matchRepository.recentForPlayer(
-      playerId: playerId,
-      gameType: gameType,
-    );
-    final seasonHistory = await _leaderboardRepository.seasonHistory(
-      competitionId: competitionId,
-      playerId: playerId,
-      gameType: gameType,
-    );
+    final opponentId = _viewerPlayerId;
+    final hasVersusOpponent = opponentId != null && opponentId != playerId;
+    final seasonId = _seasonId;
+
+    final results = await Future.wait<Object?>([
+      _profileRepository.totalMatchesPlayed(
+        playerId: playerId,
+        gameType: gameType,
+      ),
+      _matchRepository.recentForPlayer(playerId: playerId, gameType: gameType),
+      if (hasVersusOpponent)
+        _matchRepository.recentBetweenPlayers(
+          playerId: playerId,
+          opponentId: opponentId,
+          gameType: gameType,
+        ),
+      _leaderboardRepository.seasonHistory(
+        competitionId: competitionId,
+        playerId: playerId,
+        gameType: gameType,
+      ),
+      _leaderboardRepository.medals(competitionId, gameType: gameType),
+      if (seasonId != null)
+        _leaderboardRepository.leaderboards(
+          competitionId: competitionId,
+          seasonId: seasonId,
+          gameType: gameType,
+        ),
+      if (seasonId != null)
+        _profileRepository.ratingHistory(
+          seasonId: seasonId,
+          playerId: playerId,
+          gameType: gameType,
+        ),
+      if (seasonId != null)
+        _profileRepository.currentStreak(
+          seasonId: seasonId,
+          playerId: playerId,
+          gameType: gameType,
+        ),
+    ]);
+
+    final totalPlayed = results[0] as int;
+    final recentMatches = results[1] as List<MatchEntry>;
+    var next = 2;
+    final versusRecentMatches = hasVersusOpponent
+        ? results[next++] as List<MatchEntry>
+        : const <MatchEntry>[];
+    final seasonHistory = results[next++] as List<SeasonStanding>;
+    final allMedals = results[next++] as List<Medals>;
+
+    Medals? medals;
+    for (final tally in allMedals) {
+      if (tally.playerId == playerId) {
+        medals = tally;
+        break;
+      }
+    }
 
     Leaderboard? mine;
     var playerCount = 0;
     var history = const <RatingPoint>[];
     var streak = const Streak.none();
 
-    if (_seasonId != null) {
-      final leaderboards = await _leaderboardRepository.leaderboards(
-        competitionId: competitionId,
-        seasonId: _seasonId,
-        gameType: gameType,
-      );
-      history = await _profileRepository.ratingHistory(
-        seasonId: _seasonId!,
-        playerId: playerId,
-        gameType: gameType,
-      );
-      streak = await _profileRepository.currentStreak(
-        seasonId: _seasonId!,
-        playerId: playerId,
-        gameType: gameType,
-      );
+    if (seasonId != null) {
+      final leaderboards = results[next++] as List<Leaderboard>;
+      history = results[next++] as List<RatingPoint>;
+      streak = results[next++] as Streak;
 
       playerCount = leaderboards.length;
       for (final leaderboard in leaderboards) {
@@ -137,6 +187,7 @@ class ProfileCubit extends Cubit<ProfileState> {
       status: ProfileStatus.ready,
       selectedGameType: gameType,
       leaderboard: mine,
+      medals: medals,
       bestRating: bestRating,
       playerCount: playerCount,
       history: history,
@@ -144,6 +195,7 @@ class ProfileCubit extends Cubit<ProfileState> {
       streak: streak,
       seasonHistory: seasonHistory,
       recentMatches: recentMatches,
+      versusRecentMatches: versusRecentMatches,
     );
   }
 

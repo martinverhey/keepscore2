@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keepscore2/core/widgets/medal_chip.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
@@ -10,6 +11,7 @@ import 'package:keepscore2/features/match/domain/game_type.enum.dart';
 import 'package:keepscore2/features/match/domain/match_entry.model.dart';
 import 'package:keepscore2/features/match/domain/match_repository.dart';
 import 'package:keepscore2/features/match/presentation/cubit/game_type_filter_cubit.dart';
+import 'package:keepscore2/features/profile/domain/head_to_head_record.model.dart';
 import 'package:keepscore2/features/profile/domain/profile_repository.dart';
 import 'package:keepscore2/features/profile/domain/streak.model.dart';
 import 'package:keepscore2/features/profile/presentation/cubit/profile_cubit.dart';
@@ -89,6 +91,7 @@ void main() {
         required Leaderboard leaderboard,
         required int totalPlayed,
         List<MatchEntry> recentMatches = const [],
+        List<Medals> medals = const [],
       }) {
         when(
           () => leaderboardRepository.leaderboards(
@@ -97,6 +100,9 @@ void main() {
             gameType: type,
           ),
         ).thenAnswer((_) async => [leaderboard]);
+        when(
+          () => leaderboardRepository.medals('c1', gameType: type),
+        ).thenAnswer((_) async => medals);
         when(
           () => profileRepository.ratingHistory(
             seasonId: 's1',
@@ -144,6 +150,7 @@ void main() {
         ),
         totalPlayed: 20,
         recentMatches: [_matchAgainstTheo()],
+        medals: const [Medals(playerId: 'p1', gold: 1, silver: 0, bronze: 0)],
       );
       stubGameType(
         GameType.oneVOne,
@@ -155,6 +162,7 @@ void main() {
           draws: 0,
         ),
         totalPlayed: 9,
+        medals: const [Medals(playerId: 'p1', gold: 0, silver: 3, bronze: 0)],
       );
       when(
         () => leaderboardRepository.seasonHistory(
@@ -224,6 +232,8 @@ void main() {
       expect(find.text(l10n.profileRecentMatchesTitle), findsOneWidget);
       expect(find.text('Theo'), findsOneWidget);
 
+      expect(tester.widget<MedalChip>(find.byType(MedalChip)).count, 1);
+
       await tester.tap(find.text(l10n.leaderboardFilterAll));
       await tester.pumpAndSettle();
 
@@ -237,6 +247,7 @@ void main() {
       expect(find.text('4'), findsOneWidget);
       expect(find.text('9'), findsOneWidget);
       expect(find.text(l10n.profileRecentMatchesTitle), findsNothing);
+      expect(tester.widget<MedalChip>(find.byType(MedalChip)).count, 3);
 
       expect(tester.takeException(), isNull);
       await cubit.close();
@@ -330,6 +341,11 @@ void main() {
           playerId: 'p1',
         ),
       ).thenAnswer((_) async => const []);
+      when(() => leaderboardRepository.medals('c1', gameType: null)).thenAnswer(
+        (_) async => const [
+          Medals(playerId: 'p1', gold: 12, silver: 34, bronze: 56),
+        ],
+      );
 
       final gameTypeFilterCubit = GameTypeFilterCubit();
       addTearDown(gameTypeFilterCubit.close);
@@ -358,12 +374,6 @@ void main() {
             child: ProfileSheet(
               displayName: longName,
               seasonLength: SeasonLength.monthly,
-              medals: const Medals(
-                playerId: 'p1',
-                gold: 12,
-                silver: 34,
-                bronze: 56,
-              ),
             ),
           ),
         ),
@@ -446,6 +456,9 @@ void main() {
         playerId: 'p1',
       ),
     ).thenAnswer((_) async => const []);
+    when(
+      () => leaderboardRepository.medals('c1', gameType: null),
+    ).thenAnswer((_) async => const []);
 
     final gameTypeFilterCubit = GameTypeFilterCubit();
     addTearDown(gameTypeFilterCubit.close);
@@ -486,8 +499,152 @@ void main() {
       find.bySemanticsLabel(l10n.leaderboardTodayGain('12.5')),
       findsOneWidget,
     );
+    expect(find.text(l10n.profileTabVersus), findsNothing);
     expect(tester.takeException(), isNull);
 
     await cubit.close();
   });
+
+  testWidgets(
+    'a versus tab appears only when there is someone to compare against, and '
+    'shows just the aggregated record table',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final leaderboardRepository = MockLeaderboardRepository();
+      final profileRepository = MockProfileRepository();
+      final matchRepository = MockMatchRepository();
+
+      when(() => leaderboardRepository.currentSeason('c1')).thenAnswer(
+        (_) async =>
+            SeasonWindow(id: 's1', startsAt: _august, endsAt: _september),
+      );
+      when(
+        () => leaderboardRepository.leaderboards(
+          competitionId: 'c1',
+          seasonId: 's1',
+          gameType: null,
+        ),
+      ).thenAnswer((_) async => const []);
+      when(
+        () => profileRepository.ratingHistory(
+          seasonId: 's1',
+          playerId: 'p1',
+          gameType: null,
+        ),
+      ).thenAnswer((_) async => const []);
+      when(
+        () => profileRepository.currentStreak(
+          seasonId: 's1',
+          playerId: 'p1',
+          gameType: null,
+        ),
+      ).thenAnswer((_) async => const Streak.none());
+      when(
+        () => profileRepository.totalMatchesPlayed(
+          playerId: 'p1',
+          gameType: null,
+        ),
+      ).thenAnswer((_) async => 0);
+      when(
+        () => matchRepository.recentForPlayer(playerId: 'p1', gameType: null),
+      ).thenAnswer((_) async => const []);
+      when(
+        () => leaderboardRepository.seasonHistory(
+          competitionId: 'c1',
+          playerId: 'p1',
+        ),
+      ).thenAnswer((_) async => const []);
+      when(
+        () => leaderboardRepository.medals('c1', gameType: null),
+      ).thenAnswer((_) async => const []);
+      when(
+        () =>
+            profileRepository.headToHead(playerId: 'p1', opponentId: 'viewer'),
+      ).thenAnswer(
+        (_) async => const [
+          HeadToHeadRecord(
+            gameType: GameType.oneVOne,
+            wins: 3,
+            losses: 1,
+            draws: 0,
+          ),
+          HeadToHeadRecord(
+            gameType: GameType.twoVTwo,
+            wins: 1,
+            losses: 0,
+            draws: 1,
+          ),
+        ],
+      );
+      when(
+        () => matchRepository.recentBetweenPlayers(
+          playerId: 'p1',
+          opponentId: 'viewer',
+          gameType: null,
+        ),
+      ).thenAnswer((_) async => [_matchAgainstTheo()]);
+
+      final gameTypeFilterCubit = GameTypeFilterCubit();
+      addTearDown(gameTypeFilterCubit.close);
+
+      final cubit = ProfileCubit(
+        leaderboardRepository,
+        profileRepository,
+        matchRepository,
+        gameTypeFilterCubit,
+        'c1',
+        'p1',
+      );
+      await cubit.load(viewerPlayerId: 'viewer');
+
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: MultiBlocProvider(
+            providers: [
+              BlocProvider.value(value: cubit),
+              BlocProvider<GameTypeFilterCubit>.value(
+                value: gameTypeFilterCubit,
+              ),
+            ],
+            child: const ProfileSheet(
+              displayName: 'Nora',
+              seasonLength: SeasonLength.monthly,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ProfileSheet)),
+      );
+
+      expect(find.text(l10n.profileTabVersus), findsOneWidget);
+
+      await tester.tap(find.text(l10n.profileTabVersus));
+      await tester.pumpAndSettle();
+
+      // Just the aggregated record table: 4 wins, 1 loss, 1 draw, 67% —
+      // no per-game-type breakdown and no "Your record vs" header.
+      expect(find.text(l10n.profileWinsLabel), findsOneWidget);
+      expect(find.text(l10n.profileLossesLabel), findsOneWidget);
+      expect(find.text(l10n.profileDrawsLabel), findsOneWidget);
+      expect(find.text(l10n.profileWinRateLabel), findsOneWidget);
+      expect(find.text('4'), findsOneWidget);
+      expect(find.text('1'), findsNWidgets(2));
+      expect(find.text('67%'), findsOneWidget);
+      expect(find.text(l10n.profileHeadToHeadTitle('Nora')), findsNothing);
+      expect(find.text(l10n.gameType1v1), findsNothing);
+      expect(find.text(l10n.gameType2v2), findsNothing);
+
+      // The versus-specific recent matches, same list style as overview.
+      expect(find.text(l10n.profileRecentMatchesTitle), findsOneWidget);
+      expect(find.text('Theo'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+
+      await cubit.close();
+    },
+  );
 }

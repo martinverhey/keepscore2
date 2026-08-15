@@ -651,6 +651,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get profileTabOverview => 'Overzicht';
 
   @override
+  String get profileTabVersus => 'Versus';
+
+  @override
   String get profileTabSeasonHistory => 'Seizoensgeschiedenis';
 
   @override
@@ -678,6 +681,11 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String profileHeadToHeadTitle(String name) {
     return 'Jouw resultaat tegen $name';
+  }
+
+  @override
+  String profileVersusEmpty(String name) {
+    return 'Nog geen wedstrijden tegen $name.';
   }
 
   @override

@@ -23,25 +23,21 @@ import '../../../leaderboard/presentation/widgets/season_label.dart';
 import '../../../match/domain/match_entry.model.dart';
 import '../../../match/presentation/cubit/game_type_filter_cubit.dart';
 import '../../../match/presentation/widgets/match_tile.dart';
-import '../../domain/head_to_head_record.model.dart';
 import '../cubit/profile_cubit.dart';
-import 'game_type_label.dart';
 import 'initials_circle.dart';
 import 'rating_trend_chart.dart';
 
-enum ProfileTab { overview, seasonHistory }
+enum ProfileTab { overview, versus, seasonHistory }
 
 class ProfileSheet extends StatefulWidget {
   const ProfileSheet({
     super.key,
     required this.displayName,
     required this.seasonLength,
-    this.medals,
   });
 
   final String displayName;
   final SeasonLength seasonLength;
-  final Medals? medals;
 
   @override
   State<ProfileSheet> createState() => _ProfileSheetState();
@@ -94,12 +90,15 @@ class _ProfileSheetState extends State<ProfileSheet> {
           onChanged: (tab) => setState(() => _tab = tab),
           segments: {
             ProfileTab.overview: context.l10n.profileTabOverview,
+            if (state.hasOpponent)
+              ProfileTab.versus: context.l10n.profileTabVersus,
             ProfileTab.seasonHistory: context.l10n.profileTabSeasonHistory,
           },
         ),
         const SizedBox(height: AppSpacing.lg),
         switch (_tab) {
           ProfileTab.overview => _overview(context, state),
+          ProfileTab.versus => _versus(context, state),
           ProfileTab.seasonHistory => _seasonHistory(context, state),
         },
       ],
@@ -118,7 +117,12 @@ class _ProfileSheetState extends State<ProfileSheet> {
         else ...[
           _ratingSummary(context, state, leaderboard),
           const SizedBox(height: AppSpacing.md),
-          _recordTable(context, leaderboard),
+          _recordTable(
+            context,
+            wins: leaderboard.wins,
+            losses: leaderboard.losses,
+            draws: leaderboard.draws,
+          ),
           const SizedBox(height: AppSpacing.md),
           _gamesCountRow(context, state),
           const SizedBox(height: AppSpacing.lg),
@@ -152,17 +156,32 @@ class _ProfileSheetState extends State<ProfileSheet> {
         ],
         if (state.recentMatches.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.lg),
-          _recentMatches(context, state),
+          _recentMatches(context, state.recentMatches),
         ],
-        if (state.headToHead.isNotEmpty) ...[
+      ],
+    );
+  }
+
+  Widget _versus(BuildContext context, ProfileState state) {
+    final records = state.versusRecords;
+    if (records.isEmpty) {
+      return EmptyState(
+        message: context.l10n.profileVersusEmpty(widget.displayName),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _recordTable(
+          context,
+          wins: records.fold(0, (sum, record) => sum + record.wins),
+          losses: records.fold(0, (sum, record) => sum + record.losses),
+          draws: records.fold(0, (sum, record) => sum + record.draws),
+        ),
+        if (state.versusRecentMatches.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.lg),
-          Text(
-            context.l10n.profileHeadToHeadTitle(widget.displayName),
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          for (final record in state.headToHead)
-            _headToHeadRow(context, record),
+          _recentMatches(context, state.versusRecentMatches),
         ],
       ],
     );
@@ -170,7 +189,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
 
   Widget _rankSummary(BuildContext context, ProfileState state) {
     final leaderboard = state.leaderboard!;
-    final tally = widget.medals;
+    final tally = state.medals;
 
     return Row(
       children: [
@@ -269,10 +288,14 @@ class _ProfileSheetState extends State<ProfileSheet> {
     );
   }
 
-  Widget _recordTable(BuildContext context, Leaderboard leaderboard) {
-    final winRatePercent = leaderboard.played == 0
-        ? 0
-        : (leaderboard.winRate * 100).round();
+  Widget _recordTable(
+    BuildContext context, {
+    required int wins,
+    required int losses,
+    required int draws,
+  }) {
+    final played = wins + losses + draws;
+    final winRatePercent = played == 0 ? 0 : (wins / played * 100).round();
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
@@ -282,9 +305,9 @@ class _ProfileSheetState extends State<ProfileSheet> {
       ),
       child: Row(
         children: [
-          _statBlock(context.l10n.profileWinsLabel, '${leaderboard.wins}'),
-          _statBlock(context.l10n.profileLossesLabel, '${leaderboard.losses}'),
-          _statBlock(context.l10n.profileDrawsLabel, '${leaderboard.draws}'),
+          _statBlock(context.l10n.profileWinsLabel, '$wins'),
+          _statBlock(context.l10n.profileLossesLabel, '$losses'),
+          _statBlock(context.l10n.profileDrawsLabel, '$draws'),
           _statBlock(context.l10n.profileWinRateLabel, '$winRatePercent%'),
         ],
       ),
@@ -326,7 +349,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
     );
   }
 
-  Widget _recentMatches(BuildContext context, ProfileState state) {
+  Widget _recentMatches(BuildContext context, List<MatchEntry> matches) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -335,7 +358,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
           style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: AppSpacing.sm),
-        for (final match in state.recentMatches) _recentMatchTile(match),
+        for (final match in matches) _recentMatchTile(match),
       ],
     );
   }
@@ -344,30 +367,6 @@ class _ProfileSheetState extends State<ProfileSheet> {
     return MatchTile(
       match: match,
       onTap: () => context.push(Routes.match(match.competitionId, match.id)),
-    );
-  }
-
-  Widget _headToHeadRow(BuildContext context, HeadToHeadRecord record) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              gameTypeLabel(context, record.gameType),
-              style: const TextStyle(fontSize: 13),
-            ),
-          ),
-          Text(
-            context.l10n.leaderboardRecord(
-              record.wins,
-              record.losses,
-              record.draws,
-            ),
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-          ),
-        ],
-      ),
     );
   }
 

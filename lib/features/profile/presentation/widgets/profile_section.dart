@@ -51,7 +51,6 @@ class ProfileSection extends StatelessWidget {
           child: ProfileSheet(
             displayName: displayName,
             seasonLength: seasonLength,
-            medals: medals,
           ),
         ),
       ),

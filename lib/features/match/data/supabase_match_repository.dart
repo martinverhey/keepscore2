@@ -77,6 +77,37 @@ class SupabaseMatchRepository implements MatchRepository {
   });
 
   @override
+  Future<List<MatchEntry>> recentBetweenPlayers({
+    required String playerId,
+    required String opponentId,
+    GameType? gameType,
+    int limit = 3,
+  }) => guard(() async {
+    final links = await _client.rpc<List<dynamic>>(
+      'head_to_head_match_ids',
+      params: {
+        'p_player_id': playerId,
+        'p_opponent_id': opponentId,
+        if (gameType != null) 'p_game_type': gameType.wireValue,
+        'p_limit': limit,
+      },
+    );
+    if (links.isEmpty) return const <MatchEntry>[];
+
+    final ids = links
+        .map((row) => (row as Map<String, dynamic>)['match_id'] as String)
+        .toList();
+    final rows = await _client
+        .from('match_feed')
+        .select()
+        .inFilter('id', ids)
+        .order('played_at', ascending: false)
+        .order('id', ascending: false);
+
+    return rows.map((row) => MatchEntry.fromMap(row)).toList(growable: false);
+  });
+
+  @override
   Future<String> create({
     required String competitionId,
     required List<String> teamA,

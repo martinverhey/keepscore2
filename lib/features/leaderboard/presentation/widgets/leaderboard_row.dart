@@ -43,13 +43,13 @@ class LeaderboardRow extends StatelessWidget {
   void _openProfile(BuildContext context) => showAdaptiveSheet<void>(
     context,
     builder: (_) => BlocProvider(
-      create: (_) =>
-          getIt<ProfileCubit>(param1: competitionId, param2: leaderboard.playerId)
-            ..load(viewerPlayerId: myPlayerId),
+      create: (_) => getIt<ProfileCubit>(
+        param1: competitionId,
+        param2: leaderboard.playerId,
+      )..load(viewerPlayerId: myPlayerId),
       child: ProfileSheet(
         displayName: leaderboard.displayName,
         seasonLength: seasonLength,
-        medals: medals,
       ),
     ),
   );
@@ -57,7 +57,8 @@ class LeaderboardRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasStreak =
-        leaderboard.streakCount >= 2 && leaderboard.streakType != StreakType.none;
+        leaderboard.streakCount >= 2 &&
+        leaderboard.streakType != StreakType.none;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),

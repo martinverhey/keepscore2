@@ -17,6 +17,13 @@ abstract interface class MatchRepository {
     int limit = 3,
   });
 
+  Future<List<MatchEntry>> recentBetweenPlayers({
+    required String playerId,
+    required String opponentId,
+    GameType? gameType,
+    int limit = 3,
+  });
+
   Future<String> create({
     required String competitionId,
     required List<String> teamA,

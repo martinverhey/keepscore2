@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/error/failure.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
+import 'package:keepscore2/features/leaderboard/domain/medals.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/season_standing.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/season_window.model.dart';
 import 'package:keepscore2/features/match/domain/game_type.enum.dart';
@@ -104,6 +107,7 @@ void main() {
     int totalPlayed = 0,
     List<MatchEntry> recentMatches = const [],
     List<SeasonStanding> seasonHistory = const [],
+    List<Medals> medals = const [],
   }) {
     when(
       () => leaderboardRepository.leaderboards(
@@ -112,6 +116,9 @@ void main() {
         gameType: type,
       ),
     ).thenAnswer((_) async => leaderboards);
+    when(
+      () => leaderboardRepository.medals('c1', gameType: type),
+    ).thenAnswer((_) async => medals);
     when(
       () => profileRepository.ratingHistory(
         seasonId: 's-august',
@@ -149,6 +156,13 @@ void main() {
     matchRepository = MockMatchRepository();
     gameTypeFilterCubit = GameTypeFilterCubit();
     stubGameType(null);
+    when(
+      () => matchRepository.recentBetweenPlayers(
+        playerId: any(named: 'playerId'),
+        opponentId: any(named: 'opponentId'),
+        gameType: any(named: 'gameType'),
+      ),
+    ).thenAnswer((_) async => const []);
   });
 
   tearDown(() => gameTypeFilterCubit.close());
@@ -271,17 +285,28 @@ void main() {
           ),
         ],
       );
+      when(
+        () => matchRepository.recentBetweenPlayers(
+          playerId: 'p1',
+          opponentId: 'viewer',
+          gameType: null,
+        ),
+      ).thenAnswer((_) async => [_match('m-vs-1')]);
     },
     build: build,
     act: (cubit) => cubit.load(viewerPlayerId: 'viewer'),
     verify: (cubit) {
+      expect(cubit.state.hasOpponent, isTrue);
       expect(cubit.state.headToHead, hasLength(1));
       expect(cubit.state.headToHead.single.wins, 3);
+      expect(cubit.state.versusRecentMatches, hasLength(1));
+      expect(cubit.state.versusRecentMatches.single.id, 'm-vs-1');
     },
   );
 
   blocTest<ProfileCubit, ProfileState>(
-    'does not fetch head-to-head when viewing your own profile',
+    'does not fetch head-to-head when viewing your own profile, and there is '
+    'no opponent to show a versus tab for',
     setUp: () {
       stubSeason();
       stubGameType(null, leaderboards: [_leaderboard('p1', 1040, 1)]);
@@ -289,14 +314,33 @@ void main() {
     build: build,
     act: (cubit) => cubit.load(viewerPlayerId: 'p1'),
     verify: (cubit) {
+      expect(cubit.state.hasOpponent, isFalse);
       expect(cubit.state.headToHead, isEmpty);
+      expect(cubit.state.versusRecentMatches, isEmpty);
       verifyNever(
         () => profileRepository.headToHead(
           playerId: any(named: 'playerId'),
           opponentId: any(named: 'opponentId'),
         ),
       );
+      verifyNever(
+        () => matchRepository.recentBetweenPlayers(
+          playerId: any(named: 'playerId'),
+          opponentId: any(named: 'opponentId'),
+        ),
+      );
     },
+  );
+
+  blocTest<ProfileCubit, ProfileState>(
+    'there is also no opponent when the viewer is unknown',
+    setUp: () {
+      stubSeason();
+      stubGameType(null, leaderboards: [_leaderboard('p1', 1040, 1)]);
+    },
+    build: build,
+    act: (cubit) => cubit.load(),
+    verify: (cubit) => expect(cubit.state.hasOpponent, isFalse),
   );
 
   blocTest<ProfileCubit, ProfileState>(
@@ -314,13 +358,14 @@ void main() {
 
   blocTest<ProfileCubit, ProfileState>(
     'selecting a game type refetches rank, rating, history, streak, totals, '
-    'season history and recent matches for it',
+    'season history, medals and recent matches for it',
     setUp: () {
       stubSeason();
       stubGameType(
         null,
         leaderboards: [_leaderboard('p1', 1040, 1)],
         totalPlayed: 12,
+        medals: const [Medals(playerId: 'p1', gold: 1, silver: 0, bronze: 0)],
       );
       stubGameType(
         GameType.oneVOne,
@@ -334,6 +379,7 @@ void main() {
         totalPlayed: 9,
         recentMatches: [_match('m3')],
         seasonHistory: [_pastSeason(1150)],
+        medals: const [Medals(playerId: 'p1', gold: 0, silver: 2, bronze: 1)],
       );
     },
     build: build,
@@ -350,7 +396,8 @@ void main() {
       ),
       isA<ProfileState>()
           .having((s) => s.selectedGameType, 'selectedGameType', isNull)
-          .having((s) => s.leaderboard?.rating, 'rating', 1040),
+          .having((s) => s.leaderboard?.rating, 'rating', 1040)
+          .having((s) => s.medals?.gold, 'medals.gold', 1),
       isA<ProfileState>()
           .having(
             (s) => s.selectedGameType,
@@ -367,10 +414,79 @@ void main() {
             (s) => s.seasonHistory.single.seasonId,
             'seasonHistory',
             's-july',
-          ),
+          )
+          .having((s) => s.medals?.silver, 'medals.silver', 2),
     ],
     verify: (cubit) {
       expect(cubit.state.headToHead, isEmpty);
+    },
+  );
+
+  blocTest<ProfileCubit, ProfileState>(
+    'a player with no medals for the selected game type has none, even '
+    'though they have some in another type',
+    setUp: () {
+      stubSeason();
+      stubGameType(
+        null,
+        leaderboards: [_leaderboard('p1', 1040, 1)],
+        medals: const [Medals(playerId: 'p1', gold: 1, silver: 0, bronze: 0)],
+      );
+      stubGameType(
+        GameType.oneVOne,
+        leaderboards: [_leaderboard('p1', 1090, 1)],
+      );
+    },
+    build: build,
+    act: (cubit) async {
+      await cubit.load();
+      await cubit.selectGameTypeFilter(GameType.oneVOne);
+      await _settle();
+    },
+    verify: (cubit) {
+      expect(cubit.state.medals, isNull);
+    },
+  );
+
+  blocTest<ProfileCubit, ProfileState>(
+    'hasOpponent survives a game type switch, so the versus tab does not '
+    'flicker away when filtering — and the versus recent matches refetch '
+    'for the new type',
+    setUp: () {
+      stubSeason();
+      stubGameType(null, leaderboards: [_leaderboard('p1', 1040, 1)]);
+      stubGameType(
+        GameType.oneVOne,
+        leaderboards: [_leaderboard('p1', 1090, 1)],
+      );
+      when(
+        () =>
+            profileRepository.headToHead(playerId: 'p1', opponentId: 'viewer'),
+      ).thenAnswer((_) async => const []);
+      when(
+        () => matchRepository.recentBetweenPlayers(
+          playerId: 'p1',
+          opponentId: 'viewer',
+          gameType: null,
+        ),
+      ).thenAnswer((_) async => [_match('m-combined')]);
+      when(
+        () => matchRepository.recentBetweenPlayers(
+          playerId: 'p1',
+          opponentId: 'viewer',
+          gameType: GameType.oneVOne,
+        ),
+      ).thenAnswer((_) async => [_match('m-1v1')]);
+    },
+    build: build,
+    act: (cubit) async {
+      await cubit.load(viewerPlayerId: 'viewer');
+      await cubit.selectGameTypeFilter(GameType.oneVOne);
+      await _settle();
+    },
+    verify: (cubit) {
+      expect(cubit.state.hasOpponent, isTrue);
+      expect(cubit.state.versusRecentMatches.single.id, 'm-1v1');
     },
   );
 
@@ -387,6 +503,51 @@ void main() {
       await _settle();
     },
     expect: () => [isA<ProfileState>(), isA<ProfileState>()],
+  );
+
+  blocTest<ProfileCubit, ProfileState>(
+    'a slower response for an abandoned game type does not clobber a '
+    'faster one for the type selected after it',
+    setUp: () {
+      stubSeason();
+      stubGameType(null, leaderboards: [_leaderboard('p1', 1040, 1)]);
+    },
+    build: build,
+    act: (cubit) async {
+      await cubit.load();
+
+      stubGameType(
+        GameType.oneVOne,
+        leaderboards: [_leaderboard('p1', 1090, 1)],
+        medals: const [Medals(playerId: 'p1', gold: 2, silver: 0, bronze: 0)],
+      );
+      final slowLeaderboards = Completer<List<Leaderboard>>();
+      when(
+        () => leaderboardRepository.leaderboards(
+          competitionId: 'c1',
+          seasonId: 's-august',
+          gameType: GameType.oneVOne,
+        ),
+      ).thenAnswer((_) => slowLeaderboards.future);
+      stubGameType(
+        GameType.twoVTwo,
+        leaderboards: [_leaderboard('p1', 1010, 1)],
+        medals: const [Medals(playerId: 'p1', gold: 1, silver: 0, bronze: 0)],
+      );
+
+      unawaited(cubit.selectGameTypeFilter(GameType.oneVOne));
+      await _settle();
+      await cubit.selectGameTypeFilter(GameType.twoVTwo);
+      await _settle();
+
+      slowLeaderboards.complete([_leaderboard('p1', 1090, 1)]);
+      await _settle();
+    },
+    verify: (cubit) {
+      expect(cubit.state.selectedGameType, GameType.twoVTwo);
+      expect(cubit.state.leaderboard?.rating, 1010);
+      expect(cubit.state.medals?.gold, 1);
+    },
   );
 
   blocTest<ProfileCubit, ProfileState>(

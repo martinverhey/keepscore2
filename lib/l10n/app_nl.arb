@@ -271,6 +271,7 @@
   "profileTrendTitle": "Recente vorm",
   "profileNotEnoughMatches": "Speel nog een paar wedstrijden om je trend te zien.",
   "profileTabOverview": "Overzicht",
+  "profileTabVersus": "Versus",
   "profileTabSeasonHistory": "Seizoensgeschiedenis",
   "profileStreakWin": "{count, plural, =1{1 keer op rij gewonnen} other{{count} keer op rij gewonnen}}",
   "@profileStreakWin": {
@@ -282,6 +283,10 @@
   },
   "profileHeadToHeadTitle": "Jouw resultaat tegen {name}",
   "@profileHeadToHeadTitle": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "profileVersusEmpty": "Nog geen wedstrijden tegen {name}.",
+  "@profileVersusEmpty": {
     "placeholders": { "name": { "type": "String" } }
   },
   "profileSeasonGamesLabel": "Wedstrijden",

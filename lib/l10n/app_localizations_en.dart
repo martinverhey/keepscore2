@@ -648,6 +648,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileTabOverview => 'Overview';
 
   @override
+  String get profileTabVersus => 'Versus';
+
+  @override
   String get profileTabSeasonHistory => 'Season history';
 
   @override
@@ -675,6 +678,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String profileHeadToHeadTitle(String name) {
     return 'Your record vs $name';
+  }
+
+  @override
+  String profileVersusEmpty(String name) {
+    return 'No matches against $name yet.';
   }
 
   @override
