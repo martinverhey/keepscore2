@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
 
 import '../../../../core/extensions/build_context_l10n.dart';
-import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
+import '../../../../core/widgets/pill_dropdown.dart';
 import '../../../../core/widgets/sheet.dart';
 import '../../../match/domain/game_type.enum.dart';
 import '../../../profile/presentation/widgets/game_type_label.dart';
@@ -46,41 +46,11 @@ class GameTypeFilterDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = AdaptiveColors.accent(context);
     final label = selected == null
         ? context.l10n.leaderboardFilterAll
         : gameTypeLabel(context, selected!);
 
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () => _pick(context),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm,
-          vertical: AppSpacing.xs,
-        ),
-        decoration: BoxDecoration(
-          color: accent.withValues(alpha: 0.10),
-          borderRadius: AppRadius.pill,
-          border: Border.all(color: accent.withValues(alpha: 0.22)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                color: accent,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(width: 2),
-            AdaptiveIcon(AdaptiveGlyph.chevronDown, color: accent, size: 16),
-          ],
-        ),
-      ),
-    );
+    return PillDropdown(label: label, onTap: () => _pick(context));
   }
 
   Future<void> _pick(BuildContext context) async {
