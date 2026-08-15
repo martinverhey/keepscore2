@@ -315,6 +315,7 @@ flutter build apk --debug        # verified green
 ./scripts/db.sh -f supabase/seed.sql          # reseed + run assertions
 ./scripts/db.sh -f supabase/tests/rls_check.sql      # RLS verification, rolls back
 ./scripts/db.sh -f supabase/tests/players_check.sql  # roster + settings writes
+./scripts/db.sh -f supabase/tests/no_op_recalc_check.sql  # no-op write guards, rolls back
 ```
 
 ## Git workflow
@@ -327,6 +328,12 @@ flutter build apk --debug        # verified green
 - **When a chunk of work is done and the user starts on a new feature or
   area, ask whether to commit before continuing.** Don't commit unprompted —
   offer, and wait for a yes.
+- **A pile of unrelated changes gets split into multiple logical commits**,
+  not one big one — group by feature/fix/copy/docs the way a reviewer would
+  expect to see them. Still no branches for this: stage per group with `git
+  add <files>` and commit, and reach for `git stash` (push/pop, or `git stash
+  push -- <paths>`) when a single file mixes changes that belong in different
+  commits and need to land separately.
 
 ## Database workflow — read this before touching SQL
 
@@ -376,6 +383,18 @@ from the project-root `.env`.
   It caught nothing that the seed did, because the seed runs as `postgres` —
   **server-side assertions do not exercise the client path.** Verify RPCs over
   REST with a real token as well.
+- **`supabase/seed.sql` is a one-shot seeding script, not a repeatable check** —
+  it unconditionally calls `create_competition`, so re-running it against a
+  database that already has its data creates a duplicate competition rather
+  than just asserting and exiting. Read what a script actually does before
+  running it against the live project; don't assume "asserts an invariant"
+  means "safe to re-run." (See `MISTAKES.md`.)
+- `supabase/tests/no_op_recalc_check.sql` proves `apply_match_ratings` /
+  `apply_match_type_rating`'s `IS DISTINCT FROM` guards actually skip
+  no-op writes — replaying an already-consistent season must rewrite zero
+  `matches`/`match_players` rows (checked via `xmin`), not just arrive at
+  the same final ratings. Self-contained (creates its own throwaway
+  competition), rolls back.
 - **The guest → account upgrade is the one flow still unverified server-side.**
   It cannot be checked the way the RPCs were: `verifyUpgradeCode` needs a token
   that only arrives by email. Seeding `auth.users.email_change_token_new` by
