@@ -7,7 +7,6 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../leaderboard/domain/leaderboard.model.dart';
-import '../../../leaderboard/domain/season.model.dart';
 import '../../../leaderboard/presentation/widgets/game_type_filter_dropdown.dart';
 import '../../../leaderboard/presentation/widgets/leaderboard_row.dart';
 import '../../../leaderboard/presentation/widgets/season_dropdown.dart';
@@ -89,7 +88,7 @@ class _SeasonHistoryPageState extends State<SeasonHistoryPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (state.selectedGroup != null)
+        if (state.selectedSeason != null)
           Padding(
             padding: const EdgeInsets.fromLTRB(
               AppSpacing.md,
@@ -100,8 +99,8 @@ class _SeasonHistoryPageState extends State<SeasonHistoryPage> {
             child: Align(
               alignment: Alignment.centerLeft,
               child: SeasonDropdown(
-                seasons: [for (final g in state.groups) _seasonOf(g)],
-                selected: _seasonOf(state.selectedGroup!),
+                seasons: state.seasons,
+                selected: state.selectedSeason!,
                 seasonLength: seasonLength,
                 onSelected: cubit.selectSeason,
               ),
@@ -120,12 +119,6 @@ class _SeasonHistoryPageState extends State<SeasonHistoryPage> {
     );
   }
 
-  Season _seasonOf(SeasonHistoryGroup group) => Season(
-    id: group.seasonId,
-    startsAt: group.startsAt,
-    endsAt: group.endsAt,
-  );
-
   Widget _content(
     BuildContext context,
     SeasonHistoryState state,
@@ -135,8 +128,7 @@ class _SeasonHistoryPageState extends State<SeasonHistoryPage> {
   ) {
     if (state.busy) return const Center(child: AdaptiveLoader());
 
-    final group = state.selectedGroup;
-    if (group == null) {
+    if (state.standings.isEmpty) {
       return EmptyState(
         message: state.selectedGameType == null
             ? context.l10n.seasonHistoryEmpty
@@ -149,7 +141,7 @@ class _SeasonHistoryPageState extends State<SeasonHistoryPage> {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.md),
       children: [
-        for (final standing in group.standings)
+        for (final standing in state.standings)
           LeaderboardRow(
             competitionId: competitionId,
             leaderboard: Leaderboard.fromSeasonStanding(standing),

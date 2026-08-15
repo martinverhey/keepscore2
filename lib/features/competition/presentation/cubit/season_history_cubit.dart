@@ -17,25 +17,22 @@ class SeasonHistoryCubit extends Cubit<SeasonHistoryState> {
 
   Future<void> load() async {
     final gameType = state.selectedGameType;
-    final seasonId = state.selectedSeasonId;
-    emit(
-      SeasonHistoryState(
-        selectedGameType: gameType,
-        selectedSeasonId: seasonId,
-      ),
-    );
+    emit(SeasonHistoryState(selectedGameType: gameType));
     try {
-      final standings = await _repository.seasonHistory(
-        competitionId: competitionId,
-        gameType: gameType,
-      );
+      final seasons = await _repository.finishedSeasons(competitionId);
       if (isClosed) return;
+
+      final selectedSeasonId = seasons.isEmpty ? null : seasons.first.id;
+      final standings = await _standingsFor(selectedSeasonId, gameType);
+      if (isClosed) return;
+
       emit(
         SeasonHistoryState(
           status: SeasonHistoryStatus.ready,
-          groups: _group(standings),
+          seasons: seasons,
+          selectedSeasonId: selectedSeasonId,
+          standings: standings,
           selectedGameType: gameType,
-          selectedSeasonId: seasonId,
         ),
       );
     } on Failure catch (failure) {
@@ -44,16 +41,32 @@ class SeasonHistoryCubit extends Cubit<SeasonHistoryState> {
         SeasonHistoryState(
           status: SeasonHistoryStatus.failed,
           selectedGameType: gameType,
-          selectedSeasonId: seasonId,
           failure: failure,
         ),
       );
     }
   }
 
-  void selectSeason(String seasonId) {
+  Future<void> selectSeason(String seasonId) async {
     if (seasonId == state.selectedSeasonId) return;
-    emit(state.copyWith(selectedSeasonId: seasonId));
+
+    emit(
+      state.copyWith(
+        selectedSeasonId: seasonId,
+        standings: const [],
+        busy: true,
+        clearFailure: true,
+      ),
+    );
+
+    try {
+      final standings = await _standingsFor(seasonId, state.selectedGameType);
+      if (isClosed || seasonId != state.selectedSeasonId) return;
+      emit(state.copyWith(standings: standings, busy: false));
+    } on Failure catch (failure) {
+      if (isClosed) return;
+      emit(state.copyWith(busy: false, failure: failure));
+    }
   }
 
   Future<void> selectGameTypeFilter(GameType? gameType) async {
@@ -63,38 +76,31 @@ class SeasonHistoryCubit extends Cubit<SeasonHistoryState> {
       state.copyWith(
         selectedGameType: gameType,
         clearGameType: gameType == null,
-        groups: const [],
+        standings: const [],
         busy: true,
         clearFailure: true,
       ),
     );
 
     try {
-      final standings = await _repository.seasonHistory(
-        competitionId: competitionId,
-        gameType: gameType,
-      );
-      if (isClosed) return;
-      emit(state.copyWith(groups: _group(standings), busy: false));
+      final standings = await _standingsFor(state.selectedSeasonId, gameType);
+      if (isClosed || gameType != state.selectedGameType) return;
+      emit(state.copyWith(standings: standings, busy: false));
     } on Failure catch (failure) {
       if (isClosed) return;
       emit(state.copyWith(busy: false, failure: failure));
     }
   }
 
-  List<SeasonHistoryGroup> _group(List<SeasonStanding> standings) {
-    final groups = <String, SeasonHistoryGroup>{};
-    for (final standing in standings) {
-      final existing = groups[standing.seasonId];
-      groups[standing.seasonId] = (
-        seasonId: standing.seasonId,
-        startsAt: standing.startsAt,
-        endsAt: standing.endsAt,
-        standings: [...(existing?.standings ?? const []), standing],
-      );
-    }
-    final result = groups.values.toList()
-      ..sort((a, b) => b.startsAt.compareTo(a.startsAt));
-    return result;
+  Future<List<SeasonStanding>> _standingsFor(
+    String? seasonId,
+    GameType? gameType,
+  ) {
+    if (seasonId == null) return Future.value(const []);
+    return _repository.seasonHistory(
+      competitionId: competitionId,
+      seasonId: seasonId,
+      gameType: gameType,
+    );
   }
 }

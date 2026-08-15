@@ -6,6 +6,7 @@ import '../../match/domain/game_type.enum.dart';
 import '../domain/leaderboard.model.dart';
 import '../domain/leaderboard_repository.dart';
 import '../domain/medals.model.dart';
+import '../domain/season.model.dart';
 import '../domain/season_standing.model.dart';
 import '../domain/season_window.model.dart';
 
@@ -89,8 +90,29 @@ class SupabaseLeaderboardRepository implements LeaderboardRepository {
   }
 
   @override
+  Future<List<Season>> finishedSeasons(String competitionId) =>
+      guard(() async {
+        final rows = await _client
+            .from('finished_seasons')
+            .select('season_id, starts_at, ends_at')
+            .eq('competition_id', competitionId)
+            .order('starts_at', ascending: false);
+
+        return rows
+            .map(
+              (row) => Season.fromMap({
+                'id': row['season_id'],
+                'starts_at': row['starts_at'],
+                'ends_at': row['ends_at'],
+              }),
+            )
+            .toList(growable: false);
+      });
+
+  @override
   Future<List<SeasonStanding>> seasonHistory({
     required String competitionId,
+    String? seasonId,
     String? playerId,
     GameType? gameType,
   }) => guard(() async {
@@ -98,6 +120,7 @@ class SupabaseLeaderboardRepository implements LeaderboardRepository {
         .from(gameType == null ? 'season_history' : 'game_type_season_history')
         .select()
         .eq('competition_id', competitionId);
+    if (seasonId != null) query = query.eq('season_id', seasonId);
     if (playerId != null) query = query.eq('player_id', playerId);
     if (gameType != null) query = query.eq('game_type', gameType.wireValue);
 

@@ -9,6 +9,7 @@ import 'package:keepscore2/features/competition/presentation/cubit/season_histor
 import 'package:keepscore2/features/competition/presentation/pages/season_history.page.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
 import 'package:keepscore2/features/leaderboard/domain/medal.enum.dart';
+import 'package:keepscore2/features/leaderboard/domain/season.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/season_standing.model.dart';
 import 'package:keepscore2/features/leaderboard/presentation/widgets/leaderboard_row.dart';
 import 'package:keepscore2/features/leaderboard/presentation/widgets/season_dropdown.dart';
@@ -21,6 +22,7 @@ class MockLeaderboardRepository extends Mock implements LeaderboardRepository {}
 
 final _june = DateTime.utc(2026, 5, 31, 22);
 final _july = DateTime.utc(2026, 6, 30, 22);
+final _august = DateTime.utc(2026, 7, 31, 22);
 
 SeasonStanding _standing({
   required String seasonId,
@@ -78,7 +80,29 @@ void main() {
       when(() => competitions.overview('c1')).thenAnswer(
         (_) async => _overview(),
       );
-      when(() => leaderboard.seasonHistory(competitionId: 'c1')).thenAnswer(
+      when(() => leaderboard.finishedSeasons('c1')).thenAnswer(
+        (_) async => [
+          Season(id: 's-july', startsAt: _july, endsAt: _august),
+          Season(id: 's-june', startsAt: _june, endsAt: _july),
+        ],
+      );
+      when(
+        () => leaderboard.seasonHistory(competitionId: 'c1', seasonId: 's-july'),
+      ).thenAnswer(
+        (_) async => [
+          _standing(
+            seasonId: 's-july',
+            startsAt: _july,
+            playerId: 'p2',
+            displayName: 'Bram',
+            rank: 1,
+            medal: Medal.gold,
+          ),
+        ],
+      );
+      when(
+        () => leaderboard.seasonHistory(competitionId: 'c1', seasonId: 's-june'),
+      ).thenAnswer(
         (_) async => [
           _standing(
             seasonId: 's-june',
@@ -93,14 +117,6 @@ void main() {
             playerId: 'p2',
             displayName: 'Bram',
             rank: 2,
-          ),
-          _standing(
-            seasonId: 's-july',
-            startsAt: _july,
-            playerId: 'p2',
-            displayName: 'Bram',
-            rank: 1,
-            medal: Medal.gold,
           ),
         ],
       );

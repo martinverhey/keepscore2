@@ -33,9 +33,11 @@ and carries a game-type filter (`GameTypeFilterDropdown`, next to the title in
 the scaffold's `trailing`) — combined (default) or one of
 `1v1`/`2v2`/`3v3`/`4v4`/`mixed`. It has no season picker: that moved to
 `/competition/:id/settings/history` (`SeasonHistoryPage`), which shows one
-finished season at a time — `SeasonSheet` picks among `SeasonHistoryState.groups`
-(the already-loaded, already-finished seasons; no separate fetch) — and
-carries its own, independent `GameTypeFilterDropdown`, same placement.
+finished season at a time — `SeasonSheet` picks among `SeasonHistoryState.seasons`
+(the lean, already-loaded season list — id/starts_at/ends_at only, no
+standings — so the picker itself needs no separate fetch), and selecting one
+fetches just that season's standings. Carries its own, independent
+`GameTypeFilterDropdown`, same placement.
 
 `/competition/:id/match/new` builds the teams and submits; `/competition/:id/match/:matchId` shows
 the per-player before → after and lets the creator or the owner change the
@@ -262,9 +264,9 @@ Kept here because the code cannot express them and they cost real debugging:
   played a given type this season doesn't appear in it, rather than
   showing everyone tied at `starting_rating` for a type nobody's played.
 - **`game_type_season_history`** is the same trick one level up: `select
-  l.*, s.starts_at, s.ends_at, medal … from game_type_leaderboard l join
-  seasons s … where s.ends_at <= now()`, exactly how `season_history` is
-  built from `leaderboard`. `SeasonHistoryPage` carries its own
+  b.*, s.starts_at, s.ends_at, medal … from game_type_leaderboard_base b join
+  seasons s … where s.ends_at <= now()`, the same shape `season_history` is
+  built in from `leaderboard_base`. `SeasonHistoryPage` carries its own
   `GameTypeFilterDropdown`/`selectGameTypeFilter`, independent of the
   leaderboard tab's filter — they're different cubits with their own
   `selectedGameType`. `game_type_player_medals` is the same trick again,
@@ -275,6 +277,15 @@ Kept here because the code cannot express them and they cost real debugging:
   views and their `game_type_*` siblings are pairs, not one view with an
   optional filter, because a per-type view can only be built by replaying
   just that type's matches.
+  **`season_history`/`game_type_season_history` build on `leaderboard_base`/
+  `game_type_leaderboard_base` (20260816100000), not on `leaderboard`/
+  `game_type_leaderboard` directly** — the live views add `streak_type`/
+  `streak_count`/`today_delta` (function calls per row, meaningful only for
+  the current season), which `SeasonStanding` never reads; building history
+  from the `*_base` views instead means those scans never run for a closed
+  season. Add a new column to `leaderboard`/`game_type_leaderboard` only when
+  it belongs on the *current* leaderboard specifically — extend the `*_base`
+  view instead if season history should carry it too.
 - **The game-type filter is one global, shared value — `GameTypeFilterCubit`
   is a `registerLazySingleton`, not scoped per screen.** Any repository
   method that reads match-derived data (leaderboards, season history, medals,

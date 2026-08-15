@@ -1,6 +1,7 @@
 import '../../match/domain/game_type.enum.dart';
 import 'leaderboard.model.dart';
 import 'medals.model.dart';
+import 'season.model.dart';
 import 'season_standing.model.dart';
 import 'season_window.model.dart';
 
@@ -19,8 +20,11 @@ abstract interface class LeaderboardRepository {
     GameType? gameType,
   });
 
+  Future<List<Season>> finishedSeasons(String competitionId);
+
   Future<List<SeasonStanding>> seasonHistory({
     required String competitionId,
+    String? seasonId,
     String? playerId,
     GameType? gameType,
   });
