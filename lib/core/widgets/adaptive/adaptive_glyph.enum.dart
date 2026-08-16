@@ -5,7 +5,7 @@ enum AdaptiveGlyph {
   players,
   history,
   settings,
-  home,
+  competitions,
   chevronRight,
   chevronDown,
   check,

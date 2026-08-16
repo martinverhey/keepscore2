@@ -123,7 +123,7 @@ class Sidebar extends StatelessWidget {
                   SectionLabel(context.l10n.competitionMenuSectionUser),
                   _navItem(
                     context,
-                    glyph: AdaptiveGlyph.home,
+                    glyph: AdaptiveGlyph.competitions,
                     label: context.l10n.competitionsTitle,
                     onTap: onOpenHome,
                   ),
