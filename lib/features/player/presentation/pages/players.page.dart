@@ -10,7 +10,7 @@ import '../../../../core/widgets/page_title.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../competition/presentation/cubit/competition_detail_cubit.dart';
 import '../../../competition/presentation/widgets/competition_section.enum.dart';
-import '../../../competition/presentation/widgets/competition_shell.dart';
+import '../../../competition/presentation/widgets/sidebar.dart';
 import '../cubit/players_cubit.dart';
 import '../widgets/players.dart';
 
@@ -25,7 +25,6 @@ class _PlayersPageState extends State<PlayersPage> {
   @override
   void initState() {
     super.initState();
-    context.read<CompetitionDetailCubit>().load();
     context.read<PlayersCubit>().load();
   }
 
@@ -56,7 +55,7 @@ class _PlayersPageState extends State<PlayersPage> {
     final competitionId = context.read<PlayersCubit>().competitionId;
     setPageTitle(context, context.l10n.playersTitle);
 
-    return CompetitionShell(
+    return Sidebar(
       competitionName: competition?.name,
       current: CompetitionSection.players,
       canManageSettings: isOwner,

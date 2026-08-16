@@ -19,7 +19,7 @@ import '../../domain/competition.model.dart';
 import '../cubit/competition_detail_cubit.dart';
 import '../cubit/history_cubit.dart';
 import '../widgets/competition_section.enum.dart';
-import '../widgets/competition_shell.dart';
+import '../widgets/sidebar.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
@@ -32,7 +32,6 @@ class _HistoryPageState extends State<HistoryPage> {
   @override
   void initState() {
     super.initState();
-    context.read<CompetitionDetailCubit>().load();
     context.read<HistoryCubit>().load();
   }
 
@@ -68,7 +67,7 @@ class _HistoryPageState extends State<HistoryPage> {
         final cubit = context.read<HistoryCubit>();
         setPageTitle(context, context.l10n.historyTitle);
 
-        return CompetitionShell(
+        return Sidebar(
           competitionName: competition?.name,
           current: CompetitionSection.history,
           canManageSettings: isOwner,

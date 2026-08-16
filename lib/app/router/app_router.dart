@@ -168,105 +168,93 @@ GoRouter createRouter(AuthBloc authBloc) {
         path: Routes.theme,
         builder: (context, state) => const ThemePage(),
       ),
-      GoRoute(
-        path: '/competition/:id',
-        builder: (context, state) {
+      ShellRoute(
+        builder: (context, state, child) {
           final id = state.pathParameters['id']!;
           return KeyedSubtree(
             key: ValueKey(id),
-            child: MultiBlocProvider(
-              providers: [
-                BlocProvider(
-                  create: (_) => getIt<CompetitionDetailCubit>(param1: id),
-                ),
-                BlocProvider(create: (_) => getIt<PlayersCubit>(param1: id)),
-                BlocProvider(create: (_) => getIt<MatchListCubit>(param1: id)),
-                BlocProvider(
-                  create: (_) => getIt<LeaderboardCubit>(param1: id),
-                ),
-              ],
-              child: CompetitionDetailPage(competitionId: id),
+            child: BlocProvider(
+              create: (_) => getIt<CompetitionDetailCubit>(param1: id)..load(),
+              child: child,
             ),
           );
         },
         routes: [
           GoRoute(
-            path: 'settings',
-            builder: (context, state) => BlocProvider(
-              create: (_) => getIt<CompetitionDetailCubit>(
-                param1: state.pathParameters['id']!,
-              ),
-              child: CompetitionMenuPage(
-                competitionId: state.pathParameters['id']!,
-              ),
-            ),
+            path: '/competition/:id',
+            builder: (context, state) {
+              final id = state.pathParameters['id']!;
+              return MultiBlocProvider(
+                providers: [
+                  BlocProvider(create: (_) => getIt<PlayersCubit>(param1: id)),
+                  BlocProvider(
+                    create: (_) => getIt<MatchListCubit>(param1: id),
+                  ),
+                  BlocProvider(
+                    create: (_) => getIt<LeaderboardCubit>(param1: id),
+                  ),
+                ],
+                child: CompetitionDetailPage(competitionId: id),
+              );
+            },
             routes: [
               GoRoute(
-                path: 'competition',
-                builder: (context, state) => BlocProvider(
-                  create: (_) => getIt<CompetitionSettingsCubit>(
-                    param1: state.pathParameters['id']!,
+                path: 'settings',
+                builder: (context, state) => CompetitionMenuPage(
+                  competitionId: state.pathParameters['id']!,
+                ),
+                routes: [
+                  GoRoute(
+                    path: 'competition',
+                    builder: (context, state) => BlocProvider(
+                      create: (_) => getIt<CompetitionSettingsCubit>(
+                        param1: state.pathParameters['id']!,
+                      ),
+                      child: const CompetitionSettingsPage(),
+                    ),
                   ),
-                  child: const CompetitionSettingsPage(),
+                  GoRoute(
+                    path: 'players',
+                    builder: (context, state) => BlocProvider(
+                      create: (_) => getIt<PlayersCubit>(
+                        param1: state.pathParameters['id']!,
+                      ),
+                      child: const PlayersPage(),
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'history',
+                    builder: (context, state) => BlocProvider(
+                      create: (_) => getIt<HistoryCubit>(
+                        param1: state.pathParameters['id']!,
+                      ),
+                      child: const HistoryPage(),
+                    ),
+                  ),
+                ],
+              ),
+              GoRoute(
+                path: 'match/new',
+                pageBuilder: (context, state) => adaptiveModalPage<bool>(
+                  child: BlocProvider(
+                    create: (_) => getIt<MatchFormCubit>(
+                      param1: state.pathParameters['id']!,
+                    ),
+                    child: const NewMatchPage(),
+                  ),
                 ),
               ),
               GoRoute(
-                path: 'players',
-                builder: (context, state) {
-                  final id = state.pathParameters['id']!;
-                  return MultiBlocProvider(
-                    providers: [
-                      BlocProvider(
-                        create: (_) =>
-                            getIt<CompetitionDetailCubit>(param1: id),
-                      ),
-                      BlocProvider(
-                        create: (_) => getIt<PlayersCubit>(param1: id),
-                      ),
-                    ],
-                    child: const PlayersPage(),
-                  );
-                },
-              ),
-              GoRoute(
-                path: 'history',
-                builder: (context, state) {
-                  final id = state.pathParameters['id']!;
-                  return MultiBlocProvider(
-                    providers: [
-                      BlocProvider(
-                        create: (_) =>
-                            getIt<CompetitionDetailCubit>(param1: id),
-                      ),
-                      BlocProvider(
-                        create: (_) => getIt<HistoryCubit>(param1: id),
-                      ),
-                    ],
-                    child: const HistoryPage(),
-                  );
-                },
+                path: 'match/:matchId',
+                builder: (context, state) => BlocProvider(
+                  create: (_) => getIt<MatchDetailCubit>(
+                    param1: state.pathParameters['matchId']!,
+                    param2: state.pathParameters['id']!,
+                  ),
+                  child: const MatchDetailPage(),
+                ),
               ),
             ],
-          ),
-          GoRoute(
-            path: 'match/new',
-            pageBuilder: (context, state) => adaptiveModalPage<bool>(
-              child: BlocProvider(
-                create: (_) =>
-                    getIt<MatchFormCubit>(param1: state.pathParameters['id']!),
-                child: const NewMatchPage(),
-              ),
-            ),
-          ),
-          GoRoute(
-            path: 'match/:matchId',
-            builder: (context, state) => BlocProvider(
-              create: (_) => getIt<MatchDetailCubit>(
-                param1: state.pathParameters['matchId']!,
-                param2: state.pathParameters['id']!,
-              ),
-              child: const MatchDetailPage(),
-            ),
           ),
         ],
       ),

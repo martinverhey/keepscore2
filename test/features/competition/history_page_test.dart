@@ -132,7 +132,8 @@ void main() {
         ],
       );
 
-      final competitionDetailCubit = CompetitionDetailCubit(competitions, 'c1');
+      final competitionDetailCubit = CompetitionDetailCubit(competitions, 'c1')
+        ..load();
       final historyCubit = HistoryCubit(leaderboard, 'c1');
       final authBloc = AuthBloc(auth);
       addTearDown(competitionDetailCubit.close);

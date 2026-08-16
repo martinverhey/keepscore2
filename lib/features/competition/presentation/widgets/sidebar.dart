@@ -3,11 +3,12 @@ import 'package:flutter/widgets.dart';
 import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
+import '../../../../core/widgets/horizontal_divider.dart';
 import '../../../../core/widgets/section_label.dart';
 import 'competition_section.enum.dart';
 
-class CompetitionShell extends StatelessWidget {
-  const CompetitionShell({
+class Sidebar extends StatelessWidget {
+  const Sidebar({
     super.key,
     required this.competitionName,
     required this.current,
@@ -41,13 +42,13 @@ class CompetitionShell extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        AdaptiveMaterialScope(child: _sidebar(context)),
+        AdaptiveMaterialScope(child: _content(context)),
         Expanded(child: child),
       ],
     );
   }
 
-  Widget _sidebar(BuildContext context) {
+  Widget _content(BuildContext context) {
     return Container(
       width: 232,
       padding: const EdgeInsets.symmetric(
@@ -73,43 +74,63 @@ class CompetitionShell extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.lg),
           ],
-          _navItem(
-            context,
-            glyph: AdaptiveGlyph.leaderboard,
-            label: context.l10n.leaderboardTitle,
-            section: CompetitionSection.leaderboard,
-          ),
-          _navItem(
-            context,
-            glyph: AdaptiveGlyph.matches,
-            label: context.l10n.matchesTitle,
-            section: CompetitionSection.matches,
-          ),
-          _navItem(
-            context,
-            glyph: AdaptiveGlyph.players,
-            label: context.l10n.playersTitle,
-            section: CompetitionSection.players,
-          ),
-          _navItem(
-            context,
-            glyph: AdaptiveGlyph.history,
-            label: context.l10n.historyTitle,
-            section: CompetitionSection.history,
-          ),
-          const Spacer(),
-          Container(
-            height: 1,
-            margin: const EdgeInsets.only(bottom: AppSpacing.lg),
-            color: AdaptiveColors.divider(context),
-          ),
-          SectionLabel(context.l10n.competitionSettings),
-          if (canManageSettings)
-            _actionItem(
-              context,
-              label: context.l10n.competitionSettingsTitle,
-              onTap: onOpenSettings,
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _navItem(
+                    context,
+                    glyph: AdaptiveGlyph.leaderboard,
+                    label: context.l10n.leaderboardTitle,
+                    selected: current == CompetitionSection.leaderboard,
+                    onTap: () =>
+                        onSelectSection(CompetitionSection.leaderboard),
+                  ),
+                  _navItem(
+                    context,
+                    glyph: AdaptiveGlyph.matches,
+                    label: context.l10n.matchesTitle,
+                    selected: current == CompetitionSection.matches,
+                    onTap: () => onSelectSection(CompetitionSection.matches),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  const HorizontalDivider(),
+                  SectionLabel(context.l10n.competitionMenuSectionCompetition),
+                  if (canManageSettings)
+                    _navItem(
+                      context,
+                      glyph: AdaptiveGlyph.settings,
+                      label: context.l10n.competitionSettingsTitle,
+                      onTap: onOpenSettings,
+                    ),
+                  _navItem(
+                    context,
+                    glyph: AdaptiveGlyph.history,
+                    label: context.l10n.historyTitle,
+                    selected: current == CompetitionSection.history,
+                    onTap: () => onSelectSection(CompetitionSection.history),
+                  ),
+                  if (isRegistered)
+                    _navItem(
+                      context,
+                      glyph: AdaptiveGlyph.players,
+                      label: context.l10n.playersManageTitle,
+                      selected: current == CompetitionSection.players,
+                      onTap: () => onSelectSection(CompetitionSection.players),
+                    ),
+                  const SizedBox(height: AppSpacing.md),
+                  SectionLabel(context.l10n.competitionMenuSectionUser),
+                  _navItem(
+                    context,
+                    glyph: AdaptiveGlyph.home,
+                    label: context.l10n.competitionsTitle,
+                    onTap: onOpenHome,
+                  ),
+                ],
+              ),
             ),
+          ),
           _actionItem(
             context,
             label: context.l10n.settingsThemeTitle,
@@ -165,15 +186,15 @@ class CompetitionShell extends StatelessWidget {
     BuildContext context, {
     required AdaptiveGlyph glyph,
     required String label,
-    required CompetitionSection section,
+    required VoidCallback onTap,
+    bool selected = false,
   }) {
-    final selected = current == section;
     final accent = AdaptiveColors.accent(context);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.xs),
       child: AdaptiveTappable(
-        onTap: () => onSelectSection(section),
+        onTap: onTap,
         borderRadius: AppRadius.card,
         child: Container(
           padding: const EdgeInsets.symmetric(

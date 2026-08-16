@@ -124,7 +124,8 @@ void main() {
               return MultiBlocProvider(
                 providers: [
                   BlocProvider(
-                    create: (_) => CompetitionDetailCubit(competitions, id),
+                    create: (_) =>
+                        CompetitionDetailCubit(competitions, id)..load(),
                   ),
                   BlocProvider(create: (_) => PlayersCubit(players, id)),
                   BlocProvider(

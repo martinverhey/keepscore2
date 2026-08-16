@@ -25,7 +25,7 @@ import '../../../profile/presentation/widgets/profile_section.dart';
 import '../../domain/competition.model.dart';
 import '../cubit/competition_detail_cubit.dart';
 import '../widgets/competition_section.enum.dart';
-import '../widgets/competition_shell.dart';
+import '../widgets/sidebar.dart';
 import '../widgets/invite_sheet.dart';
 
 enum CompetitionTab { leaderboard, matches }
@@ -44,7 +44,6 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
   @override
   void initState() {
     super.initState();
-    context.read<CompetitionDetailCubit>().load();
     context.read<PlayersCubit>().load();
     context.read<MatchListCubit>().load();
     context.read<LeaderboardCubit>().load();
@@ -129,7 +128,7 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
           competition == null ? tabTitle : '${competition.name} · $tabTitle',
         );
 
-        return CompetitionShell(
+        return Sidebar(
           competitionName: competition?.name,
           current: _tab == CompetitionTab.leaderboard
               ? CompetitionSection.leaderboard

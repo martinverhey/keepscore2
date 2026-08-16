@@ -28,12 +28,6 @@ class _CompetitionMenuPageState extends State<CompetitionMenuPage> {
   bool _showQr = false;
 
   @override
-  void initState() {
-    super.initState();
-    context.read<CompetitionDetailCubit>().load();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final session = context.watch<AuthBloc>().state;
 
@@ -87,9 +81,8 @@ class _CompetitionMenuPageState extends State<CompetitionMenuPage> {
                     ),
                   NavRow(
                     label: context.l10n.historyTitle,
-                    onTap: () => context.push(
-                      Routes.history(widget.competitionId),
-                    ),
+                    onTap: () =>
+                        context.push(Routes.history(widget.competitionId)),
                   ),
                   if (session.canWrite)
                     NavRow(

@@ -306,8 +306,8 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   `AdaptiveSegmented` tab switcher, a "New match" button, the game-type
   filter, and a settings popover all into one `trailing` row — cramped, and
   still left Players/History as menu items instead of first-class
-  destinations. `CompetitionShell`
-  (`features/competition/presentation/widgets/competition_shell.dart`) is a
+  destinations. `Sidebar`
+  (`features/competition/presentation/widgets/sidebar.dart`) is a
   thin wrapper — `if (!AppPlatform.useWideWeb(context)) return child;`,
   otherwise a fixed-width sidebar `Row`-ed next to `Expanded(child: child)` —
   composed by `CompetitionDetailPage`, `PlayersPage`, and `HistoryPage`
@@ -329,7 +329,7 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   **No existing test exercises this at all** — `kIsWeb` is always `false`
   under `flutter test`, so `useWideWeb` never trips regardless of the pumped
   viewport size, which is exactly why `AppPlatform.debugOverrideWideWeb`
-  exists: `competition_shell_test.dart` is the one test in the suite that
+  exists: `sidebar_test.dart` is the one test in the suite that
   sets it, and it caught a real `RenderFlex` overflow (a nav-item label
   missing its `Expanded`) on the first run — a reminder that this whole
   surface is otherwise invisible to `flutter test` and worth exercising

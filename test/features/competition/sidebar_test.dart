@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/widgets/adaptive/app_platform.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/competition_section.enum.dart';
-import 'package:keepscore2/features/competition/presentation/widgets/competition_shell.dart';
+import 'package:keepscore2/features/competition/presentation/widgets/sidebar.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 
 void main() {
@@ -32,7 +32,7 @@ void main() {
 
       await tester.pumpWidget(
         wrap(
-          CompetitionShell(
+          Sidebar(
             competitionName: 'Office Table Tennis',
             current: CompetitionSection.leaderboard,
             canManageSettings: true,
@@ -54,9 +54,12 @@ void main() {
       expect(find.text('Office Table Tennis'), findsOneWidget);
       expect(find.text(l10n.leaderboardTitle), findsOneWidget);
       expect(find.text(l10n.matchesTitle), findsOneWidget);
-      expect(find.text(l10n.playersTitle), findsOneWidget);
-      expect(find.text(l10n.historyTitle), findsOneWidget);
+      expect(find.text(l10n.competitionMenuSectionCompetition), findsOneWidget);
       expect(find.text(l10n.competitionSettingsTitle), findsOneWidget);
+      expect(find.text(l10n.historyTitle), findsOneWidget);
+      expect(find.text(l10n.playersManageTitle), findsOneWidget);
+      expect(find.text(l10n.competitionMenuSectionUser), findsOneWidget);
+      expect(find.text(l10n.competitionsTitle), findsOneWidget);
       expect(find.text(l10n.settingsThemeTitle), findsOneWidget);
       expect(find.text(l10n.authSignOut), findsOneWidget);
       expect(find.text('body content'), findsOneWidget);
@@ -64,10 +67,13 @@ void main() {
       await tester.tap(find.text(l10n.matchesTitle));
       expect(selected, CompetitionSection.matches);
 
+      await tester.tap(find.text(l10n.playersManageTitle));
+      expect(selected, CompetitionSection.players);
+
       await tester.tap(find.text(l10n.matchNew));
       expect(newMatchTapped, isTrue);
 
-      await tester.tap(find.text('KeepScore2'));
+      await tester.tap(find.text(l10n.competitionsTitle));
       expect(homeTapped, isTrue);
 
       await tester.tap(find.text(l10n.authSignOut));
@@ -82,7 +88,7 @@ void main() {
   ) async {
     await tester.pumpWidget(
       wrap(
-        CompetitionShell(
+        Sidebar(
           competitionName: 'Office Table Tennis',
           current: CompetitionSection.leaderboard,
           canManageSettings: true,

@@ -360,7 +360,8 @@ GoRouter _buildRouter(
             providers: [
               BlocProvider(
                 create: (_) =>
-                    CompetitionDetailCubit(competitionRepository, id),
+                    CompetitionDetailCubit(competitionRepository, id)
+                      ..load(),
               ),
               BlocProvider(create: (_) => PlayersCubit(playerRepository, id)),
               BlocProvider(
