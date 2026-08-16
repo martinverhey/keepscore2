@@ -80,6 +80,17 @@ Future<T?> showAdaptiveSheet<T>(
       ),
     );
   }
+  if (AppPlatform.useWideWeb(context)) {
+    return showDialog<T>(
+      context: context,
+      builder: (dialogContext) => Dialog(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 480),
+          child: builder(dialogContext),
+        ),
+      ),
+    );
+  }
   return showModalBottomSheet<T>(
     context: context,
     isScrollControlled: true,
