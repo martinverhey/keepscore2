@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
+import 'package:keepscore2/features/auth/domain/auth_repository.dart';
+import 'package:keepscore2/features/auth/domain/auth_user.model.dart';
+import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_detail_cubit.dart';
@@ -15,6 +18,8 @@ import 'package:keepscore2/features/leaderboard/presentation/widgets/leaderboard
 import 'package:keepscore2/features/leaderboard/presentation/widgets/season_dropdown.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
+
+class MockAuthRepository extends Mock implements AuthRepository {}
 
 class MockCompetitionRepository extends Mock implements CompetitionRepository {}
 
@@ -74,8 +79,14 @@ void main() {
     'content, using the leaderboard row for each player, and switches '
     'seasons from it',
     (tester) async {
+      final auth = MockAuthRepository();
       final competitions = MockCompetitionRepository();
       final leaderboard = MockLeaderboardRepository();
+
+      when(() => auth.currentUser).thenReturn(
+        const AuthUser(id: 'p1', displayName: 'Ada', isGuest: false),
+      );
+      when(() => auth.watchUser()).thenAnswer((_) => const Stream.empty());
 
       when(
         () => competitions.overview('c1'),
@@ -123,14 +134,17 @@ void main() {
 
       final competitionDetailCubit = CompetitionDetailCubit(competitions, 'c1');
       final historyCubit = HistoryCubit(leaderboard, 'c1');
+      final authBloc = AuthBloc(auth);
       addTearDown(competitionDetailCubit.close);
       addTearDown(historyCubit.close);
+      addTearDown(authBloc.close);
 
       await tester.pumpWidget(
         MultiBlocProvider(
           providers: [
             BlocProvider.value(value: competitionDetailCubit),
             BlocProvider.value(value: historyCubit),
+            BlocProvider.value(value: authBloc),
           ],
           child: MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,

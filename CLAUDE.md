@@ -239,6 +239,107 @@ code; don't relitigate them.
   this wrong looks like a silent success. `supabase/tests/players_check.sql`
   asserts the premise.
 
+### Web vs. native UI (`AppPlatform.useWideWeb`)
+
+`AppPlatform.useCupertino` only ever splits iOS/macOS from everything else —
+`kIsWeb` always resolves it to `false`, so web inherited the plain Material
+*phone* branch verbatim. A resizable desktop browser window isn't a phone, so
+there's a second, independent axis: `AppPlatform.useWideWeb(BuildContext)` —
+`kIsWeb && MediaQuery.sizeOf(context).width >= wideWebBreakpoint` (720). A
+phone-width browser tab deliberately keeps the exact same chrome as native
+(bottom tabs, sheets, collapsing title) — only a desktop-sized web window gets
+the treatment below. Mirrors `debugOverrideCupertino` with
+`AppPlatform.debugOverrideWideWeb` for tests.
+
+- **Custom tappable rows get hover/cursor feedback everywhere, not just wide
+  web.** Every hand-rolled `GestureDetector(behavior: opaque, onTap: …)` around
+  a row/tile (`LeaderboardRow`, `NavRow`, `SelectableRow`, `PillDropdown`,
+  `MatchTile`, `CompetitionTile`, `ProfileSection`, the team-picker tile, the
+  competition-name header) is `AdaptiveTappable` instead
+  (`core/widgets/adaptive/adaptive_tappable.dart`): `InkWell` (hover cursor +
+  ripple, clipped to the same `borderRadius` as the row's own decoration) on
+  Material, plain `GestureDetector` on Cupertino. A mouse on any width benefits
+  from this, so it isn't gated on `useWideWeb`.
+- **The browser tab title is dynamic, and can't be done through
+  `onGenerateTitle`.** go_router's `Router` subtree rebuilds independently of
+  the ancestor `Title`/`WidgetsApp` widget that `onGenerateTitle` lives on, so
+  navigating via `context.go`/`context.push` never re-invokes it — a per-route
+  title needs each page to set it directly. `setPageTitle(context, label)`
+  (`core/widgets/page_title.dart`) calls
+  `SystemChrome.setApplicationSwitcherDescription`, which is what the Flutter
+  web engine uses under the hood to set `document.title` (it also sets
+  Android's task-switcher label, harmlessly). Every routed page calls it once
+  per relevant build, formatting `'$label · ${l10n.appTitle}'`.
+  `CompetitionDetailPage` is the one exception to the format: it puts the
+  competition name *ahead of* the tab name
+  (`'${competition.name} · $tabTitle'`) because that's the field that
+  disambiguates several same-shaped tabs open at once, and browsers truncate
+  a long tab title from the end, not the front.
+- **`showAdaptiveSheet` grew a third, wide-web-only branch that swaps the
+  bottom sheet for a centered dialog** (`showDialog` + `Dialog`, capped at
+  480px) instead of `showModalBottomSheet` — a panel sliding up from the
+  bottom of a wide desktop window reads as disconnected from whatever button
+  opened it. Every existing call site (game type filter, player/competition
+  row action sheets, invite sheet, rename, match score edit, team picker,
+  profile sheet, season picker) gets this automatically, since they all
+  already funnel through `showAdaptiveSheet`/`Sheet` — no call-site changes
+  needed when adding a new sheet.
+- **`AdaptiveScaffold`'s Material app bar stops collapsing on wide web.**
+  `SliverAppBar.large` (a big title that shrinks into a small pinned bar on
+  scroll) is a one-handed-phone-scrolling affordance; on wide web it's a
+  plain, fixed-height, `pinned: true` `SliverAppBar` instead — mouse/trackpad
+  scrolling has no reason to animate the title away, and doing so anyway reads
+  as an unintentional phone skin on a desktop window.
+- **Web gets one deliberate page-transition, not whatever the host OS
+  happens to use.** `ThemeData.pageTransitionsTheme`'s default is keyed by
+  `defaultTargetPlatform`, and on Flutter Web that reflects the *browsing
+  device's* OS (from the user agent) — so unmodified, the exact same web
+  build plays a full iOS-style edge-slide on a Mac browser and a Material
+  zoom/fade on Windows/Linux, an inconsistency nobody chose. `AppTheme.material()`
+  overrides `pageTransitionsTheme` to `FadeForwardsPageTransitionsBuilder` for
+  every `TargetPlatform` key, gated on `kIsWeb` (not `useWideWeb` — this one
+  applies at phone-browser widths too, since mobile Safari/Chrome already
+  reserve the edge-swipe gesture for their own tab back/forward, so an
+  OS-style in-canvas slide competes with it). Native builds are untouched.
+- **Competition-scoped navigation is a persistent left sidebar on wide web,
+  not tabs bolted onto the header.** An earlier iteration tried squeezing an
+  `AdaptiveSegmented` tab switcher, a "New match" button, the game-type
+  filter, and a settings popover all into one `trailing` row — cramped, and
+  still left Players/History as menu items instead of first-class
+  destinations. `CompetitionShell`
+  (`features/competition/presentation/widgets/competition_shell.dart`) is a
+  thin wrapper — `if (!AppPlatform.useWideWeb(context)) return child;`,
+  otherwise a fixed-width sidebar `Row`-ed next to `Expanded(child: child)` —
+  composed by `CompetitionDetailPage`, `PlayersPage`, and `HistoryPage`
+  around their existing `AdaptiveScaffold`, each supplying its own
+  `CompetitionSection` (`competition_section.enum.dart`: leaderboard, matches,
+  players, history) as `current` for highlighting. It is *not* a go_router
+  `ShellRoute` — each page keeps its own route, cubits, and `AdaptiveScaffold`
+  untouched; the sidebar is purely a visual wrapper re-composed per page, so
+  switching sections between two pages that both wrap the shell
+  (`Players` ↔ `History`) uses `context.pushReplacement`, and switching to
+  `leaderboard`/`matches` from either uses `context.pop()` back to the
+  still-alive `CompetitionDetailPage` instance underneath — `context.go`
+  would rebuild it from scratch and lose whichever of the two tabs was
+  active. `CompetitionSettingsPage` deliberately isn't wrapped — a deep,
+  owner-only settings form is fine as a plain full-width page reached by a
+  normal push, same as it already was. The sidebar's own account section
+  (competition settings, theme, sign out) replaced the old gear-icon popover
+  entirely, so `AdaptiveMenuButton` was deleted rather than left unused.
+  **No existing test exercises this at all** — `kIsWeb` is always `false`
+  under `flutter test`, so `useWideWeb` never trips regardless of the pumped
+  viewport size, which is exactly why `AppPlatform.debugOverrideWideWeb`
+  exists: `competition_shell_test.dart` is the one test in the suite that
+  sets it, and it caught a real `RenderFlex` overflow (a nav-item label
+  missing its `Expanded`) on the first run — a reminder that this whole
+  surface is otherwise invisible to `flutter test` and worth exercising
+  explicitly whenever it changes. The sidebar's own background/border colours
+  come from `AdaptiveColors.surfaceTint`/`divider` (`colorScheme.surfaceContainerLow`/
+  `outlineVariant`), not a translucent tint over nothing — the sidebar sits
+  outside `AdaptiveScaffold`'s own themed background, so a low-alpha neutral
+  fill there blends against the page canvas rather than the app's actual
+  surface colour and reads as stuck-in-light-mode regardless of theme.
+
 ### Things the source no longer says out loud
 
 Kept here because the code cannot express them and they cost real debugging:

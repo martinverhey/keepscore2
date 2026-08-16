@@ -1,11 +1,15 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/app_router.dart';
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
+import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/state_views.dart';
+import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../leaderboard/domain/leaderboard.model.dart';
 import '../../../leaderboard/presentation/widgets/game_type_filter_dropdown.dart';
 import '../../../leaderboard/presentation/widgets/leaderboard_row.dart';
@@ -14,6 +18,8 @@ import '../../../profile/presentation/widgets/game_type_label.dart';
 import '../../domain/competition.model.dart';
 import '../cubit/competition_detail_cubit.dart';
 import '../cubit/history_cubit.dart';
+import '../widgets/competition_section.enum.dart';
+import '../widgets/competition_shell.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
@@ -30,48 +36,82 @@ class _HistoryPageState extends State<HistoryPage> {
     context.read<HistoryCubit>().load();
   }
 
+  void _selectSection(CompetitionSection section) {
+    final competitionId = context.read<HistoryCubit>().competitionId;
+    switch (section) {
+      case CompetitionSection.leaderboard:
+      case CompetitionSection.matches:
+        context.pop();
+      case CompetitionSection.players:
+        context.pushReplacement(Routes.players(competitionId));
+      case CompetitionSection.history:
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final session = context.watch<AuthBloc>().state;
     final competition = context
         .watch<CompetitionDetailCubit>()
         .state
         .competition;
     final myPlayerId = context.watch<CompetitionDetailCubit>().state.myPlayerId;
     final seasonLength = competition?.seasonLength;
+    final isOwner =
+        session.canWrite &&
+        session.user?.id != null &&
+        session.user?.id == competition?.ownerId;
 
     return BlocBuilder<HistoryCubit, HistoryState>(
       builder: (context, state) {
         final cubit = context.read<HistoryCubit>();
+        setPageTitle(context, context.l10n.historyTitle);
 
-        return AdaptiveScaffold(
-          title: context.l10n.historyTitle,
-          trailing: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerRight,
-            child: GameTypeFilterDropdown(
-              selected: state.selectedGameType,
-              onSelected: cubit.selectGameTypeFilter,
+        return CompetitionShell(
+          competitionName: competition?.name,
+          current: CompetitionSection.history,
+          canManageSettings: isOwner,
+          isRegistered: session.canWrite,
+          onSelectSection: _selectSection,
+          onNewMatch: () =>
+              context.push<bool>(Routes.newMatch(cubit.competitionId)),
+          onOpenHome: () => context.push(Routes.home),
+          onOpenSettings: () =>
+              context.push(Routes.competitionSettings(cubit.competitionId)),
+          onOpenTheme: () => context.push(Routes.theme),
+          onSignOut: () =>
+              context.read<AuthBloc>().add(const AuthSignOutRequested()),
+          child: AdaptiveScaffold(
+            title: context.l10n.historyTitle,
+            trailing: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerRight,
+              child: GameTypeFilterDropdown(
+                selected: state.selectedGameType,
+                onSelected: cubit.selectGameTypeFilter,
+              ),
             ),
+            hasScrollBody: true,
+            body: switch (state.status) {
+              HistoryStatus.loading => const AdaptiveLoader(),
+              HistoryStatus.failed => ErrorRetry(
+                message: state.failure!.localized(context.l10n),
+                retryLabel: context.l10n.commonRetry,
+                onRetry: cubit.load,
+              ),
+              HistoryStatus.ready when seasonLength == null =>
+                const AdaptiveLoader(),
+              HistoryStatus.ready => _ready(
+                context,
+                state,
+                cubit,
+                cubit.competitionId,
+                myPlayerId,
+                seasonLength!,
+              ),
+            },
           ),
-          hasScrollBody: true,
-          body: switch (state.status) {
-            HistoryStatus.loading => const AdaptiveLoader(),
-            HistoryStatus.failed => ErrorRetry(
-              message: state.failure!.localized(context.l10n),
-              retryLabel: context.l10n.commonRetry,
-              onRetry: cubit.load,
-            ),
-            HistoryStatus.ready when seasonLength == null =>
-              const AdaptiveLoader(),
-            HistoryStatus.ready => _ready(
-              context,
-              state,
-              cubit,
-              cubit.competitionId,
-              myPlayerId,
-              seasonLength!,
-            ),
-          },
         );
       },
     );

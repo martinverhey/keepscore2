@@ -2,6 +2,8 @@ enum AdaptiveGlyph {
   leaderboard,
   newMatch,
   matches,
+  players,
+  history,
   settings,
   chevronRight,
   chevronDown,

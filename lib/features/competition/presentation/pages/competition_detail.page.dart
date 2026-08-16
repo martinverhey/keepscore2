@@ -8,6 +8,7 @@ import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
+import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../../core/widgets/tag.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
@@ -23,6 +24,8 @@ import '../../../player/presentation/cubit/players_cubit.dart';
 import '../../../profile/presentation/widgets/profile_section.dart';
 import '../../domain/competition.model.dart';
 import '../cubit/competition_detail_cubit.dart';
+import '../widgets/competition_section.enum.dart';
+import '../widgets/competition_shell.dart';
 import '../widgets/invite_sheet.dart';
 
 enum CompetitionTab { leaderboard, matches }
@@ -117,88 +120,134 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
           }
         }
         final myMedals = leaderboardState.medals[myPlayerId];
+        final tabTitle = switch (_tab) {
+          CompetitionTab.leaderboard => context.l10n.leaderboardTitle,
+          CompetitionTab.matches => context.l10n.matchesTitle,
+        };
+        setPageTitle(
+          context,
+          competition == null ? tabTitle : '${competition.name} · $tabTitle',
+        );
 
-        return AdaptiveScaffold(
-          title: switch (_tab) {
-            CompetitionTab.leaderboard => context.l10n.leaderboardTitle,
-            CompetitionTab.matches => context.l10n.matchesTitle,
-          },
-          onRefresh: _refresh,
-          hasScrollBody: true,
-          trailing: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerRight,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                GameTypeFilterDropdown(
-                  selected: context.watch<GameTypeFilterCubit>().state,
-                  onSelected: context.read<GameTypeFilterCubit>().select,
-                ),
-                const SizedBox(width: AppSpacing.xs),
-                AdaptiveIconButton(
-                  glyph: AdaptiveGlyph.settings,
-                  onPressed: _openSettings,
-                ),
-              ],
-            ),
-          ),
-          bottomBar: AdaptiveBottomTabBar(
-            items: [
-              AdaptiveTabBarItem(
-                glyph: AdaptiveGlyph.leaderboard,
-                label: context.l10n.leaderboardTitle,
+        return CompetitionShell(
+          competitionName: competition?.name,
+          current: _tab == CompetitionTab.leaderboard
+              ? CompetitionSection.leaderboard
+              : CompetitionSection.matches,
+          canManageSettings: session.canWrite && isOwner,
+          isRegistered: isRegistered,
+          onSelectSection: _selectSection,
+          onNewMatch: _openNewMatch,
+          onOpenHome: () => context.push(Routes.home),
+          onOpenSettings: () =>
+              _openAndReload(Routes.competitionSettings(widget.competitionId)),
+          onOpenTheme: () => context.push(Routes.theme),
+          onSignOut: () =>
+              context.read<AuthBloc>().add(const AuthSignOutRequested()),
+          child: AdaptiveScaffold(
+            title: tabTitle,
+            onRefresh: _refresh,
+            hasScrollBody: true,
+            trailing: _trailingRow(context),
+            bottomBar: AppPlatform.useWideWeb(context)
+                ? null
+                : _bottomTabBar(context, isRegistered: isRegistered),
+            body: switch (state.status) {
+              CompetitionDetailStatus.loading => const AdaptiveLoader(),
+              CompetitionDetailStatus.missing => EmptyState(
+                message: context.l10n.competitionNotFound,
               ),
-              if (isRegistered)
-                AdaptiveTabBarItem(
-                  glyph: AdaptiveGlyph.newMatch,
-                  label: context.l10n.matchNew,
+              CompetitionDetailStatus.failed when competition == null =>
+                ErrorRetry(
+                  message: state.failure!.localized(context.l10n),
+                  retryLabel: context.l10n.commonRetry,
+                  onRetry: context.read<CompetitionDetailCubit>().load,
                 ),
-              AdaptiveTabBarItem(
-                glyph: AdaptiveGlyph.matches,
-                label: context.l10n.matchesTitle,
+              _ when competition == null => const SizedBox.shrink(),
+              _ => _body(
+                context,
+                competition,
+                isRegistered: isRegistered,
+                isOwner: isOwner,
+                hasPlayers: hasPlayers,
+                myPlayerId: myPlayerId,
+                myDisplayName: myDisplayName,
+                myLeaderboard: myLeaderboard,
+                myMedals: myMedals,
+                playerCount: leaderboards.length,
               ),
-            ],
-            selectedIndex: _tab == CompetitionTab.leaderboard
-                ? 0
-                : (isRegistered ? 2 : 1),
-            onTap: (index) {
-              if (isRegistered && index == 1) {
-                _openNewMatch();
-                return;
-              }
-              setState(
-                () => _tab = index == 0
-                    ? CompetitionTab.leaderboard
-                    : CompetitionTab.matches,
-              );
             },
           ),
-          body: switch (state.status) {
-            CompetitionDetailStatus.loading => const AdaptiveLoader(),
-            CompetitionDetailStatus.missing => EmptyState(
-              message: context.l10n.competitionNotFound,
+        );
+      },
+    );
+  }
+
+  void _selectSection(CompetitionSection section) {
+    switch (section) {
+      case CompetitionSection.leaderboard:
+        setState(() => _tab = CompetitionTab.leaderboard);
+      case CompetitionSection.matches:
+        setState(() => _tab = CompetitionTab.matches);
+      case CompetitionSection.players:
+        _openAndReload(Routes.players(widget.competitionId));
+      case CompetitionSection.history:
+        _openAndReload(Routes.history(widget.competitionId));
+    }
+  }
+
+  Widget _trailingRow(BuildContext context) {
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      alignment: Alignment.centerRight,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          GameTypeFilterDropdown(
+            selected: context.watch<GameTypeFilterCubit>().state,
+            onSelected: context.read<GameTypeFilterCubit>().select,
+          ),
+          if (!AppPlatform.useWideWeb(context)) ...[
+            const SizedBox(width: AppSpacing.xs),
+            AdaptiveIconButton(
+              glyph: AdaptiveGlyph.settings,
+              onPressed: _openSettings,
             ),
-            CompetitionDetailStatus.failed when competition == null =>
-              ErrorRetry(
-                message: state.failure!.localized(context.l10n),
-                retryLabel: context.l10n.commonRetry,
-                onRetry: context.read<CompetitionDetailCubit>().load,
-              ),
-            _ when competition == null => const SizedBox.shrink(),
-            _ => _body(
-              context,
-              competition,
-              isRegistered: isRegistered,
-              isOwner: isOwner,
-              hasPlayers: hasPlayers,
-              myPlayerId: myPlayerId,
-              myDisplayName: myDisplayName,
-              myLeaderboard: myLeaderboard,
-              myMedals: myMedals,
-              playerCount: leaderboards.length,
-            ),
-          },
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _bottomTabBar(BuildContext context, {required bool isRegistered}) {
+    return AdaptiveBottomTabBar(
+      items: [
+        AdaptiveTabBarItem(
+          glyph: AdaptiveGlyph.leaderboard,
+          label: context.l10n.leaderboardTitle,
+        ),
+        if (isRegistered)
+          AdaptiveTabBarItem(
+            glyph: AdaptiveGlyph.newMatch,
+            label: context.l10n.matchNew,
+          ),
+        AdaptiveTabBarItem(
+          glyph: AdaptiveGlyph.matches,
+          label: context.l10n.matchesTitle,
+        ),
+      ],
+      selectedIndex: _tab == CompetitionTab.leaderboard
+          ? 0
+          : (isRegistered ? 2 : 1),
+      onTap: (index) {
+        if (isRegistered && index == 1) {
+          _openNewMatch();
+          return;
+        }
+        setState(
+          () => _tab = index == 0
+              ? CompetitionTab.leaderboard
+              : CompetitionTab.matches,
         );
       },
     );
@@ -296,8 +345,7 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
     return Row(
       children: [
         Expanded(
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
+          child: AdaptiveTappable(
             onTap: () => context.push(Routes.home),
             child: Row(
               children: [

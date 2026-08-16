@@ -14,6 +14,12 @@ abstract final class AdaptiveColors {
   static Color teamB(BuildContext context) =>
       _forBrightness(context, AppColors.teamB, AppColors.teamBOnDark);
 
+  static Color surfaceTint(BuildContext context) =>
+      Theme.of(context).colorScheme.surfaceContainerLow;
+
+  static Color divider(BuildContext context) =>
+      Theme.of(context).colorScheme.outlineVariant;
+
   static Color _forBrightness(BuildContext context, Color light, Color dark) {
     final brightness = AppPlatform.useCupertino
         ? CupertinoTheme.brightnessOf(context)
