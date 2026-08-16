@@ -6,6 +6,7 @@ import '../../../../app/dependency_injection/injector.dart';
 import '../../../../app/router/app_router.dart';
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context_l10n.dart';
+import '../../../../core/extensions/streak_type_tier.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/medal_chip.dart';
@@ -16,19 +17,19 @@ import '../../../../core/widgets/today_delta_badge.dart';
 import '../../../competition/domain/competition.model.dart';
 import '../../../leaderboard/domain/leaderboard.model.dart';
 import '../../../leaderboard/domain/medals.model.dart';
-import '../../../leaderboard/domain/season_standing.model.dart';
+import '../../../leaderboard/domain/season_leaderboard.model.dart';
 import '../../../leaderboard/presentation/widgets/game_type_filter_dropdown.dart';
 import '../../../leaderboard/presentation/widgets/season_label.dart';
 import '../../../match/domain/match_entry.model.dart';
 import '../../../match/presentation/cubit/game_type_filter_cubit.dart';
 import '../../../match/presentation/widgets/match_tile.dart';
+import '../cubit/profile_history_cubit.dart';
 import '../cubit/profile_overview_cubit.dart';
-import '../cubit/profile_season_history_cubit.dart';
 import '../cubit/profile_versus_cubit.dart';
 import 'initials_circle.dart';
 import 'rating_trend_chart.dart';
 
-enum ProfileTab { overview, versus, seasonHistory }
+enum ProfileTab { overview, versus, history }
 
 class ProfileSheet extends StatefulWidget {
   const ProfileSheet({
@@ -49,12 +50,12 @@ class ProfileSheet extends StatefulWidget {
 class _ProfileSheetState extends State<ProfileSheet> {
   ProfileTab _tab = ProfileTab.overview;
   ProfileVersusCubit? _versusCubit;
-  ProfileSeasonHistoryCubit? _seasonHistoryCubit;
+  ProfileHistoryCubit? _historyCubit;
 
   @override
   void dispose() {
     _versusCubit?.close();
-    _seasonHistoryCubit?.close();
+    _historyCubit?.close();
     super.dispose();
   }
 
@@ -62,24 +63,20 @@ class _ProfileSheetState extends State<ProfileSheet> {
     final cubit = _versusCubit;
     if (cubit != null) return cubit;
     final overview = context.read<ProfileOverviewCubit>();
-    return _versusCubit =
-        getIt<ProfileVersusCubit>(
-            param1: overview.playerId,
-            param2: widget.myPlayerId,
-          )
-          ..load();
+    return _versusCubit = getIt<ProfileVersusCubit>(
+      param1: overview.playerId,
+      param2: widget.myPlayerId,
+    )..load();
   }
 
-  ProfileSeasonHistoryCubit _ensureSeasonHistoryCubit(BuildContext context) {
-    final cubit = _seasonHistoryCubit;
+  ProfileHistoryCubit _ensureHistoryCubit(BuildContext context) {
+    final cubit = _historyCubit;
     if (cubit != null) return cubit;
     final overview = context.read<ProfileOverviewCubit>();
-    return _seasonHistoryCubit =
-        getIt<ProfileSeasonHistoryCubit>(
-            param1: overview.competitionId,
-            param2: overview.playerId,
-          )
-          ..load();
+    return _historyCubit = getIt<ProfileHistoryCubit>(
+      param1: overview.competitionId,
+      param2: overview.playerId,
+    )..load();
   }
 
   @override
@@ -128,14 +125,14 @@ class _ProfileSheetState extends State<ProfileSheet> {
             ProfileTab.overview: context.l10n.profileTabOverview,
             if (state.hasOpponent)
               ProfileTab.versus: context.l10n.profileTabVersus,
-            ProfileTab.seasonHistory: context.l10n.profileTabSeasonHistory,
+            ProfileTab.history: context.l10n.profileTabHistory,
           },
         ),
         const SizedBox(height: AppSpacing.lg),
         switch (_tab) {
           ProfileTab.overview => _overview(context, state),
           ProfileTab.versus => _versusTab(context),
-          ProfileTab.seasonHistory => _seasonHistoryTab(context),
+          ProfileTab.history => _historyTab(context),
         },
       ],
     );
@@ -410,20 +407,83 @@ class _ProfileSheetState extends State<ProfileSheet> {
   Widget _streaksRow(BuildContext context, ProfileOverviewState state) {
     final streak = state.streak;
     final winStreak = streak.type == StreakType.win ? streak.count : 0;
-    final lossStreak = streak.type == StreakType.loss ? streak.count : 0;
+    final tier = streak.type.tier(winStreak);
 
-    return _statCard([
-      _statBlock(context.l10n.profileWinStreakLabel, '$winStreak'),
-      _statBlock(
-        context.l10n.profileBestWinStreakLabel,
-        '${state.bestStreaks.win}',
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _statCard([
+          if (tier > 0) ...[
+            _tierFirePill(tier),
+            const SizedBox(width: AppSpacing.sm),
+          ],
+          _statBlock(context.l10n.profileWinStreakLabel, '$winStreak'),
+          _statBlock(
+            context.l10n.profileBestWinStreakLabel,
+            '${state.bestStreaks.win}',
+          ),
+        ]),
+        const SizedBox(height: AppSpacing.sm),
+        _streakMilestoneRow(context),
+      ],
+    );
+  }
+
+  Widget _tierFirePill(int flameCount) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: 2,
       ),
-      _statBlock(context.l10n.profileLossStreakLabel, '$lossStreak'),
-      _statBlock(
-        context.l10n.profileBestLossStreakLabel,
-        '${state.bestStreaks.loss}',
+      decoration: BoxDecoration(
+        borderRadius: AppRadius.pill,
+        color: AppColors.fireCore.withValues(alpha: 0.16),
       ),
-    ]);
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var i = 0; i < flameCount; i++) ...[
+            if (i > 0) const SizedBox(width: 2),
+            const AdaptiveIcon(
+              AdaptiveGlyph.fire,
+              color: AppColors.fireCore,
+              size: 13,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _streakMilestoneRow(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(child: _streakMilestoneItem(context, flameCount: 1, wins: 3)),
+        Expanded(child: _streakMilestoneItem(context, flameCount: 2, wins: 5)),
+        Expanded(child: _streakMilestoneItem(context, flameCount: 3, wins: 10)),
+      ],
+    );
+  }
+
+  Widget _streakMilestoneItem(
+    BuildContext context, {
+    required int flameCount,
+    required int wins,
+  }) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _tierFirePill(flameCount),
+        const SizedBox(width: AppSpacing.xs),
+        Flexible(
+          child: Text(
+            '= ${context.l10n.profileStreakMilestoneWins(wins)}',
+            style: const TextStyle(fontSize: 11, color: AppColors.neutral),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _recentMatches(BuildContext context, List<MatchEntry> matches) {
@@ -448,42 +508,42 @@ class _ProfileSheetState extends State<ProfileSheet> {
     );
   }
 
-  Widget _seasonHistoryTab(BuildContext context) {
-    final cubit = _ensureSeasonHistoryCubit(context);
+  Widget _historyTab(BuildContext context) {
+    final cubit = _ensureHistoryCubit(context);
 
-    return BlocBuilder<ProfileSeasonHistoryCubit, ProfileSeasonHistoryState>(
+    return BlocBuilder<ProfileHistoryCubit, ProfileHistoryState>(
       bloc: cubit,
       builder: (context, state) => switch (state.status) {
-        ProfileSeasonHistoryStatus.loading => const Padding(
+        ProfileHistoryStatus.loading => const Padding(
           padding: EdgeInsets.all(AppSpacing.xl),
           child: AdaptiveLoader(),
         ),
-        ProfileSeasonHistoryStatus.failed => ErrorRetry(
+        ProfileHistoryStatus.failed => ErrorRetry(
           message: state.failure!.localized(context.l10n),
           retryLabel: context.l10n.commonRetry,
           onRetry: cubit.load,
         ),
-        ProfileSeasonHistoryStatus.ready => _seasonHistory(context, state),
+        ProfileHistoryStatus.ready => _history(context, state),
       },
     );
   }
 
-  Widget _seasonHistory(BuildContext context, ProfileSeasonHistoryState state) {
-    if (state.standings.isEmpty) {
-      return EmptyState(message: context.l10n.profileSeasonHistoryEmpty);
+  Widget _history(BuildContext context, ProfileHistoryState state) {
+    if (state.leaderboards.isEmpty) {
+      return EmptyState(message: context.l10n.profileHistoryEmpty);
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        for (final standing in state.standings)
-          _seasonHistoryRow(context, standing),
+        for (final leaderboard in state.leaderboards)
+          _historyRow(context, leaderboard),
       ],
     );
   }
 
-  Widget _seasonHistoryRow(BuildContext context, SeasonStanding standing) {
-    final medal = standing.medal;
+  Widget _historyRow(BuildContext context, SeasonLeaderboard leaderboard) {
+    final medal = leaderboard.medal;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -491,7 +551,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
         children: [
           Expanded(
             child: Text(
-              seasonLabel(context, standing.season, widget.seasonLength),
+              seasonLabel(context, leaderboard.season, widget.seasonLength),
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ),
           ),
@@ -504,12 +564,12 @@ class _ProfileSheetState extends State<ProfileSheet> {
             const SizedBox(width: AppSpacing.sm),
           ],
           Text(
-            '#${standing.rank}',
+            '#${leaderboard.rank}',
             style: const TextStyle(fontSize: 13, color: AppColors.neutral),
           ),
           const SizedBox(width: AppSpacing.sm),
           Text(
-            formatRating(standing.rating),
+            formatRating(leaderboard.rating),
             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
           ),
         ],

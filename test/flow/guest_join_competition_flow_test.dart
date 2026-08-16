@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keepscore2/app/router/go_router_refresh_stream.dart';
+import 'package:keepscore2/core/widgets/adaptive/adaptive_tab_bar.dart';
 import 'package:keepscore2/core/widgets/adaptive/app_platform.dart';
 import 'package:keepscore2/features/auth/domain/auth_repository.dart';
 import 'package:keepscore2/features/auth/domain/auth_user.model.dart';
@@ -300,7 +301,12 @@ void main() {
       expect(find.text('Chris'), findsWidgets);
 
       // Step 4 — the matches tab has something on it.
-      await tester.tap(find.text(l10n.matchesTitle));
+      await tester.tap(
+        find.descendant(
+          of: find.byType(AdaptiveBottomTabBar),
+          matching: find.text(l10n.matchesTitle),
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('3 – 1'), findsOneWidget);

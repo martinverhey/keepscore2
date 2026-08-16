@@ -32,11 +32,11 @@ current calendar window — which has no row until the first match lands in it �
 and carries a game-type filter (`GameTypeFilterDropdown`, next to the title in
 the scaffold's `trailing`) — combined (default) or one of
 `1v1`/`2v2`/`3v3`/`4v4`/`mixed`. It has no season picker: that moved to
-`/competition/:id/settings/history` (`SeasonHistoryPage`), which shows one
-finished season at a time — `SeasonSheet` picks among `SeasonHistoryState.seasons`
+`/competition/:id/settings/history` (`HistoryPage`), which shows one
+finished season at a time — `SeasonSheet` picks among `HistoryState.seasons`
 (the lean, already-loaded season list — id/starts_at/ends_at only, no
-standings — so the picker itself needs no separate fetch), and selecting one
-fetches just that season's standings. Carries its own, independent
+leaderboards — so the picker itself needs no separate fetch), and selecting one
+fetches just that season's leaderboard. Carries its own, independent
 `GameTypeFilterDropdown`, same placement.
 
 `/competition/:id/match/new` builds the teams and submits; `/competition/:id/match/:matchId` shows
@@ -80,7 +80,7 @@ or moved:
 - **Edit/delete a match** — `match_detail.page.dart`,
   `session.canWrite && state.isManageableBy(session.user?.id)` (creator or
   owner only, not just registered).
-- **Season History** (`competition_menu.page.dart`) is deliberately *outside*
+- **History** (`competition_menu.page.dart`) is deliberately *outside*
   this gate — it's read-only historical data a guest may read. Competition
   Settings and Manage players in the same menu stay gated.
 
@@ -189,6 +189,15 @@ code; don't relitigate them.
     widgets that are neither a page nor a tab stay unsuffixed
     (`leaderboard_repository.dart`, `elo_calculator.dart`,
     `leaderboard_row.dart`).
+- **The same small piece of logic showing up as a private helper in more than
+  one file becomes an extension in `core/extensions/`, not a copy in each
+  file or a shared static helper.** One extension per file, unsuffixed,
+  named `<Type><Concept>` (e.g. `BuildContextL10n` on `BuildContext` in
+  `build_context_l10n.dart`, `StreakTypeTier` on `StreakType` in
+  `streak_type_tier.dart`). `core/extensions/` may import a feature's domain
+  type to extend it (`core/data/game_type_filter_store.dart` already does
+  this for `GameType`) — extending a type is not a layering violation the way
+  a core file depending on feature *behaviour* would be.
 - **Feature code never imports `package:flutter/cupertino.dart` or Material
   widgets directly.** Everything platform-specific goes through
   `core/widgets/adaptive/adaptive.dart`. `AppPlatform.useCupertino` is the
@@ -266,7 +275,7 @@ Kept here because the code cannot express them and they cost real debugging:
 - **`game_type_season_history`** is the same trick one level up: `select
   b.*, s.starts_at, s.ends_at, medal … from game_type_leaderboard_base b join
   seasons s … where s.ends_at <= now()`, the same shape `season_history` is
-  built in from `leaderboard_base`. `SeasonHistoryPage` carries its own
+  built in from `leaderboard_base`. `HistoryPage` carries its own
   `GameTypeFilterDropdown`/`selectGameTypeFilter`, independent of the
   leaderboard tab's filter — they're different cubits with their own
   `selectedGameType`. `game_type_player_medals` is the same trick again,
@@ -281,20 +290,20 @@ Kept here because the code cannot express them and they cost real debugging:
   `game_type_leaderboard_base` (20260816100000), not on `leaderboard`/
   `game_type_leaderboard` directly** — the live views add `streak_type`/
   `streak_count`/`today_delta` (function calls per row, meaningful only for
-  the current season), which `SeasonStanding` never reads; building history
+  the current season), which `SeasonLeaderboard` never reads; building history
   from the `*_base` views instead means those scans never run for a closed
   season. Add a new column to `leaderboard`/`game_type_leaderboard` only when
   it belongs on the *current* leaderboard specifically — extend the `*_base`
-  view instead if season history should carry it too.
+  view instead if history should carry it too.
 - **The game-type filter is one global, shared value — `GameTypeFilterCubit`
   is a `registerLazySingleton`, not scoped per screen.** Any repository
-  method that reads match-derived data (leaderboards, season history, medals,
+  method that reads match-derived data (leaderboards, history, medals,
   streaks, rating history, totals) takes `{GameType? gameType}` and picks
   between the combined table/view and its `game_type_*` sibling, and any
   cubit that surfaces such data re-fetches on every `GameTypeFilterCubit`
   emission (see `LeaderboardCubit._applyGameType`,
   `ProfileOverviewCubit._applyGameType`, and its `ProfileVersusCubit`/
-  `ProfileSeasonHistoryCubit` siblings, each with the same pattern).
+  `ProfileHistoryCubit` siblings, each with the same pattern).
   New match-derived data follows the same two-part contract: a `game_type_*`
   sibling read model, plus a repository method/cubit fetch that's parameterized
   on `gameType` and re-runs when the shared filter changes — grep either
@@ -315,9 +324,9 @@ Kept here because the code cannot express them and they cost real debugging:
   the competition-wide list for the selected `gameType`, find this `playerId`
   in it.
 - **`ProfileSheet` has three cubits, one per tab, not one `ProfileCubit`.**
-  Overview, Versus, and Season History are never visible at once, so only
+  Overview, Versus, and History are never visible at once, so only
   Overview (the default tab) loads eagerly, the same way the old single
-  cubit did. `ProfileVersusCubit`/`ProfileSeasonHistoryCubit` are built
+  cubit did. `ProfileVersusCubit`/`ProfileHistoryCubit` are built
   lazily by `ProfileSheet` itself via `getIt` — the first time a tab is
   actually opened, not when the sheet is — and closed by the sheet's
   `dispose()` since nothing else owns them. All three still subscribe to the

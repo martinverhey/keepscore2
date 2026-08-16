@@ -198,7 +198,7 @@ $$;
 -- Rating application
 -- ---------------------------------------------------------------------------
 
--- Applies one match on top of the current standings. The match row and its
+-- Applies one match on top of the current leaderboard. The match row and its
 -- match_players rows (with team assignments) must already exist; rating
 -- columns are overwritten here.
 --

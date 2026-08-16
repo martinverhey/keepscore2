@@ -14,15 +14,15 @@ import '../../features/competition/presentation/cubit/competition_detail_cubit.d
 import '../../features/competition/presentation/cubit/competition_list_cubit.dart';
 import '../../features/competition/presentation/cubit/competition_settings_cubit.dart';
 import '../../features/competition/presentation/cubit/create_competition_cubit.dart';
+import '../../features/competition/presentation/cubit/history_cubit.dart';
 import '../../features/competition/presentation/cubit/join_competition_cubit.dart';
 import '../../features/competition/presentation/pages/competition_detail.page.dart';
 import '../../features/competition/presentation/pages/competition_menu.page.dart';
 import '../../features/competition/presentation/pages/competition_settings.page.dart';
 import '../../features/competition/presentation/pages/competitions.page.dart';
 import '../../features/competition/presentation/pages/create_competition.page.dart';
+import '../../features/competition/presentation/pages/history.page.dart';
 import '../../features/competition/presentation/pages/join_competition.page.dart';
-import '../../features/competition/presentation/cubit/season_history_cubit.dart';
-import '../../features/competition/presentation/pages/season_history.page.dart';
 import '../../features/leaderboard/presentation/cubit/leaderboard_cubit.dart';
 import '../../features/match/presentation/cubit/match_detail_cubit.dart';
 import '../../features/match/presentation/cubit/match_form_cubit.dart';
@@ -54,7 +54,7 @@ abstract final class Routes {
 
   static String players(String id) => '/competition/$id/settings/players';
 
-  static String seasonHistory(String id) => '/competition/$id/settings/history';
+  static String history(String id) => '/competition/$id/settings/history';
 
   static String newMatch(String id) => '/competition/$id/match/new';
 
@@ -239,10 +239,10 @@ GoRouter createRouter(AuthBloc authBloc) {
                             getIt<CompetitionDetailCubit>(param1: id),
                       ),
                       BlocProvider(
-                        create: (_) => getIt<SeasonHistoryCubit>(param1: id),
+                        create: (_) => getIt<HistoryCubit>(param1: id),
                       ),
                     ],
-                    child: const SeasonHistoryPage(),
+                    child: const HistoryPage(),
                   );
                 },
               ),

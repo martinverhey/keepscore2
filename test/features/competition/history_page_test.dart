@@ -5,12 +5,12 @@ import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_detail_cubit.dart';
-import 'package:keepscore2/features/competition/presentation/cubit/season_history_cubit.dart';
-import 'package:keepscore2/features/competition/presentation/pages/season_history.page.dart';
+import 'package:keepscore2/features/competition/presentation/cubit/history_cubit.dart';
+import 'package:keepscore2/features/competition/presentation/pages/history.page.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
 import 'package:keepscore2/features/leaderboard/domain/medal.enum.dart';
 import 'package:keepscore2/features/leaderboard/domain/season.model.dart';
-import 'package:keepscore2/features/leaderboard/domain/season_standing.model.dart';
+import 'package:keepscore2/features/leaderboard/domain/season_leaderboard.model.dart';
 import 'package:keepscore2/features/leaderboard/presentation/widgets/leaderboard_row.dart';
 import 'package:keepscore2/features/leaderboard/presentation/widgets/season_dropdown.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
@@ -24,14 +24,14 @@ final _june = DateTime.utc(2026, 5, 31, 22);
 final _july = DateTime.utc(2026, 6, 30, 22);
 final _august = DateTime.utc(2026, 7, 31, 22);
 
-SeasonStanding _standing({
+SeasonLeaderboard _leaderboard({
   required String seasonId,
   required DateTime startsAt,
   required String playerId,
   required String displayName,
   required int rank,
   Medal? medal,
-}) => SeasonStanding(
+}) => SeasonLeaderboard(
   seasonId: seasonId,
   competitionId: 'c1',
   playerId: playerId,
@@ -77,9 +77,9 @@ void main() {
       final competitions = MockCompetitionRepository();
       final leaderboard = MockLeaderboardRepository();
 
-      when(() => competitions.overview('c1')).thenAnswer(
-        (_) async => _overview(),
-      );
+      when(
+        () => competitions.overview('c1'),
+      ).thenAnswer((_) async => _overview());
       when(() => leaderboard.finishedSeasons('c1')).thenAnswer(
         (_) async => [
           Season(id: 's-july', startsAt: _july, endsAt: _august),
@@ -87,10 +87,10 @@ void main() {
         ],
       );
       when(
-        () => leaderboard.seasonHistory(competitionId: 'c1', seasonId: 's-july'),
+        () => leaderboard.history(competitionId: 'c1', seasonId: 's-july'),
       ).thenAnswer(
         (_) async => [
-          _standing(
+          _leaderboard(
             seasonId: 's-july',
             startsAt: _july,
             playerId: 'p2',
@@ -101,17 +101,17 @@ void main() {
         ],
       );
       when(
-        () => leaderboard.seasonHistory(competitionId: 'c1', seasonId: 's-june'),
+        () => leaderboard.history(competitionId: 'c1', seasonId: 's-june'),
       ).thenAnswer(
         (_) async => [
-          _standing(
+          _leaderboard(
             seasonId: 's-june',
             startsAt: _june,
             playerId: 'p1',
             displayName: 'Ada',
             rank: 1,
           ),
-          _standing(
+          _leaderboard(
             seasonId: 's-june',
             startsAt: _june,
             playerId: 'p2',
@@ -121,37 +121,34 @@ void main() {
         ],
       );
 
-      final competitionDetailCubit = CompetitionDetailCubit(
-        competitions,
-        'c1',
-      );
-      final seasonHistoryCubit = SeasonHistoryCubit(leaderboard, 'c1');
+      final competitionDetailCubit = CompetitionDetailCubit(competitions, 'c1');
+      final historyCubit = HistoryCubit(leaderboard, 'c1');
       addTearDown(competitionDetailCubit.close);
-      addTearDown(seasonHistoryCubit.close);
+      addTearDown(historyCubit.close);
 
       await tester.pumpWidget(
         MultiBlocProvider(
           providers: [
             BlocProvider.value(value: competitionDetailCubit),
-            BlocProvider.value(value: seasonHistoryCubit),
+            BlocProvider.value(value: historyCubit),
           ],
           child: MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            home: const SeasonHistoryPage(),
+            home: const HistoryPage(),
           ),
         ),
       );
       await tester.pumpAndSettle();
 
       final l10n = AppLocalizations.of(
-        tester.element(find.byType(SeasonHistoryPage)),
+        tester.element(find.byType(HistoryPage)),
       );
 
       // SliverAppBar.large mounts the title widget for both its collapsed
       // and expanded states at once, so the plain title is legitimately
       // found twice — the dropdown itself, in the content below it, isn't.
-      expect(find.text(l10n.seasonHistoryTitle), findsWidgets);
+      expect(find.text(l10n.historyTitle), findsWidgets);
       expect(find.text(l10n.leaderboardPickSeason), findsNothing);
       expect(find.byType(SeasonDropdown), findsOneWidget);
       expect(find.text('July 2026'), findsOneWidget);

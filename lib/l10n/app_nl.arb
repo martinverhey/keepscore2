@@ -81,8 +81,8 @@
   "competitionMenuSectionSystem": "Systeem",
   "competitionSettingsTitle": "Competitie-instellingen",
   "playersManageTitle": "Spelers beheren",
-  "seasonHistoryTitle": "Seizoensgeschiedenis",
-  "seasonHistoryEmpty": "Er zijn nog geen seizoenen afgelopen.",
+  "historyTitle": "Geschiedenis",
+  "historyEmpty": "Er zijn nog geen seizoenen afgelopen.",
   "competitionSettingsSave": "Wijzigingen opslaan",
   "competitionSettingsSaved": "Wijzigingen opgeslagen.",
   "competitionSettingsOwnerOnly": "Alleen de beheerder kan deze instellingen wijzigen.",
@@ -175,8 +175,8 @@
   "@leaderboardFilterEmpty": {
     "placeholders": { "gameType": { "type": "String" } }
   },
-  "seasonHistoryFilterEmpty": "Nog geen afgeronde {gameType}-seizoenen.",
-  "@seasonHistoryFilterEmpty": {
+  "historyFilterEmpty": "Nog geen afgeronde {gameType}-seizoenen.",
+  "@historyFilterEmpty": {
     "placeholders": { "gameType": { "type": "String" } }
   },
   "gameTypeFilterPick": "Filter op speltype",
@@ -268,17 +268,22 @@
   "profileLossesLabel": "Verloren",
   "profileDrawsLabel": "Gelijk",
   "profileWinRateLabel": "Winstpercentage",
-  "profileWinStreakLabel": "Winreeks",
+  "profileWinStreakLabel": "Winreeks seizoen",
+  "profileWinStreakShortLabel": "Winreeks",
   "profileLossStreakLabel": "Verliesreeks",
-  "profileBestWinStreakLabel": "Beste winreeks",
-  "profileBestLossStreakLabel": "Beste verliesreeks",
+  "profileBestWinStreakLabel": "Winreeks totaal",
+  "profileBestLossStreakLabel": "Slechtste verliesreeks",
   "profileTrendTitle": "Recente vorm",
   "profileNotEnoughMatches": "Speel nog een paar wedstrijden om je trend te zien.",
   "profileTabOverview": "Overzicht",
   "profileTabVersus": "Versus",
-  "profileTabSeasonHistory": "Seizoensgeschiedenis",
+  "profileTabHistory": "Geschiedenis",
   "profileStreakWin": "{count, plural, =1{1 keer op rij gewonnen} other{{count} keer op rij gewonnen}}",
   "@profileStreakWin": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "profileStreakMilestoneWins": "{count, plural, =1{1 keer winst} other{{count} keer winst}}",
+  "@profileStreakMilestoneWins": {
     "placeholders": { "count": { "type": "int" } }
   },
   "profileStreakLoss": "{count, plural, =1{1 keer op rij verloren} other{{count} keer op rij verloren}}",
@@ -299,7 +304,7 @@
   "profileSeasonGamesLabel": "Seizoen",
   "profileTotalGamesLabel": "Totaal",
   "profileRecentMatchesTitle": "Recente wedstrijden",
-  "profileSeasonHistoryEmpty": "Nog geen eerdere seizoenen.",
+  "profileHistoryEmpty": "Nog geen eerdere seizoenen.",
 
   "settingsThemeTitle": "Thema",
   "themeOptionSystem": "Systeem",

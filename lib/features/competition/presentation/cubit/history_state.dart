@@ -2,26 +2,26 @@ import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/failure.dart';
 import '../../../leaderboard/domain/season.model.dart';
-import '../../../leaderboard/domain/season_standing.model.dart';
+import '../../../leaderboard/domain/season_leaderboard.model.dart';
 import '../../../match/domain/game_type.enum.dart';
 
-enum SeasonHistoryStatus { loading, ready, failed }
+enum HistoryStatus { loading, ready, failed }
 
-class SeasonHistoryState extends Equatable {
-  const SeasonHistoryState({
-    this.status = SeasonHistoryStatus.loading,
+class HistoryState extends Equatable {
+  const HistoryState({
+    this.status = HistoryStatus.loading,
     this.seasons = const [],
     this.selectedSeasonId,
-    this.standings = const [],
+    this.leaderboards = const [],
     this.selectedGameType,
     this.busy = false,
     this.failure,
   });
 
-  final SeasonHistoryStatus status;
+  final HistoryStatus status;
   final List<Season> seasons;
   final String? selectedSeasonId;
-  final List<SeasonStanding> standings;
+  final List<SeasonLeaderboard> leaderboards;
   final GameType? selectedGameType;
   final bool busy;
   final Failure? failure;
@@ -36,22 +36,22 @@ class SeasonHistoryState extends Equatable {
 
   bool get hasHistory => seasons.length > 1;
 
-  SeasonHistoryState copyWith({
-    SeasonHistoryStatus? status,
+  HistoryState copyWith({
+    HistoryStatus? status,
     List<Season>? seasons,
     String? selectedSeasonId,
-    List<SeasonStanding>? standings,
+    List<SeasonLeaderboard>? leaderboards,
     GameType? selectedGameType,
     bool? busy,
     Failure? failure,
     bool clearFailure = false,
     bool clearGameType = false,
   }) {
-    return SeasonHistoryState(
+    return HistoryState(
       status: status ?? this.status,
       seasons: seasons ?? this.seasons,
       selectedSeasonId: selectedSeasonId ?? this.selectedSeasonId,
-      standings: standings ?? this.standings,
+      leaderboards: leaderboards ?? this.leaderboards,
       selectedGameType: clearGameType
           ? null
           : (selectedGameType ?? this.selectedGameType),
@@ -65,7 +65,7 @@ class SeasonHistoryState extends Equatable {
     status,
     seasons,
     selectedSeasonId,
-    standings,
+    leaderboards,
     selectedGameType,
     busy,
     failure,

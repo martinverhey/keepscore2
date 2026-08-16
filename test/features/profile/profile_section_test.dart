@@ -1,6 +1,5 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/medals.model.dart';
@@ -72,7 +71,7 @@ void main() {
       expect(find.text('1042'), findsOneWidget);
       expect(find.text('60%'), findsOneWidget);
       expect(find.text('5'), findsOneWidget);
-      expect(find.text(l10n.profileSeasonGamesLabel), findsOneWidget);
+      expect(find.text(l10n.matchesTitle), findsOneWidget);
       expect(find.text(l10n.leaderboardRecord(3, 1, 1)), findsNothing);
       expect(tester.takeException(), isNull);
     },
@@ -88,11 +87,11 @@ void main() {
     );
 
     expect(find.text('Bartholomew Alexandertonovich'), findsOneWidget);
-    expect(find.text(l10n.profileSeasonGamesLabel), findsNothing);
+    expect(find.text(l10n.matchesTitle), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('omits the stats row when there is no standing at all', (
+  testWidgets('omits the stats row when there is no leaderboard entry at all', (
     tester,
   ) async {
     await _pump(tester, null);
@@ -117,21 +116,7 @@ void main() {
     expect(find.text('2'), findsOneWidget);
     expect(find.text('1'), findsOneWidget);
     expect(find.text('7'), findsOneWidget);
-    expect(find.text(l10n.profileWinStreakLabel), findsOneWidget);
-    expect(
-      find.descendant(
-        of: find.byType(ProfileSection),
-        matching: find.byWidgetPredicate(
-          (widget) =>
-              widget is AdaptiveIcon && widget.glyph == AdaptiveGlyph.fire,
-        ),
-      ),
-      findsOneWidget,
-    );
-    expect(
-      find.bySemanticsLabel(RegExp(RegExp.escape(l10n.profileStreakWin(7)))),
-      findsOneWidget,
-    );
+    expect(find.text(l10n.profileWinStreakShortLabel), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

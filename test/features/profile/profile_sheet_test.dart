@@ -18,8 +18,8 @@ import 'package:keepscore2/features/profile/domain/profile_repository.dart';
 import 'package:keepscore2/features/profile/domain/profile_stats.model.dart';
 import 'package:keepscore2/features/profile/domain/recent_played.model.dart';
 import 'package:keepscore2/features/profile/domain/streak.model.dart';
+import 'package:keepscore2/features/profile/presentation/cubit/profile_history_cubit.dart';
 import 'package:keepscore2/features/profile/presentation/cubit/profile_overview_cubit.dart';
-import 'package:keepscore2/features/profile/presentation/cubit/profile_season_history_cubit.dart';
 import 'package:keepscore2/features/profile/presentation/cubit/profile_versus_cubit.dart';
 import 'package:keepscore2/features/profile/presentation/widgets/profile_sheet.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
@@ -96,7 +96,7 @@ void main() {
     matchRepository = MockMatchRepository();
     gameTypeFilterCubit = GameTypeFilterCubit();
 
-    // The Versus and Season History tabs build their cubits lazily through
+    // The Versus and History tabs build their cubits lazily through
     // getIt, exactly the way the app does — registering them here means a
     // test only pays for the round trips of a tab it actually opens.
     getIt.registerFactoryParam<ProfileVersusCubit, String, String>(
@@ -108,8 +108,8 @@ void main() {
         opponentId,
       ),
     );
-    getIt.registerFactoryParam<ProfileSeasonHistoryCubit, String, String>(
-      (competitionId, playerId) => ProfileSeasonHistoryCubit(
+    getIt.registerFactoryParam<ProfileHistoryCubit, String, String>(
+      (competitionId, playerId) => ProfileHistoryCubit(
         leaderboardRepository,
         gameTypeFilterCubit,
         competitionId,
@@ -160,7 +160,7 @@ void main() {
 
   testWidgets(
     'the whole overview respects the selected game type, top to bottom, '
-    'and never touches the versus or season-history repositories',
+    'and never touches the versus or history repositories',
     (tester) async {
       void stubGameType(
         GameType? type, {
@@ -290,7 +290,7 @@ void main() {
       expect(find.text(l10n.profileRecentMatchesTitle), findsNothing);
       expect(tester.widget<MedalChip>(find.byType(MedalChip)).count, 3);
 
-      // Neither Versus nor Season History was ever opened.
+      // Neither Versus nor History was ever opened.
       verifyNever(
         () => profileRepository.headToHead(
           playerId: any(named: 'playerId'),
@@ -298,7 +298,7 @@ void main() {
         ),
       );
       verifyNever(
-        () => leaderboardRepository.seasonHistory(
+        () => leaderboardRepository.history(
           competitionId: any(named: 'competitionId'),
           playerId: any(named: 'playerId'),
         ),
@@ -603,97 +603,92 @@ void main() {
       expect(tester.takeException(), isNull);
 
       verify(
-        () => profileRepository.headToHead(
-          playerId: 'p1',
-          opponentId: 'viewer',
-        ),
+        () =>
+            profileRepository.headToHead(playerId: 'p1', opponentId: 'viewer'),
       ).called(1);
 
       await cubit.close();
     },
   );
 
-  testWidgets(
-    'the season history tab lazily loads standings only once opened',
-    (tester) async {
-      when(() => leaderboardRepository.currentSeason('c1')).thenAnswer(
-        (_) async =>
-            SeasonWindow(id: 's1', startsAt: _august, endsAt: _september),
-      );
-      when(
-        () => leaderboardRepository.leaderboards(
-          competitionId: 'c1',
-          seasonId: 's1',
-          gameType: null,
-        ),
-      ).thenAnswer((_) async => const []);
-      when(
-        () => profileRepository.ratingHistory(
-          seasonId: 's1',
-          playerId: 'p1',
-          gameType: null,
-        ),
-      ).thenAnswer((_) async => const []);
-      when(
-        () => profileRepository.profileStats(
-          playerId: 'p1',
-          seasonId: any(named: 'seasonId'),
-          gameType: null,
-        ),
-      ).thenAnswer(
-        (_) async => const ProfileStats(
-          totalPlayed: 0,
-          bestStreaks: BestStreaks.zero(),
-          bestRating: 0,
-          streak: Streak.none(),
-          recentPlayed: RecentPlayed.zero(),
-        ),
-      );
-      when(
-        () => matchRepository.recentForPlayer(playerId: 'p1', gameType: null),
-      ).thenAnswer((_) async => const []);
-      when(
-        () => leaderboardRepository.medals('c1', gameType: null),
-      ).thenAnswer((_) async => const []);
-      when(
-        () => leaderboardRepository.seasonHistory(
-          competitionId: 'c1',
-          playerId: 'p1',
-          gameType: null,
-        ),
-      ).thenAnswer((_) async => const []);
+  testWidgets('the history tab lazily loads leaderboards only once opened', (
+    tester,
+  ) async {
+    when(() => leaderboardRepository.currentSeason('c1')).thenAnswer(
+      (_) async =>
+          SeasonWindow(id: 's1', startsAt: _august, endsAt: _september),
+    );
+    when(
+      () => leaderboardRepository.leaderboards(
+        competitionId: 'c1',
+        seasonId: 's1',
+        gameType: null,
+      ),
+    ).thenAnswer((_) async => const []);
+    when(
+      () => profileRepository.ratingHistory(
+        seasonId: 's1',
+        playerId: 'p1',
+        gameType: null,
+      ),
+    ).thenAnswer((_) async => const []);
+    when(
+      () => profileRepository.profileStats(
+        playerId: 'p1',
+        seasonId: any(named: 'seasonId'),
+        gameType: null,
+      ),
+    ).thenAnswer(
+      (_) async => const ProfileStats(
+        totalPlayed: 0,
+        bestStreaks: BestStreaks.zero(),
+        bestRating: 0,
+        streak: Streak.none(),
+        recentPlayed: RecentPlayed.zero(),
+      ),
+    );
+    when(
+      () => matchRepository.recentForPlayer(playerId: 'p1', gameType: null),
+    ).thenAnswer((_) async => const []);
+    when(
+      () => leaderboardRepository.medals('c1', gameType: null),
+    ).thenAnswer((_) async => const []);
+    when(
+      () => leaderboardRepository.history(
+        competitionId: 'c1',
+        playerId: 'p1',
+        gameType: null,
+      ),
+    ).thenAnswer((_) async => const []);
 
-      final cubit = buildOverviewCubit()..load();
-      await cubit.stream.firstWhere(
-        (s) => s.status == ProfileOverviewStatus.ready,
-      );
-      await pumpSheet(tester, cubit);
+    final cubit = buildOverviewCubit()..load();
+    await cubit.stream.firstWhere(
+      (s) => s.status == ProfileOverviewStatus.ready,
+    );
+    await pumpSheet(tester, cubit);
 
-      final l10n = AppLocalizations.of(
-        tester.element(find.byType(ProfileSheet)),
-      );
+    final l10n = AppLocalizations.of(tester.element(find.byType(ProfileSheet)));
 
-      verifyNever(
-        () => leaderboardRepository.seasonHistory(
-          competitionId: any(named: 'competitionId'),
-          playerId: any(named: 'playerId'),
-        ),
-      );
+    verifyNever(
+      () => leaderboardRepository.history(
+        competitionId: any(named: 'competitionId'),
+        playerId: any(named: 'playerId'),
+      ),
+    );
 
-      await tester.tap(find.text(l10n.profileTabSeasonHistory));
-      await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.profileTabHistory));
+    await tester.pumpAndSettle();
 
-      expect(find.text(l10n.profileSeasonHistoryEmpty), findsOneWidget);
-      verify(
-        () => leaderboardRepository.seasonHistory(
-          competitionId: 'c1',
-          playerId: 'p1',
-          gameType: null,
-        ),
-      ).called(1);
-      expect(tester.takeException(), isNull);
+    expect(find.text(l10n.profileHistoryEmpty), findsOneWidget);
+    verify(
+      () => leaderboardRepository.history(
+        competitionId: 'c1',
+        playerId: 'p1',
+        gameType: null,
+      ),
+    ).called(1);
+    expect(tester.takeException(), isNull);
 
-      await cubit.close();
-    },
-  );
+    await cubit.close();
+  });
 }

@@ -227,10 +227,10 @@ class AppLocalizationsNl extends AppLocalizations {
   String get playersManageTitle => 'Spelers beheren';
 
   @override
-  String get seasonHistoryTitle => 'Seizoensgeschiedenis';
+  String get historyTitle => 'Geschiedenis';
 
   @override
-  String get seasonHistoryEmpty => 'Er zijn nog geen seizoenen afgelopen.';
+  String get historyEmpty => 'Er zijn nog geen seizoenen afgelopen.';
 
   @override
   String get competitionSettingsSave => 'Wijzigingen opslaan';
@@ -420,7 +420,7 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
-  String seasonHistoryFilterEmpty(String gameType) {
+  String historyFilterEmpty(String gameType) {
     return 'Nog geen afgeronde $gameType-seizoenen.';
   }
 
@@ -641,16 +641,19 @@ class AppLocalizationsNl extends AppLocalizations {
   String get profileWinRateLabel => 'Winstpercentage';
 
   @override
-  String get profileWinStreakLabel => 'Winreeks';
+  String get profileWinStreakLabel => 'Winreeks seizoen';
+
+  @override
+  String get profileWinStreakShortLabel => 'Winreeks';
 
   @override
   String get profileLossStreakLabel => 'Verliesreeks';
 
   @override
-  String get profileBestWinStreakLabel => 'Beste winreeks';
+  String get profileBestWinStreakLabel => 'Winreeks totaal';
 
   @override
-  String get profileBestLossStreakLabel => 'Beste verliesreeks';
+  String get profileBestLossStreakLabel => 'Slechtste verliesreeks';
 
   @override
   String get profileTrendTitle => 'Recente vorm';
@@ -666,7 +669,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get profileTabVersus => 'Versus';
 
   @override
-  String get profileTabSeasonHistory => 'Seizoensgeschiedenis';
+  String get profileTabHistory => 'Geschiedenis';
 
   @override
   String profileStreakWin(int count) {
@@ -675,6 +678,17 @@ class AppLocalizationsNl extends AppLocalizations {
       locale: localeName,
       other: '$count keer op rij gewonnen',
       one: '1 keer op rij gewonnen',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String profileStreakMilestoneWins(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count keer winst',
+      one: '1 keer winst',
     );
     return '$_temp0';
   }
@@ -719,7 +733,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get profileRecentMatchesTitle => 'Recente wedstrijden';
 
   @override
-  String get profileSeasonHistoryEmpty => 'Nog geen eerdere seizoenen.';
+  String get profileHistoryEmpty => 'Nog geen eerdere seizoenen.';
 
   @override
   String get settingsThemeTitle => 'Thema';

@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 
 import '../../profile/domain/streak_type.enum.dart';
 import 'medal.enum.dart';
-import 'season_standing.model.dart';
+import 'season_leaderboard.model.dart';
 
 export '../../profile/domain/streak_type.enum.dart';
 export 'medal.enum.dart';
@@ -45,21 +45,21 @@ class Leaderboard extends Equatable {
     todayDelta: _toDouble(map['today_delta']),
   );
 
-  factory Leaderboard.fromSeasonStanding(SeasonStanding standing) =>
+  factory Leaderboard.fromSeasonLeaderboard(SeasonLeaderboard leaderboard) =>
       Leaderboard(
-        seasonId: standing.seasonId,
-        competitionId: standing.competitionId,
-        playerId: standing.playerId,
-        displayName: standing.displayName,
-        isClaimed: standing.isClaimed,
+        seasonId: leaderboard.seasonId,
+        competitionId: leaderboard.competitionId,
+        playerId: leaderboard.playerId,
+        displayName: leaderboard.displayName,
+        isClaimed: leaderboard.isClaimed,
         isOwner: false,
-        rating: standing.rating,
-        played: standing.played,
-        wins: standing.wins,
-        losses: standing.losses,
-        draws: standing.draws,
-        rank: standing.rank,
-        medal: standing.medal,
+        rating: leaderboard.rating,
+        played: leaderboard.played,
+        wins: leaderboard.wins,
+        losses: leaderboard.losses,
+        draws: leaderboard.draws,
+        rank: leaderboard.rank,
+        medal: leaderboard.medal,
       );
 
   factory Leaderboard.forRosterPlayer(

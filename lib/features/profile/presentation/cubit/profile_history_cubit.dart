@@ -6,17 +6,17 @@ import '../../../../core/error/failure.dart';
 import '../../../leaderboard/domain/leaderboard_repository.dart';
 import '../../../match/domain/game_type.enum.dart';
 import '../../../match/presentation/cubit/game_type_filter_cubit.dart';
-import 'profile_season_history_state.dart';
+import 'profile_history_state.dart';
 
-export 'profile_season_history_state.dart';
+export 'profile_history_state.dart';
 
-class ProfileSeasonHistoryCubit extends Cubit<ProfileSeasonHistoryState> {
-  ProfileSeasonHistoryCubit(
+class ProfileHistoryCubit extends Cubit<ProfileHistoryState> {
+  ProfileHistoryCubit(
     this._repository,
     this._gameTypeFilterCubit,
     this.competitionId,
     this.playerId,
-  ) : super(const ProfileSeasonHistoryState()) {
+  ) : super(const ProfileHistoryState()) {
     _gameTypeSubscription = _gameTypeFilterCubit.stream.listen(_applyGameType);
   }
 
@@ -28,27 +28,27 @@ class ProfileSeasonHistoryCubit extends Cubit<ProfileSeasonHistoryState> {
   StreamSubscription<GameType?>? _gameTypeSubscription;
 
   Future<void> load() async {
-    emit(const ProfileSeasonHistoryState());
+    emit(const ProfileHistoryState());
     final gameType = _gameTypeFilterCubit.state;
     try {
-      final standings = await _repository.seasonHistory(
+      final leaderboards = await _repository.history(
         competitionId: competitionId,
         playerId: playerId,
         gameType: gameType,
       );
       if (isClosed || gameType != _gameTypeFilterCubit.state) return;
       emit(
-        ProfileSeasonHistoryState(
-          status: ProfileSeasonHistoryStatus.ready,
+        ProfileHistoryState(
+          status: ProfileHistoryStatus.ready,
           selectedGameType: gameType,
-          standings: standings,
+          leaderboards: leaderboards,
         ),
       );
     } on Failure catch (failure) {
       if (isClosed) return;
       emit(
-        ProfileSeasonHistoryState(
-          status: ProfileSeasonHistoryStatus.failed,
+        ProfileHistoryState(
+          status: ProfileHistoryStatus.failed,
           failure: failure,
         ),
       );
@@ -57,16 +57,18 @@ class ProfileSeasonHistoryCubit extends Cubit<ProfileSeasonHistoryState> {
 
   Future<void> _applyGameType(GameType? gameType) async {
     if (gameType == state.selectedGameType) return;
-    if (state.status != ProfileSeasonHistoryStatus.ready) return;
+    if (state.status != ProfileHistoryStatus.ready) return;
 
     try {
-      final standings = await _repository.seasonHistory(
+      final leaderboards = await _repository.history(
         competitionId: competitionId,
         playerId: playerId,
         gameType: gameType,
       );
       if (isClosed || gameType != _gameTypeFilterCubit.state) return;
-      emit(state.copyWith(selectedGameType: gameType, standings: standings));
+      emit(
+        state.copyWith(selectedGameType: gameType, leaderboards: leaderboards),
+      );
     } on Failure catch (failure) {
       if (isClosed || gameType != _gameTypeFilterCubit.state) return;
       emit(state.copyWith(failure: failure));

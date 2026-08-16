@@ -13,21 +13,21 @@ import '../../../leaderboard/presentation/widgets/season_dropdown.dart';
 import '../../../profile/presentation/widgets/game_type_label.dart';
 import '../../domain/competition.model.dart';
 import '../cubit/competition_detail_cubit.dart';
-import '../cubit/season_history_cubit.dart';
+import '../cubit/history_cubit.dart';
 
-class SeasonHistoryPage extends StatefulWidget {
-  const SeasonHistoryPage({super.key});
+class HistoryPage extends StatefulWidget {
+  const HistoryPage({super.key});
 
   @override
-  State<SeasonHistoryPage> createState() => _SeasonHistoryPageState();
+  State<HistoryPage> createState() => _HistoryPageState();
 }
 
-class _SeasonHistoryPageState extends State<SeasonHistoryPage> {
+class _HistoryPageState extends State<HistoryPage> {
   @override
   void initState() {
     super.initState();
     context.read<CompetitionDetailCubit>().load();
-    context.read<SeasonHistoryCubit>().load();
+    context.read<HistoryCubit>().load();
   }
 
   @override
@@ -39,12 +39,12 @@ class _SeasonHistoryPageState extends State<SeasonHistoryPage> {
     final myPlayerId = context.watch<CompetitionDetailCubit>().state.myPlayerId;
     final seasonLength = competition?.seasonLength;
 
-    return BlocBuilder<SeasonHistoryCubit, SeasonHistoryState>(
+    return BlocBuilder<HistoryCubit, HistoryState>(
       builder: (context, state) {
-        final cubit = context.read<SeasonHistoryCubit>();
+        final cubit = context.read<HistoryCubit>();
 
         return AdaptiveScaffold(
-          title: context.l10n.seasonHistoryTitle,
+          title: context.l10n.historyTitle,
           trailing: FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerRight,
@@ -55,15 +55,15 @@ class _SeasonHistoryPageState extends State<SeasonHistoryPage> {
           ),
           hasScrollBody: true,
           body: switch (state.status) {
-            SeasonHistoryStatus.loading => const AdaptiveLoader(),
-            SeasonHistoryStatus.failed => ErrorRetry(
+            HistoryStatus.loading => const AdaptiveLoader(),
+            HistoryStatus.failed => ErrorRetry(
               message: state.failure!.localized(context.l10n),
               retryLabel: context.l10n.commonRetry,
               onRetry: cubit.load,
             ),
-            SeasonHistoryStatus.ready when seasonLength == null =>
+            HistoryStatus.ready when seasonLength == null =>
               const AdaptiveLoader(),
-            SeasonHistoryStatus.ready => _ready(
+            HistoryStatus.ready => _ready(
               context,
               state,
               cubit,
@@ -79,8 +79,8 @@ class _SeasonHistoryPageState extends State<SeasonHistoryPage> {
 
   Widget _ready(
     BuildContext context,
-    SeasonHistoryState state,
-    SeasonHistoryCubit cubit,
+    HistoryState state,
+    HistoryCubit cubit,
     String competitionId,
     String? myPlayerId,
     SeasonLength seasonLength,
@@ -121,18 +121,18 @@ class _SeasonHistoryPageState extends State<SeasonHistoryPage> {
 
   Widget _content(
     BuildContext context,
-    SeasonHistoryState state,
+    HistoryState state,
     String competitionId,
     String? myPlayerId,
     SeasonLength seasonLength,
   ) {
     if (state.busy) return const Center(child: AdaptiveLoader());
 
-    if (state.standings.isEmpty) {
+    if (state.leaderboards.isEmpty) {
       return EmptyState(
         message: state.selectedGameType == null
-            ? context.l10n.seasonHistoryEmpty
-            : context.l10n.seasonHistoryFilterEmpty(
+            ? context.l10n.historyEmpty
+            : context.l10n.historyFilterEmpty(
                 gameTypeLabel(context, state.selectedGameType!),
               ),
       );
@@ -141,11 +141,11 @@ class _SeasonHistoryPageState extends State<SeasonHistoryPage> {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.md),
       children: [
-        for (final standing in state.standings)
+        for (final leaderboard in state.leaderboards)
           LeaderboardRow(
             competitionId: competitionId,
-            leaderboard: Leaderboard.fromSeasonStanding(standing),
-            isMe: standing.playerId == myPlayerId,
+            leaderboard: Leaderboard.fromSeasonLeaderboard(leaderboard),
+            isMe: leaderboard.playerId == myPlayerId,
             myPlayerId: myPlayerId,
             seasonLength: seasonLength,
           ),

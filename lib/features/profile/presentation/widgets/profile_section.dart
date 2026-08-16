@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../app/dependency_injection/injector.dart';
 import '../../../../core/extensions/build_context_l10n.dart';
+import '../../../../core/extensions/streak_type_tier.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/medal_chip.dart';
@@ -78,6 +79,13 @@ class ProfileSection extends StatelessWidget {
   }
 
   Widget _header(BuildContext context, Leaderboard? leaderboard) {
+    final tally = medals;
+    final hasMedals =
+        leaderboard != null &&
+        leaderboard.played > 0 &&
+        tally != null &&
+        tally.hasAny;
+
     return Row(
       children: [
         InitialsCircle(displayName: displayName, size: 44),
@@ -98,11 +106,22 @@ class ProfileSection extends StatelessWidget {
               ),
               if (leaderboard != null && leaderboard.played > 0) ...[
                 const SizedBox(height: 2),
-                _rankAndMedalsRow(context, leaderboard),
+                Text(
+                  context.l10n.profileRank(leaderboard.rank, playerCount),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.neutral,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ],
           ),
         ),
+        if (hasMedals) ...[
+          const SizedBox(width: AppSpacing.sm),
+          _medalColumn(tally),
+        ],
         const SizedBox(width: AppSpacing.sm),
         const AdaptiveIcon(
           AdaptiveGlyph.chevronRight,
@@ -113,35 +132,15 @@ class ProfileSection extends StatelessWidget {
     );
   }
 
-  Widget _rankAndMedalsRow(BuildContext context, Leaderboard leaderboard) {
-    final tally = medals;
-
-    return Row(
-      children: [
-        Flexible(
-          child: Text(
-            context.l10n.profileRank(leaderboard.rank, playerCount),
-            style: const TextStyle(fontSize: 12, color: AppColors.neutral),
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-        if (tally != null && tally.hasAny) ...[
-          const Spacer(),
-          _medalRow(tally),
-          const Spacer(),
-        ],
-      ],
-    );
-  }
-
-  Widget _medalRow(Medals medals) {
+  Widget _medalColumn(Medals medals) {
     final chips = _medalChips(medals);
 
-    return Row(
+    return Column(
       mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         for (var i = 0; i < chips.length; i++) ...[
-          if (i > 0) const SizedBox(width: AppSpacing.sm),
+          if (i > 0) const SizedBox(height: AppSpacing.xs),
           chips[i],
         ],
       ],
@@ -150,11 +149,27 @@ class ProfileSection extends StatelessWidget {
 
   List<Widget> _medalChips(Medals medals) {
     final chips = [
-      if (medals.gold > 0) MedalChip(color: AppColors.gold, count: medals.gold),
+      if (medals.gold > 0)
+        MedalChip(
+          color: AppColors.gold,
+          count: medals.gold,
+          iconSize: 20,
+          fontSize: 18,
+        ),
       if (medals.silver > 0)
-        MedalChip(color: AppColors.silver, count: medals.silver),
+        MedalChip(
+          color: AppColors.silver,
+          count: medals.silver,
+          iconSize: 20,
+          fontSize: 18,
+        ),
       if (medals.bronze > 0)
-        MedalChip(color: AppColors.bronze, count: medals.bronze),
+        MedalChip(
+          color: AppColors.bronze,
+          count: medals.bronze,
+          iconSize: 20,
+          fontSize: 18,
+        ),
     ];
     return chips;
   }
@@ -163,9 +178,7 @@ class ProfileSection extends StatelessWidget {
     final winRatePercent = leaderboard.played == 0
         ? 0
         : (leaderboard.winRate * 100).round();
-    final hasStreak =
-        leaderboard.streakCount >= 2 &&
-        leaderboard.streakType != StreakType.none;
+    final hasStreak = leaderboard.streakType.tier(leaderboard.streakCount) > 0;
 
     return Row(
       children: [
@@ -174,10 +187,7 @@ class ProfileSection extends StatelessWidget {
           context.l10n.profileSeasonRatingLabel,
         ),
         _statBlock('$winRatePercent%', context.l10n.profileWinRateLabel),
-        _statBlock(
-          '${leaderboard.played}',
-          context.l10n.profileSeasonGamesLabel,
-        ),
+        _statBlock('${leaderboard.played}', context.l10n.matchesTitle),
         if (hasStreak) _streakBlock(context, leaderboard),
       ],
     );
@@ -186,67 +196,11 @@ class ProfileSection extends StatelessWidget {
   Widget _streakBlock(BuildContext context, Leaderboard leaderboard) {
     final isWin = leaderboard.streakType == StreakType.win;
 
-    return Expanded(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _streakTag(context, isWin: isWin, count: leaderboard.streakCount),
-          const SizedBox(height: 2),
-          Text(
-            isWin
-                ? context.l10n.profileWinStreakLabel
-                : context.l10n.profileLossStreakLabel,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 11, color: AppColors.neutral),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _streakTag(
-    BuildContext context, {
-    required bool isWin,
-    required int count,
-  }) {
-    final color = isWin ? AppColors.fireCore : AppColors.iceCore;
-
-    return Semantics(
-      label: isWin
-          ? context.l10n.profileStreakWin(count)
-          : context.l10n.profileStreakLoss(count),
-      child: ExcludeSemantics(
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.sm,
-            vertical: 2,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: AppRadius.pill,
-            color: color.withValues(alpha: 0.16),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AdaptiveIcon(
-                isWin ? AdaptiveGlyph.fire : AdaptiveGlyph.ice,
-                color: color,
-                size: 13,
-              ),
-              const SizedBox(width: 2),
-              Text(
-                '$count',
-                style: TextStyle(
-                  color: color,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    return _statBlock(
+      '${leaderboard.streakCount}',
+      isWin
+          ? context.l10n.profileWinStreakShortLabel
+          : context.l10n.profileLossStreakLabel,
     );
   }
 

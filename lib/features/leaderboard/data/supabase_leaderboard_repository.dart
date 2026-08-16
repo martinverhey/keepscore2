@@ -7,7 +7,7 @@ import '../domain/leaderboard.model.dart';
 import '../domain/leaderboard_repository.dart';
 import '../domain/medals.model.dart';
 import '../domain/season.model.dart';
-import '../domain/season_standing.model.dart';
+import '../domain/season_leaderboard.model.dart';
 import '../domain/season_window.model.dart';
 
 class SupabaseLeaderboardRepository implements LeaderboardRepository {
@@ -90,27 +90,26 @@ class SupabaseLeaderboardRepository implements LeaderboardRepository {
   }
 
   @override
-  Future<List<Season>> finishedSeasons(String competitionId) =>
-      guard(() async {
-        final rows = await _client
-            .from('finished_seasons')
-            .select('season_id, starts_at, ends_at')
-            .eq('competition_id', competitionId)
-            .order('starts_at', ascending: false);
+  Future<List<Season>> finishedSeasons(String competitionId) => guard(() async {
+    final rows = await _client
+        .from('finished_seasons')
+        .select('season_id, starts_at, ends_at')
+        .eq('competition_id', competitionId)
+        .order('starts_at', ascending: false);
 
-        return rows
-            .map(
-              (row) => Season.fromMap({
-                'id': row['season_id'],
-                'starts_at': row['starts_at'],
-                'ends_at': row['ends_at'],
-              }),
-            )
-            .toList(growable: false);
-      });
+    return rows
+        .map(
+          (row) => Season.fromMap({
+            'id': row['season_id'],
+            'starts_at': row['starts_at'],
+            'ends_at': row['ends_at'],
+          }),
+        )
+        .toList(growable: false);
+  });
 
   @override
-  Future<List<SeasonStanding>> seasonHistory({
+  Future<List<SeasonLeaderboard>> history({
     required String competitionId,
     String? seasonId,
     String? playerId,
@@ -129,7 +128,7 @@ class SupabaseLeaderboardRepository implements LeaderboardRepository {
         .order('rank', ascending: true);
 
     return rows
-        .map((row) => SeasonStanding.fromMap(row))
+        .map((row) => SeasonLeaderboard.fromMap(row))
         .toList(growable: false);
   });
 
@@ -137,7 +136,9 @@ class SupabaseLeaderboardRepository implements LeaderboardRepository {
   Future<List<Medals>> medals(String competitionId, {GameType? gameType}) =>
       guard(() async {
         var query = _client
-            .from(gameType == null ? 'player_medals' : 'game_type_player_medals')
+            .from(
+              gameType == null ? 'player_medals' : 'game_type_player_medals',
+            )
             .select()
             .eq('competition_id', competitionId);
         if (gameType != null) {

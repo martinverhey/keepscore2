@@ -11,8 +11,8 @@ import '../../features/competition/presentation/cubit/competition_detail_cubit.d
 import '../../features/competition/presentation/cubit/competition_list_cubit.dart';
 import '../../features/competition/presentation/cubit/competition_settings_cubit.dart';
 import '../../features/competition/presentation/cubit/create_competition_cubit.dart';
+import '../../features/competition/presentation/cubit/history_cubit.dart';
 import '../../features/competition/presentation/cubit/join_competition_cubit.dart';
-import '../../features/competition/presentation/cubit/season_history_cubit.dart';
 import '../../features/leaderboard/data/supabase_leaderboard_repository.dart';
 import '../../features/leaderboard/domain/leaderboard_repository.dart';
 import '../../features/leaderboard/presentation/cubit/leaderboard_cubit.dart';
@@ -27,8 +27,8 @@ import '../../features/player/domain/player_repository.dart';
 import '../../features/player/presentation/cubit/players_cubit.dart';
 import '../../features/profile/data/supabase_profile_repository.dart';
 import '../../features/profile/domain/profile_repository.dart';
+import '../../features/profile/presentation/cubit/profile_history_cubit.dart';
 import '../../features/profile/presentation/cubit/profile_overview_cubit.dart';
-import '../../features/profile/presentation/cubit/profile_season_history_cubit.dart';
 import '../../features/profile/presentation/cubit/profile_versus_cubit.dart';
 import '../../features/settings/presentation/cubit/theme_cubit.dart';
 
@@ -73,9 +73,9 @@ Future<void> configureDependencies() async {
       (competitionId, _) =>
           PlayersCubit(getIt<PlayerRepository>(), competitionId),
     )
-    ..registerFactoryParam<SeasonHistoryCubit, String, void>(
+    ..registerFactoryParam<HistoryCubit, String, void>(
       (competitionId, _) =>
-          SeasonHistoryCubit(getIt<LeaderboardRepository>(), competitionId),
+          HistoryCubit(getIt<LeaderboardRepository>(), competitionId),
     )
     ..registerLazySingleton<LeaderboardRepository>(
       () => SupabaseLeaderboardRepository(getIt<SupabaseClient>()),
@@ -137,8 +137,8 @@ Future<void> configureDependencies() async {
         opponentId,
       ),
     )
-    ..registerFactoryParam<ProfileSeasonHistoryCubit, String, String>(
-      (competitionId, playerId) => ProfileSeasonHistoryCubit(
+    ..registerFactoryParam<ProfileHistoryCubit, String, String>(
+      (competitionId, playerId) => ProfileHistoryCubit(
         getIt<LeaderboardRepository>(),
         getIt<GameTypeFilterCubit>(),
         competitionId,

@@ -84,9 +84,9 @@ class _CompetitionMenuPageState extends State<CompetitionMenuPage> {
                       ),
                     ),
                   NavRow(
-                    label: context.l10n.seasonHistoryTitle,
+                    label: context.l10n.historyTitle,
                     onTap: () => context.push(
-                      Routes.seasonHistory(widget.competitionId),
+                      Routes.history(widget.competitionId),
                     ),
                   ),
                   if (session.canWrite)

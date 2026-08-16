@@ -81,8 +81,8 @@
   "competitionMenuSectionSystem": "System",
   "competitionSettingsTitle": "Competition settings",
   "playersManageTitle": "Manage players",
-  "seasonHistoryTitle": "Season history",
-  "seasonHistoryEmpty": "No seasons have finished yet.",
+  "historyTitle": "History",
+  "historyEmpty": "No seasons have finished yet.",
   "competitionSettingsSave": "Save changes",
   "competitionSettingsSaved": "Changes saved.",
   "competitionSettingsOwnerOnly": "Only the owner can change these settings.",
@@ -175,8 +175,8 @@
   "@leaderboardFilterEmpty": {
     "placeholders": { "gameType": { "type": "String" } }
   },
-  "seasonHistoryFilterEmpty": "No finished {gameType} seasons yet.",
-  "@seasonHistoryFilterEmpty": {
+  "historyFilterEmpty": "No finished {gameType} seasons yet.",
+  "@historyFilterEmpty": {
     "placeholders": { "gameType": { "type": "String" } }
   },
   "gameTypeFilterPick": "Filter by game type",
@@ -268,17 +268,22 @@
   "profileLossesLabel": "Losses",
   "profileDrawsLabel": "Draws",
   "profileWinRateLabel": "Win rate",
-  "profileWinStreakLabel": "Win streak",
+  "profileWinStreakLabel": "Win streak season",
+  "profileWinStreakShortLabel": "Win streak",
   "profileLossStreakLabel": "Loss streak",
-  "profileBestWinStreakLabel": "Best win streak",
-  "profileBestLossStreakLabel": "Best loss streak",
+  "profileBestWinStreakLabel": "Win streak overall",
+  "profileBestLossStreakLabel": "Worst loss streak",
   "profileTrendTitle": "Recent form",
   "profileNotEnoughMatches": "Play a couple more matches to see your trend.",
   "profileTabOverview": "Overview",
   "profileTabVersus": "Versus",
-  "profileTabSeasonHistory": "Season history",
+  "profileTabHistory": "History",
   "profileStreakWin": "{count, plural, =1{1 win in a row} other{{count} wins in a row}}",
   "@profileStreakWin": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "profileStreakMilestoneWins": "{count, plural, =1{1 win} other{{count} wins}}",
+  "@profileStreakMilestoneWins": {
     "placeholders": { "count": { "type": "int" } }
   },
   "profileStreakLoss": "{count, plural, =1{1 loss in a row} other{{count} losses in a row}}",
@@ -299,7 +304,7 @@
   "profileSeasonGamesLabel": "Season",
   "profileTotalGamesLabel": "Total",
   "profileRecentMatchesTitle": "Recent matches",
-  "profileSeasonHistoryEmpty": "No past seasons yet.",
+  "profileHistoryEmpty": "No past seasons yet.",
 
   "settingsThemeTitle": "Theme",
   "themeOptionSystem": "System",

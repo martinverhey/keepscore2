@@ -4,10 +4,10 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/error/failure.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
-import 'package:keepscore2/features/leaderboard/domain/season_standing.model.dart';
+import 'package:keepscore2/features/leaderboard/domain/season_leaderboard.model.dart';
 import 'package:keepscore2/features/match/domain/game_type.enum.dart';
 import 'package:keepscore2/features/match/presentation/cubit/game_type_filter_cubit.dart';
-import 'package:keepscore2/features/profile/presentation/cubit/profile_season_history_cubit.dart';
+import 'package:keepscore2/features/profile/presentation/cubit/profile_history_cubit.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -16,7 +16,7 @@ class MockLeaderboardRepository extends Mock implements LeaderboardRepository {}
 final _july = DateTime.utc(2026, 6, 30, 22);
 final _august = DateTime.utc(2026, 7, 31, 22);
 
-SeasonStanding _pastSeason(double rating) => SeasonStanding(
+SeasonLeaderboard _pastSeason(double rating) => SeasonLeaderboard(
   seasonId: 's-july',
   competitionId: 'c1',
   playerId: 'p1',
@@ -39,7 +39,7 @@ void main() {
   late MockLeaderboardRepository leaderboardRepository;
   late GameTypeFilterCubit gameTypeFilterCubit;
 
-  ProfileSeasonHistoryCubit build() => ProfileSeasonHistoryCubit(
+  ProfileHistoryCubit build() => ProfileHistoryCubit(
     leaderboardRepository,
     gameTypeFilterCubit,
     'c1',
@@ -51,7 +51,7 @@ void main() {
     leaderboardRepository = MockLeaderboardRepository();
     gameTypeFilterCubit = GameTypeFilterCubit();
     when(
-      () => leaderboardRepository.seasonHistory(
+      () => leaderboardRepository.history(
         competitionId: 'c1',
         playerId: 'p1',
         gameType: any(named: 'gameType'),
@@ -61,10 +61,10 @@ void main() {
 
   tearDown(() => gameTypeFilterCubit.close());
 
-  blocTest<ProfileSeasonHistoryCubit, ProfileSeasonHistoryState>(
-    'loads this player\'s standing in every finished season',
+  blocTest<ProfileHistoryCubit, ProfileHistoryState>(
+    'loads this player\'s leaderboard entry in every finished season',
     setUp: () => when(
-      () => leaderboardRepository.seasonHistory(
+      () => leaderboardRepository.history(
         competitionId: 'c1',
         playerId: 'p1',
         gameType: null,
@@ -73,16 +73,16 @@ void main() {
     build: build,
     act: (cubit) => cubit.load(),
     verify: (cubit) {
-      expect(cubit.state.status, ProfileSeasonHistoryStatus.ready);
-      expect(cubit.state.standings, hasLength(1));
-      expect(cubit.state.standings.single.rating, 1120);
+      expect(cubit.state.status, ProfileHistoryStatus.ready);
+      expect(cubit.state.leaderboards, hasLength(1));
+      expect(cubit.state.leaderboards.single.rating, 1120);
     },
   );
 
-  blocTest<ProfileSeasonHistoryCubit, ProfileSeasonHistoryState>(
+  blocTest<ProfileHistoryCubit, ProfileHistoryState>(
     'a failed load surfaces the error',
     setUp: () => when(
-      () => leaderboardRepository.seasonHistory(
+      () => leaderboardRepository.history(
         competitionId: 'c1',
         playerId: 'p1',
         gameType: null,
@@ -91,15 +91,15 @@ void main() {
     build: build,
     act: (cubit) => cubit.load(),
     verify: (cubit) {
-      expect(cubit.state.status, ProfileSeasonHistoryStatus.failed);
+      expect(cubit.state.status, ProfileHistoryStatus.failed);
       expect(cubit.state.failure, isA<NetworkFailure>());
     },
   );
 
-  blocTest<ProfileSeasonHistoryCubit, ProfileSeasonHistoryState>(
-    'switching game type refetches the standings for it',
+  blocTest<ProfileHistoryCubit, ProfileHistoryState>(
+    'switching game type refetches the leaderboards for it',
     setUp: () => when(
-      () => leaderboardRepository.seasonHistory(
+      () => leaderboardRepository.history(
         competitionId: 'c1',
         playerId: 'p1',
         gameType: GameType.oneVOne,
@@ -113,11 +113,11 @@ void main() {
     },
     verify: (cubit) {
       expect(cubit.state.selectedGameType, GameType.oneVOne);
-      expect(cubit.state.standings.single.rating, 1090);
+      expect(cubit.state.leaderboards.single.rating, 1090);
     },
   );
 
-  blocTest<ProfileSeasonHistoryCubit, ProfileSeasonHistoryState>(
+  blocTest<ProfileHistoryCubit, ProfileHistoryState>(
     'reselecting the same game type is a no-op',
     build: build,
     act: (cubit) async {
@@ -125,29 +125,26 @@ void main() {
       await gameTypeFilterCubit.select(null);
       await _settle();
     },
-    expect: () => [
-      isA<ProfileSeasonHistoryState>(),
-      isA<ProfileSeasonHistoryState>(),
-    ],
+    expect: () => [isA<ProfileHistoryState>(), isA<ProfileHistoryState>()],
   );
 
-  blocTest<ProfileSeasonHistoryCubit, ProfileSeasonHistoryState>(
+  blocTest<ProfileHistoryCubit, ProfileHistoryState>(
     'a slower response for an abandoned game type does not clobber a '
     'faster one for the type selected after it',
     build: build,
     act: (cubit) async {
       await cubit.load();
 
-      final slow = Completer<List<SeasonStanding>>();
+      final slow = Completer<List<SeasonLeaderboard>>();
       when(
-        () => leaderboardRepository.seasonHistory(
+        () => leaderboardRepository.history(
           competitionId: 'c1',
           playerId: 'p1',
           gameType: GameType.oneVOne,
         ),
       ).thenAnswer((_) => slow.future);
       when(
-        () => leaderboardRepository.seasonHistory(
+        () => leaderboardRepository.history(
           competitionId: 'c1',
           playerId: 'p1',
           gameType: GameType.twoVTwo,
@@ -164,7 +161,7 @@ void main() {
     },
     verify: (cubit) {
       expect(cubit.state.selectedGameType, GameType.twoVTwo);
-      expect(cubit.state.standings.single.rating, 1010);
+      expect(cubit.state.leaderboards.single.rating, 1010);
     },
   );
 }

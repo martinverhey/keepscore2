@@ -2,44 +2,44 @@ import 'package:bloc/bloc.dart';
 
 import '../../../../core/error/failure.dart';
 import '../../../leaderboard/domain/leaderboard_repository.dart';
-import '../../../leaderboard/domain/season_standing.model.dart';
+import '../../../leaderboard/domain/season_leaderboard.model.dart';
 import '../../../match/domain/game_type.enum.dart';
-import 'season_history_state.dart';
+import 'history_state.dart';
 
-export 'season_history_state.dart';
+export 'history_state.dart';
 
-class SeasonHistoryCubit extends Cubit<SeasonHistoryState> {
-  SeasonHistoryCubit(this._repository, this.competitionId)
-    : super(const SeasonHistoryState());
+class HistoryCubit extends Cubit<HistoryState> {
+  HistoryCubit(this._repository, this.competitionId)
+    : super(const HistoryState());
 
   final LeaderboardRepository _repository;
   final String competitionId;
 
   Future<void> load() async {
     final gameType = state.selectedGameType;
-    emit(SeasonHistoryState(selectedGameType: gameType));
+    emit(HistoryState(selectedGameType: gameType));
     try {
       final seasons = await _repository.finishedSeasons(competitionId);
       if (isClosed) return;
 
       final selectedSeasonId = seasons.isEmpty ? null : seasons.first.id;
-      final standings = await _standingsFor(selectedSeasonId, gameType);
+      final leaderboards = await _leaderboardsFor(selectedSeasonId, gameType);
       if (isClosed) return;
 
       emit(
-        SeasonHistoryState(
-          status: SeasonHistoryStatus.ready,
+        HistoryState(
+          status: HistoryStatus.ready,
           seasons: seasons,
           selectedSeasonId: selectedSeasonId,
-          standings: standings,
+          leaderboards: leaderboards,
           selectedGameType: gameType,
         ),
       );
     } on Failure catch (failure) {
       if (isClosed) return;
       emit(
-        SeasonHistoryState(
-          status: SeasonHistoryStatus.failed,
+        HistoryState(
+          status: HistoryStatus.failed,
           selectedGameType: gameType,
           failure: failure,
         ),
@@ -53,16 +53,19 @@ class SeasonHistoryCubit extends Cubit<SeasonHistoryState> {
     emit(
       state.copyWith(
         selectedSeasonId: seasonId,
-        standings: const [],
+        leaderboards: const [],
         busy: true,
         clearFailure: true,
       ),
     );
 
     try {
-      final standings = await _standingsFor(seasonId, state.selectedGameType);
+      final leaderboards = await _leaderboardsFor(
+        seasonId,
+        state.selectedGameType,
+      );
       if (isClosed || seasonId != state.selectedSeasonId) return;
-      emit(state.copyWith(standings: standings, busy: false));
+      emit(state.copyWith(leaderboards: leaderboards, busy: false));
     } on Failure catch (failure) {
       if (isClosed) return;
       emit(state.copyWith(busy: false, failure: failure));
@@ -76,28 +79,31 @@ class SeasonHistoryCubit extends Cubit<SeasonHistoryState> {
       state.copyWith(
         selectedGameType: gameType,
         clearGameType: gameType == null,
-        standings: const [],
+        leaderboards: const [],
         busy: true,
         clearFailure: true,
       ),
     );
 
     try {
-      final standings = await _standingsFor(state.selectedSeasonId, gameType);
+      final leaderboards = await _leaderboardsFor(
+        state.selectedSeasonId,
+        gameType,
+      );
       if (isClosed || gameType != state.selectedGameType) return;
-      emit(state.copyWith(standings: standings, busy: false));
+      emit(state.copyWith(leaderboards: leaderboards, busy: false));
     } on Failure catch (failure) {
       if (isClosed) return;
       emit(state.copyWith(busy: false, failure: failure));
     }
   }
 
-  Future<List<SeasonStanding>> _standingsFor(
+  Future<List<SeasonLeaderboard>> _leaderboardsFor(
     String? seasonId,
     GameType? gameType,
   ) {
     if (seasonId == null) return Future.value(const []);
-    return _repository.seasonHistory(
+    return _repository.history(
       competitionId: competitionId,
       seasonId: seasonId,
       gameType: gameType,

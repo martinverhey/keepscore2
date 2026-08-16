@@ -1,5 +1,5 @@
 -- KeepScore 2 — let the profile sheet filter its whole overview (rating
--- trend, streak) by game type, not just the standings table.
+-- trend, streak) by game type, not just the leaderboard table.
 --
 -- player_streak's outcome sequence is a fact about the match itself (who won,
 -- independent of which Elo track is being read), so it only needs an extra

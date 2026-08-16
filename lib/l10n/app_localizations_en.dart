@@ -226,10 +226,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playersManageTitle => 'Manage players';
 
   @override
-  String get seasonHistoryTitle => 'Season history';
+  String get historyTitle => 'History';
 
   @override
-  String get seasonHistoryEmpty => 'No seasons have finished yet.';
+  String get historyEmpty => 'No seasons have finished yet.';
 
   @override
   String get competitionSettingsSave => 'Save changes';
@@ -419,7 +419,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String seasonHistoryFilterEmpty(String gameType) {
+  String historyFilterEmpty(String gameType) {
     return 'No finished $gameType seasons yet.';
   }
 
@@ -638,16 +638,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileWinRateLabel => 'Win rate';
 
   @override
-  String get profileWinStreakLabel => 'Win streak';
+  String get profileWinStreakLabel => 'Win streak season';
+
+  @override
+  String get profileWinStreakShortLabel => 'Win streak';
 
   @override
   String get profileLossStreakLabel => 'Loss streak';
 
   @override
-  String get profileBestWinStreakLabel => 'Best win streak';
+  String get profileBestWinStreakLabel => 'Win streak overall';
 
   @override
-  String get profileBestLossStreakLabel => 'Best loss streak';
+  String get profileBestLossStreakLabel => 'Worst loss streak';
 
   @override
   String get profileTrendTitle => 'Recent form';
@@ -663,7 +666,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileTabVersus => 'Versus';
 
   @override
-  String get profileTabSeasonHistory => 'Season history';
+  String get profileTabHistory => 'History';
 
   @override
   String profileStreakWin(int count) {
@@ -672,6 +675,17 @@ class AppLocalizationsEn extends AppLocalizations {
       locale: localeName,
       other: '$count wins in a row',
       one: '1 win in a row',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String profileStreakMilestoneWins(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count wins',
+      one: '1 win',
     );
     return '$_temp0';
   }
@@ -716,7 +730,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileRecentMatchesTitle => 'Recent matches';
 
   @override
-  String get profileSeasonHistoryEmpty => 'No past seasons yet.';
+  String get profileHistoryEmpty => 'No past seasons yet.';
 
   @override
   String get settingsThemeTitle => 'Theme';

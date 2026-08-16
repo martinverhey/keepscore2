@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../app/dependency_injection/injector.dart';
 import '../../../../core/extensions/build_context_l10n.dart';
+import '../../../../core/extensions/streak_type_tier.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/medal_chip.dart';
@@ -58,8 +59,7 @@ class LeaderboardRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasStreak =
-        leaderboard.streakCount >= 2 &&
-        leaderboard.streakType != StreakType.none;
+        leaderboard.streakType.tier(leaderboard.streakCount) > 0;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -80,9 +80,9 @@ class LeaderboardRow extends StatelessWidget {
           child: Row(
             children: [
               _rank(),
-              Expanded(child: _nameColumn(context, hasStreak)),
+              Expanded(child: _nameColumn(context)),
               const SizedBox(width: AppSpacing.sm),
-              _ratingColumn(context),
+              _ratingColumn(context, hasStreak),
             ],
           ),
         ),
@@ -103,7 +103,7 @@ class LeaderboardRow extends StatelessWidget {
     ),
   );
 
-  Widget _nameColumn(BuildContext context, bool hasStreak) {
+  Widget _nameColumn(BuildContext context) {
     final hasMedals = medals != null && medals!.hasAny;
 
     return Column(
@@ -135,24 +135,15 @@ class LeaderboardRow extends StatelessWidget {
             ],
           ],
         ),
-        if (hasMedals || hasStreak) ...[
+        if (hasMedals) ...[
           const SizedBox(height: 2),
-          Row(
-            children: [
-              if (hasMedals) ..._medalChips(medals!),
-              if (hasStreak) ...[
-                const Spacer(),
-                _streakBadge(context),
-                const Spacer(),
-              ],
-            ],
-          ),
+          Row(children: _medalChips(medals!)),
         ],
       ],
     );
   }
 
-  Widget _ratingColumn(BuildContext context) {
+  Widget _ratingColumn(BuildContext context, bool hasStreak) {
     final medal = leaderboard.medal;
 
     return Column(
@@ -176,9 +167,20 @@ class LeaderboardRow extends StatelessWidget {
             ),
           ],
         ),
-        if (leaderboard.todayDelta != 0) ...[
+        if (hasStreak || leaderboard.todayDelta != 0) ...[
           const SizedBox(height: 2),
-          TodayDeltaBadge(delta: leaderboard.todayDelta),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (hasStreak) ...[
+                _streakBadge(context),
+                if (leaderboard.todayDelta != 0)
+                  const SizedBox(width: AppSpacing.xs),
+              ],
+              if (leaderboard.todayDelta != 0)
+                TodayDeltaBadge(delta: leaderboard.todayDelta),
+            ],
+          ),
         ],
       ],
     );
@@ -193,6 +195,8 @@ class LeaderboardRow extends StatelessWidget {
   Widget _streakBadge(BuildContext context) {
     final isWin = leaderboard.streakType == StreakType.win;
     final color = isWin ? AppColors.fireCore : AppColors.iceCore;
+    final glyph = isWin ? AdaptiveGlyph.fire : AdaptiveGlyph.ice;
+    final tier = leaderboard.streakType.tier(leaderboard.streakCount);
 
     return Semantics(
       label: isWin
@@ -211,21 +215,10 @@ class LeaderboardRow extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              AdaptiveIcon(
-                isWin ? AdaptiveGlyph.fire : AdaptiveGlyph.ice,
-                color: color,
-                size: 13,
-              ),
-              const SizedBox(width: 2),
-              Text(
-                '${leaderboard.streakCount}',
-                style: TextStyle(
-                  color: color,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                ),
-              ),
+              for (var i = 0; i < tier; i++) ...[
+                if (i > 0) const SizedBox(width: 2),
+                AdaptiveIcon(glyph, color: color, size: 13),
+              ],
             ],
           ),
         ),

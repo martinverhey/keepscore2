@@ -476,17 +476,17 @@ abstract class AppLocalizations {
   /// **'Manage players'**
   String get playersManageTitle;
 
-  /// No description provided for @seasonHistoryTitle.
+  /// No description provided for @historyTitle.
   ///
   /// In en, this message translates to:
-  /// **'Season history'**
-  String get seasonHistoryTitle;
+  /// **'History'**
+  String get historyTitle;
 
-  /// No description provided for @seasonHistoryEmpty.
+  /// No description provided for @historyEmpty.
   ///
   /// In en, this message translates to:
   /// **'No seasons have finished yet.'**
-  String get seasonHistoryEmpty;
+  String get historyEmpty;
 
   /// No description provided for @competitionSettingsSave.
   ///
@@ -800,11 +800,11 @@ abstract class AppLocalizations {
   /// **'No {gameType} matches yet this season.'**
   String leaderboardFilterEmpty(String gameType);
 
-  /// No description provided for @seasonHistoryFilterEmpty.
+  /// No description provided for @historyFilterEmpty.
   ///
   /// In en, this message translates to:
   /// **'No finished {gameType} seasons yet.'**
-  String seasonHistoryFilterEmpty(String gameType);
+  String historyFilterEmpty(String gameType);
 
   /// No description provided for @gameTypeFilterPick.
   ///
@@ -1199,8 +1199,14 @@ abstract class AppLocalizations {
   /// No description provided for @profileWinStreakLabel.
   ///
   /// In en, this message translates to:
-  /// **'Win streak'**
+  /// **'Win streak season'**
   String get profileWinStreakLabel;
+
+  /// No description provided for @profileWinStreakShortLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Win streak'**
+  String get profileWinStreakShortLabel;
 
   /// No description provided for @profileLossStreakLabel.
   ///
@@ -1211,13 +1217,13 @@ abstract class AppLocalizations {
   /// No description provided for @profileBestWinStreakLabel.
   ///
   /// In en, this message translates to:
-  /// **'Best win streak'**
+  /// **'Win streak overall'**
   String get profileBestWinStreakLabel;
 
   /// No description provided for @profileBestLossStreakLabel.
   ///
   /// In en, this message translates to:
-  /// **'Best loss streak'**
+  /// **'Worst loss streak'**
   String get profileBestLossStreakLabel;
 
   /// No description provided for @profileTrendTitle.
@@ -1244,17 +1250,23 @@ abstract class AppLocalizations {
   /// **'Versus'**
   String get profileTabVersus;
 
-  /// No description provided for @profileTabSeasonHistory.
+  /// No description provided for @profileTabHistory.
   ///
   /// In en, this message translates to:
-  /// **'Season history'**
-  String get profileTabSeasonHistory;
+  /// **'History'**
+  String get profileTabHistory;
 
   /// No description provided for @profileStreakWin.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 win in a row} other{{count} wins in a row}}'**
   String profileStreakWin(int count);
+
+  /// No description provided for @profileStreakMilestoneWins.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 win} other{{count} wins}}'**
+  String profileStreakMilestoneWins(int count);
 
   /// No description provided for @profileStreakLoss.
   ///
@@ -1310,11 +1322,11 @@ abstract class AppLocalizations {
   /// **'Recent matches'**
   String get profileRecentMatchesTitle;
 
-  /// No description provided for @profileSeasonHistoryEmpty.
+  /// No description provided for @profileHistoryEmpty.
   ///
   /// In en, this message translates to:
   /// **'No past seasons yet.'**
-  String get profileSeasonHistoryEmpty;
+  String get profileHistoryEmpty;
 
   /// No description provided for @settingsThemeTitle.
   ///

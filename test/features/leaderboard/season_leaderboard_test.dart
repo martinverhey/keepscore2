@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/features/leaderboard/domain/medal.enum.dart';
 import 'package:keepscore2/features/leaderboard/domain/medals.model.dart';
-import 'package:keepscore2/features/leaderboard/domain/season_standing.model.dart';
+import 'package:keepscore2/features/leaderboard/domain/season_leaderboard.model.dart';
 
 Map<String, dynamic> _row({Object? medal = 'gold'}) => {
   'season_id': 's1',
@@ -22,18 +22,18 @@ Map<String, dynamic> _row({Object? medal = 'gold'}) => {
 
 void main() {
   test('reads a season_history row, medal included', () {
-    final standing = SeasonStanding.fromMap(_row());
+    final leaderboard = SeasonLeaderboard.fromMap(_row());
 
-    expect(standing.playerId, 'p1');
-    expect(standing.rank, 1);
-    expect(standing.medal, Medal.gold);
-    expect(standing.season.id, 's1');
+    expect(leaderboard.playerId, 'p1');
+    expect(leaderboard.rank, 1);
+    expect(leaderboard.medal, Medal.gold);
+    expect(leaderboard.season.id, 's1');
   });
 
   test('a row outside the top three has no medal', () {
-    final standing = SeasonStanding.fromMap(_row(medal: null));
+    final leaderboard = SeasonLeaderboard.fromMap(_row(medal: null));
 
-    expect(standing.medal, isNull);
+    expect(leaderboard.medal, isNull);
   });
 
   test('Medals reads gold/silver/bronze counts', () {
