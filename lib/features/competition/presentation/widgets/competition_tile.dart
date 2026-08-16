@@ -23,9 +23,9 @@ class CompetitionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final competition = overview.competition;
 
-    return GestureDetector(
+    return AdaptiveTappable(
       onTap: onTap,
-      behavior: HitTestBehavior.opaque,
+      borderRadius: AppRadius.card,
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(

@@ -34,9 +34,9 @@ class MatchTile extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
+      child: AdaptiveTappable(
         onTap: onTap,
+        borderRadius: AppRadius.card,
         child: Container(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.md,

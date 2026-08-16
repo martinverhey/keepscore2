@@ -11,9 +11,9 @@ class NavRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return AdaptiveTappable(
       onTap: onTap,
-      behavior: HitTestBehavior.opaque,
+      borderRadius: AppRadius.card,
       child: Container(
         margin: const EdgeInsets.only(bottom: AppSpacing.sm),
         padding: const EdgeInsets.symmetric(

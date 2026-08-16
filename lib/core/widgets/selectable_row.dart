@@ -22,9 +22,9 @@ class SelectableRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final accent = color ?? AdaptiveColors.accent(context);
 
-    return GestureDetector(
+    return AdaptiveTappable(
       onTap: onTap,
-      behavior: HitTestBehavior.opaque,
+      borderRadius: AppRadius.card,
       child: Container(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,

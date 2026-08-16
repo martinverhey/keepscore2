@@ -13,9 +13,9 @@ class PillDropdown extends StatelessWidget {
   Widget build(BuildContext context) {
     final accent = AdaptiveColors.accent(context);
 
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
+    return AdaptiveTappable(
       onTap: onTap,
+      borderRadius: AppRadius.pill,
       child: Container(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.sm,

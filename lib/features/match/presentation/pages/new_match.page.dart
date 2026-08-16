@@ -257,10 +257,10 @@ class _NewMatchPageState extends State<NewMatchPage> {
     required String placeholder,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
+    return AdaptiveTappable(
       key: key,
-      behavior: HitTestBehavior.opaque,
       onTap: onTap,
+      borderRadius: AppRadius.card,
       child: Container(
         width: double.infinity,
         constraints: const BoxConstraints(minHeight: 88),
