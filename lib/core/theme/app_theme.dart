@@ -1,9 +1,18 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'app_tokens.dart';
 
 abstract final class AppTheme {
+  static final PageTransitionsTheme _webPageTransitionsTheme =
+      PageTransitionsTheme(
+        builders: {
+          for (final platform in TargetPlatform.values)
+            platform: const FadeForwardsPageTransitionsBuilder(),
+        },
+      );
+
   static ThemeData material(Brightness brightness) {
     final scheme = ColorScheme.fromSeed(
       seedColor: AppColors.seed,
@@ -14,6 +23,7 @@ abstract final class AppTheme {
       colorScheme: scheme,
       useMaterial3: true,
       scaffoldBackgroundColor: scheme.surface,
+      pageTransitionsTheme: kIsWeb ? _webPageTransitionsTheme : null,
       appBarTheme: AppBarTheme(
         backgroundColor: scheme.surface,
         surfaceTintColor: Colors.transparent,
