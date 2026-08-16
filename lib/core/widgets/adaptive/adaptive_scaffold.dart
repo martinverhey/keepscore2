@@ -46,7 +46,7 @@ class AdaptiveScaffold extends StatelessWidget {
 
     return AppPlatform.useCupertino
         ? _cupertino(sliverBody)
-        : _material(sliverBody);
+        : _material(context, sliverBody);
   }
 
   Widget _cupertino(Widget sliverBody) {
@@ -84,27 +84,33 @@ class AdaptiveScaffold extends StatelessWidget {
     );
   }
 
-  Widget _material(Widget sliverBody) {
+  Widget _material(BuildContext context, Widget sliverBody) {
+    final actions = trailing == null
+        ? null
+        : [
+            Padding(
+              padding: const EdgeInsets.only(right: AppSpacing.sm),
+              child: trailing!,
+            ),
+          ];
+    final appBar = switch (title) {
+      null => _bareBar,
+      final title when AppPlatform.useWideWeb(context) => SliverAppBar(
+        pinned: true,
+        centerTitle: true,
+        title: Text(title),
+        leading: leading,
+        actions: actions,
+      ),
+      final title => SliverAppBar.large(
+        title: Text(title),
+        leading: leading,
+        actions: actions,
+      ),
+    };
     final scrollView = CustomScrollView(
       physics: onRefresh == null ? null : const AlwaysScrollableScrollPhysics(),
-      slivers: [
-        if (title case final title?)
-          SliverAppBar.large(
-            title: Text(title),
-            leading: leading,
-            actions: trailing == null
-                ? null
-                : [
-                    Padding(
-                      padding: const EdgeInsets.only(right: AppSpacing.sm),
-                      child: trailing!,
-                    ),
-                  ],
-          )
-        else
-          _bareBar,
-        sliverBody,
-      ],
+      slivers: [appBar, sliverBody],
     );
 
     return Scaffold(
