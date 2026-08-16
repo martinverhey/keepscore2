@@ -41,7 +41,7 @@ class CompetitionShell extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _sidebar(context),
+        AdaptiveMaterialScope(child: _sidebar(context)),
         Expanded(child: child),
       ],
     );

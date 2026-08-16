@@ -5,6 +5,7 @@ export 'adaptive_colors.dart';
 export 'adaptive_dialogs.dart';
 export 'adaptive_icon.dart';
 export 'adaptive_loader.dart';
+export 'adaptive_material_scope.dart';
 export 'adaptive_page.dart';
 export 'adaptive_scaffold.dart';
 export 'adaptive_segmented.dart';
