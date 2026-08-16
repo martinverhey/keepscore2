@@ -7,6 +7,7 @@ import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/help_text.dart';
+import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/section_label.dart';
 import '../../../../core/widgets/settings_switch_row.dart';
 import '../../../../core/widgets/state_views.dart';
@@ -62,6 +63,7 @@ class _CompetitionSettingsPageState extends State<CompetitionSettingsPage> {
       builder: (context, state) {
         final cubit = context.read<CompetitionSettingsCubit>();
         final session = context.watch<AuthBloc>().state;
+        setPageTitle(context, context.l10n.competitionSettingsTitle);
 
         return AdaptiveScaffold(
           title: context.l10n.competitionSettingsTitle,

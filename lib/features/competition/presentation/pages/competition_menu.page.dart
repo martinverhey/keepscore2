@@ -8,6 +8,7 @@ import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/nav_row.dart';
+import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/section_label.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
@@ -40,6 +41,7 @@ class _CompetitionMenuPageState extends State<CompetitionMenuPage> {
       builder: (context, state) {
         final competition = state.competition;
         final isOwner = competition?.isOwnedBy(session.user?.id) ?? false;
+        setPageTitle(context, context.l10n.competitionSettings);
 
         return AdaptiveScaffold(
           title: context.l10n.competitionSettings,

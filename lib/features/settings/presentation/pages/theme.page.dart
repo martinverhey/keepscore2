@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
+import '../../../../core/widgets/page_title.dart';
 import '../../domain/theme_preference.enum.dart';
 import '../cubit/theme_cubit.dart';
 
@@ -16,6 +17,8 @@ class ThemePage extends StatelessWidget {
 
     return BlocBuilder<ThemeCubit, ThemeState>(
       builder: (context, state) {
+        setPageTitle(context, context.l10n.settingsThemeTitle);
+
         return AdaptiveScaffold(
           title: context.l10n.settingsThemeTitle,
           body: Padding(

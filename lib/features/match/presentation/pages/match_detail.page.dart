@@ -7,6 +7,7 @@ import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
+import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/rating_delta.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
@@ -67,6 +68,7 @@ class _MatchDetailPageState extends State<MatchDetailPage> {
         final match = state.match;
         final canManage =
             session.canWrite && state.isManageableBy(session.user?.id);
+        setPageTitle(context, context.l10n.matchDetailTitle);
 
         return AdaptiveScaffold(
           title: context.l10n.matchDetailTitle,

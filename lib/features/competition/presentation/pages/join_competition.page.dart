@@ -6,6 +6,7 @@ import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
+import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/selectable_row.dart';
 import '../../../player/presentation/widgets/player_name_sheet.dart';
 import '../cubit/join_competition_cubit.dart';
@@ -25,6 +26,7 @@ class JoinCompetitionPage extends StatelessWidget {
       },
       builder: (context, state) {
         final cubit = context.read<JoinCompetitionCubit>();
+        setPageTitle(context, context.l10n.competitionsJoin);
 
         return AdaptiveScaffold(
           hasScrollBody: true,

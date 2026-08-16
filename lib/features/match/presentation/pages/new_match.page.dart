@@ -7,6 +7,7 @@ import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
+import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/rating_delta.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../player/domain/player.model.dart';
@@ -47,6 +48,7 @@ class _NewMatchPageState extends State<NewMatchPage> {
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<MatchFormCubit>();
+    setPageTitle(context, context.l10n.matchNewTitle);
 
     return AdaptiveScaffold(
       title: context.l10n.matchNewTitle,

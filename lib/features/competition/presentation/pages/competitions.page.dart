@@ -7,6 +7,7 @@ import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
+import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../../core/widgets/text_entry_sheet.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
@@ -34,6 +35,7 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
   @override
   Widget build(BuildContext context) {
     final session = context.watch<AuthBloc>().state;
+    setPageTitle(context, context.l10n.competitionsTitle);
 
     return AdaptiveScaffold(
       title: context.l10n.competitionsTitle,
