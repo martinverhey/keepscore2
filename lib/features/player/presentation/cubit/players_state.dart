@@ -4,21 +4,35 @@ import '../../../../core/error/failure.dart';
 import '../../../../core/extensions/player_list_active.dart';
 import '../../domain/player.model.dart';
 
-enum PlayersStatus { loading, ready, failed }
+sealed class PlayersState extends Equatable {
+  const PlayersState();
+}
 
-class PlayersState extends Equatable {
-  const PlayersState({
-    this.status = PlayersStatus.loading,
+class PlayersLoading extends PlayersState {
+  const PlayersLoading();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class PlayersFailed extends PlayersState {
+  const PlayersFailed(this.failure);
+
+  final Failure failure;
+
+  @override
+  List<Object?> get props => [failure];
+}
+
+class PlayersReady extends PlayersState {
+  const PlayersReady({
     this.players = const [],
     this.busy = false,
-    this.failure,
     this.actionFailure,
   });
 
-  final PlayersStatus status;
   final List<Player> players;
   final bool busy;
-  final Failure? failure;
   final Failure? actionFailure;
 
   List<Player> get active => players.active;
@@ -32,20 +46,15 @@ class PlayersState extends Equatable {
   List<Player> get unclaimed =>
       active.where((player) => player.isPlaceholder).toList(growable: false);
 
-  PlayersState copyWith({
-    PlayersStatus? status,
+  PlayersReady copyWith({
     List<Player>? players,
     bool? busy,
-    Failure? failure,
     Failure? actionFailure,
-    bool clearFailure = false,
     bool clearActionFailure = false,
   }) {
-    return PlayersState(
-      status: status ?? this.status,
+    return PlayersReady(
       players: players ?? this.players,
       busy: busy ?? this.busy,
-      failure: clearFailure ? null : (failure ?? this.failure),
       actionFailure: clearActionFailure
           ? null
           : (actionFailure ?? this.actionFailure),
@@ -53,5 +62,5 @@ class PlayersState extends Equatable {
   }
 
   @override
-  List<Object?> get props => [status, players, busy, failure, actionFailure];
+  List<Object?> get props => [players, busy, actionFailure];
 }

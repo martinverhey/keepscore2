@@ -103,11 +103,14 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
         final competition = state.competition;
         final isRegistered = session.canWrite;
         final isOwner = competition.isOwnedBySession(session);
-        final hasPlayers = roster.active.length >= 2;
+        final hasPlayers = roster is PlayersReady && roster.active.length >= 2;
         final myPlayerId = state.myPlayerId;
 
+        final rosterPlayers = roster is PlayersReady
+            ? roster.players
+            : const [];
         String? myDisplayName;
-        for (final player in roster.players) {
+        for (final player in rosterPlayers) {
           if (player.id == myPlayerId) {
             myDisplayName = player.displayName;
             break;

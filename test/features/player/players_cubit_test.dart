@@ -21,6 +21,8 @@ Player _player(
   userId: userId,
 );
 
+PlayersReady _ready(PlayersCubit cubit) => cubit.state as PlayersReady;
+
 void main() {
   late MockPlayerRepository repository;
 
@@ -38,9 +40,9 @@ void main() {
     build: () => PlayersCubit(repository, 'c1'),
     act: (cubit) => cubit.load(),
     verify: (cubit) {
-      expect(cubit.state.status, PlayersStatus.ready);
-      expect(cubit.state.active, hasLength(2));
-      expect(cubit.state.inactive, isEmpty);
+      final state = cubit.state as PlayersReady;
+      expect(state.active, hasLength(2));
+      expect(state.inactive, isEmpty);
     },
   );
 
@@ -54,7 +56,7 @@ void main() {
     build: () => PlayersCubit(repository, 'c1'),
     act: (cubit) => cubit.load(),
     verify: (cubit) => expect(
-      cubit.state.players.map((player) => player.displayName),
+      (cubit.state as PlayersReady).players.map((player) => player.displayName),
       ['ada', 'Grace', 'Zoe'],
     ),
   );
@@ -68,8 +70,9 @@ void main() {
     build: () => PlayersCubit(repository, 'c1'),
     act: (cubit) => cubit.load(),
     verify: (cubit) {
-      expect(cubit.state.claimed.map((player) => player.id), ['p1']);
-      expect(cubit.state.unclaimed.map((player) => player.id), ['p2']);
+      final state = cubit.state as PlayersReady;
+      expect(state.claimed.map((player) => player.id), ['p1']);
+      expect(state.unclaimed.map((player) => player.id), ['p2']);
     },
   );
 
@@ -81,8 +84,7 @@ void main() {
     build: () => PlayersCubit(repository, 'c1'),
     act: (cubit) => cubit.load(),
     verify: (cubit) {
-      expect(cubit.state.status, PlayersStatus.failed);
-      expect(cubit.state.failure, isA<NetworkFailure>());
+      expect((cubit.state as PlayersFailed).failure, isA<NetworkFailure>());
     },
   );
 
@@ -100,8 +102,8 @@ void main() {
       await cubit.refresh();
     },
     verify: (cubit) {
-      expect(cubit.state.status, PlayersStatus.failed);
-      expect(cubit.state.players, hasLength(1));
+      expect(cubit.state, isA<PlayersReady>());
+      expect((cubit.state as PlayersReady).players, hasLength(1));
     },
   );
 
@@ -122,7 +124,7 @@ void main() {
       await cubit.addPlaceholder('Grace');
     },
     verify: (cubit) {
-      expect(cubit.state.players.map((player) => player.displayName), [
+      expect(_ready(cubit).players.map((player) => player.displayName), [
         'Ada',
         'Grace',
         'Zoe',
@@ -145,7 +147,7 @@ void main() {
       await cubit.rename('p1', 'Zoe');
     },
     verify: (cubit) => expect(
-      cubit.state.players.map((player) => player.displayName),
+      _ready(cubit).players.map((player) => player.displayName),
       ['Grace', 'Zoe'],
     ),
   );
@@ -164,8 +166,8 @@ void main() {
       await cubit.setActive('p2', isActive: false);
     },
     verify: (cubit) {
-      expect(cubit.state.active.map((player) => player.id), ['p1']);
-      expect(cubit.state.inactive.map((player) => player.id), ['p2']);
+      expect(_ready(cubit).active.map((player) => player.id), ['p1']);
+      expect(_ready(cubit).inactive.map((player) => player.id), ['p2']);
     },
   );
 
@@ -187,10 +189,10 @@ void main() {
       expect(ok, isFalse);
     },
     verify: (cubit) {
-      expect(cubit.state.actionFailure, isA<PermissionFailure>());
-      expect(cubit.state.failure, isNull);
-      expect(cubit.state.players.single.displayName, 'Ada');
-      expect(cubit.state.busy, isFalse);
+      expect(_ready(cubit).actionFailure, isA<PermissionFailure>());
+      expect(cubit.state, isA<PlayersReady>());
+      expect(_ready(cubit).players.single.displayName, 'Ada');
+      expect(_ready(cubit).busy, isFalse);
     },
   );
 }

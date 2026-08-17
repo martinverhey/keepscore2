@@ -9,32 +9,27 @@ export 'players_state.dart';
 
 class PlayersCubit extends Cubit<PlayersState> {
   PlayersCubit(this._repository, this.competitionId)
-    : super(const PlayersState());
+    : super(const PlayersLoading());
 
   final PlayerRepository _repository;
   final String competitionId;
 
+  PlayersReady? get _ready => switch (state) {
+    PlayersReady ready => ready,
+    _ => null,
+  };
+
   Future<void> load({bool silent = false}) async {
-    if (!silent) emit(const PlayersState());
+    final ready = _ready;
+    if (!silent) emit(const PlayersLoading());
     try {
       final players = await _repository.currentPlayers(competitionId);
       if (isClosed) return;
-      emit(
-        state.copyWith(
-          status: PlayersStatus.ready,
-          players: _sortedByName(players),
-          clearFailure: true,
-        ),
-      );
+      emit(PlayersReady(players: _sortedByName(players)));
     } on Failure catch (failure) {
       if (isClosed) return;
-      emit(
-        state.copyWith(
-          status: PlayersStatus.failed,
-          players: silent ? state.players : const [],
-          failure: failure,
-        ),
-      );
+      if (silent && ready != null) return;
+      emit(PlayersFailed(failure));
     }
   }
 
@@ -56,23 +51,30 @@ class PlayersCubit extends Cubit<PlayersState> {
   );
 
   Future<bool> _mutate(Future<Player> Function() action) async {
-    if (state.busy) return false;
-    emit(state.copyWith(busy: true, clearActionFailure: true));
+    final ready = _ready;
+    if (ready == null || ready.busy) return false;
+    emit(ready.copyWith(busy: true, clearActionFailure: true));
     try {
       final player = await action();
       if (isClosed) return true;
-      emit(state.copyWith(busy: false, players: _merged(player)));
+      final latest = _ready;
+      if (latest != null) {
+        emit(latest.copyWith(busy: false, players: _merged(latest, player)));
+      }
       return true;
     } on Failure catch (failure) {
       if (isClosed) return false;
-      emit(state.copyWith(busy: false, actionFailure: failure));
+      final latest = _ready;
+      if (latest != null) {
+        emit(latest.copyWith(busy: false, actionFailure: failure));
+      }
       return false;
     }
   }
 
-  List<Player> _merged(Player player) {
+  List<Player> _merged(PlayersReady ready, Player player) {
     final players = [
-      for (final existing in state.players)
+      for (final existing in ready.players)
         if (existing.id == player.id) player else existing,
     ];
     if (!players.any((existing) => existing.id == player.id)) {

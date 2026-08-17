@@ -38,25 +38,21 @@ class Players extends StatelessWidget {
   }
 
   Widget _body(BuildContext context, PlayersState state, PlayersCubit cubit) {
-    if (state.status == PlayersStatus.loading) {
-      return const Padding(
+    return switch (state) {
+      PlayersLoading() => const Padding(
         padding: EdgeInsets.all(AppSpacing.xl),
         child: AdaptiveLoader(),
-      );
-    }
-
-    if (state.status == PlayersStatus.failed && state.players.isEmpty) {
-      return ErrorRetry(
-        message: state.failure!.localized(context.l10n),
+      ),
+      PlayersFailed(:final failure) => ErrorRetry(
+        message: failure.localized(context.l10n),
         retryLabel: context.l10n.commonRetry,
         onRetry: cubit.load,
-      );
-    }
-
-    return _list(context, state);
+      ),
+      PlayersReady() => _list(context, state),
+    };
   }
 
-  Widget _list(BuildContext context, PlayersState state) {
+  Widget _list(BuildContext context, PlayersReady state) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -89,7 +85,7 @@ class Players extends StatelessWidget {
     );
   }
 
-  Widget _addPlaceholderButton(BuildContext context, PlayersState state) {
+  Widget _addPlaceholderButton(BuildContext context, PlayersReady state) {
     return AdaptiveButton(
       label: context.l10n.playersAddDummy,
       kind: AdaptiveButtonKind.tinted,
@@ -98,7 +94,7 @@ class Players extends StatelessWidget {
     );
   }
 
-  Widget _actionFailureText(BuildContext context, PlayersState state) {
+  Widget _actionFailureText(BuildContext context, PlayersReady state) {
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.md),
       child: Text(
