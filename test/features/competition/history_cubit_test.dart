@@ -41,6 +41,8 @@ SeasonLeaderboard _leaderboard({
   medal: null,
 );
 
+HistoryReady _ready(HistoryCubit cubit) => cubit.state as HistoryReady;
+
 void main() {
   late MockLeaderboardRepository repository;
 
@@ -87,11 +89,10 @@ void main() {
     build: build,
     act: (cubit) => cubit.load(),
     verify: (cubit) {
-      expect(cubit.state.status, HistoryStatus.ready);
-      expect(cubit.state.seasons, hasLength(2));
-      expect(cubit.state.seasons.first.id, 's-july');
-      expect(cubit.state.selectedSeasonId, 's-july');
-      expect(cubit.state.leaderboards.single.playerId, 'p2');
+      expect(_ready(cubit).seasons, hasLength(2));
+      expect(_ready(cubit).seasons.first.id, 's-july');
+      expect(_ready(cubit).selectedSeasonId, 's-july');
+      expect(_ready(cubit).leaderboards.single.playerId, 'p2');
       verifyNever(
         () => repository.history(competitionId: 'c1', seasonId: 's-june'),
       );
@@ -131,8 +132,8 @@ void main() {
       await cubit.selectSeason('s-june');
     },
     verify: (cubit) {
-      expect(cubit.state.selectedSeasonId, 's-june');
-      expect(cubit.state.leaderboards.map((s) => s.playerId), ['p1', 'p2']);
+      expect(_ready(cubit).selectedSeasonId, 's-june');
+      expect(_ready(cubit).leaderboards.map((s) => s.playerId), ['p1', 'p2']);
       verify(
         () => repository.history(competitionId: 'c1', seasonId: 's-june'),
       ).called(1);
@@ -169,9 +170,9 @@ void main() {
       await cubit.selectGameTypeFilter(GameType.oneVOne);
     },
     verify: (cubit) {
-      expect(cubit.state.seasons, hasLength(2));
-      expect(cubit.state.selectedSeasonId, 's-june');
-      expect(cubit.state.leaderboards, isEmpty);
+      expect(_ready(cubit).seasons, hasLength(2));
+      expect(_ready(cubit).selectedSeasonId, 's-june');
+      expect(_ready(cubit).leaderboards, isEmpty);
     },
   );
 
@@ -181,10 +182,9 @@ void main() {
     build: build,
     act: (cubit) => cubit.load(),
     verify: (cubit) {
-      expect(cubit.state.status, HistoryStatus.ready);
-      expect(cubit.state.seasons, isEmpty);
-      expect(cubit.state.selectedSeasonId, isNull);
-      expect(cubit.state.leaderboards, isEmpty);
+      expect(_ready(cubit).seasons, isEmpty);
+      expect(_ready(cubit).selectedSeasonId, isNull);
+      expect(_ready(cubit).leaderboards, isEmpty);
     },
   );
 
@@ -196,8 +196,7 @@ void main() {
     build: build,
     act: (cubit) => cubit.load(),
     verify: (cubit) {
-      expect(cubit.state.status, HistoryStatus.failed);
-      expect(cubit.state.failure, isA<NetworkFailure>());
+      expect((cubit.state as HistoryFailed).failure, isA<NetworkFailure>());
     },
   );
 
@@ -228,9 +227,9 @@ void main() {
       await cubit.selectGameTypeFilter(GameType.oneVOne);
     },
     verify: (cubit) {
-      expect(cubit.state.selectedGameType, GameType.oneVOne);
-      expect(cubit.state.busy, isFalse);
-      expect(cubit.state.leaderboards.single.playerId, 'p2');
+      expect(_ready(cubit).selectedGameType, GameType.oneVOne);
+      expect(_ready(cubit).busy, isFalse);
+      expect(_ready(cubit).leaderboards.single.playerId, 'p2');
     },
   );
 
@@ -262,8 +261,8 @@ void main() {
       await cubit.selectGameTypeFilter(null);
     },
     verify: (cubit) {
-      expect(cubit.state.selectedGameType, isNull);
-      expect(cubit.state.leaderboards.single.playerId, 'p1');
+      expect(_ready(cubit).selectedGameType, isNull);
+      expect(_ready(cubit).leaderboards.single.playerId, 'p1');
     },
   );
 

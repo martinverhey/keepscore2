@@ -62,6 +62,11 @@ class _HistoryPageState extends State<HistoryPage> {
     return BlocBuilder<HistoryCubit, HistoryState>(
       builder: (context, state) {
         final cubit = context.read<HistoryCubit>();
+        final selectedGameType = switch (state) {
+          HistoryLoading(:final selectedGameType) => selectedGameType,
+          HistoryFailed(:final selectedGameType) => selectedGameType,
+          HistoryReady(:final selectedGameType) => selectedGameType,
+        };
         setPageTitle(context, context.l10n.historyTitle);
 
         return Sidebar(
@@ -88,21 +93,21 @@ class _HistoryPageState extends State<HistoryPage> {
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerRight,
               child: GameTypeFilterDropdown(
-                selected: state.selectedGameType,
+                selected: selectedGameType,
                 onSelected: cubit.selectGameTypeFilter,
               ),
             ),
             hasScrollBody: true,
-            body: switch (state.status) {
-              HistoryStatus.loading => const AdaptiveLoader(),
-              HistoryStatus.failed => ErrorRetry(
-                message: state.failure!.localized(context.l10n),
+            body: switch (state) {
+              HistoryLoading() => const AdaptiveLoader(),
+              HistoryFailed(:final failure) => ErrorRetry(
+                message: failure.localized(context.l10n),
                 retryLabel: context.l10n.commonRetry,
                 onRetry: cubit.load,
               ),
-              HistoryStatus.ready when seasonLength == null =>
+              HistoryReady() when seasonLength == null =>
                 const AdaptiveLoader(),
-              HistoryStatus.ready => _ready(
+              HistoryReady() => _ready(
                 context,
                 state,
                 cubit,
@@ -119,7 +124,7 @@ class _HistoryPageState extends State<HistoryPage> {
 
   Widget _ready(
     BuildContext context,
-    HistoryState state,
+    HistoryReady state,
     HistoryCubit cubit,
     String competitionId,
     String? myPlayerId,
@@ -162,7 +167,7 @@ class _HistoryPageState extends State<HistoryPage> {
 
   Widget _content(
     BuildContext context,
-    HistoryState state,
+    HistoryReady state,
     String competitionId,
     String? myPlayerId,
     SeasonLength seasonLength,
