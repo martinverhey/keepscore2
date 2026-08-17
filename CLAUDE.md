@@ -575,6 +575,13 @@ Kept here because the code cannot express them and they cost real debugging:
 - **Widget tests that pump the same tree twice under a different theme must key
   the probe per brightness.** Without it the second pump reuses the element tree
   and reports the *previous* theme's colours — a green test asserting nothing.
+- **`SliverAppBar.large` mounts its title widget for both the collapsed and
+  expanded app bar at once**, so a widget test finding a page's plain title
+  text legitimately gets two matches (`findsWidgets`, not `findsOneWidget`) —
+  `history_page_test.dart`'s season-picker test is the one that depends on
+  this: the dropdown that replaces the title in the picked state is the thing
+  actually asserted `findsOneWidget`, the plain title text is deliberately
+  `findsWidgets`.
 - **The current calendar season has no `seasons` row until its first match is
   created** (`season_window()` returns `season_id = null`), so the `leaderboard`
   view — inner-joined from `seasons` — cannot be queried for it. Before a
@@ -675,7 +682,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 110 tests at time of writing
+flutter test                    # 219 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 python3 scripts/generate_icon.py   # redraw assets/icon/*.png

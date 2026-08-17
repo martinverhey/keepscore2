@@ -267,53 +267,72 @@ void main() {
 
       final l10n = AppLocalizations.of(tester.element(find.byType(SignInPage)));
 
-      // Step 1 — log in as a guest.
-      await tester.tap(find.text(l10n.authContinueAsGuest));
-      await tester.pumpAndSettle();
-
-      expect(find.byType(_HomeStub), findsOneWidget);
-
-      // Step 2 — join a competition with a predefined join code.
-      await tester.tap(find.text('Join a competition'));
-      await tester.pumpAndSettle();
-
-      await tester.enterText(find.byType(TextField), _joinCode);
-      await tester.pump();
-      await tester.tap(find.text(l10n.joinLookUp));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.text('Chris'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text(l10n.joinConfirm));
-      await tester.pumpAndSettle();
-
-      verify(
-        () => competitions.join(
-          joinCode: _joinCode,
-          claimPlayerId: 'p-chris',
-          displayName: null,
-        ),
-      ).called(1);
-
-      // Step 3 — the leaderboard tab has something on it.
-      expect(find.byType(CompetitionDetailPage), findsOneWidget);
-      expect(find.text('Ada'), findsWidgets);
-      expect(find.text('Chris'), findsWidgets);
-
-      // Step 4 — the matches tab has something on it.
-      await tester.tap(
-        find.descendant(
-          of: find.byType(AdaptiveBottomTabBar),
-          matching: find.text(l10n.matchesTitle),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      expect(find.text('3 – 1'), findsOneWidget);
+      await _continueAsGuest(tester, l10n);
+      await _joinCompetitionAndClaimPlayer(tester, l10n, competitions);
+      _expectLeaderboardTabIsPopulated();
+      await _expectMatchesTabIsPopulated(tester, l10n);
 
       expect(tester.takeException(), isNull);
     },
   );
+}
+
+Future<void> _continueAsGuest(
+  WidgetTester tester,
+  AppLocalizations l10n,
+) async {
+  await tester.tap(find.text(l10n.authContinueAsGuest));
+  await tester.pumpAndSettle();
+
+  expect(find.byType(_HomeStub), findsOneWidget);
+}
+
+Future<void> _joinCompetitionAndClaimPlayer(
+  WidgetTester tester,
+  AppLocalizations l10n,
+  MockCompetitionRepository competitions,
+) async {
+  await tester.tap(find.text('Join a competition'));
+  await tester.pumpAndSettle();
+
+  await tester.enterText(find.byType(TextField), _joinCode);
+  await tester.pump();
+  await tester.tap(find.text(l10n.joinLookUp));
+  await tester.pumpAndSettle();
+
+  await tester.tap(find.text('Chris'));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text(l10n.joinConfirm));
+  await tester.pumpAndSettle();
+
+  verify(
+    () => competitions.join(
+      joinCode: _joinCode,
+      claimPlayerId: 'p-chris',
+      displayName: null,
+    ),
+  ).called(1);
+}
+
+void _expectLeaderboardTabIsPopulated() {
+  expect(find.byType(CompetitionDetailPage), findsOneWidget);
+  expect(find.text('Ada'), findsWidgets);
+  expect(find.text('Chris'), findsWidgets);
+}
+
+Future<void> _expectMatchesTabIsPopulated(
+  WidgetTester tester,
+  AppLocalizations l10n,
+) async {
+  await tester.tap(
+    find.descendant(
+      of: find.byType(AdaptiveBottomTabBar),
+      matching: find.text(l10n.matchesTitle),
+    ),
+  );
+  await tester.pumpAndSettle();
+
+  expect(find.text('3 – 1'), findsOneWidget);
 }
 
 GoRouter _buildRouter(

@@ -160,9 +160,6 @@ void main() {
         tester.element(find.byType(HistoryPage)),
       );
 
-      // SliverAppBar.large mounts the title widget for both its collapsed
-      // and expanded states at once, so the plain title is legitimately
-      // found twice — the dropdown itself, in the content below it, isn't.
       expect(find.text(l10n.historyTitle), findsWidgets);
       expect(find.text(l10n.leaderboardPickSeason), findsNothing);
       expect(find.byType(SeasonDropdown), findsOneWidget);

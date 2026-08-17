@@ -96,9 +96,6 @@ void main() {
     matchRepository = MockMatchRepository();
     gameTypeFilterCubit = GameTypeFilterCubit();
 
-    // The Versus and History tabs build their cubits lazily through
-    // getIt, exactly the way the app does — registering them here means a
-    // test only pays for the round trips of a tab it actually opens.
     getIt.registerFactoryParam<ProfileVersusCubit, String, String>(
       (playerId, opponentId) => ProfileVersusCubit(
         profileRepository,
@@ -251,7 +248,6 @@ void main() {
       expect(find.text(l10n.leaderboardFilterAll), findsOneWidget);
       expect(find.text(l10n.gameType1v1), findsNothing);
 
-      // The win/loss/draw/win-rate grid appears exactly once — combined.
       expect(find.text(l10n.profileWinsLabel), findsOneWidget);
       expect(find.text(l10n.profileLossesLabel), findsOneWidget);
       expect(find.text(l10n.profileDrawsLabel), findsOneWidget);
@@ -288,7 +284,6 @@ void main() {
       expect(find.text(l10n.profileRecentMatchesTitle), findsNothing);
       expect(tester.widget<MedalChip>(find.byType(MedalChip)).count, 3);
 
-      // Neither Versus nor History was ever opened.
       verifyNever(
         () => profileRepository.headToHead(
           playerId: any(named: 'playerId'),
@@ -565,7 +560,6 @@ void main() {
       );
 
       expect(find.text(l10n.profileTabVersus), findsOneWidget);
-      // Nothing versus-shaped has been fetched before the tab is opened.
       verifyNever(
         () => profileRepository.headToHead(
           playerId: any(named: 'playerId'),
@@ -576,8 +570,6 @@ void main() {
       await tester.tap(find.text(l10n.profileTabVersus));
       await tester.pumpAndSettle();
 
-      // Just the aggregated record table: 4 wins, 1 loss, 1 draw, 67% —
-      // no per-game-type breakdown and no "Your record vs" header.
       expect(find.text(l10n.profileWinsLabel), findsOneWidget);
       expect(find.text(l10n.profileLossesLabel), findsOneWidget);
       expect(find.text(l10n.profileDrawsLabel), findsOneWidget);
@@ -589,7 +581,6 @@ void main() {
       expect(find.text(l10n.gameType1v1), findsNothing);
       expect(find.text(l10n.gameType2v2), findsNothing);
 
-      // The versus-specific recent matches, same list style as overview.
       expect(find.text(l10n.profileRecentMatchesTitle), findsOneWidget);
       expect(find.text('Theo'), findsOneWidget);
       expect(tester.takeException(), isNull);
