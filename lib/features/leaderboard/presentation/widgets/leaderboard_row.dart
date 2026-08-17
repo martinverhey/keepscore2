@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../app/dependency_injection/injector.dart';
 import '../../../../core/extensions/build_context_l10n.dart';
+import '../../../../core/extensions/int_rank_color.dart';
+import '../../../../core/extensions/medal_color.dart';
 import '../../../../core/extensions/streak_type_tier.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
@@ -33,13 +35,6 @@ class LeaderboardRow extends StatelessWidget {
   final String? myPlayerId;
   final SeasonLength seasonLength;
   final Medals? medals;
-
-  Color? get _rankColor => switch (leaderboard.rank) {
-    1 => AppColors.gold,
-    2 => AppColors.silver,
-    3 => AppColors.bronze,
-    _ => null,
-  };
 
   void _openProfile(BuildContext context) => showAdaptiveSheet<void>(
     context,
@@ -97,7 +92,7 @@ class LeaderboardRow extends StatelessWidget {
       style: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w700,
-        color: _rankColor ?? AppColors.neutral,
+        color: leaderboard.rank.rankColor ?? AppColors.neutral,
         fontFeatures: const [FontFeature.tabularFigures()],
       ),
     ),
@@ -154,7 +149,7 @@ class LeaderboardRow extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (medal != null) ...[
-              AdaptiveIcon(AdaptiveGlyph.medal, color: _medalColor(medal), size: 16),
+              AdaptiveIcon(AdaptiveGlyph.medal, color: medal.color, size: 16),
               const SizedBox(width: AppSpacing.xs),
             ],
             Text(
@@ -185,12 +180,6 @@ class LeaderboardRow extends StatelessWidget {
       ],
     );
   }
-
-  Color _medalColor(Medal medal) => switch (medal) {
-    Medal.gold => AppColors.gold,
-    Medal.silver => AppColors.silver,
-    Medal.bronze => AppColors.bronze,
-  };
 
   Widget _streakBadge(BuildContext context) {
     final isWin = leaderboard.streakType == StreakType.win;

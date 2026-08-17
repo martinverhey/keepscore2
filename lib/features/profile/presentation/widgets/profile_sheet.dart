@@ -6,6 +6,7 @@ import '../../../../app/dependency_injection/injector.dart';
 import '../../../../app/router/app_router.dart';
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context_l10n.dart';
+import '../../../../core/extensions/medal_color.dart';
 import '../../../../core/extensions/streak_type_tier.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
@@ -556,11 +557,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
             ),
           ),
           if (medal != null) ...[
-            AdaptiveIcon(
-              AdaptiveGlyph.medal,
-              color: _medalColor(medal),
-              size: 16,
-            ),
+            AdaptiveIcon(AdaptiveGlyph.medal, color: medal.color, size: 16),
             const SizedBox(width: AppSpacing.sm),
           ],
           Text(
@@ -576,10 +573,4 @@ class _ProfileSheetState extends State<ProfileSheet> {
       ),
     );
   }
-
-  Color _medalColor(Medal medal) => switch (medal) {
-    Medal.gold => AppColors.gold,
-    Medal.silver => AppColors.silver,
-    Medal.bronze => AppColors.bronze,
-  };
 }
