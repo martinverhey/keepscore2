@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context_l10n.dart';
+import '../../../../core/extensions/build_context_locale.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/state_views.dart';
@@ -97,8 +98,6 @@ class LeaderboardPage extends StatelessWidget {
   }
 
   Widget _seasonBar(BuildContext context, Season season) {
-    final locale = Localizations.localeOf(context).toLanguageTag();
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -110,7 +109,7 @@ class LeaderboardPage extends StatelessWidget {
         const SizedBox(height: 2),
         Text(
           context.l10n.leaderboardSeasonEnds(
-            DateFormat.MMMd(locale).format(season.endsAt),
+            DateFormat.MMMd(context.languageTag).format(season.endsAt),
           ),
           style: const TextStyle(color: AppColors.neutral, fontSize: 12),
         ),

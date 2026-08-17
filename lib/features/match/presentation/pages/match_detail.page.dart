@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context_l10n.dart';
+import '../../../../core/extensions/build_context_locale.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/page_title.dart';
@@ -142,8 +143,6 @@ class _MatchDetailPageState extends State<MatchDetailPage> {
   }
 
   Widget _scoreline(BuildContext context, MatchEntry match) {
-    final locale = Localizations.localeOf(context).toLanguageTag();
-
     return Column(
       children: [
         Text(
@@ -161,7 +160,7 @@ class _MatchDetailPageState extends State<MatchDetailPage> {
             style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
           ),
         Text(
-          DateFormat.yMMMd(locale).add_Hm().format(match.playedAt),
+          DateFormat.yMMMd(context.languageTag).add_Hm().format(match.playedAt),
           style: const TextStyle(color: AppColors.neutral, fontSize: 13),
         ),
       ],
