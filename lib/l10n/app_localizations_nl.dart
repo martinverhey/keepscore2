@@ -486,11 +486,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String get matchScoreTitle => 'Eindstand';
 
   @override
-  String matchScoreTeam(String team) {
-    return 'Score $team';
-  }
-
-  @override
   String matchTeamRating(String rating) {
     return 'Teamrating $rating';
   }

@@ -39,6 +39,8 @@ Competition _competition({bool allowDraws = true}) => Competition(
 Player _player(String id, String name, {bool isActive = true}) =>
     Player(id: id, competitionId: 'c1', displayName: name, isActive: isActive);
 
+MatchFormReady _ready(MatchFormCubit cubit) => cubit.state as MatchFormReady;
+
 Leaderboard _leaderboard(String playerId, double rating) => Leaderboard(
   seasonId: 's1',
   competitionId: 'c1',
@@ -110,10 +112,9 @@ void main() {
     build: build,
     act: (cubit) => cubit.load(),
     verify: (cubit) {
-      expect(cubit.state.status, MatchFormStatus.ready);
-      expect(cubit.state.players.map((player) => player.id), ['p1', 'p2']);
-      expect(cubit.state.ratingOf('p1'), 1040);
-      expect(cubit.state.ratingOf('p2'), 1000);
+      expect(_ready(cubit).players.map((player) => player.id), ['p1', 'p2']);
+      expect(_ready(cubit).ratingOf('p1'), 1040);
+      expect(_ready(cubit).ratingOf('p2'), 1000);
     },
   );
 
@@ -126,8 +127,8 @@ void main() {
     build: build,
     act: (cubit) => cubit.load(),
     verify: (cubit) {
-      expect(cubit.state.status, MatchFormStatus.failed);
-      expect(cubit.state.failure, isA<NetworkFailure>());
+      expect(cubit.state, isA<MatchFormFailed>());
+      expect((cubit.state as MatchFormFailed).failure, isA<NetworkFailure>());
     },
   );
 
@@ -139,19 +140,17 @@ void main() {
     act: (cubit) async {
       await cubit.load();
       cubit.assign('p1', MatchTeam.a);
-      cubit.scoreAChanged('11');
       when(() => players.roster('c1')).thenAnswer(
         (_) async => [_player('p1', 'Adaeze'), _player('p2', 'Grace')],
       );
       await cubit.refreshPlayers();
     },
     verify: (cubit) {
-      expect(cubit.state.players.map((player) => player.displayName), [
+      expect(_ready(cubit).players.map((player) => player.displayName), [
         'Adaeze',
         'Grace',
       ]);
-      expect(cubit.state.teamA.map((player) => player.id), ['p1']);
-      expect(cubit.state.scoreA, '11');
+      expect(_ready(cubit).teamA.map((player) => player.id), ['p1']);
     },
   );
 
@@ -165,7 +164,7 @@ void main() {
       await cubit.refreshPlayers();
     },
     verify: (cubit) {
-      expect(cubit.state.players.map((player) => player.id), ['p1', 'p2']);
+      expect(_ready(cubit).players.map((player) => player.id), ['p1', 'p2']);
     },
   );
 
@@ -180,8 +179,8 @@ void main() {
       cubit.assign('p1', MatchTeam.b);
     },
     verify: (cubit) {
-      expect(cubit.state.assignments, isEmpty);
-      expect(cubit.state.bench.map((player) => player.id), ['p1', 'p2']);
+      expect(_ready(cubit).assignments, isEmpty);
+      expect(_ready(cubit).bench.map((player) => player.id), ['p1', 'p2']);
     },
   );
 
@@ -201,8 +200,8 @@ void main() {
       cubit.setTeam(MatchTeam.b, ['p2', 'p3']);
     },
     verify: (cubit) {
-      expect(cubit.state.teamA.map((player) => player.id), ['p1']);
-      expect(cubit.state.teamB.map((player) => player.id), ['p2', 'p3']);
+      expect(_ready(cubit).teamA.map((player) => player.id), ['p1']);
+      expect(_ready(cubit).teamB.map((player) => player.id), ['p2', 'p3']);
     },
   );
 
@@ -212,15 +211,25 @@ void main() {
     build: build,
     act: (cubit) async {
       await cubit.load();
-      expect(cubit.state.canSubmit, isFalse);
+      expect(
+        _ready(cubit).canSubmit(scoreAValue: 11, scoreBValue: 7),
+        isFalse,
+      );
       cubit.assign('p1', MatchTeam.a);
       cubit.assign('p2', MatchTeam.b);
-      expect(cubit.state.canSubmit, isFalse);
-      cubit.scoreAChanged('11');
-      expect(cubit.state.canSubmit, isFalse);
-      cubit.scoreBChanged('7');
+      expect(
+        _ready(cubit).canSubmit(scoreAValue: null, scoreBValue: null),
+        isFalse,
+      );
+      expect(
+        _ready(cubit).canSubmit(scoreAValue: 11, scoreBValue: null),
+        isFalse,
+      );
     },
-    verify: (cubit) => expect(cubit.state.canSubmit, isTrue),
+    verify: (cubit) => expect(
+      _ready(cubit).canSubmit(scoreAValue: 11, scoreBValue: 7),
+      isTrue,
+    ),
   );
 
   blocTest<MatchFormCubit, MatchFormState>(
@@ -231,12 +240,16 @@ void main() {
       await cubit.load();
       cubit.assign('p1', MatchTeam.a);
       cubit.assign('p2', MatchTeam.b);
-      cubit.scoreAChanged('7');
-      cubit.scoreBChanged('7');
     },
     verify: (cubit) {
-      expect(cubit.state.drawIsRefused, isTrue);
-      expect(cubit.state.canSubmit, isFalse);
+      expect(
+        _ready(cubit).drawIsRefused(scoreAValue: 7, scoreBValue: 7),
+        isTrue,
+      );
+      expect(
+        _ready(cubit).canSubmit(scoreAValue: 7, scoreBValue: 7),
+        isFalse,
+      );
     },
   );
 
@@ -266,9 +279,7 @@ void main() {
       cubit.assign('p1', MatchTeam.a);
       cubit.assign('p3', MatchTeam.a);
       cubit.assign('p2', MatchTeam.b);
-      cubit.scoreAChanged('11');
-      cubit.scoreBChanged('7');
-      expect(await cubit.submit(), 'm1');
+      expect(await cubit.submit(scoreA: 11, scoreB: 7), 'm1');
     },
     verify: (cubit) {
       verify(
@@ -280,7 +291,7 @@ void main() {
           scoreB: 7,
         ),
       ).called(1);
-      expect(cubit.state.busy, isFalse);
+      expect(_ready(cubit).busy, isFalse);
     },
   );
 
@@ -305,15 +316,12 @@ void main() {
       await cubit.load();
       cubit.assign('p1', MatchTeam.a);
       cubit.assign('p2', MatchTeam.b);
-      cubit.scoreAChanged('11');
-      cubit.scoreBChanged('7');
-      expect(await cubit.submit(), isNull);
+      expect(await cubit.submit(scoreA: 11, scoreB: 7), isNull);
     },
     verify: (cubit) {
-      expect(cubit.state.submitFailure, isA<ValidationFailure>());
-      expect(cubit.state.busy, isFalse);
-      expect(cubit.state.teamA, hasLength(1));
-      expect(cubit.state.scoreA, '11');
+      expect(_ready(cubit).submitFailure, isA<ValidationFailure>());
+      expect(_ready(cubit).busy, isFalse);
+      expect(_ready(cubit).teamA, hasLength(1));
     },
   );
 }

@@ -484,11 +484,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get matchScoreTitle => 'Final score';
 
   @override
-  String matchScoreTeam(String team) {
-    return '$team score';
-  }
-
-  @override
   String matchTeamRating(String rating) {
     return 'Team rating $rating';
   }

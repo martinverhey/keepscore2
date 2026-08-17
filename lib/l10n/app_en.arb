@@ -202,10 +202,6 @@
   "matchPickTeamsHelp": "Tap a team below to choose who played.",
   "matchTapToSelectPlayers": "Tap to add players",
   "matchScoreTitle": "Final score",
-  "matchScoreTeam": "{team} score",
-  "@matchScoreTeam": {
-    "placeholders": { "team": { "type": "String" } }
-  },
   "matchTeamRating": "Team rating {rating}",
   "@matchTeamRating": {
     "placeholders": { "rating": { "type": "String" } }

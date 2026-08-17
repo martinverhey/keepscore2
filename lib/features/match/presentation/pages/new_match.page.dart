@@ -47,8 +47,18 @@ class _NewMatchPageState extends State<NewMatchPage> {
     super.dispose();
   }
 
+  int? get _scoreAValue => int.tryParse(_scoreA.text.trim());
+  int? get _scoreBValue => int.tryParse(_scoreB.text.trim());
+
   Future<void> _submit() async {
-    final id = await context.read<MatchFormCubit>().submit();
+    final scoreA = _scoreAValue;
+    final scoreB = _scoreBValue;
+    if (scoreA == null || scoreB == null) return;
+
+    final id = await context.read<MatchFormCubit>().submit(
+      scoreA: scoreA,
+      scoreB: scoreB,
+    );
     if (id != null && mounted) context.pop(true);
   }
 
@@ -91,14 +101,7 @@ class _NewMatchPageState extends State<NewMatchPage> {
           context.read<AuthBloc>().add(const AuthSignOutRequested()),
       child: AdaptiveScaffold(
         title: context.l10n.matchNewTitle,
-        body: BlocConsumer<MatchFormCubit, MatchFormState>(
-          listenWhen: (previous, current) =>
-              previous.scoreA != current.scoreA ||
-              previous.scoreB != current.scoreB,
-          listener: (context, state) {
-            if (_scoreA.text != state.scoreA) _scoreA.text = state.scoreA;
-            if (_scoreB.text != state.scoreB) _scoreB.text = state.scoreB;
-          },
+        body: BlocBuilder<MatchFormCubit, MatchFormState>(
           builder: (context, state) => _body(context, state, cubit),
         ),
       ),
@@ -110,25 +113,28 @@ class _NewMatchPageState extends State<NewMatchPage> {
     MatchFormState state,
     MatchFormCubit cubit,
   ) {
-    return switch (state.status) {
-      MatchFormStatus.loading => const AdaptiveLoader(),
-      MatchFormStatus.missing => EmptyState(
+    return switch (state) {
+      MatchFormLoading() => const AdaptiveLoader(),
+      MatchFormMissing() => EmptyState(
         message: context.l10n.competitionNotFound,
       ),
-      MatchFormStatus.failed => ErrorRetry(
-        message: state.failure!.localized(context.l10n),
+      MatchFormFailed(:final failure) => ErrorRetry(
+        message: failure.localized(context.l10n),
         retryLabel: context.l10n.commonRetry,
         onRetry: cubit.load,
       ),
-      MatchFormStatus.ready => Padding(
+      MatchFormReady() => Padding(
         padding: const EdgeInsets.all(AppSpacing.md),
         child: _form(context, state),
       ),
     };
   }
 
-  Widget _form(BuildContext context, MatchFormState state) {
-    final cubit = context.read<MatchFormCubit>();
+  Widget _form(BuildContext context, MatchFormReady state) {
+    final canSubmit = state.canSubmit(
+      scoreAValue: _scoreAValue,
+      scoreBValue: _scoreBValue,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -155,7 +161,7 @@ class _NewMatchPageState extends State<NewMatchPage> {
           style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: AppSpacing.md),
-        _scoreFields(context, cubit),
+        _scoreFields(context),
 
         const SizedBox(height: AppSpacing.lg),
 
@@ -164,7 +170,7 @@ class _NewMatchPageState extends State<NewMatchPage> {
         AdaptiveButton(
           label: context.l10n.matchSubmit,
           busy: state.busy,
-          onPressed: state.canSubmit ? _submit : null,
+          onPressed: canSubmit ? _submit : null,
         ),
 
         if (state.submitFailure != null) _submitFailureText(context, state),
@@ -174,7 +180,7 @@ class _NewMatchPageState extends State<NewMatchPage> {
     );
   }
 
-  Widget _teamsRow(BuildContext context, MatchFormState state) {
+  Widget _teamsRow(BuildContext context, MatchFormReady state) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -209,34 +215,30 @@ class _NewMatchPageState extends State<NewMatchPage> {
     );
   }
 
-  Widget _scoreFields(BuildContext context, MatchFormCubit cubit) {
+  Widget _scoreFields(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
           child: AdaptiveTextField(
-            label: context.l10n.matchScoreTeam(
-              context.l10n.matchTeamA.toUpperCase(),
-            ),
+            label: context.l10n.matchTeamA.toUpperCase(),
             controller: _scoreA,
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             maxLength: 3,
-            onChanged: cubit.scoreAChanged,
+            onChanged: (_) => setState(() {}),
             accentColor: AdaptiveColors.teamA(context),
           ),
         ),
         const SizedBox(width: AppSpacing.md),
         Expanded(
           child: AdaptiveTextField(
-            label: context.l10n.matchScoreTeam(
-              context.l10n.matchTeamB.toUpperCase(),
-            ),
+            label: context.l10n.matchTeamB.toUpperCase(),
             controller: _scoreB,
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             maxLength: 3,
-            onChanged: cubit.scoreBChanged,
+            onChanged: (_) => setState(() {}),
             accentColor: AdaptiveColors.teamB(context),
           ),
         ),
@@ -255,7 +257,7 @@ class _NewMatchPageState extends State<NewMatchPage> {
     );
   }
 
-  Widget _submitFailureText(BuildContext context, MatchFormState state) {
+  Widget _submitFailureText(BuildContext context, MatchFormReady state) {
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.md),
       child: Text(
@@ -266,17 +268,27 @@ class _NewMatchPageState extends State<NewMatchPage> {
     );
   }
 
-  String? _hint(MatchFormState state, BuildContext context) {
+  String? _hint(MatchFormReady state, BuildContext context) {
     if (state.players.isEmpty) return null;
     if (!state.teamsAreValid) return context.l10n.matchNeedsBothTeams;
-    if (!state.scoresAreValid) return context.l10n.matchScoreMissing;
-    if (state.drawIsRefused) return context.l10n.matchDrawNotAllowed;
+    if (!state.scoresAreValid(
+      scoreAValue: _scoreAValue,
+      scoreBValue: _scoreBValue,
+    )) {
+      return context.l10n.matchScoreMissing;
+    }
+    if (state.drawIsRefused(
+      scoreAValue: _scoreAValue,
+      scoreBValue: _scoreBValue,
+    )) {
+      return context.l10n.matchDrawNotAllowed;
+    }
     return null;
   }
 
   Future<void> _pickTeam(
     BuildContext context,
-    MatchFormState state,
+    MatchFormReady state,
     MatchTeam side,
   ) async {
     final cubit = context.read<MatchFormCubit>();

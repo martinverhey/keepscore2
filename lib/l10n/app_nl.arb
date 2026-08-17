@@ -202,10 +202,6 @@
   "matchPickTeamsHelp": "Tik op een team om te kiezen wie er gespeeld hebben.",
   "matchTapToSelectPlayers": "Tik om spelers toe te voegen",
   "matchScoreTitle": "Eindstand",
-  "matchScoreTeam": "Score {team}",
-  "@matchScoreTeam": {
-    "placeholders": { "team": { "type": "String" } }
-  },
   "matchTeamRating": "Teamrating {rating}",
   "@matchTeamRating": {
     "placeholders": { "rating": { "type": "String" } }

@@ -21,7 +21,7 @@ class MatchFormCubit extends Cubit<MatchFormState> {
     this._players,
     this._leaderboard,
     this.competitionId,
-  ) : super(const MatchFormState());
+  ) : super(const MatchFormLoading());
 
   final MatchRepository _matches;
   final CompetitionRepository _competitions;
@@ -29,8 +29,13 @@ class MatchFormCubit extends Cubit<MatchFormState> {
   final LeaderboardRepository _leaderboard;
   final String competitionId;
 
+  MatchFormReady? get _ready => switch (state) {
+    MatchFormReady ready => ready,
+    _ => null,
+  };
+
   Future<void> load() async {
-    emit(const MatchFormState());
+    emit(const MatchFormLoading());
     try {
       final results = await Future.wait<Object?>([
         _competitions.overview(competitionId),
@@ -41,7 +46,7 @@ class MatchFormCubit extends Cubit<MatchFormState> {
 
       final overview = results[0] as CompetitionOverview?;
       if (overview == null) {
-        emit(const MatchFormState(status: MatchFormStatus.missing));
+        emit(const MatchFormMissing());
         return;
       }
 
@@ -52,8 +57,7 @@ class MatchFormCubit extends Cubit<MatchFormState> {
       if (isClosed) return;
 
       emit(
-        MatchFormState(
-          status: MatchFormStatus.ready,
+        MatchFormReady(
           competition: overview.competition,
           players: (results[1] as List<Player>).active,
           ratings: {
@@ -64,62 +68,70 @@ class MatchFormCubit extends Cubit<MatchFormState> {
       );
     } on Failure catch (failure) {
       if (isClosed) return;
-      emit(MatchFormState(status: MatchFormStatus.failed, failure: failure));
+      emit(MatchFormFailed(failure));
     }
   }
 
   Future<void> refreshPlayers() async {
+    if (_ready == null) return;
     try {
       final players = await _players.roster(competitionId);
       if (isClosed) return;
-      emit(state.copyWith(players: players.active));
+      final ready = _ready;
+      if (ready != null) emit(ready.copyWith(players: players.active));
     } on Failure {
       return;
     }
   }
 
   void assign(String playerId, MatchTeam side) {
-    final assignments = Map<String, MatchTeam>.from(state.assignments);
+    final ready = _ready;
+    if (ready == null) return;
+    final assignments = Map<String, MatchTeam>.from(ready.assignments);
     if (assignments[playerId] == side) {
       assignments.remove(playerId);
     } else {
       assignments[playerId] = side;
     }
-    emit(state.copyWith(assignments: assignments, clearSubmitFailure: true));
+    emit(ready.copyWith(assignments: assignments, clearSubmitFailure: true));
   }
 
   void setTeam(MatchTeam side, Iterable<String> playerIds) {
-    final assignments = Map<String, MatchTeam>.from(state.assignments)
+    final ready = _ready;
+    if (ready == null) return;
+    final assignments = Map<String, MatchTeam>.from(ready.assignments)
       ..removeWhere((_, team) => team == side);
     for (final playerId in playerIds) {
       assignments[playerId] = side;
     }
-    emit(state.copyWith(assignments: assignments, clearSubmitFailure: true));
+    emit(ready.copyWith(assignments: assignments, clearSubmitFailure: true));
   }
 
-  void scoreAChanged(String value) =>
-      emit(state.copyWith(scoreA: value, clearSubmitFailure: true));
-
-  void scoreBChanged(String value) =>
-      emit(state.copyWith(scoreB: value, clearSubmitFailure: true));
-
-  Future<String?> submit() async {
-    if (!state.canSubmit) return null;
-    emit(state.copyWith(busy: true, clearSubmitFailure: true));
+  Future<String?> submit({required int scoreA, required int scoreB}) async {
+    final ready = _ready;
+    if (ready == null) return null;
+    if (!ready.canSubmit(scoreAValue: scoreA, scoreBValue: scoreB)) {
+      return null;
+    }
+    emit(ready.copyWith(busy: true, clearSubmitFailure: true));
     try {
       final id = await _matches.create(
         competitionId: competitionId,
-        teamA: state.teamA.map((player) => player.id).toList(growable: false),
-        teamB: state.teamB.map((player) => player.id).toList(growable: false),
-        scoreA: state.scoreAValue!,
-        scoreB: state.scoreBValue!,
+        teamA: ready.teamA.map((player) => player.id).toList(growable: false),
+        teamB: ready.teamB.map((player) => player.id).toList(growable: false),
+        scoreA: scoreA,
+        scoreB: scoreB,
       );
       if (isClosed) return id;
-      emit(state.copyWith(busy: false));
+      final latest = _ready;
+      if (latest != null) emit(latest.copyWith(busy: false));
       return id;
     } on Failure catch (failure) {
       if (isClosed) return null;
-      emit(state.copyWith(busy: false, submitFailure: failure));
+      final latest = _ready;
+      if (latest != null) {
+        emit(latest.copyWith(busy: false, submitFailure: failure));
+      }
       return null;
     }
   }

@@ -6,31 +6,48 @@ import '../../../player/domain/player.model.dart';
 import '../../domain/elo_calculator.dart';
 import '../../domain/match_entry.model.dart';
 
-enum MatchFormStatus { loading, ready, missing, failed }
+sealed class MatchFormState extends Equatable {
+  const MatchFormState();
+}
 
-class MatchFormState extends Equatable {
-  const MatchFormState({
-    this.status = MatchFormStatus.loading,
-    this.competition,
+class MatchFormLoading extends MatchFormState {
+  const MatchFormLoading();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class MatchFormMissing extends MatchFormState {
+  const MatchFormMissing();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class MatchFormFailed extends MatchFormState {
+  const MatchFormFailed(this.failure);
+
+  final Failure failure;
+
+  @override
+  List<Object?> get props => [failure];
+}
+
+class MatchFormReady extends MatchFormState {
+  const MatchFormReady({
+    required this.competition,
     this.players = const [],
     this.ratings = const {},
     this.assignments = const {},
-    this.scoreA = '',
-    this.scoreB = '',
     this.busy = false,
-    this.failure,
     this.submitFailure,
   });
 
-  final MatchFormStatus status;
-  final Competition? competition;
+  final Competition competition;
   final List<Player> players;
   final Map<String, double> ratings;
   final Map<String, MatchTeam> assignments;
-  final String scoreA;
-  final String scoreB;
   final bool busy;
-  final Failure? failure;
   final Failure? submitFailure;
 
   List<Player> team(MatchTeam side) => players
@@ -46,7 +63,7 @@ class MatchFormState extends Equatable {
       .toList(growable: false);
 
   double ratingOf(String playerId) =>
-      ratings[playerId] ?? (competition?.startingRating ?? 1000).toDouble();
+      ratings[playerId] ?? competition.startingRating.toDouble();
 
   double teamRating(MatchTeam side) {
     final members = team(side);
@@ -56,52 +73,42 @@ class MatchFormState extends Equatable {
     );
   }
 
-  int? get scoreAValue => int.tryParse(scoreA.trim());
-
-  int? get scoreBValue => int.tryParse(scoreB.trim());
-
   bool get teamsAreValid => teamA.isNotEmpty && teamB.isNotEmpty;
 
-  bool get scoresAreValid =>
+  bool scoresAreValid({required int? scoreAValue, required int? scoreBValue}) =>
       scoreAValue != null &&
       scoreBValue != null &&
-      scoreAValue! >= 0 &&
-      scoreBValue! >= 0;
+      scoreAValue >= 0 &&
+      scoreBValue >= 0;
 
-  bool get isDraw => scoresAreValid && scoreAValue == scoreBValue;
+  bool isDraw({required int? scoreAValue, required int? scoreBValue}) =>
+      scoresAreValid(scoreAValue: scoreAValue, scoreBValue: scoreBValue) &&
+      scoreAValue == scoreBValue;
 
-  bool get drawIsRefused => isDraw && !(competition?.allowDraws ?? true);
+  bool drawIsRefused({required int? scoreAValue, required int? scoreBValue}) =>
+      isDraw(scoreAValue: scoreAValue, scoreBValue: scoreBValue) &&
+      !competition.allowDraws;
 
-  bool get canSubmit =>
-      status == MatchFormStatus.ready &&
+  bool canSubmit({required int? scoreAValue, required int? scoreBValue}) =>
       teamsAreValid &&
-      scoresAreValid &&
-      !drawIsRefused &&
+      scoresAreValid(scoreAValue: scoreAValue, scoreBValue: scoreBValue) &&
+      !drawIsRefused(scoreAValue: scoreAValue, scoreBValue: scoreBValue) &&
       !busy;
 
-  MatchFormState copyWith({
-    MatchFormStatus? status,
-    Competition? competition,
+  MatchFormReady copyWith({
     List<Player>? players,
     Map<String, double>? ratings,
     Map<String, MatchTeam>? assignments,
-    String? scoreA,
-    String? scoreB,
     bool? busy,
-    Failure? failure,
     Failure? submitFailure,
     bool clearSubmitFailure = false,
   }) {
-    return MatchFormState(
-      status: status ?? this.status,
-      competition: competition ?? this.competition,
+    return MatchFormReady(
+      competition: competition,
       players: players ?? this.players,
       ratings: ratings ?? this.ratings,
       assignments: assignments ?? this.assignments,
-      scoreA: scoreA ?? this.scoreA,
-      scoreB: scoreB ?? this.scoreB,
       busy: busy ?? this.busy,
-      failure: failure ?? this.failure,
       submitFailure: clearSubmitFailure
           ? null
           : (submitFailure ?? this.submitFailure),
@@ -110,15 +117,11 @@ class MatchFormState extends Equatable {
 
   @override
   List<Object?> get props => [
-    status,
     competition,
     players,
     ratings,
     assignments,
-    scoreA,
-    scoreB,
     busy,
-    failure,
     submitFailure,
   ];
 }

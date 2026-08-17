@@ -47,7 +47,7 @@ class _MatchScoreSheetState extends State<MatchScoreSheet> {
         children: [
           Expanded(
             child: AdaptiveTextField(
-              label: context.l10n.matchScoreTeam(context.l10n.matchTeamA),
+              label: context.l10n.matchTeamA,
               controller: _scoreA,
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -59,7 +59,7 @@ class _MatchScoreSheetState extends State<MatchScoreSheet> {
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: AdaptiveTextField(
-              label: context.l10n.matchScoreTeam(context.l10n.matchTeamB),
+              label: context.l10n.matchTeamB,
               controller: _scoreB,
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],

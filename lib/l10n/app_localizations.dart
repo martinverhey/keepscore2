@@ -920,12 +920,6 @@ abstract class AppLocalizations {
   /// **'Final score'**
   String get matchScoreTitle;
 
-  /// No description provided for @matchScoreTeam.
-  ///
-  /// In en, this message translates to:
-  /// **'{team} score'**
-  String matchScoreTeam(String team);
-
   /// No description provided for @matchTeamRating.
   ///
   /// In en, this message translates to:
