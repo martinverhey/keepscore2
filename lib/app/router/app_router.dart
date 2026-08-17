@@ -192,7 +192,9 @@ GoRouter createRouter(AuthBloc authBloc) {
                 key: ValueKey(id),
                 child: MultiBlocProvider(
                   providers: [
-                    BlocProvider(create: (_) => getIt<PlayersCubit>(param1: id)),
+                    BlocProvider(
+                      create: (_) => getIt<PlayersCubit>(param1: id),
+                    ),
                     BlocProvider(
                       create: (_) => getIt<MatchListCubit>(param1: id),
                     ),

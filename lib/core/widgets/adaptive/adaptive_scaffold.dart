@@ -48,7 +48,9 @@ class AdaptiveScaffold extends StatelessWidget {
               child: Column(
                 children: [
                   Expanded(
-                    child: _floated(_cupertinoScrollView(sliverBody, suppressBack)),
+                    child: _floated(
+                      _cupertinoScrollView(sliverBody, suppressBack),
+                    ),
                   ),
                   bottomBar!,
                 ],
