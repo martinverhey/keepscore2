@@ -41,8 +41,7 @@ class ProfileSection extends StatelessWidget {
     final leaderboard = this.leaderboard;
     final hasStats = leaderboard != null && leaderboard.played > 0;
 
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
+    return AdaptiveTappable(
       onTap: () => showAdaptiveSheet<void>(
         context,
         builder: (_) => BlocProvider(
@@ -57,6 +56,7 @@ class ProfileSection extends StatelessWidget {
           ),
         ),
       ),
+      borderRadius: AppRadius.card,
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
