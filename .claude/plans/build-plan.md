@@ -16,7 +16,7 @@
 > their matches are part of everyone else's rating history; the team builder
 > assigns players with A/B toggle buttons rather than drag and drop, which
 > needs no gesture affordance on the web build and works the same on all
-> three targets; a match's roster cannot be edited after the fact (change the
+> three targets; a match's players cannot be edited after the fact (change the
 > score, or delete and log it again), matching the SQL API; realtime
 > refetches on a debounced tick instead of animating individual rows, because
 > a season replay emits dozens of events for one logged match and `rank` is a
@@ -132,7 +132,7 @@ Anonymous users may `join_competition` and read everything in competitions they'
 ### Views and realtime
 
 - `leaderboard` view: `player_ratings` ⋈ `players`, with `rank() over (partition by season_id order by rating desc)`, `display_name`, `is_claimed`.
-- `match_feed` view: match + both team rosters aggregated as JSON, so the match list is one query.
+- `match_feed` view: match + both teams' players aggregated as JSON, so the match list is one query.
 - `alter publication supabase_realtime add table matches, player_ratings;` plus indexes on `matches(competition_id, played_at desc)`, `match_players(player_id)`, `player_ratings(season_id, rating desc)`, `players(competition_id)`, `competitions(join_code)`.
 
 ---
@@ -191,7 +191,7 @@ colour scheme and light/dark; iOS gets Cupertino with a matching accent.
 | `LeaderboardCubit` | Season leaderboard + realtime subscription on `player_ratings` |
 | `MatchListCubit` | Paginated `match_feed` + realtime insert/delete |
 | `MatchFormCubit` | Team building, score entry, validation, submit; shows a **client-side Elo preview** before submitting |
-| `PlayersCubit` | Roster, add dummy player, deactivate, share join code |
+| `PlayersCubit` | Player list, add dummy player, deactivate, share join code |
 | `ProfileCubit` | Display name, avatar, account upgrade entry point |
 
 `EloCalculator` is a pure Dart mirror of `elo_delta`, used for the pre-submit

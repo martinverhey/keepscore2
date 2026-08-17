@@ -14,7 +14,7 @@ log 1v1–NvM matches, get an Elo leaderboard per season.
 | 2. Database (migrations + seed + RLS checks) | Done, applied to the live project |
 | 3. Auth (email OTP, guest, upgrade, Apple/Google) | Done |
 | 4. Competitions (list, create, join + claim) | Done |
-| 5. Players (roster, add placeholders, owner settings, share code) | Done |
+| 5. Players (player list, add placeholders, owner settings, share code) | Done |
 | 6. Matches (team builder, submit, list, edit, delete) | Done |
 | 7. Leaderboard + seasons + realtime | Done |
 | 8. Polish, Dutch copy pass, app icons | Done |
@@ -111,7 +111,7 @@ the presentation for the competition-admin menu — `SettingsPage`,
 moved here because they're conceptually "settings" screens, not because they
 own any data. Player management stayed in `features/player/` despite being
 reachable from the same menu: `PlayersCubit` is also read directly by
-`CompetitionContent` for roster data, not just by the management screen,
+`CompetitionContent` for player data, not just by the management screen,
 so it's a real cross-feature dependency rather than a settings-only concern.
 
 ## Coding conventions — read this before writing `lib/**`
@@ -678,7 +678,7 @@ Kept here because the code cannot express them and they cost real debugging:
   created** (`season_window()` returns `season_id = null`), so the `leaderboard`
   view — inner-joined from `seasons` — cannot be queried for it. Before a
   season starts, `SupabaseLeaderboardRepository.leaderboards()` falls back to a
-  roster read (`players` embedding `competitions(starting_rating)`) so the
+  players read (`players` embedding `competitions(starting_rating)`) so the
   page still shows everyone at the starting rating instead of an empty list.
   `Leaderboard.seasonId` is nullable for exactly this synthetic case.
 - **The per-game-type leaderboard is a second, parallel Elo track, not a
@@ -691,8 +691,8 @@ Kept here because the code cannot express them and they cost real debugging:
   player_id)`. `player_ratings` / `leaderboard` are unchanged and remain
   "combined" (every match, any type) — that's what "all game types
   combined" already meant before this existed. Unlike `leaderboard`, the
-  `game_type_leaderboard` view is not roster-backed: a player who hasn't
-  played a given type this season doesn't appear in it, rather than
+  `game_type_leaderboard` view is not backed by the full player list: a player
+  who hasn't played a given type this season doesn't appear in it, rather than
   showing everyone tied at `starting_rating` for a type nobody's played.
 - **`game_type_season_history`** is the same trick one level up: `select
   b.*, s.starts_at, s.ends_at, medal … from game_type_leaderboard_base b join
@@ -787,7 +787,7 @@ flutter build apk --debug        # verified green
 ./scripts/db.sh -f supabase/migrations/X.sql  # apply a migration
 ./scripts/db.sh -f supabase/seed.sql          # reseed + run assertions
 ./scripts/db.sh -f supabase/tests/rls_check.sql      # RLS verification, rolls back
-./scripts/db.sh -f supabase/tests/players_check.sql  # roster + settings writes
+./scripts/db.sh -f supabase/tests/players_check.sql  # players + settings writes
 ./scripts/db.sh -f supabase/tests/no_op_recalc_check.sql  # no-op write guards, rolls back
 ./scripts/db.sh -f supabase/tests/incremental_recalc_check.sql  # boundary-scoped replay, rolls back
 ```

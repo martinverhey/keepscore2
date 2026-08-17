@@ -100,7 +100,7 @@ email" (filled), "Continue as guest" (plain). That is enough to check the theme,
 the accent and any l10n change. It renders in whatever locale Chrome reports, so
 the Dutch strings usually show.
 
-Anything behind auth (leaderboard, matches, roster) needs a signed-in session.
+Anything behind auth (leaderboard, matches, players) needs a signed-in session.
 There's no seeded local session and no way to complete the email OTP flow
 headlessly (the code only ever arrives by email), but `inject_session.mjs`
 reaches a guest-authenticated screen without either problem. For anything that
