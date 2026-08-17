@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/error/failure.dart';
+import '../../../core/extensions/string_join_code.dart';
 import '../../player/domain/player.model.dart';
 import '../domain/competition.model.dart';
 import '../domain/competition_repository.dart';
@@ -58,7 +59,7 @@ class SupabaseCompetitionRepository implements CompetitionRepository {
   Future<JoinPreview> preview(String joinCode) => guard(() async {
     final rows = await _client.rpc<List<dynamic>>(
       'preview_competition',
-      params: {'p_join_code': _normalizeCode(joinCode)},
+      params: {'p_join_code': joinCode.normalizedJoinCode},
     );
     if (rows.isEmpty) {
       throw const ValidationFailure('No competition with that code');
@@ -75,7 +76,7 @@ class SupabaseCompetitionRepository implements CompetitionRepository {
     final row = await _client.rpc<Map<String, dynamic>>(
       'join_competition',
       params: {
-        'p_join_code': _normalizeCode(joinCode),
+        'p_join_code': joinCode.normalizedJoinCode,
         if (displayName != null && displayName.trim().isNotEmpty)
           'p_display_name': displayName.trim(),
         'p_claim_player_id': ?claimPlayerId,
@@ -139,7 +140,4 @@ class SupabaseCompetitionRepository implements CompetitionRepository {
       );
     }
   });
-
-  String _normalizeCode(String value) =>
-      value.replaceAll(RegExp(r'[\s-]'), '').toUpperCase();
 }

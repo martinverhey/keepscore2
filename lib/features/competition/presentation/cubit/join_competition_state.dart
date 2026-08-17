@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/failure.dart';
+import '../../../../core/extensions/string_join_code.dart';
 import '../../../player/domain/player.model.dart';
 import '../../domain/join_preview.model.dart';
 
@@ -25,8 +26,7 @@ class JoinCompetitionState extends Equatable {
   final Player? joined;
   final Failure? failure;
 
-  String get normalizedCode =>
-      code.replaceAll(RegExp(r'[\s-]'), '').toUpperCase();
+  String get normalizedCode => code.normalizedJoinCode;
 
   bool get codeIsValid => normalizedCode.length == 6;
 
