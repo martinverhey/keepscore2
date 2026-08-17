@@ -54,6 +54,7 @@ class LeaderboardRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasStreak =
+        leaderboard.streakType == StreakType.win &&
         leaderboard.streakType.tier(leaderboard.streakCount) > 0;
 
     return Padding(
@@ -182,15 +183,10 @@ class LeaderboardRow extends StatelessWidget {
   }
 
   Widget _streakBadge(BuildContext context) {
-    final isWin = leaderboard.streakType == StreakType.win;
-    final color = isWin ? AppColors.fireCore : AppColors.iceCore;
-    final glyph = isWin ? AdaptiveGlyph.fire : AdaptiveGlyph.ice;
     final tier = leaderboard.streakType.tier(leaderboard.streakCount);
 
     return Semantics(
-      label: isWin
-          ? context.l10n.profileStreakWin(leaderboard.streakCount)
-          : context.l10n.profileStreakLoss(leaderboard.streakCount),
+      label: context.l10n.profileStreakWin(leaderboard.streakCount),
       child: ExcludeSemantics(
         child: Container(
           padding: const EdgeInsets.symmetric(
@@ -199,14 +195,14 @@ class LeaderboardRow extends StatelessWidget {
           ),
           decoration: BoxDecoration(
             borderRadius: AppRadius.pill,
-            color: color.withValues(alpha: 0.16),
+            color: AppColors.fireCore.withValues(alpha: 0.16),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               for (var i = 0; i < tier; i++) ...[
                 if (i > 0) const SizedBox(width: 2),
-                AdaptiveIcon(glyph, color: color, size: 13),
+                AdaptiveIcon(AdaptiveGlyph.fire, color: AppColors.fireCore, size: 13),
               ],
             ],
           ),
