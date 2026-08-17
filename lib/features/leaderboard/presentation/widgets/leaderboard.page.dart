@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/app_router.dart';
@@ -10,7 +11,7 @@ import '../../../competition/domain/competition.model.dart';
 import '../../../competition/presentation/widgets/invite_sheet.dart';
 import '../../../profile/presentation/widgets/profile_section.dart';
 import '../../domain/leaderboard.model.dart';
-import '../../domain/medals.model.dart';
+import '../cubit/leaderboard_cubit.dart';
 import 'leaderboard_list.dart';
 
 class LeaderboardPage extends StatelessWidget {
@@ -21,9 +22,6 @@ class LeaderboardPage extends StatelessWidget {
     required this.isOwner,
     required this.myPlayerId,
     required this.myDisplayName,
-    required this.myLeaderboard,
-    required this.myMedals,
-    required this.playerCount,
     required this.onManagePlayers,
   });
 
@@ -32,13 +30,25 @@ class LeaderboardPage extends StatelessWidget {
   final bool isOwner;
   final String? myPlayerId;
   final String? myDisplayName;
-  final Leaderboard? myLeaderboard;
-  final Medals? myMedals;
-  final int playerCount;
   final VoidCallback onManagePlayers;
 
   @override
   Widget build(BuildContext context) {
+    final leaderboardState = context.watch<LeaderboardCubit>().state;
+    final leaderboards = leaderboardState is LeaderboardReady
+        ? leaderboardState.leaderboards
+        : const <Leaderboard>[];
+    Leaderboard? myLeaderboard;
+    for (final leaderboard in leaderboards) {
+      if (leaderboard.playerId == myPlayerId) {
+        myLeaderboard = leaderboard;
+        break;
+      }
+    }
+    final myMedals = leaderboardState is LeaderboardReady
+        ? leaderboardState.medals[myPlayerId]
+        : null;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -52,7 +62,7 @@ class LeaderboardPage extends StatelessWidget {
             seasonLength: competition.seasonLength,
             leaderboard: myLeaderboard,
             medals: myMedals,
-            playerCount: playerCount,
+            playerCount: leaderboards.length,
           ),
         const SizedBox(height: AppSpacing.lg),
         LeaderboardList(

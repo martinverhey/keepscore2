@@ -13,8 +13,6 @@ import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
-import '../../../leaderboard/domain/leaderboard.model.dart';
-import '../../../leaderboard/domain/medals.model.dart';
 import '../../../leaderboard/presentation/cubit/leaderboard_cubit.dart';
 import '../../../leaderboard/presentation/widgets/game_type_filter_dropdown.dart';
 import '../../../leaderboard/presentation/widgets/leaderboard.page.dart';
@@ -86,10 +84,6 @@ class _CompetitionContentState extends State<CompetitionContent> {
   Widget build(BuildContext context) {
     final session = context.watch<AuthBloc>().state;
     final roster = context.watch<PlayersCubit>().state;
-    final leaderboardState = context.watch<LeaderboardCubit>().state;
-    final leaderboards = leaderboardState is LeaderboardReady
-        ? leaderboardState.leaderboards
-        : const [];
 
     return BlocConsumer<CompetitionCubit, CompetitionState>(
       listener: (context, state) {
@@ -116,16 +110,6 @@ class _CompetitionContentState extends State<CompetitionContent> {
           }
         }
 
-        Leaderboard? myLeaderboard;
-        for (final leaderboard in leaderboards) {
-          if (leaderboard.playerId == myPlayerId) {
-            myLeaderboard = leaderboard;
-            break;
-          }
-        }
-        final myMedals = leaderboardState is LeaderboardReady
-            ? leaderboardState.medals[myPlayerId]
-            : null;
         final tabTitle = switch (_tab) {
           CompetitionTab.leaderboard => context.l10n.leaderboardTitle,
           CompetitionTab.matches => context.l10n.matchesTitle,
@@ -180,9 +164,6 @@ class _CompetitionContentState extends State<CompetitionContent> {
                 hasPlayers: hasPlayers,
                 myPlayerId: myPlayerId,
                 myDisplayName: myDisplayName,
-                myLeaderboard: myLeaderboard,
-                myMedals: myMedals,
-                playerCount: leaderboards.length,
               ),
             },
           ),
@@ -288,9 +269,6 @@ class _CompetitionContentState extends State<CompetitionContent> {
     required bool hasPlayers,
     required String? myPlayerId,
     required String? myDisplayName,
-    required Leaderboard? myLeaderboard,
-    required Medals? myMedals,
-    required int playerCount,
   }) {
     return LayoutBuilder(
       builder: (context, constraints) => SingleChildScrollView(
@@ -310,9 +288,6 @@ class _CompetitionContentState extends State<CompetitionContent> {
                 isOwner: isOwner,
                 myPlayerId: myPlayerId,
                 myDisplayName: myDisplayName,
-                myLeaderboard: myLeaderboard,
-                myMedals: myMedals,
-                playerCount: playerCount,
                 onManagePlayers: () =>
                     _openAndReload(Routes.players(widget.competitionId)),
               ),
