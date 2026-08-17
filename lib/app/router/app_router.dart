@@ -188,17 +188,20 @@ GoRouter createRouter(AuthBloc authBloc) {
             path: '/competition/:id',
             builder: (context, state) {
               final id = state.pathParameters['id']!;
-              return MultiBlocProvider(
-                providers: [
-                  BlocProvider(create: (_) => getIt<PlayersCubit>(param1: id)),
-                  BlocProvider(
-                    create: (_) => getIt<MatchListCubit>(param1: id),
-                  ),
-                  BlocProvider(
-                    create: (_) => getIt<LeaderboardCubit>(param1: id),
-                  ),
-                ],
-                child: CompetitionDetailPage(competitionId: id),
+              return KeyedSubtree(
+                key: ValueKey(id),
+                child: MultiBlocProvider(
+                  providers: [
+                    BlocProvider(create: (_) => getIt<PlayersCubit>(param1: id)),
+                    BlocProvider(
+                      create: (_) => getIt<MatchListCubit>(param1: id),
+                    ),
+                    BlocProvider(
+                      create: (_) => getIt<LeaderboardCubit>(param1: id),
+                    ),
+                  ],
+                  child: CompetitionDetailPage(competitionId: id),
+                ),
               );
             },
             routes: [
