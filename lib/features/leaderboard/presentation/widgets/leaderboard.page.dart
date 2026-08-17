@@ -45,30 +45,25 @@ class LeaderboardPage extends StatelessWidget {
     LeaderboardState state,
     LeaderboardCubit cubit,
   ) {
-    if (state.status == LeaderboardStatus.loading) {
-      return const Padding(
+    return switch (state) {
+      LeaderboardLoading() => const Padding(
         padding: EdgeInsets.all(AppSpacing.xl),
         child: AdaptiveLoader(),
-      );
-    }
-
-    if (state.status == LeaderboardStatus.failed &&
-        state.leaderboards.isEmpty) {
-      return ErrorRetry(
-        message: state.failure!.localized(context.l10n),
+      ),
+      LeaderboardFailed(:final failure) => ErrorRetry(
+        message: failure.localized(context.l10n),
         retryLabel: context.l10n.commonRetry,
         onRetry: cubit.load,
-      );
-    }
-
-    return _list(context, state);
+      ),
+      LeaderboardReady() => _list(context, state),
+    };
   }
 
-  Widget _list(BuildContext context, LeaderboardState state) {
+  Widget _list(BuildContext context, LeaderboardReady state) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (state.season != null) _seasonBar(context, state.season!),
+        _seasonBar(context, state.season),
         const SizedBox(height: AppSpacing.md),
         _rows(context, state),
         if (isOwner) _manageButton(context),
@@ -76,7 +71,7 @@ class LeaderboardPage extends StatelessWidget {
     );
   }
 
-  Widget _rows(BuildContext context, LeaderboardState state) {
+  Widget _rows(BuildContext context, LeaderboardReady state) {
     if (state.busy) {
       return const Padding(
         padding: EdgeInsets.all(AppSpacing.xl),

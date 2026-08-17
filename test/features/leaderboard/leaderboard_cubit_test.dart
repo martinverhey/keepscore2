@@ -20,20 +20,24 @@ class MockLeaderboardRepository extends Mock implements LeaderboardRepository {}
 final _august = DateTime.utc(2026, 7, 31, 22);
 final _september = DateTime.utc(2026, 8, 31, 22);
 
-Leaderboard _leaderboard(String playerId, double rating, int rank) => Leaderboard(
-  seasonId: 's-august',
-  competitionId: 'c1',
-  playerId: playerId,
-  displayName: playerId,
-  isClaimed: true,
-  isOwner: false,
-  rating: rating,
-  played: 3,
-  wins: 2,
-  losses: 1,
-  draws: 0,
-  rank: rank,
-);
+Leaderboard _leaderboard(String playerId, double rating, int rank) =>
+    Leaderboard(
+      seasonId: 's-august',
+      competitionId: 'c1',
+      playerId: playerId,
+      displayName: playerId,
+      isClaimed: true,
+      isOwner: false,
+      rating: rating,
+      played: 3,
+      wins: 2,
+      losses: 1,
+      draws: 0,
+      rank: rank,
+    );
+
+LeaderboardReady _ready(LeaderboardCubit cubit) =>
+    cubit.state as LeaderboardReady;
 
 void main() {
   late MockLeaderboardRepository repository;
@@ -103,9 +107,8 @@ void main() {
     build: build,
     act: (cubit) => cubit.load(),
     verify: (cubit) {
-      expect(cubit.state.status, LeaderboardStatus.ready);
-      expect(cubit.state.season?.id, 's-august');
-      expect(cubit.state.leaderboards.first.playerId, 'p1');
+      expect(_ready(cubit).season.id, 's-august');
+      expect(_ready(cubit).leaderboards.first.playerId, 'p1');
     },
   );
 
@@ -114,9 +117,7 @@ void main() {
     setUp: () {
       stubSeason();
       stubLeaderboards('s-august', [_leaderboard('p1', 1040, 1)]);
-      when(
-        () => repository.medals('c1', gameType: null),
-      ).thenAnswer(
+      when(() => repository.medals('c1', gameType: null)).thenAnswer(
         (_) async => const [
           Medals(playerId: 'p1', gold: 2, silver: 0, bronze: 1),
         ],
@@ -125,8 +126,8 @@ void main() {
     build: build,
     act: (cubit) => cubit.load(),
     verify: (cubit) {
-      expect(cubit.state.medals['p1']?.gold, 2);
-      expect(cubit.state.medals['p1']?.bronze, 1);
+      expect(_ready(cubit).medals['p1']?.gold, 2);
+      expect(_ready(cubit).medals['p1']?.bronze, 1);
     },
   );
 
@@ -139,9 +140,9 @@ void main() {
     build: build,
     act: (cubit) => cubit.load(),
     verify: (cubit) {
-      expect(cubit.state.season!.startsAt.isAtSameMomentAs(_august), isTrue);
-      expect(cubit.state.season!.hasStarted, isFalse);
-      expect(cubit.state.leaderboards, isEmpty);
+      expect(_ready(cubit).season.startsAt.isAtSameMomentAs(_august), isTrue);
+      expect(_ready(cubit).season.hasStarted, isFalse);
+      expect(_ready(cubit).leaderboards, isEmpty);
     },
   );
 
@@ -162,8 +163,8 @@ void main() {
     },
     wait: const Duration(milliseconds: 600),
     verify: (cubit) {
-      expect(cubit.state.leaderboards, hasLength(2));
-      expect(cubit.state.leaderboards.first.rating, 1032);
+      expect(_ready(cubit).leaderboards, hasLength(2));
+      expect(_ready(cubit).leaderboards.first.rating, 1032);
     },
   );
 
@@ -200,9 +201,8 @@ void main() {
       await cubit.refresh();
     },
     verify: (cubit) {
-      expect(cubit.state.status, LeaderboardStatus.failed);
-      expect(cubit.state.leaderboards, hasLength(1));
-      expect(cubit.state.failure, isA<NetworkFailure>());
+      expect(cubit.state, isA<LeaderboardReady>());
+      expect(_ready(cubit).leaderboards, hasLength(1));
     },
   );
 
@@ -222,9 +222,9 @@ void main() {
       await _settle();
     },
     verify: (cubit) {
-      expect(cubit.state.selectedGameType, GameType.oneVOne);
-      expect(cubit.state.leaderboards.single.playerId, 'p2');
-      expect(cubit.state.busy, isFalse);
+      expect(_ready(cubit).selectedGameType, GameType.oneVOne);
+      expect(_ready(cubit).leaderboards.single.playerId, 'p2');
+      expect(_ready(cubit).busy, isFalse);
       verify(
         () => repository.watchLeaderboards(
           competitionId: 'c1',
@@ -240,9 +240,7 @@ void main() {
     setUp: () {
       stubSeason();
       stubLeaderboards('s-august', [_leaderboard('p1', 1040, 1)]);
-      when(
-        () => repository.medals('c1', gameType: null),
-      ).thenAnswer(
+      when(() => repository.medals('c1', gameType: null)).thenAnswer(
         (_) async => const [
           Medals(playerId: 'p1', gold: 1, silver: 0, bronze: 0),
         ],
@@ -265,8 +263,8 @@ void main() {
       await _settle();
     },
     verify: (cubit) {
-      expect(cubit.state.medals['p1'], isNull);
-      expect(cubit.state.medals['p2']?.silver, 4);
+      expect(_ready(cubit).medals['p1'], isNull);
+      expect(_ready(cubit).medals['p2']?.silver, 4);
     },
   );
 
@@ -320,10 +318,10 @@ void main() {
       await _settle();
     },
     verify: (cubit) {
-      expect(cubit.state.selectedGameType, GameType.twoVTwo);
-      expect(cubit.state.leaderboards.single.playerId, 'p3');
-      expect(cubit.state.medals['p3']?.gold, 1);
-      expect(cubit.state.medals['p2'], isNull);
+      expect(_ready(cubit).selectedGameType, GameType.twoVTwo);
+      expect(_ready(cubit).leaderboards.single.playerId, 'p3');
+      expect(_ready(cubit).medals['p3']?.gold, 1);
+      expect(_ready(cubit).medals['p2'], isNull);
     },
   );
 
@@ -340,8 +338,8 @@ void main() {
     build: build,
     act: (cubit) => cubit.load(),
     verify: (cubit) {
-      expect(cubit.state.selectedGameType, GameType.oneVOne);
-      expect(cubit.state.leaderboards.single.playerId, 'p2');
+      expect(_ready(cubit).selectedGameType, GameType.oneVOne);
+      expect(_ready(cubit).leaderboards.single.playerId, 'p2');
     },
   );
 
@@ -363,8 +361,8 @@ void main() {
       await _settle();
     },
     verify: (cubit) {
-      expect(cubit.state.selectedGameType, isNull);
-      expect(cubit.state.leaderboards.single.playerId, 'p1');
+      expect(_ready(cubit).selectedGameType, isNull);
+      expect(_ready(cubit).leaderboards.single.playerId, 'p1');
     },
   );
 
@@ -384,8 +382,8 @@ void main() {
       await _settle();
     },
     verify: (cubit) {
-      expect(cubit.state.selectedGameType, GameType.oneVOne);
-      expect(cubit.state.leaderboards.single.playerId, 'p2');
+      expect(_ready(cubit).selectedGameType, GameType.oneVOne);
+      expect(_ready(cubit).leaderboards.single.playerId, 'p2');
     },
   );
 }

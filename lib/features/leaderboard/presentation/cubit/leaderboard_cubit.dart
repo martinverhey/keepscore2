@@ -17,7 +17,7 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
     this._repository,
     this._gameTypeFilterCubit,
     this.competitionId,
-  ) : super(const LeaderboardState()) {
+  ) : super(const LeaderboardLoading()) {
     _gameTypeSubscription = _gameTypeFilterCubit.stream.listen(_applyGameType);
   }
 
@@ -30,14 +30,20 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
   String? _watchedSeasonId;
   GameType? _watchedGameType;
 
+  LeaderboardReady? get _ready => switch (state) {
+    LeaderboardReady ready => ready,
+    _ => null,
+  };
+
   Future<void> load({bool silent = false}) async {
-    if (!silent) emit(const LeaderboardState());
+    final ready = _ready;
+    if (!silent) emit(const LeaderboardLoading());
     final gameType = _gameTypeFilterCubit.state;
     try {
-      // medals doesn't depend on the season, so it's kicked off up front and
-      // only awaited once leaderboards (which does depend on it) is also in
-      // flight — instead of blocking the season lookup on it first.
-      final medalsFuture = _repository.medals(competitionId, gameType: gameType);
+      final medalsFuture = _repository.medals(
+        competitionId,
+        gameType: gameType,
+      );
       final window = await _repository.currentSeason(competitionId);
       if (isClosed) return;
 
@@ -57,13 +63,10 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
       final medalTallies = await medalsFuture;
       if (isClosed || gameType != _gameTypeFilterCubit.state) return;
 
-      final medals = {
-        for (final tally in medalTallies) tally.playerId: tally,
-      };
+      final medals = {for (final tally in medalTallies) tally.playerId: tally};
 
       emit(
-        LeaderboardState(
-          status: LeaderboardStatus.ready,
+        LeaderboardReady(
           season: season,
           selectedGameType: gameType,
           leaderboards: leaderboards,
@@ -73,16 +76,8 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
       _watch(season.id, gameType);
     } on Failure catch (failure) {
       if (isClosed || gameType != _gameTypeFilterCubit.state) return;
-      emit(
-        LeaderboardState(
-          status: LeaderboardStatus.failed,
-          season: silent ? state.season : null,
-          selectedGameType: gameType,
-          leaderboards: silent ? state.leaderboards : const [],
-          medals: silent ? state.medals : const {},
-          failure: failure,
-        ),
-      );
+      if (silent && ready != null) return;
+      emit(LeaderboardFailed(failure));
     }
   }
 
@@ -92,41 +87,49 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
       _gameTypeFilterCubit.select(gameType);
 
   Future<void> _applyGameType(GameType? gameType) async {
-    if (gameType == state.selectedGameType) return;
+    final ready = _ready;
+    if (ready == null || gameType == ready.selectedGameType) return;
 
     emit(
-      state.copyWith(
+      ready.copyWith(
         selectedGameType: gameType,
         clearGameType: gameType == null,
         leaderboards: const [],
         busy: true,
-        clearFailure: true,
       ),
     );
 
     try {
       final leaderboardsFuture = _repository.leaderboards(
         competitionId: competitionId,
-        seasonId: state.season?.id,
+        seasonId: ready.season.id,
         gameType: gameType,
       );
-      final medalsFuture = _repository.medals(competitionId, gameType: gameType);
+      final medalsFuture = _repository.medals(
+        competitionId,
+        gameType: gameType,
+      );
 
       final leaderboards = await leaderboardsFuture;
       final medalTallies = await medalsFuture;
       if (isClosed || gameType != _gameTypeFilterCubit.state) return;
 
-      final medals = {
-        for (final tally in medalTallies) tally.playerId: tally,
-      };
+      final medals = {for (final tally in medalTallies) tally.playerId: tally};
 
+      final latest = _ready;
+      if (latest == null) return;
       emit(
-        state.copyWith(leaderboards: leaderboards, medals: medals, busy: false),
+        latest.copyWith(
+          leaderboards: leaderboards,
+          medals: medals,
+          busy: false,
+        ),
       );
-      _watch(state.season?.id, gameType);
-    } on Failure catch (failure) {
+      _watch(ready.season.id, gameType);
+    } on Failure {
       if (isClosed || gameType != _gameTypeFilterCubit.state) return;
-      emit(state.copyWith(busy: false, failure: failure));
+      final latest = _ready;
+      if (latest != null) emit(latest.copyWith(busy: false));
     }
   }
 

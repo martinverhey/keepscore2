@@ -90,7 +90,9 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
     final session = context.watch<AuthBloc>().state;
     final roster = context.watch<PlayersCubit>().state;
     final leaderboardState = context.watch<LeaderboardCubit>().state;
-    final leaderboards = leaderboardState.leaderboards;
+    final leaderboards = leaderboardState is LeaderboardReady
+        ? leaderboardState.leaderboards
+        : const [];
 
     return BlocConsumer<CompetitionDetailCubit, CompetitionDetailState>(
       listener: (context, state) {
@@ -124,7 +126,9 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
             break;
           }
         }
-        final myMedals = leaderboardState.medals[myPlayerId];
+        final myMedals = leaderboardState is LeaderboardReady
+            ? leaderboardState.medals[myPlayerId]
+            : null;
         final tabTitle = switch (_tab) {
           CompetitionTab.leaderboard => context.l10n.leaderboardTitle,
           CompetitionTab.matches => context.l10n.matchesTitle,
