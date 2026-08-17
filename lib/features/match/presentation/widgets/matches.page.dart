@@ -46,27 +46,23 @@ class MatchesPage extends StatelessWidget {
     MatchListState state,
     MatchListCubit cubit,
   ) {
-    if (state.status == MatchListStatus.loading) {
-      return const Padding(
+    return switch (state) {
+      MatchListLoading() => const Padding(
         padding: EdgeInsets.all(AppSpacing.xl),
         child: AdaptiveLoader(),
-      );
-    }
-
-    if (state.status == MatchListStatus.failed && state.matches.isEmpty) {
-      return ErrorRetry(
-        message: state.failure!.localized(context.l10n),
+      ),
+      MatchListFailed(:final failure) => ErrorRetry(
+        message: failure.localized(context.l10n),
         retryLabel: context.l10n.commonRetry,
         onRetry: cubit.load,
-      );
-    }
-
-    return _list(context, state, cubit);
+      ),
+      MatchListReady() => _list(context, state, cubit),
+    };
   }
 
   Widget _list(
     BuildContext context,
-    MatchListState state,
+    MatchListReady state,
     MatchListCubit cubit,
   ) {
     return Column(
@@ -93,7 +89,7 @@ class MatchesPage extends StatelessWidget {
     );
   }
 
-  Widget _matchesSection(BuildContext context, MatchListState state) {
+  Widget _matchesSection(BuildContext context, MatchListReady state) {
     if (state.busy) {
       return const Padding(
         padding: EdgeInsets.all(AppSpacing.xl),
@@ -119,7 +115,7 @@ class MatchesPage extends StatelessWidget {
     );
   }
 
-  Widget _emptyState(BuildContext context, MatchListState state) {
+  Widget _emptyState(BuildContext context, MatchListReady state) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -144,7 +140,7 @@ class MatchesPage extends StatelessWidget {
 
   Widget _loadMoreButton(
     BuildContext context,
-    MatchListState state,
+    MatchListReady state,
     MatchListCubit cubit,
   ) {
     return Padding(
@@ -158,7 +154,7 @@ class MatchesPage extends StatelessWidget {
     );
   }
 
-  Widget _actionFailureText(BuildContext context, MatchListState state) {
+  Widget _actionFailureText(BuildContext context, MatchListReady state) {
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.md),
       child: Text(

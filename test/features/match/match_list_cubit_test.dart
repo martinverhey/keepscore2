@@ -32,6 +32,8 @@ List<MatchEntry> _page(int count, {int from = 0}) => [
   for (var i = 0; i < count; i++) _match('m${from + i}'),
 ];
 
+MatchListReady _ready(MatchListCubit cubit) => cubit.state as MatchListReady;
+
 void main() {
   late MockMatchRepository repository;
   late GameTypeFilterCubit gameTypeFilterCubit;
@@ -79,9 +81,8 @@ void main() {
     build: build,
     act: (cubit) => cubit.load(),
     verify: (cubit) {
-      expect(cubit.state.status, MatchListStatus.ready);
-      expect(cubit.state.matches, hasLength(3));
-      expect(cubit.state.hasMore, isFalse);
+      expect(_ready(cubit).matches, hasLength(3));
+      expect(_ready(cubit).hasMore, isFalse);
     },
   );
 
@@ -90,7 +91,7 @@ void main() {
     setUp: () => stubPage(_page(MatchListCubit.pageSize)),
     build: build,
     act: (cubit) => cubit.load(),
-    verify: (cubit) => expect(cubit.state.hasMore, isTrue),
+    verify: (cubit) => expect(_ready(cubit).hasMore, isTrue),
   );
 
   blocTest<MatchListCubit, MatchListState>(
@@ -105,9 +106,9 @@ void main() {
       await cubit.loadMore();
     },
     verify: (cubit) {
-      expect(cubit.state.matches, hasLength(MatchListCubit.pageSize + 2));
-      expect(cubit.state.hasMore, isFalse);
-      expect(cubit.state.loadingMore, isFalse);
+      expect(_ready(cubit).matches, hasLength(MatchListCubit.pageSize + 2));
+      expect(_ready(cubit).hasMore, isFalse);
+      expect(_ready(cubit).loadingMore, isFalse);
     },
   );
 
@@ -129,10 +130,8 @@ void main() {
       await cubit.loadMore();
     },
     verify: (cubit) {
-      expect(cubit.state.status, MatchListStatus.ready);
-      expect(cubit.state.matches, hasLength(MatchListCubit.pageSize));
-      expect(cubit.state.actionFailure, isA<NetworkFailure>());
-      expect(cubit.state.failure, isNull);
+      expect(_ready(cubit).matches, hasLength(MatchListCubit.pageSize));
+      expect(_ready(cubit).actionFailure, isA<NetworkFailure>());
     },
   );
 
@@ -146,7 +145,7 @@ void main() {
       ticks.add(null);
     },
     wait: const Duration(milliseconds: 600),
-    verify: (cubit) => expect(cubit.state.matches, hasLength(2)),
+    verify: (cubit) => expect(_ready(cubit).matches, hasLength(2)),
   );
 
   blocTest<MatchListCubit, MatchListState>(
@@ -189,7 +188,7 @@ void main() {
       await cubit.refresh();
     },
     verify: (cubit) =>
-        expect(cubit.state.matches, hasLength(MatchListCubit.pageSize + 5)),
+        expect(_ready(cubit).matches, hasLength(MatchListCubit.pageSize + 5)),
   );
 
   blocTest<MatchListCubit, MatchListState>(
@@ -208,8 +207,8 @@ void main() {
       await cubit.refresh();
     },
     verify: (cubit) {
-      expect(cubit.state.status, MatchListStatus.failed);
-      expect(cubit.state.matches, hasLength(2));
+      expect(cubit.state, isA<MatchListReady>());
+      expect(_ready(cubit).matches, hasLength(2));
     },
   );
 
@@ -226,10 +225,10 @@ void main() {
       await _settle();
     },
     verify: (cubit) {
-      expect(cubit.state.selectedGameType, GameType.oneVOne);
-      expect(cubit.state.matches, hasLength(1));
-      expect(cubit.state.matches.single.id, 'm100');
-      expect(cubit.state.busy, isFalse);
+      expect(_ready(cubit).selectedGameType, GameType.oneVOne);
+      expect(_ready(cubit).matches, hasLength(1));
+      expect(_ready(cubit).matches.single.id, 'm100');
+      expect(_ready(cubit).busy, isFalse);
     },
   );
 
@@ -248,8 +247,8 @@ void main() {
       await _settle();
     },
     verify: (cubit) {
-      expect(cubit.state.selectedGameType, isNull);
-      expect(cubit.state.matches, hasLength(3));
+      expect(_ready(cubit).selectedGameType, isNull);
+      expect(_ready(cubit).matches, hasLength(3));
     },
   );
 
@@ -263,8 +262,8 @@ void main() {
     build: build,
     act: (cubit) => cubit.load(),
     verify: (cubit) {
-      expect(cubit.state.selectedGameType, GameType.twoVTwo);
-      expect(cubit.state.matches, hasLength(1));
+      expect(_ready(cubit).selectedGameType, GameType.twoVTwo);
+      expect(_ready(cubit).matches, hasLength(1));
     },
   );
 
@@ -281,9 +280,9 @@ void main() {
       await _settle();
     },
     verify: (cubit) {
-      expect(cubit.state.selectedGameType, GameType.oneVOne);
-      expect(cubit.state.matches, hasLength(1));
-      expect(cubit.state.matches.single.id, 'm100');
+      expect(_ready(cubit).selectedGameType, GameType.oneVOne);
+      expect(_ready(cubit).matches, hasLength(1));
+      expect(_ready(cubit).matches.single.id, 'm100');
     },
   );
 }

@@ -16,7 +16,7 @@ class MatchListCubit extends Cubit<MatchListState> {
     this._repository,
     this._gameTypeFilterCubit,
     this.competitionId,
-  ) : super(const MatchListState()) {
+  ) : super(const MatchListLoading()) {
     _gameTypeSubscription = _gameTypeFilterCubit.stream.listen(_applyGameType);
   }
 
@@ -29,14 +29,19 @@ class MatchListCubit extends Cubit<MatchListState> {
   StreamSubscription<GameType?>? _gameTypeSubscription;
   DebouncedTicks? _watcher;
 
+  MatchListReady? get _ready => switch (state) {
+    MatchListReady ready => ready,
+    _ => null,
+  };
+
   Future<void> load({bool silent = false}) async {
-    if (!silent) emit(const MatchListState());
+    final ready = _ready;
+    if (!silent) emit(const MatchListLoading());
     _watch();
 
     final gameType = _gameTypeFilterCubit.state;
-    final limit = state.matches.length > pageSize
-        ? state.matches.length
-        : pageSize;
+    final currentLength = ready?.matches.length ?? 0;
+    final limit = currentLength > pageSize ? currentLength : pageSize;
 
     try {
       final matches = await _repository.feed(
@@ -46,8 +51,7 @@ class MatchListCubit extends Cubit<MatchListState> {
       );
       if (isClosed) return;
       emit(
-        MatchListState(
-          status: MatchListStatus.ready,
+        MatchListReady(
           selectedGameType: gameType,
           matches: matches,
           hasMore: matches.length == limit,
@@ -55,15 +59,8 @@ class MatchListCubit extends Cubit<MatchListState> {
       );
     } on Failure catch (failure) {
       if (isClosed) return;
-      emit(
-        MatchListState(
-          status: MatchListStatus.failed,
-          selectedGameType: gameType,
-          matches: silent ? state.matches : const [],
-          hasMore: silent && state.hasMore,
-          failure: failure,
-        ),
-      );
+      if (silent && ready != null) return;
+      emit(MatchListFailed(failure));
     }
   }
 
@@ -73,15 +70,16 @@ class MatchListCubit extends Cubit<MatchListState> {
       _gameTypeFilterCubit.select(gameType);
 
   Future<void> _applyGameType(GameType? gameType) async {
-    if (gameType == state.selectedGameType) return;
+    final ready = _ready;
+    if (ready == null || gameType == ready.selectedGameType) return;
 
     emit(
-      state.copyWith(
+      ready.copyWith(
         selectedGameType: gameType,
         clearGameType: gameType == null,
         matches: const [],
         busy: true,
-        clearFailure: true,
+        clearActionFailure: true,
       ),
     );
 
@@ -92,41 +90,49 @@ class MatchListCubit extends Cubit<MatchListState> {
         limit: pageSize,
       );
       if (isClosed) return;
+      final latest = _ready;
+      if (latest == null) return;
       emit(
-        state.copyWith(
+        latest.copyWith(
           matches: matches,
           hasMore: matches.length == pageSize,
           busy: false,
         ),
       );
-    } on Failure catch (failure) {
+    } on Failure {
       if (isClosed) return;
-      emit(state.copyWith(busy: false, failure: failure));
+      final latest = _ready;
+      if (latest != null) emit(latest.copyWith(busy: false));
     }
   }
 
   Future<void> loadMore() async {
-    if (state.loadingMore || !state.hasMore) return;
-    emit(state.copyWith(loadingMore: true, clearActionFailure: true));
+    final ready = _ready;
+    if (ready == null || ready.loadingMore || !ready.hasMore) return;
+    emit(ready.copyWith(loadingMore: true, clearActionFailure: true));
     try {
       final more = await _repository.feed(
         competitionId: competitionId,
-        gameType: state.selectedGameType,
+        gameType: ready.selectedGameType,
         limit: pageSize,
-        offset: state.matches.length,
+        offset: ready.matches.length,
       );
       if (isClosed) return;
+      final latest = _ready;
+      if (latest == null) return;
       emit(
-        state.copyWith(
-          status: MatchListStatus.ready,
-          matches: [...state.matches, ...more],
+        latest.copyWith(
+          matches: [...latest.matches, ...more],
           hasMore: more.length == pageSize,
           loadingMore: false,
         ),
       );
     } on Failure catch (failure) {
       if (isClosed) return;
-      emit(state.copyWith(loadingMore: false, actionFailure: failure));
+      final latest = _ready;
+      if (latest != null) {
+        emit(latest.copyWith(loadingMore: false, actionFailure: failure));
+      }
     }
   }
 

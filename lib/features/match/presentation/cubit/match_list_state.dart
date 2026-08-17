@@ -4,46 +4,54 @@ import '../../../../core/error/failure.dart';
 import '../../domain/game_type.enum.dart';
 import '../../domain/match_entry.model.dart';
 
-enum MatchListStatus { loading, ready, failed }
+sealed class MatchListState extends Equatable {
+  const MatchListState();
+}
 
-class MatchListState extends Equatable {
-  const MatchListState({
-    this.status = MatchListStatus.loading,
+class MatchListLoading extends MatchListState {
+  const MatchListLoading();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class MatchListFailed extends MatchListState {
+  const MatchListFailed(this.failure);
+
+  final Failure failure;
+
+  @override
+  List<Object?> get props => [failure];
+}
+
+class MatchListReady extends MatchListState {
+  const MatchListReady({
     this.selectedGameType,
     this.matches = const [],
     this.hasMore = false,
     this.loadingMore = false,
     this.busy = false,
-    this.failure,
     this.actionFailure,
   });
 
-  final MatchListStatus status;
   final GameType? selectedGameType;
   final List<MatchEntry> matches;
   final bool hasMore;
   final bool loadingMore;
   final bool busy;
-
-  final Failure? failure;
-
   final Failure? actionFailure;
 
-  MatchListState copyWith({
-    MatchListStatus? status,
+  MatchListReady copyWith({
     GameType? selectedGameType,
     List<MatchEntry>? matches,
     bool? hasMore,
     bool? loadingMore,
     bool? busy,
-    Failure? failure,
     Failure? actionFailure,
-    bool clearFailure = false,
     bool clearActionFailure = false,
     bool clearGameType = false,
   }) {
-    return MatchListState(
-      status: status ?? this.status,
+    return MatchListReady(
       selectedGameType: clearGameType
           ? null
           : (selectedGameType ?? this.selectedGameType),
@@ -51,7 +59,6 @@ class MatchListState extends Equatable {
       hasMore: hasMore ?? this.hasMore,
       loadingMore: loadingMore ?? this.loadingMore,
       busy: busy ?? this.busy,
-      failure: clearFailure ? null : (failure ?? this.failure),
       actionFailure: clearActionFailure
           ? null
           : (actionFailure ?? this.actionFailure),
@@ -60,13 +67,11 @@ class MatchListState extends Equatable {
 
   @override
   List<Object?> get props => [
-    status,
     selectedGameType,
     matches,
     hasMore,
     loadingMore,
     busy,
-    failure,
     actionFailure,
   ];
 }
