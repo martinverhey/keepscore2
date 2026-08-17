@@ -3,39 +3,48 @@ import 'package:equatable/equatable.dart';
 import '../../../../core/error/failure.dart';
 import '../../domain/competition.model.dart';
 
-enum CompetitionListStatus { loading, ready, failed }
+sealed class CompetitionListState extends Equatable {
+  const CompetitionListState();
+}
 
-class CompetitionListState extends Equatable {
-  const CompetitionListState({
-    this.status = CompetitionListStatus.loading,
+class CompetitionListLoading extends CompetitionListState {
+  const CompetitionListLoading();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class CompetitionListFailed extends CompetitionListState {
+  const CompetitionListFailed(this.failure);
+
+  final Failure failure;
+
+  @override
+  List<Object?> get props => [failure];
+}
+
+class CompetitionListReady extends CompetitionListState {
+  const CompetitionListReady({
     this.competitions = const [],
     this.busy = false,
-    this.failure,
     this.actionFailure,
   });
 
-  final CompetitionListStatus status;
   final List<CompetitionOverview> competitions;
   final bool busy;
-  final Failure? failure;
   final Failure? actionFailure;
 
-  bool get isEmpty =>
-      status == CompetitionListStatus.ready && competitions.isEmpty;
+  bool get isEmpty => competitions.isEmpty;
 
-  CompetitionListState copyWith({
-    CompetitionListStatus? status,
+  CompetitionListReady copyWith({
     List<CompetitionOverview>? competitions,
     bool? busy,
-    Failure? failure,
     Failure? actionFailure,
     bool clearActionFailure = false,
   }) {
-    return CompetitionListState(
-      status: status ?? this.status,
+    return CompetitionListReady(
       competitions: competitions ?? this.competitions,
       busy: busy ?? this.busy,
-      failure: failure ?? this.failure,
       actionFailure: clearActionFailure
           ? null
           : (actionFailure ?? this.actionFailure),
@@ -43,11 +52,5 @@ class CompetitionListState extends Equatable {
   }
 
   @override
-  List<Object?> get props => [
-    status,
-    competitions,
-    busy,
-    failure,
-    actionFailure,
-  ];
+  List<Object?> get props => [competitions, busy, actionFailure];
 }

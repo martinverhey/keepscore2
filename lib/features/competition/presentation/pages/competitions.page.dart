@@ -91,15 +91,14 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
     CompetitionListState state,
     AuthSessionState session,
   ) {
-    return switch (state.status) {
-      CompetitionListStatus.loading => const AdaptiveLoader(),
-      CompetitionListStatus.failed when state.competitions.isEmpty =>
-        ErrorRetry(
-          message: state.failure!.localized(context.l10n),
-          retryLabel: context.l10n.commonRetry,
-          onRetry: context.read<CompetitionListCubit>().load,
-        ),
-      _ => _loaded(
+    return switch (state) {
+      CompetitionListLoading() => const AdaptiveLoader(),
+      CompetitionListFailed(:final failure) => ErrorRetry(
+        message: failure.localized(context.l10n),
+        retryLabel: context.l10n.commonRetry,
+        onRetry: context.read<CompetitionListCubit>().load,
+      ),
+      CompetitionListReady() => _loaded(
         context,
         state,
         canCreate: session.canWrite,
@@ -110,7 +109,7 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
 
   Widget _loaded(
     BuildContext context,
-    CompetitionListState state, {
+    CompetitionListReady state, {
     required bool canCreate,
     required String? myUserId,
   }) {
@@ -157,7 +156,7 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
     );
   }
 
-  Widget _actionFailureText(BuildContext context, CompetitionListState state) {
+  Widget _actionFailureText(BuildContext context, CompetitionListReady state) {
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.md),
       child: Text(

@@ -27,6 +27,9 @@ CompetitionOverview _overview(String id, String name) => CompetitionOverview(
   matchCount: 11,
 );
 
+CompetitionListReady _ready(CompetitionListCubit cubit) =>
+    cubit.state as CompetitionListReady;
+
 void main() {
   late MockCompetitionRepository repository;
 
@@ -40,9 +43,8 @@ void main() {
     build: () => CompetitionListCubit(repository),
     act: (cubit) => cubit.load(),
     verify: (cubit) {
-      expect(cubit.state.status, CompetitionListStatus.ready);
-      expect(cubit.state.competitions, hasLength(1));
-      expect(cubit.state.isEmpty, isFalse);
+      expect(_ready(cubit).competitions, hasLength(1));
+      expect(_ready(cubit).isEmpty, isFalse);
     },
   );
 
@@ -52,7 +54,7 @@ void main() {
         when(() => repository.myCompetitions()).thenAnswer((_) async => []),
     build: () => CompetitionListCubit(repository),
     act: (cubit) => cubit.load(),
-    verify: (cubit) => expect(cubit.state.isEmpty, isTrue),
+    verify: (cubit) => expect(_ready(cubit).isEmpty, isTrue),
   );
 
   blocTest<CompetitionListCubit, CompetitionListState>(
@@ -63,8 +65,10 @@ void main() {
     build: () => CompetitionListCubit(repository),
     act: (cubit) => cubit.load(),
     verify: (cubit) {
-      expect(cubit.state.status, CompetitionListStatus.failed);
-      expect(cubit.state.failure, isA<NetworkFailure>());
+      expect(
+        (cubit.state as CompetitionListFailed).failure,
+        isA<NetworkFailure>(),
+      );
     },
   );
 
@@ -83,8 +87,8 @@ void main() {
       await cubit.refresh();
     },
     verify: (cubit) {
-      expect(cubit.state.status, CompetitionListStatus.failed);
-      expect(cubit.state.competitions, hasLength(1));
+      expect(cubit.state, isA<CompetitionListReady>());
+      expect(_ready(cubit).competitions, hasLength(1));
     },
   );
 
@@ -99,7 +103,7 @@ void main() {
       await cubit.refresh();
     },
     verify: (cubit) {
-      expect(cubit.state.status, CompetitionListStatus.ready);
+      expect(cubit.state, isA<CompetitionListReady>());
     },
   );
 
@@ -138,10 +142,10 @@ void main() {
     },
     verify: (cubit) {
       expect(
-        cubit.state.competitions.single.competition.name,
+        _ready(cubit).competitions.single.competition.name,
         'Table Tennis League',
       );
-      expect(cubit.state.busy, isFalse);
+      expect(_ready(cubit).busy, isFalse);
       verify(() => repository.myCompetitions()).called(2);
     },
   );
@@ -162,7 +166,7 @@ void main() {
       final ok = await cubit.leave('c1');
       expect(ok, isTrue);
     },
-    verify: (cubit) => expect(cubit.state.competitions, isEmpty),
+    verify: (cubit) => expect(_ready(cubit).competitions, isEmpty),
   );
 
   blocTest<CompetitionListCubit, CompetitionListState>(
@@ -181,7 +185,7 @@ void main() {
       final ok = await cubit.delete('c1');
       expect(ok, isTrue);
     },
-    verify: (cubit) => expect(cubit.state.competitions, isEmpty),
+    verify: (cubit) => expect(_ready(cubit).competitions, isEmpty),
   );
 
   blocTest<CompetitionListCubit, CompetitionListState>(
@@ -199,9 +203,9 @@ void main() {
       expect(ok, isFalse);
     },
     verify: (cubit) {
-      expect(cubit.state.actionFailure, isA<PermissionFailure>());
-      expect(cubit.state.competitions, hasLength(1));
-      expect(cubit.state.busy, isFalse);
+      expect(_ready(cubit).actionFailure, isA<PermissionFailure>());
+      expect(_ready(cubit).competitions, hasLength(1));
+      expect(_ready(cubit).busy, isFalse);
     },
   );
 }

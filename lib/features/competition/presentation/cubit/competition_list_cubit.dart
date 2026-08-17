@@ -8,32 +8,27 @@ import 'competition_list_state.dart';
 export 'competition_list_state.dart';
 
 class CompetitionListCubit extends Cubit<CompetitionListState> {
-  CompetitionListCubit(this._repository) : super(const CompetitionListState());
+  CompetitionListCubit(this._repository)
+    : super(const CompetitionListLoading());
 
   final CompetitionRepository _repository;
 
+  CompetitionListReady? get _ready => switch (state) {
+    CompetitionListReady ready => ready,
+    _ => null,
+  };
+
   Future<void> load({bool silent = false}) async {
-    if (!silent) {
-      emit(const CompetitionListState());
-    }
+    final ready = _ready;
+    if (!silent) emit(const CompetitionListLoading());
     try {
       final competitions = await _repository.myCompetitions();
       if (isClosed) return;
-      emit(
-        CompetitionListState(
-          status: CompetitionListStatus.ready,
-          competitions: competitions,
-        ),
-      );
+      emit(CompetitionListReady(competitions: competitions));
     } on Failure catch (failure) {
       if (isClosed) return;
-      emit(
-        CompetitionListState(
-          status: CompetitionListStatus.failed,
-          competitions: silent ? state.competitions : const [],
-          failure: failure,
-        ),
-      );
+      if (silent && ready != null) return;
+      emit(CompetitionListFailed(failure));
     }
   }
 
@@ -61,24 +56,31 @@ class CompetitionListCubit extends Cubit<CompetitionListState> {
       _mutate(() => _repository.delete(competitionId));
 
   CompetitionOverview? _find(String competitionId) {
-    for (final overview in state.competitions) {
+    final ready = _ready;
+    if (ready == null) return null;
+    for (final overview in ready.competitions) {
       if (overview.id == competitionId) return overview;
     }
     return null;
   }
 
   Future<bool> _mutate(Future<void> Function() action) async {
-    if (state.busy) return false;
-    emit(state.copyWith(busy: true, clearActionFailure: true));
+    final ready = _ready;
+    if (ready == null || ready.busy) return false;
+    emit(ready.copyWith(busy: true, clearActionFailure: true));
     try {
       await action();
       if (isClosed) return true;
-      emit(state.copyWith(busy: false));
+      final latest = _ready;
+      if (latest != null) emit(latest.copyWith(busy: false));
       await refresh();
       return true;
     } on Failure catch (failure) {
       if (isClosed) return false;
-      emit(state.copyWith(busy: false, actionFailure: failure));
+      final latest = _ready;
+      if (latest != null) {
+        emit(latest.copyWith(busy: false, actionFailure: failure));
+      }
       return false;
     }
   }
