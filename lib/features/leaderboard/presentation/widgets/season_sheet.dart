@@ -1,11 +1,11 @@
 import 'package:flutter/widgets.dart';
 
-import '../../../../core/extensions/build_context_l10n.dart';
+import '../../../../core/extensions/build_context.extension.dart';
+import '../../../../core/extensions/season.extension.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/sheet.dart';
 import '../../../competition/domain/competition.model.dart';
 import '../../domain/season.model.dart';
-import 'season_label.dart';
 
 class SeasonSheet extends StatelessWidget {
   const SeasonSheet({
@@ -29,7 +29,7 @@ class SeasonSheet extends StatelessWidget {
         children: [
           for (final season in seasons)
             AdaptiveButton(
-              label: seasonLabel(context, season, seasonLength),
+              label: season.label(context, seasonLength),
               kind: season == selected
                   ? AdaptiveButtonKind.tinted
                   : AdaptiveButtonKind.plain,

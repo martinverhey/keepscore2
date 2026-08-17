@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 
 import '../../../../core/error/failure.dart';
-import '../../../../core/extensions/player_list_active.dart';
+import '../../../../core/extensions/player_list.extension.dart';
 import '../../../competition/domain/competition_repository.dart';
 import '../../../leaderboard/domain/leaderboard_repository.dart';
 import '../../../player/domain/player_repository.dart';

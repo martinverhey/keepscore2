@@ -161,6 +161,19 @@ code; don't relitigate them.
     decreasing levels of abstraction. A helper called from more than one
     place (`_bareBar`) sits after the last of its callers, grouped with
     other shared/leaf helpers toward the bottom of the class.
+  - **The same top-down ordering applies to plain top-level functions in a
+    non-widget file** (e.g. `match_day_group.dart`'s `groupByDay` and its
+    `_newestFirst` comparator): the public entry point goes first, followed
+    by the private helper(s) it calls, not the other way around.
+  - **A file that pairs a widget with top-level helper functions keeps that
+    same ordering, and a helper used only by that widget's `build()` is a
+    private top-level function below the class, not a private method on
+    it.** `rating_delta.dart` is the template: `_formatDelta`/`_deltaColor`
+    are used only by `RatingDelta.build()`, so they sit below the class as
+    private top-level functions rather than `_formatDelta`/`_deltaColor`
+    methods on `RatingDelta` itself. (`formatRating`, the file's other
+    original helper, didn't fit this shape at all — see the extension bullet
+    below for where it went instead.)
   - A new private local widget (`class _Foo extends StatelessWidget` /
     `StatefulWidget` inside a feature file) that takes only
     primitives/`Color`/callbacks — no `Player`, `Match`, `Competition`, etc. —
@@ -258,7 +271,10 @@ code; don't relitigate them.
       code→email; `code` does not). A helper like `SignInCubit._run` that
       needs to toggle `busy`/`failure` regardless of which step is current
       dispatches on the concrete subtype with a small `switch (state) {
-      XStepA s => s.copyWith(...), XStepB s => s.copyWith(...), ... }`.
+      XStepA stepA => stepA.copyWith(...), XStepB stepB =>
+      stepB.copyWith(...), ... }` — the pattern variable is named for the
+      step, not a single letter, even though every branch does the same
+      mechanical `copyWith`.
     - **Single form with a terminal "succeeded" case**
       (`CreateCompetitionState`): `XEditing(...)` / `XCreated(result)` — the
       editable fields and the result never coexist, unlike the old flat
@@ -330,18 +346,31 @@ code; don't relitigate them.
     `leaderboard_row.dart`).
 - **The same small piece of logic showing up as a private helper in more than
   one file becomes an extension in `core/extensions/`, not a copy in each
-  file or a shared static helper.** One extension per file, unsuffixed,
-  named `<Type><Concept>` (e.g. `BuildContextL10n` on `BuildContext` in
-  `build_context_l10n.dart`, `StreakTypeTier` on `StreakType` in
-  `streak_type_tier.dart`, `BuildContextLocale.languageTag` on `BuildContext`
-  in `build_context_locale.dart` for the `Localizations.localeOf(context)
-  .toLanguageTag()` every `DateFormat` call site needed). `core/extensions/`
-  may import a feature's domain type to extend it
+  file or a shared static helper.** Filed as `<type>.extension.dart`, named
+  for the extended type in snake_case — **every extension on a given type
+  lives together in that one file**, not split one-per-concept. Each
+  individual extension block inside it is still named `<Type><Concept>`
+  (e.g. `BuildContextL10n` and `BuildContextLocale.languageTag` both live in
+  `build_context.extension.dart`; `ThemePreferenceMode` and
+  `ThemePreferenceBrightnessOverride` both live in
+  `theme_preference.extension.dart`; `StreakTypeTier` on `StreakType` is
+  currently alone in `streak_type.extension.dart` but a second extension on
+  `StreakType` would join it there rather than get its own file).
+  `core/extensions/` may import a feature's domain type to extend it
   (`core/data/game_type_filter_store.dart` already does this for `GameType`)
   — extending a type is not a layering violation the way a core file
-  depending on feature *behaviour* would be. This applies just as much to a
-  repeated expression chain (`x.y().z()`) as to a repeated block of
-  statements — don't wait for the duplication to grow before extracting it.
+  depending on feature *behaviour* would be. **A single already-shared
+  top-level function that formats/derives a value off a primitive gets the
+  same treatment**, even with no literal duplicate to fold in — it just
+  wasn't discovered as a getter on the type it operates on yet.
+  `formatRating(double value) => value.round().toString()` used to live as a
+  bare top-level function in `rating_delta.dart`, called from half a dozen
+  files; it's now `double.ratingLabel` (`DoubleRatingLabel` in
+  `double.extension.dart`), and every call site reads the value off the
+  number itself instead of wrapping it in a function call.
+  This applies just as much to a repeated expression chain (`x.y().z()`) as
+  to a repeated block of statements — don't wait for the duplication to grow
+  before extracting it.
 - **Feature code never imports `package:flutter/cupertino.dart` or Material
   widgets directly.** Everything platform-specific goes through
   `core/widgets/adaptive/adaptive.dart`. `AppPlatform.useCupertino` is the

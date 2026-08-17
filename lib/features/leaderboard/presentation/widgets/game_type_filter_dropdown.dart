@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 
-import '../../../../core/extensions/build_context_l10n.dart';
-import '../../../../core/extensions/game_type_label.dart';
+import '../../../../core/extensions/build_context.extension.dart';
+import '../../../../core/extensions/game_type.extension.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/pill_dropdown.dart';
 import '../../../../core/widgets/sheet.dart';

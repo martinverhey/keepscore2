@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-import '../../../../core/extensions/build_context_l10n.dart';
+import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/widgets/text_entry_sheet.dart';
 
 Future<String?> showPlayerNameSheet(

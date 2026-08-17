@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/failure.dart';
-import '../../../../core/extensions/string_join_code.dart';
+import '../../../../core/extensions/string.extension.dart';
 import '../../../player/domain/player.model.dart';
 import '../../domain/join_preview.model.dart';
 

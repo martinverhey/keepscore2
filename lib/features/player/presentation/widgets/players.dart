@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:keepscore2/core/widgets/section_label.dart';
 
 import '../../../../core/error/failure_messages.dart';
-import '../../../../core/extensions/build_context_l10n.dart';
+import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/state_views.dart';

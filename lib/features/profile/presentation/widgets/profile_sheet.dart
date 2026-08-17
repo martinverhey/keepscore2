@@ -3,9 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../app/dependency_injection/injector.dart';
 import '../../../../core/error/failure_messages.dart';
-import '../../../../core/extensions/build_context_l10n.dart';
-import '../../../../core/extensions/medal_color.dart';
-import '../../../../core/extensions/streak_type_tier.dart';
+import '../../../../core/extensions/build_context.extension.dart';
+import '../../../../core/extensions/double.extension.dart';
+import '../../../../core/extensions/medal.extension.dart';
+import '../../../../core/extensions/season.extension.dart';
+import '../../../../core/extensions/streak_type.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/medal_chip.dart';
@@ -18,7 +20,6 @@ import '../../../leaderboard/domain/leaderboard.model.dart';
 import '../../../leaderboard/domain/medals.model.dart';
 import '../../../leaderboard/domain/season_leaderboard.model.dart';
 import '../../../leaderboard/presentation/widgets/game_type_filter_dropdown.dart';
-import '../../../leaderboard/presentation/widgets/season_label.dart';
 import '../../../match/domain/match_entry.model.dart';
 import '../../../match/presentation/cubit/game_type_filter_cubit.dart';
 import '../../../match/presentation/widgets/match_tile.dart';
@@ -283,7 +284,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
       _seasonRatingBlock(context, leaderboard),
       _statBlock(
         context.l10n.profileBestRatingLabel,
-        formatRating(state.bestRating),
+        state.bestRating.ratingLabel,
       ),
     ]);
   }
@@ -307,7 +308,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                formatRating(leaderboard.rating),
+                leaderboard.rating.ratingLabel,
                 style: AppTypography.titleSmall.copyWith(
                   fontFeatures: AppTypography.tabularFigures,
                 ),
@@ -537,7 +538,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
         children: [
           Expanded(
             child: Text(
-              seasonLabel(context, leaderboard.season, widget.seasonLength),
+              leaderboard.season.label(context, widget.seasonLength),
               style: AppTypography.bodySmall,
             ),
           ),
@@ -548,7 +549,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
           Text('#${leaderboard.rank}', style: AppTypography.caption),
           const SizedBox(width: AppSpacing.sm),
           Text(
-            formatRating(leaderboard.rating),
+            leaderboard.rating.ratingLabel,
             style: AppTypography.bodySmall.copyWith(
               fontWeight: FontWeight.w700,
             ),

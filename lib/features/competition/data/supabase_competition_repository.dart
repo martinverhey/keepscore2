@@ -1,7 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/error/failure.dart';
-import '../../../core/extensions/string_join_code.dart';
+import '../../../core/extensions/string.extension.dart';
 import '../../player/domain/player.model.dart';
 import '../domain/competition.model.dart';
 import '../domain/competition_repository.dart';

@@ -2,14 +2,14 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../app/dependency_injection/injector.dart';
-import '../../../../core/extensions/build_context_l10n.dart';
-import '../../../../core/extensions/int_rank_color.dart';
-import '../../../../core/extensions/medal_color.dart';
-import '../../../../core/extensions/streak_type_tier.dart';
+import '../../../../core/extensions/build_context.extension.dart';
+import '../../../../core/extensions/double.extension.dart';
+import '../../../../core/extensions/int.extension.dart';
+import '../../../../core/extensions/medal.extension.dart';
+import '../../../../core/extensions/streak_type.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/medal_chip.dart';
-import '../../../../core/widgets/rating_delta.dart';
 import '../../../../core/widgets/tag.dart';
 import '../../../../core/widgets/today_delta_badge.dart';
 import '../../../competition/domain/competition.model.dart';
@@ -152,7 +152,7 @@ class LeaderboardRow extends StatelessWidget {
               const SizedBox(width: AppSpacing.xs),
             ],
             Text(
-              formatRating(leaderboard.rating),
+              leaderboard.rating.ratingLabel,
               style: AppTypography.titleSmall.copyWith(
                 fontFeatures: AppTypography.tabularFigures,
               ),

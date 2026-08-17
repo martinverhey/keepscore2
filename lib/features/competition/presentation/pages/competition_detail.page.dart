@@ -5,9 +5,9 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/router/app_router.dart';
 import '../../../../core/data/recent_competition_store.dart';
 import '../../../../core/error/failure_messages.dart';
-import '../../../../core/extensions/box_constraints_content_inset.dart';
-import '../../../../core/extensions/build_context_l10n.dart';
-import '../../../../core/extensions/competition_ownership.dart';
+import '../../../../core/extensions/box_constraints.extension.dart';
+import '../../../../core/extensions/build_context.extension.dart';
+import '../../../../core/extensions/competition.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/page_title.dart';
@@ -374,30 +374,7 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
   Widget _competitionHeader(BuildContext context, Competition competition) {
     return Row(
       children: [
-        Expanded(
-          child: AdaptiveTappable(
-            onTap: () => context.push(Routes.home),
-            child: Row(
-              children: [
-                Flexible(
-                  child: Text(
-                    competition.name,
-                    style: AppTypography.labelLarge.copyWith(
-                      color: AppColors.neutral,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.xs),
-                const AdaptiveIcon(
-                  AdaptiveGlyph.chevronRight,
-                  color: AppColors.neutral,
-                  size: 16,
-                ),
-              ],
-            ),
-          ),
-        ),
+        _competitionButton(context, competition),
         const SizedBox(width: AppSpacing.sm),
         _inviteButton(context, competition.joinCode),
         const SizedBox(width: AppSpacing.xs),
@@ -407,6 +384,33 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
           style: TagStyle.code,
         ),
       ],
+    );
+  }
+
+  Widget _competitionButton(BuildContext context, Competition competition) {
+    return Expanded(
+      child: AdaptiveTappable(
+        onTap: () => context.push(Routes.home),
+        child: Row(
+          children: [
+            Flexible(
+              child: Text(
+                competition.name,
+                style: AppTypography.bodyLarge.copyWith(
+                  color: AppColors.neutral,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.xs),
+            const AdaptiveIcon(
+              AdaptiveGlyph.chevronRight,
+              color: AppColors.neutral,
+              size: 16,
+            ),
+          ],
+        ),
+      ),
     );
   }
 

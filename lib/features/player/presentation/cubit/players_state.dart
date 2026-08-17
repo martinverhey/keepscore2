@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/failure.dart';
-import '../../../../core/extensions/player_list_active.dart';
+import '../../../../core/extensions/player_list.extension.dart';
 import '../../domain/player.model.dart';
 
 sealed class PlayersState extends Equatable {

@@ -1,8 +1,8 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
-import '../../../../core/extensions/build_context_l10n.dart';
-import '../../../../core/extensions/text_editing_controller_int_value.dart';
+import '../../../../core/extensions/build_context.extension.dart';
+import '../../../../core/extensions/text_editing_controller.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/sheet.dart';
@@ -33,13 +33,10 @@ class _MatchScoreSheetState extends State<MatchScoreSheet> {
   }
 
   int? get _a => _scoreA.intValue;
-
   int? get _b => _scoreB.intValue;
 
   @override
   Widget build(BuildContext context) {
-    final valid = _a != null && _b != null;
-
     return Sheet(
       title: context.l10n.matchEditScoreTitle,
       subtitle: context.l10n.matchEditScoreHelp,
@@ -72,7 +69,9 @@ class _MatchScoreSheetState extends State<MatchScoreSheet> {
       ),
       primaryButton: AdaptiveButton(
         label: context.l10n.commonSave,
-        onPressed: valid ? () => Navigator.of(context).pop((_a!, _b!)) : null,
+        onPressed: _a != null && _b != null
+            ? () => Navigator.of(context).pop((_a!, _b!))
+            : null,
       ),
       secondaryButton: AdaptiveButton(
         label: context.l10n.commonCancel,

@@ -107,14 +107,17 @@ class SignInCubit extends Cubit<SignInState> {
   }
 
   SignInState _withBusy(bool busy) => switch (state) {
-    SignInChooser s => s.copyWith(busy: busy),
-    SignInEmailStep s => s.copyWith(busy: busy),
-    SignInCodeStep s => s.copyWith(busy: busy),
+    SignInChooser chooser => chooser.copyWith(busy: busy),
+    SignInEmailStep emailStep => emailStep.copyWith(busy: busy),
+    SignInCodeStep codeStep => codeStep.copyWith(busy: busy),
   };
 
   SignInState _withFailure(Failure failure) => switch (state) {
-    SignInChooser s => s.copyWith(busy: false, failure: failure),
-    SignInEmailStep s => s.copyWith(busy: false, failure: failure),
-    SignInCodeStep s => s.copyWith(busy: false, failure: failure),
+    SignInChooser chooser => chooser.copyWith(busy: false, failure: failure),
+    SignInEmailStep emailStep => emailStep.copyWith(
+      busy: false,
+      failure: failure,
+    ),
+    SignInCodeStep codeStep => codeStep.copyWith(busy: false, failure: failure),
   };
 }

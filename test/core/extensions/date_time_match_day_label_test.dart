@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:keepscore2/features/match/presentation/widgets/match_day_label.dart';
+import 'package:keepscore2/core/extensions/date_time.extension.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 
 Future<String> labelFor(
@@ -17,7 +17,7 @@ Future<String> labelFor(
       supportedLocales: AppLocalizations.supportedLocales,
       home: Builder(
         builder: (context) {
-          label = matchDayLabel(context, day, now: now);
+          label = day.matchDayLabel(context, now: now);
           return const SizedBox();
         },
       ),
@@ -29,8 +29,9 @@ Future<String> labelFor(
 void main() {
   final now = DateTime(2026, 8, 11, 14, 30);
 
-  testWidgets('names today and yesterday rather than dating them',
-      (tester) async {
+  testWidgets('names today and yesterday rather than dating them', (
+    tester,
+  ) async {
     expect(await labelFor(tester, DateTime(2026, 8, 11), now: now), 'Today');
     expect(
       await labelFor(tester, DateTime(2026, 8, 10), now: now),
@@ -38,8 +39,9 @@ void main() {
     );
   });
 
-  testWidgets('dates anything older, dropping the current year',
-      (tester) async {
+  testWidgets('dates anything older, dropping the current year', (
+    tester,
+  ) async {
     final thisYear = await labelFor(tester, DateTime(2026, 8, 4), now: now);
     expect(thisYear, contains('August'));
     expect(thisYear, isNot(contains('2026')));
@@ -48,8 +50,7 @@ void main() {
     expect(lastYear, contains('2025'));
   });
 
-  testWidgets('reads today off the clock, not the time of day',
-      (tester) async {
+  testWidgets('reads today off the clock, not the time of day', (tester) async {
     expect(
       await labelFor(
         tester,

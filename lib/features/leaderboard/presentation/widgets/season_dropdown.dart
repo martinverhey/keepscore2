@@ -1,10 +1,10 @@
 import 'package:flutter/widgets.dart';
 
+import '../../../../core/extensions/season.extension.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/pill_dropdown.dart';
 import '../../../competition/domain/competition.model.dart';
 import '../../domain/season.model.dart';
-import 'season_label.dart';
 import 'season_sheet.dart';
 
 class SeasonDropdown extends StatelessWidget {
@@ -24,7 +24,7 @@ class SeasonDropdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PillDropdown(
-      label: seasonLabel(context, selected, seasonLength),
+      label: selected.label(context, seasonLength),
       onTap: () => _pick(context),
     );
   }

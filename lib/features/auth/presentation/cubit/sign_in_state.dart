@@ -4,12 +4,15 @@ import '../../../../core/error/failure.dart';
 
 sealed class SignInState extends Equatable {
   const SignInState();
+
+  Failure? get failure => null;
 }
 
 class SignInChooser extends SignInState {
   const SignInChooser({this.busy = false, this.failure});
 
   final bool busy;
+  @override
   final Failure? failure;
 
   SignInChooser copyWith({
@@ -32,6 +35,7 @@ class SignInEmailStep extends SignInState {
 
   final String email;
   final bool busy;
+  @override
   final Failure? failure;
 
   static final _emailPattern = RegExp(r'^[^@\s]+@[^@\s.]+\.[^@\s]+$');
@@ -68,6 +72,7 @@ class SignInCodeStep extends SignInState {
   final String email;
   final String code;
   final bool busy;
+  @override
   final Failure? failure;
 
   bool get codeIsValid => code.trim().length == 6;

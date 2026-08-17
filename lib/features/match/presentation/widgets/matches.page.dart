@@ -2,8 +2,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/error/failure_messages.dart';
-import '../../../../core/extensions/build_context_l10n.dart';
-import '../../../../core/extensions/game_type_label.dart';
+import '../../../../core/extensions/build_context.extension.dart';
+import '../../../../core/extensions/game_type.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/hint_card.dart';

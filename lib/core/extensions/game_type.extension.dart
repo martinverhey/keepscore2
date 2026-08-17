@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import '../../features/match/domain/game_type.enum.dart';
-import 'build_context_l10n.dart';
+import 'build_context.extension.dart';
 
 extension GameTypeLabel on GameType {
   String label(BuildContext context) => switch (this) {

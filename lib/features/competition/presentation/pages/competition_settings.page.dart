@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/app_router.dart';
 import '../../../../core/error/failure_messages.dart';
-import '../../../../core/extensions/build_context_l10n.dart';
+import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/help_text.dart';

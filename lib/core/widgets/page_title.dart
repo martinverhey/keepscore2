@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
-import '../extensions/build_context_l10n.dart';
+import '../extensions/build_context.extension.dart';
 
 void setPageTitle(BuildContext context, String label) {
   SystemChrome.setApplicationSwitcherDescription(

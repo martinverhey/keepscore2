@@ -3,7 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/error/failure_messages.dart';
-import '../../../../core/extensions/build_context_l10n.dart';
+import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../cubit/sign_in_cubit.dart';
@@ -32,13 +32,7 @@ class AuthFailureText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final failure = context.select(
-      (SignInCubit c) => switch (c.state) {
-        SignInChooser(:final failure) => failure,
-        SignInEmailStep(:final failure) => failure,
-        SignInCodeStep(:final failure) => failure,
-      },
-    );
+    final failure = context.select((SignInCubit cubit) => cubit.state.failure);
     if (failure == null) return const SizedBox.shrink();
 
     return Padding(

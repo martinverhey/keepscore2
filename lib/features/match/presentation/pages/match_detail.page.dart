@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/error/failure_messages.dart';
-import '../../../../core/extensions/build_context_l10n.dart';
-import '../../../../core/extensions/build_context_locale.dart';
+import '../../../../core/extensions/build_context.extension.dart';
+import '../../../../core/extensions/double.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/page_title.dart';
@@ -245,9 +245,8 @@ class _MatchDetailPageState extends State<MatchDetailPage> {
         ),
         Text(
           context.l10n.matchTeamRating(
-            formatRating(
-              team == MatchTeam.a ? match.teamARating : match.teamBRating,
-            ),
+            (team == MatchTeam.a ? match.teamARating : match.teamBRating)
+                .ratingLabel,
           ),
           style: AppTypography.captionSmall,
         ),
@@ -270,8 +269,8 @@ class _MatchDetailPageState extends State<MatchDetailPage> {
             ),
           ),
           Text(
-            '${formatRating(participant.ratingBefore)} → '
-            '${formatRating(participant.ratingAfter)}',
+            '${participant.ratingBefore.ratingLabel} → '
+            '${participant.ratingAfter.ratingLabel}',
             style: AppTypography.caption.copyWith(
               fontFeatures: AppTypography.tabularFigures,
             ),

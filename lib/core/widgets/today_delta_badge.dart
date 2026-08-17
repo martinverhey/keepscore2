@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-import '../extensions/build_context_l10n.dart';
+import '../extensions/build_context.extension.dart';
 import '../theme/app_tokens.dart';
 import 'adaptive/adaptive.dart';
 

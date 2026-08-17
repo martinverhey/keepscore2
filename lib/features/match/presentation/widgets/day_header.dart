@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 
+import '../../../../core/extensions/date_time.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
-import 'match_day_label.dart';
 
 class DayHeader extends StatelessWidget {
   const DayHeader({super.key, required this.day});
@@ -13,7 +13,7 @@ class DayHeader extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.xs, bottom: AppSpacing.sm),
       child: Text(
-        matchDayLabel(context, day),
+        day.matchDayLabel(context),
         style: AppTypography.labelLarge.copyWith(
           fontWeight: FontWeight.w700,
           color: AppColors.neutral,

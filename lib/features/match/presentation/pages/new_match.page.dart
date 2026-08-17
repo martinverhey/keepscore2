@@ -5,12 +5,12 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/app_router.dart';
 import '../../../../core/error/failure_messages.dart';
-import '../../../../core/extensions/build_context_l10n.dart';
-import '../../../../core/extensions/text_editing_controller_int_value.dart';
+import '../../../../core/extensions/build_context.extension.dart';
+import '../../../../core/extensions/double.extension.dart';
+import '../../../../core/extensions/text_editing_controller.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/page_title.dart';
-import '../../../../core/widgets/rating_delta.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../competition/presentation/cubit/competition_detail_cubit.dart';
@@ -377,7 +377,7 @@ class _NewMatchPageState extends State<NewMatchPage> {
             duration: const Duration(milliseconds: 500),
             curve: Curves.easeOutCubic,
             builder: (_, value, _) => Text(
-              formatRating(value),
+              value.ratingLabel,
               style: AppTypography.headlineMedium.copyWith(
                 fontWeight: FontWeight.w800,
                 color: color,
@@ -405,7 +405,7 @@ class _NewMatchPageState extends State<NewMatchPage> {
             ),
           ),
           Text(
-            formatRating(ratingOf(player.id)),
+            ratingOf(player.id).ratingLabel,
             style: AppTypography.captionSmall.copyWith(
               fontFeatures: AppTypography.tabularFigures,
             ),

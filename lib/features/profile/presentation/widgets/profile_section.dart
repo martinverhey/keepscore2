@@ -2,12 +2,12 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../app/dependency_injection/injector.dart';
-import '../../../../core/extensions/build_context_l10n.dart';
-import '../../../../core/extensions/streak_type_tier.dart';
+import '../../../../core/extensions/build_context.extension.dart';
+import '../../../../core/extensions/double.extension.dart';
+import '../../../../core/extensions/streak_type.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/medal_chip.dart';
-import '../../../../core/widgets/rating_delta.dart';
 import '../../../competition/domain/competition.model.dart';
 import '../../../leaderboard/domain/leaderboard.model.dart';
 import '../../../leaderboard/domain/medals.model.dart';
@@ -179,7 +179,7 @@ class ProfileSection extends StatelessWidget {
     return Row(
       children: [
         _statBlock(
-          formatRating(leaderboard.rating),
+          leaderboard.rating.ratingLabel,
           context.l10n.profileSeasonRatingLabel,
         ),
         _statBlock('$winRatePercent%', context.l10n.profileWinRateLabel),

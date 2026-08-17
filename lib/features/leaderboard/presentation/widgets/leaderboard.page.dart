@@ -3,9 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/error/failure_messages.dart';
-import '../../../../core/extensions/build_context_l10n.dart';
-import '../../../../core/extensions/build_context_locale.dart';
-import '../../../../core/extensions/game_type_label.dart';
+import '../../../../core/extensions/build_context.extension.dart';
+import '../../../../core/extensions/game_type.extension.dart';
+import '../../../../core/extensions/season.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/state_views.dart';
@@ -13,7 +13,6 @@ import '../../../competition/domain/competition.model.dart';
 import '../../domain/season.model.dart';
 import '../cubit/leaderboard_cubit.dart';
 import 'leaderboard_row.dart';
-import 'season_label.dart';
 
 class LeaderboardPage extends StatelessWidget {
   const LeaderboardPage({
@@ -122,7 +121,7 @@ class LeaderboardPage extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          seasonLabel(context, season, seasonLength),
+          season.label(context, seasonLength),
           style: AppTypography.titleSmall,
         ),
         const SizedBox(height: 2),
