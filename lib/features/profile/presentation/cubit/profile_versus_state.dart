@@ -46,9 +46,12 @@ class ProfileVersusReady extends ProfileVersusState {
     GameType? selectedGameType,
     List<HeadToHeadRecord>? headToHead,
     List<MatchEntry>? recentMatches,
+    bool clearGameType = false,
   }) {
     return ProfileVersusReady(
-      selectedGameType: selectedGameType ?? this.selectedGameType,
+      selectedGameType: clearGameType
+          ? null
+          : (selectedGameType ?? this.selectedGameType),
       headToHead: headToHead ?? this.headToHead,
       recentMatches: recentMatches ?? this.recentMatches,
     );

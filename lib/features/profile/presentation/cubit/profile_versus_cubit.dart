@@ -81,6 +81,7 @@ class ProfileVersusCubit extends Cubit<ProfileVersusState> {
         emit(
           latest.copyWith(
             selectedGameType: gameType,
+            clearGameType: gameType == null,
             recentMatches: recentMatches,
           ),
         );

@@ -36,9 +36,12 @@ class ProfileHistoryReady extends ProfileHistoryState {
   ProfileHistoryReady copyWith({
     GameType? selectedGameType,
     List<SeasonLeaderboard>? leaderboards,
+    bool clearGameType = false,
   }) {
     return ProfileHistoryReady(
-      selectedGameType: selectedGameType ?? this.selectedGameType,
+      selectedGameType: clearGameType
+          ? null
+          : (selectedGameType ?? this.selectedGameType),
       leaderboards: leaderboards ?? this.leaderboards,
     );
   }

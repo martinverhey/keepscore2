@@ -70,6 +70,7 @@ class ProfileHistoryCubit extends Cubit<ProfileHistoryState> {
         emit(
           latest.copyWith(
             selectedGameType: gameType,
+            clearGameType: gameType == null,
             leaderboards: leaderboards,
           ),
         );
