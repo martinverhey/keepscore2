@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/failure.dart';
+import '../../../../core/extensions/player_list_active.dart';
 import '../../domain/player.model.dart';
 
 enum PlayersStatus { loading, ready, failed }
@@ -20,8 +21,7 @@ class PlayersState extends Equatable {
   final Failure? failure;
   final Failure? actionFailure;
 
-  List<Player> get active =>
-      players.where((player) => player.isActive).toList(growable: false);
+  List<Player> get active => players.active;
 
   List<Player> get inactive =>
       players.where((player) => !player.isActive).toList(growable: false);

@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 
 import '../../../../core/error/failure.dart';
+import '../../../../core/extensions/player_list_active.dart';
 import '../../../competition/domain/competition.model.dart';
 import '../../../competition/domain/competition_repository.dart';
 import '../../../leaderboard/domain/leaderboard_repository.dart';
@@ -54,9 +55,7 @@ class MatchFormCubit extends Cubit<MatchFormState> {
         MatchFormState(
           status: MatchFormStatus.ready,
           competition: overview.competition,
-          players: (results[1] as List<Player>)
-              .where((player) => player.isActive)
-              .toList(growable: false),
+          players: (results[1] as List<Player>).active,
           ratings: {
             for (final leaderboard in leaderboards)
               leaderboard.playerId: leaderboard.rating,
@@ -73,13 +72,7 @@ class MatchFormCubit extends Cubit<MatchFormState> {
     try {
       final players = await _players.roster(competitionId);
       if (isClosed) return;
-      emit(
-        state.copyWith(
-          players: players
-              .where((player) => player.isActive)
-              .toList(growable: false),
-        ),
-      );
+      emit(state.copyWith(players: players.active));
     } on Failure {
       return;
     }
