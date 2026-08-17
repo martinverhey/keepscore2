@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../../../core/extensions/build_context_l10n.dart';
+import '../../../../core/extensions/text_editing_controller_int_value.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/sheet.dart';
@@ -31,9 +32,9 @@ class _MatchScoreSheetState extends State<MatchScoreSheet> {
     super.dispose();
   }
 
-  int? get _a => int.tryParse(_scoreA.text.trim());
+  int? get _a => _scoreA.intValue;
 
-  int? get _b => int.tryParse(_scoreB.text.trim());
+  int? get _b => _scoreB.intValue;
 
   @override
   Widget build(BuildContext context) {

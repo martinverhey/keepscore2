@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/router/app_router.dart';
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context_l10n.dart';
+import '../../../../core/extensions/text_editing_controller_int_value.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/page_title.dart';
@@ -47,8 +48,8 @@ class _NewMatchPageState extends State<NewMatchPage> {
     super.dispose();
   }
 
-  int? get _scoreAValue => int.tryParse(_scoreA.text.trim());
-  int? get _scoreBValue => int.tryParse(_scoreB.text.trim());
+  int? get _scoreAValue => _scoreA.intValue;
+  int? get _scoreBValue => _scoreB.intValue;
 
   Future<void> _submit() async {
     final scoreA = _scoreAValue;
