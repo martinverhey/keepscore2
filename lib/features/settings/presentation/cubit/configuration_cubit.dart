@@ -3,35 +3,35 @@ import 'package:bloc/bloc.dart';
 import '../../../../core/error/failure.dart';
 import '../../../competition/domain/competition.model.dart';
 import '../../../competition/domain/competition_repository.dart';
-import 'competition_settings_state.dart';
+import 'configuration_state.dart';
 
-export 'competition_settings_state.dart';
+export 'configuration_state.dart';
 
-class CompetitionSettingsCubit extends Cubit<CompetitionSettingsState> {
-  CompetitionSettingsCubit(this._repository, this.competitionId)
-    : super(const CompetitionSettingsLoading());
+class ConfigurationCubit extends Cubit<ConfigurationState> {
+  ConfigurationCubit(this._repository, this.competitionId)
+    : super(const ConfigurationLoading());
 
   final CompetitionRepository _repository;
   final String competitionId;
 
-  CompetitionSettingsReady? get _ready => switch (state) {
-    CompetitionSettingsReady ready => ready,
+  ConfigurationReady? get _ready => switch (state) {
+    ConfigurationReady ready => ready,
     _ => null,
   };
 
   Future<void> load() async {
-    emit(const CompetitionSettingsLoading());
+    emit(const ConfigurationLoading());
     try {
       final overview = await _repository.overview(competitionId);
       if (isClosed) return;
       emit(
         overview == null
-            ? const CompetitionSettingsMissing()
-            : CompetitionSettingsReady.of(overview.competition),
+            ? const ConfigurationMissing()
+            : ConfigurationReady.of(overview.competition),
       );
     } on Failure catch (failure) {
       if (isClosed) return;
-      emit(CompetitionSettingsFailed(failure));
+      emit(ConfigurationFailed(failure));
     }
   }
 
@@ -53,9 +53,7 @@ class CompetitionSettingsCubit extends Cubit<CompetitionSettingsState> {
   void allowDrawsChanged(bool value) =>
       _edit((ready) => ready.copyWith(allowDraws: value));
 
-  void _edit(
-    CompetitionSettingsReady Function(CompetitionSettingsReady) apply,
-  ) {
+  void _edit(ConfigurationReady Function(ConfigurationReady) apply) {
     final ready = _ready;
     if (ready == null) return;
     emit(apply(ready).copyWith(saved: false, clearFailure: true));
@@ -76,7 +74,7 @@ class CompetitionSettingsCubit extends Cubit<CompetitionSettingsState> {
         allowDraws: ready.allowDraws,
       );
       if (isClosed) return;
-      emit(CompetitionSettingsReady.of(competition).copyWith(saved: true));
+      emit(ConfigurationReady.of(competition).copyWith(saved: true));
     } on Failure catch (failure) {
       if (isClosed) return;
       final latest = _ready;

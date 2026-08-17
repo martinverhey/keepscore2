@@ -100,7 +100,7 @@ lib/
 `features/settings/` is the one deliberate exception to "a feature owns the
 domain it presents": alongside its own theme-preference domain, it also holds
 the presentation for the competition-admin menu — `SettingsPage`,
-`CompetitionSettingsPage`/`CompetitionSettingsCubit`, `HistoryPage`/
+`ConfigurationPage`/`ConfigurationCubit`, `HistoryPage`/
 `HistoryCubit` — even though those read `CompetitionRepository`/
 `LeaderboardRepository`, which stay put in `competition`/`leaderboard`. They
 moved here because they're conceptually "settings" screens, not because they
@@ -238,7 +238,7 @@ code; don't relitigate them.
     needs falls into one of four recurring buckets — grep an existing
     `<name>_state.dart` for the closest match before inventing a new shape:
     - **Fetch one thing, with a "not found" case** (`CompetitionDetailState`,
-      `CompetitionSettingsState`, `MatchDetailState`): `XLoading`/`XMissing`/
+      `ConfigurationState`, `MatchDetailState`): `XLoading`/`XMissing`/
       `XFailed(failure)`/`XReady(...)`. A field that was nullable purely to
       mean "not loaded yet" becomes non-nullable on `XReady` — e.g.
       `MatchFormReady.competition`/`MatchDetailReady.match` — so
@@ -572,10 +572,10 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   otherwise a fixed-width sidebar `Row`-ed next to `Expanded(child: child)` —
   composed by every page reached from within a competition
   (`CompetitionDetailPage`, `PlayersPage`, `HistoryPage`,
-  `CompetitionSettingsPage`, `NewMatchPage`) around their existing
+  `ConfigurationPage`, `NewMatchPage`) around their existing
   `AdaptiveScaffold`, each supplying its own `CompetitionSection`
   (`competition_section.enum.dart`: leaderboard, matches, players, history,
-  settings, competitions) as `current` for highlighting — `null` for a page
+  configuration, competitions) as `current` for highlighting — `null` for a page
   with no matching nav row (`NewMatchPage`). `CompetitionsPage` (the
   top-level competitions list, outside any competition) composes it too,
   always with `current: CompetitionSection.competitions`. Whether it also
@@ -627,7 +627,7 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   sidebar rather than a modal takeover of the whole viewport.
   **Every value a page hands `Sidebar` (`competitionName`, `canManageSettings`)
   must come from the already-loaded `CompetitionDetailCubit`, never from that
-  page's own cubit** — `CompetitionSettingsCubit`/`HistoryCubit`/etc. all
+  page's own cubit** — `ConfigurationCubit`/`HistoryCubit`/etc. all
   start out `loading` with their own `competition` field `null` even though
   `CompetitionDetailCubit` already has the answer (it loaded when
   `CompetitionDetailPage` first mounted and the ShellRoute keeps it alive).

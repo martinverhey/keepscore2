@@ -220,7 +220,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get competitionSettingsSectionSystem => 'System';
 
   @override
-  String get competitionSettingsTitle => 'Competition settings';
+  String get configurationTitle => 'Configuration';
 
   @override
   String get playersManageTitle => 'Manage players';
@@ -232,13 +232,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get historyEmpty => 'No seasons have finished yet.';
 
   @override
-  String get competitionSettingsSave => 'Save changes';
+  String get configurationSave => 'Save changes';
 
   @override
-  String get competitionSettingsSaved => 'Changes saved.';
+  String get configurationSaved => 'Changes saved.';
 
   @override
-  String get competitionSettingsOwnerOnly =>
+  String get configurationOwnerOnly =>
       'Only the owner can change these settings.';
 
   @override

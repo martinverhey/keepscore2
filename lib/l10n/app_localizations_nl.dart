@@ -221,7 +221,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get competitionSettingsSectionSystem => 'Systeem';
 
   @override
-  String get competitionSettingsTitle => 'Competitie-instellingen';
+  String get configurationTitle => 'Configuratie';
 
   @override
   String get playersManageTitle => 'Spelers beheren';
@@ -233,13 +233,13 @@ class AppLocalizationsNl extends AppLocalizations {
   String get historyEmpty => 'Er zijn nog geen seizoenen afgelopen.';
 
   @override
-  String get competitionSettingsSave => 'Wijzigingen opslaan';
+  String get configurationSave => 'Wijzigingen opslaan';
 
   @override
-  String get competitionSettingsSaved => 'Wijzigingen opgeslagen.';
+  String get configurationSaved => 'Wijzigingen opgeslagen.';
 
   @override
-  String get competitionSettingsOwnerOnly =>
+  String get configurationOwnerOnly =>
       'Alleen de beheerder kan deze instellingen wijzigen.';
 
   @override

@@ -132,9 +132,9 @@ class Sidebar extends StatelessWidget {
         _navItem(
           context,
           glyph: AdaptiveGlyph.settings,
-          label: context.l10n.competitionSettingsTitle,
-          selected: current == CompetitionSection.settings,
-          onTap: () => onSelectSection(CompetitionSection.settings),
+          label: context.l10n.configurationTitle,
+          selected: current == CompetitionSection.configuration,
+          onTap: () => onSelectSection(CompetitionSection.configuration),
         ),
       _navItem(
         context,

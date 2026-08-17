@@ -20,8 +20,8 @@ void selectCompetitionSection(
       context.pushReplacement(Routes.players(competitionId));
     case CompetitionSection.history:
       context.pushReplacement(Routes.history(competitionId));
-    case CompetitionSection.settings:
-      context.pushReplacement(Routes.competitionSettings(competitionId));
+    case CompetitionSection.configuration:
+      context.pushReplacement(Routes.configuration(competitionId));
     case CompetitionSection.competitions:
       context.pushReplacement(Routes.home);
   }

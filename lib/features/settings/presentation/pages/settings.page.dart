@@ -86,10 +86,9 @@ class _SettingsPageState extends State<SettingsPage> {
           SectionLabel(context.l10n.competitionSettingsSectionCompetition),
           if (session.canWrite && isOwner)
             NavRow(
-              label: context.l10n.competitionSettingsTitle,
-              onTap: () => context.push(
-                Routes.competitionSettings(widget.competitionId),
-              ),
+              label: context.l10n.configurationTitle,
+              onTap: () =>
+                  context.push(Routes.configuration(widget.competitionId)),
             ),
           NavRow(
             label: context.l10n.historyTitle,

@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/error/failure.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
-import 'package:keepscore2/features/settings/presentation/cubit/competition_settings_cubit.dart';
+import 'package:keepscore2/features/settings/presentation/cubit/configuration_cubit.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockCompetitionRepository extends Mock implements CompetitionRepository {}
@@ -36,8 +36,8 @@ CompetitionOverview _overview(Competition competition) => CompetitionOverview(
   matchCount: 11,
 );
 
-CompetitionSettingsReady _ready(CompetitionSettingsCubit cubit) =>
-    cubit.state as CompetitionSettingsReady;
+ConfigurationReady _ready(ConfigurationCubit cubit) =>
+    cubit.state as ConfigurationReady;
 
 void main() {
   late MockCompetitionRepository repository;
@@ -52,10 +52,10 @@ void main() {
     ).thenAnswer((_) async => _overview(competition ?? _competition()));
   }
 
-  blocTest<CompetitionSettingsCubit, CompetitionSettingsState>(
+  blocTest<ConfigurationCubit, ConfigurationState>(
     'seeds the form from the stored competition',
     setUp: () => stubLoad(),
-    build: () => CompetitionSettingsCubit(repository, 'c1'),
+    build: () => ConfigurationCubit(repository, 'c1'),
     act: (cubit) => cubit.load(),
     verify: (cubit) {
       expect(_ready(cubit).name, 'Office Table Tennis');
@@ -65,19 +65,19 @@ void main() {
     },
   );
 
-  blocTest<CompetitionSettingsCubit, CompetitionSettingsState>(
+  blocTest<ConfigurationCubit, ConfigurationState>(
     'a competition the user cannot see reads as missing, not as an error',
     setUp: () =>
         when(() => repository.overview('c1')).thenAnswer((_) async => null),
-    build: () => CompetitionSettingsCubit(repository, 'c1'),
+    build: () => ConfigurationCubit(repository, 'c1'),
     act: (cubit) => cubit.load(),
-    verify: (cubit) => expect(cubit.state, isA<CompetitionSettingsMissing>()),
+    verify: (cubit) => expect(cubit.state, isA<ConfigurationMissing>()),
   );
 
-  blocTest<CompetitionSettingsCubit, CompetitionSettingsState>(
+  blocTest<ConfigurationCubit, ConfigurationState>(
     'holds back values Postgres would reject',
     setUp: () => stubLoad(),
-    build: () => CompetitionSettingsCubit(repository, 'c1'),
+    build: () => ConfigurationCubit(repository, 'c1'),
     act: (cubit) async {
       await cubit.load();
       cubit.kFactorChanged('500');
@@ -93,10 +93,10 @@ void main() {
     },
   );
 
-  blocTest<CompetitionSettingsCubit, CompetitionSettingsState>(
+  blocTest<ConfigurationCubit, ConfigurationState>(
     'a comma decimal is accepted — a Dutch keyboard produces one',
     setUp: () => stubLoad(),
-    build: () => CompetitionSettingsCubit(repository, 'c1'),
+    build: () => ConfigurationCubit(repository, 'c1'),
     act: (cubit) async {
       await cubit.load();
       cubit.movCapChanged('1,8');
@@ -107,7 +107,7 @@ void main() {
     },
   );
 
-  blocTest<CompetitionSettingsCubit, CompetitionSettingsState>(
+  blocTest<ConfigurationCubit, ConfigurationState>(
     'saving sends the parsed values and re-seeds from the saved row',
     setUp: () {
       stubLoad();
@@ -132,7 +132,7 @@ void main() {
         ),
       );
     },
-    build: () => CompetitionSettingsCubit(repository, 'c1'),
+    build: () => ConfigurationCubit(repository, 'c1'),
     act: (cubit) async {
       await cubit.load();
       cubit.nameChanged('  Table Tennis  ');
@@ -163,7 +163,7 @@ void main() {
     },
   );
 
-  blocTest<CompetitionSettingsCubit, CompetitionSettingsState>(
+  blocTest<ConfigurationCubit, ConfigurationState>(
     'editing after a save retracts the confirmation',
     setUp: () {
       stubLoad();
@@ -179,7 +179,7 @@ void main() {
         ),
       ).thenAnswer((_) async => _competition());
     },
-    build: () => CompetitionSettingsCubit(repository, 'c1'),
+    build: () => ConfigurationCubit(repository, 'c1'),
     act: (cubit) async {
       await cubit.load();
       await cubit.submit();
@@ -189,7 +189,7 @@ void main() {
     verify: (cubit) => expect(_ready(cubit).saved, isFalse),
   );
 
-  blocTest<CompetitionSettingsCubit, CompetitionSettingsState>(
+  blocTest<ConfigurationCubit, ConfigurationState>(
     'a rejected save keeps the form and shows why',
     setUp: () {
       stubLoad();
@@ -205,7 +205,7 @@ void main() {
         ),
       ).thenThrow(const PermissionFailure());
     },
-    build: () => CompetitionSettingsCubit(repository, 'c1'),
+    build: () => ConfigurationCubit(repository, 'c1'),
     act: (cubit) async {
       await cubit.load();
       cubit.kFactorChanged('40');

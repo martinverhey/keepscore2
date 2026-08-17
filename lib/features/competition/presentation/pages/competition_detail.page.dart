@@ -204,8 +204,8 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
         _openAndReload(Routes.players(widget.competitionId));
       case CompetitionSection.history:
         _openAndReload(Routes.history(widget.competitionId));
-      case CompetitionSection.settings:
-        _openAndReload(Routes.competitionSettings(widget.competitionId));
+      case CompetitionSection.configuration:
+        _openAndReload(Routes.configuration(widget.competitionId));
       case CompetitionSection.competitions:
         {
           final competition = context

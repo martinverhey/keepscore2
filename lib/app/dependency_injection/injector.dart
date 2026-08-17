@@ -28,7 +28,7 @@ import '../../features/profile/domain/profile_repository.dart';
 import '../../features/profile/presentation/cubit/profile_history_cubit.dart';
 import '../../features/profile/presentation/cubit/profile_overview_cubit.dart';
 import '../../features/profile/presentation/cubit/profile_versus_cubit.dart';
-import '../../features/settings/presentation/cubit/competition_settings_cubit.dart';
+import '../../features/settings/presentation/cubit/configuration_cubit.dart';
 import '../../features/settings/presentation/cubit/history_cubit.dart';
 import '../../features/settings/presentation/cubit/theme_cubit.dart';
 
@@ -63,11 +63,9 @@ Future<void> configureDependencies() async {
       (competitionId, _) =>
           CompetitionDetailCubit(getIt<CompetitionRepository>(), competitionId),
     )
-    ..registerFactoryParam<CompetitionSettingsCubit, String, void>(
-      (competitionId, _) => CompetitionSettingsCubit(
-        getIt<CompetitionRepository>(),
-        competitionId,
-      ),
+    ..registerFactoryParam<ConfigurationCubit, String, void>(
+      (competitionId, _) =>
+          ConfigurationCubit(getIt<CompetitionRepository>(), competitionId),
     )
     ..registerFactoryParam<PlayersCubit, String, void>(
       (competitionId, _) =>

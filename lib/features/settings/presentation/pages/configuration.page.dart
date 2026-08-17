@@ -20,17 +20,16 @@ import '../../../competition/presentation/widgets/competition_section.enum.dart'
 import '../../../competition/presentation/widgets/open_home.dart';
 import '../../../competition/presentation/widgets/select_competition_section.dart';
 import '../../../competition/presentation/widgets/sidebar.dart';
-import '../cubit/competition_settings_cubit.dart';
+import '../cubit/configuration_cubit.dart';
 
-class CompetitionSettingsPage extends StatefulWidget {
-  const CompetitionSettingsPage({super.key});
+class ConfigurationPage extends StatefulWidget {
+  const ConfigurationPage({super.key});
 
   @override
-  State<CompetitionSettingsPage> createState() =>
-      _CompetitionSettingsPageState();
+  State<ConfigurationPage> createState() => _ConfigurationPageState();
 }
 
-class _CompetitionSettingsPageState extends State<CompetitionSettingsPage> {
+class _ConfigurationPageState extends State<ConfigurationPage> {
   final _nameController = TextEditingController();
   final _kFactorController = TextEditingController();
   final _movCapController = TextEditingController();
@@ -38,7 +37,7 @@ class _CompetitionSettingsPageState extends State<CompetitionSettingsPage> {
   @override
   void initState() {
     super.initState();
-    context.read<CompetitionSettingsCubit>().load();
+    context.read<ConfigurationCubit>().load();
   }
 
   @override
@@ -49,7 +48,7 @@ class _CompetitionSettingsPageState extends State<CompetitionSettingsPage> {
     super.dispose();
   }
 
-  void _syncControllers(CompetitionSettingsReady state) {
+  void _syncControllers(ConfigurationReady state) {
     if (_nameController.text != state.name) {
       _nameController.text = state.name;
     }
@@ -63,32 +62,32 @@ class _CompetitionSettingsPageState extends State<CompetitionSettingsPage> {
 
   void _selectSection(CompetitionSection section) => selectCompetitionSection(
     context,
-    competitionId: context.read<CompetitionSettingsCubit>().competitionId,
-    current: CompetitionSection.settings,
+    competitionId: context.read<ConfigurationCubit>().competitionId,
+    current: CompetitionSection.configuration,
     target: section,
   );
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<CompetitionSettingsCubit, CompetitionSettingsState>(
+    return BlocConsumer<ConfigurationCubit, ConfigurationState>(
       listenWhen: (previous, current) =>
-          current is CompetitionSettingsReady &&
-          (previous is! CompetitionSettingsReady ||
+          current is ConfigurationReady &&
+          (previous is! ConfigurationReady ||
               previous.competition != current.competition),
       listener: (context, state) =>
-          _syncControllers(state as CompetitionSettingsReady),
+          _syncControllers(state as ConfigurationReady),
       builder: (context, state) => _sidebar(context, state),
     );
   }
 
-  Widget _sidebar(BuildContext context, CompetitionSettingsState state) {
-    final cubit = context.read<CompetitionSettingsCubit>();
+  Widget _sidebar(BuildContext context, ConfigurationState state) {
+    final cubit = context.read<ConfigurationCubit>();
     final session = context.watch<AuthBloc>().state;
     final competitionDetail = context
         .watch<CompetitionDetailCubit>()
         .state
         .competition;
-    setPageTitle(context, context.l10n.competitionSettingsTitle);
+    setPageTitle(context, context.l10n.configurationTitle);
 
     final isOwner =
         session.canWrite &&
@@ -97,7 +96,7 @@ class _CompetitionSettingsPageState extends State<CompetitionSettingsPage> {
 
     return Sidebar(
       competitionName: competitionDetail?.name,
-      current: CompetitionSection.settings,
+      current: CompetitionSection.configuration,
       canManageSettings: isOwner,
       isRegistered: session.canWrite,
       onSelectSection: _selectSection,
@@ -114,7 +113,7 @@ class _CompetitionSettingsPageState extends State<CompetitionSettingsPage> {
       onSignOut: () =>
           context.read<AuthBloc>().add(const AuthSignOutRequested()),
       child: AdaptiveScaffold(
-        title: context.l10n.competitionSettingsTitle,
+        title: context.l10n.configurationTitle,
         body: _body(context, state, cubit: cubit, session: session),
       ),
     );
@@ -122,31 +121,31 @@ class _CompetitionSettingsPageState extends State<CompetitionSettingsPage> {
 
   Widget _body(
     BuildContext context,
-    CompetitionSettingsState state, {
-    required CompetitionSettingsCubit cubit,
+    ConfigurationState state, {
+    required ConfigurationCubit cubit,
     required AuthSessionState session,
   }) {
     return switch (state) {
-      CompetitionSettingsLoading() => const AdaptiveLoader(),
-      CompetitionSettingsMissing() => EmptyState(
+      ConfigurationLoading() => const AdaptiveLoader(),
+      ConfigurationMissing() => EmptyState(
         message: context.l10n.competitionNotFound,
       ),
-      CompetitionSettingsReady()
+      ConfigurationReady()
           when !state.competition.isOwnedBy(session.user?.id) =>
-        EmptyState(message: context.l10n.competitionSettingsOwnerOnly),
-      CompetitionSettingsFailed(:final failure) => ErrorRetry(
+        EmptyState(message: context.l10n.configurationOwnerOnly),
+      ConfigurationFailed(:final failure) => ErrorRetry(
         message: failure.localized(context.l10n),
         retryLabel: context.l10n.commonRetry,
         onRetry: cubit.load,
       ),
-      CompetitionSettingsReady() => _form(context, state, cubit),
+      ConfigurationReady() => _form(context, state, cubit),
     };
   }
 
   Widget _form(
     BuildContext context,
-    CompetitionSettingsReady state,
-    CompetitionSettingsCubit cubit,
+    ConfigurationReady state,
+    ConfigurationCubit cubit,
   ) {
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -230,7 +229,7 @@ class _CompetitionSettingsPageState extends State<CompetitionSettingsPage> {
           const SizedBox(height: AppSpacing.xl),
 
           AdaptiveButton(
-            label: context.l10n.competitionSettingsSave,
+            label: context.l10n.configurationSave,
             busy: state.busy,
             onPressed: state.canSubmit ? cubit.submit : null,
           ),
@@ -239,7 +238,7 @@ class _CompetitionSettingsPageState extends State<CompetitionSettingsPage> {
             Padding(
               padding: const EdgeInsets.only(top: AppSpacing.md),
               child: Text(
-                context.l10n.competitionSettingsSaved,
+                context.l10n.configurationSaved,
                 style: const TextStyle(color: AppColors.positive),
               ),
             ),

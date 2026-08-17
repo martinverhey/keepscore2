@@ -27,10 +27,10 @@ import '../../features/match/presentation/pages/match_detail.page.dart';
 import '../../features/match/presentation/pages/new_match.page.dart';
 import '../../features/player/presentation/cubit/players_cubit.dart';
 import '../../features/player/presentation/pages/players.page.dart';
-import '../../features/settings/presentation/cubit/competition_settings_cubit.dart';
+import '../../features/settings/presentation/cubit/configuration_cubit.dart';
 import '../../features/settings/presentation/cubit/history_cubit.dart';
 import '../../features/settings/presentation/pages/settings.page.dart';
-import '../../features/settings/presentation/pages/competition_settings.page.dart';
+import '../../features/settings/presentation/pages/configuration.page.dart';
 import '../../features/settings/presentation/pages/history.page.dart';
 import '../../features/settings/presentation/pages/theme.page.dart';
 import '../dependency_injection/injector.dart';
@@ -48,8 +48,8 @@ abstract final class Routes {
 
   static String competition(String id) => '/competition/$id';
   static String settings(String id) => '/competition/$id/settings';
-  static String competitionSettings(String id) =>
-      '/competition/$id/settings/competition';
+  static String configuration(String id) =>
+      '/competition/$id/settings/configuration';
   static String players(String id) => '/competition/$id/settings/players';
   static String history(String id) => '/competition/$id/settings/history';
   static String newMatch(String id) => '/competition/$id/match/new';
@@ -217,14 +217,14 @@ GoRouter createRouter(AuthBloc authBloc) {
                 ),
                 routes: [
                   GoRoute(
-                    path: 'competition',
+                    path: 'configuration',
                     pageBuilder: (context, state) => adaptivePage(
                       context,
                       child: BlocProvider(
-                        create: (_) => getIt<CompetitionSettingsCubit>(
+                        create: (_) => getIt<ConfigurationCubit>(
                           param1: state.pathParameters['id']!,
                         ),
-                        child: const CompetitionSettingsPage(),
+                        child: const ConfigurationPage(),
                       ),
                     ),
                   ),

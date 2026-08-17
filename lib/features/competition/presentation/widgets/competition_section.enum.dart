@@ -3,6 +3,6 @@ enum CompetitionSection {
   matches,
   players,
   history,
-  settings,
+  configuration,
   competitions,
 }
