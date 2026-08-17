@@ -76,38 +76,4 @@ void main() {
     });
   });
 
-  group('preview', () {
-    test('averages both sides and reports a zero-sum delta', () {
-      final p = EloCalculator.preview(
-        teamA: [1000, 1200],
-        teamB: [1100, 1100],
-        scoreA: 21,
-        scoreB: 19,
-        settings: settings,
-      );
-
-      expect(p.teamARating, 1100);
-      expect(p.teamBRating, 1100);
-      expect(p.deltaB, -p.deltaA);
-      expect(p.deltaA, closeTo(25.36, 0.02));
-    });
-
-    test('a 4v4 behaves like the two team averages meeting head on', () {
-      final team = EloCalculator.preview(
-        teamA: [900, 950, 1050, 1100],
-        teamB: [1000, 1000, 1000, 1000],
-        scoreA: 10,
-        scoreB: 8,
-        settings: settings,
-      );
-      final head = EloCalculator.delta(
-        ratingA: 1000,
-        ratingB: 1000,
-        scoreA: 10,
-        scoreB: 8,
-        settings: settings,
-      );
-      expect(team.deltaA, head);
-    });
-  });
 }

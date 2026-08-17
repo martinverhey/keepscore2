@@ -489,13 +489,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get matchPreviewTitle => 'What this is worth';
-
-  @override
-  String get matchPreviewCaveat =>
-      'An estimate. The final numbers are calculated when the match is saved.';
-
-  @override
   String matchTeamRating(String rating) {
     return 'Team rating $rating';
   }

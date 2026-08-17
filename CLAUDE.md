@@ -15,7 +15,7 @@ log 1v1–NvM matches, get an Elo leaderboard per season.
 | 3. Auth (email OTP, guest, upgrade, Apple/Google) | Done |
 | 4. Competitions (list, create, join + claim) | Done |
 | 5. Players (roster, add placeholders, owner settings, share code) | Done |
-| 6. Matches (team builder, Elo preview, submit, list, edit, delete) | Done |
+| 6. Matches (team builder, submit, list, edit, delete) | Done |
 | 7. Leaderboard + seasons + realtime | Done |
 | 8. Polish, Dutch copy pass, app icons | Done |
 

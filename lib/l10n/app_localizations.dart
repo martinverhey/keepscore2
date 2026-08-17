@@ -926,18 +926,6 @@ abstract class AppLocalizations {
   /// **'{team} score'**
   String matchScoreTeam(String team);
 
-  /// No description provided for @matchPreviewTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'What this is worth'**
-  String get matchPreviewTitle;
-
-  /// No description provided for @matchPreviewCaveat.
-  ///
-  /// In en, this message translates to:
-  /// **'An estimate. The final numbers are calculated when the match is saved.'**
-  String get matchPreviewCaveat;
-
   /// No description provided for @matchTeamRating.
   ///
   /// In en, this message translates to:

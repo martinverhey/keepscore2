@@ -79,23 +79,6 @@ class MatchFormState extends Equatable {
       !drawIsRefused &&
       !busy;
 
-  EloPreview? get preview {
-    final settings = competition;
-    if (settings == null || !teamsAreValid || !scoresAreValid) return null;
-    return EloCalculator.preview(
-      teamA: teamA.map((player) => ratingOf(player.id)).toList(growable: false),
-      teamB: teamB.map((player) => ratingOf(player.id)).toList(growable: false),
-      scoreA: scoreAValue!,
-      scoreB: scoreBValue!,
-      settings: EloSettings(
-        kFactor: settings.kFactor,
-        movEnabled: settings.movEnabled,
-        movCap: settings.movCap,
-        startingRating: settings.startingRating,
-      ),
-    );
-  }
-
   MatchFormState copyWith({
     MatchFormStatus? status,
     Competition? competition,

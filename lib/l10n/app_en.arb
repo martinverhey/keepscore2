@@ -206,8 +206,6 @@
   "@matchScoreTeam": {
     "placeholders": { "team": { "type": "String" } }
   },
-  "matchPreviewTitle": "What this is worth",
-  "matchPreviewCaveat": "An estimate. The final numbers are calculated when the match is saved.",
   "matchTeamRating": "Team rating {rating}",
   "@matchTeamRating": {
     "placeholders": { "rating": { "type": "String" } }

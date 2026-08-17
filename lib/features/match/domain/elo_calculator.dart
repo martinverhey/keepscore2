@@ -1,9 +1,7 @@
 import 'dart:math' as math;
 
-import 'elo_preview.model.dart';
 import 'elo_settings.model.dart';
 
-export 'elo_preview.model.dart';
 export 'elo_settings.model.dart';
 
 abstract final class EloCalculator {
@@ -45,28 +43,6 @@ abstract final class EloCalculator {
     }
 
     return _round2(settings.kFactor * mov * (actualA - expectedA));
-  }
-
-  static EloPreview preview({
-    required List<double> teamA,
-    required List<double> teamB,
-    required int scoreA,
-    required int scoreB,
-    required EloSettings settings,
-  }) {
-    final ratingA = teamRating(teamA);
-    final ratingB = teamRating(teamB);
-    return EloPreview(
-      teamARating: ratingA,
-      teamBRating: ratingB,
-      deltaA: delta(
-        ratingA: ratingA,
-        ratingB: ratingB,
-        scoreA: scoreA,
-        scoreB: scoreB,
-        settings: settings,
-      ),
-    );
   }
 
   static double _round2(double value) => (value * 100).round() / 100;

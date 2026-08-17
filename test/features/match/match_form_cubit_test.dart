@@ -241,26 +241,6 @@ void main() {
   );
 
   blocTest<MatchFormCubit, MatchFormState>(
-    'the preview is the competition\'s own Elo settings applied locally',
-    setUp: stubLoad,
-    build: build,
-    act: (cubit) async {
-      await cubit.load();
-      cubit.assign('p1', MatchTeam.a);
-      cubit.assign('p2', MatchTeam.b);
-      cubit.scoreAChanged('11');
-      cubit.scoreBChanged('7');
-    },
-    verify: (cubit) {
-      final preview = cubit.state.preview!;
-      expect(preview.teamARating, 1000);
-      expect(preview.teamBRating, 1000);
-      expect(preview.deltaA, 16);
-      expect(preview.deltaB, -16);
-    },
-  );
-
-  blocTest<MatchFormCubit, MatchFormState>(
     'submitting sends both rosters and the scores',
     setUp: () {
       stubLoad(

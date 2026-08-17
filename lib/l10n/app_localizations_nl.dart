@@ -491,13 +491,6 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
-  String get matchPreviewTitle => 'Wat dit oplevert';
-
-  @override
-  String get matchPreviewCaveat =>
-      'Een schatting. De definitieve cijfers worden berekend bij het opslaan.';
-
-  @override
   String matchTeamRating(String rating) {
     return 'Teamrating $rating';
   }

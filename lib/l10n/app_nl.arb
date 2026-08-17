@@ -206,8 +206,6 @@
   "@matchScoreTeam": {
     "placeholders": { "team": { "type": "String" } }
   },
-  "matchPreviewTitle": "Wat dit oplevert",
-  "matchPreviewCaveat": "Een schatting. De definitieve cijfers worden berekend bij het opslaan.",
   "matchTeamRating": "Teamrating {rating}",
   "@matchTeamRating": {
     "placeholders": { "rating": { "type": "String" } }
