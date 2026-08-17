@@ -74,73 +74,7 @@ class Sidebar extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.lg),
           ],
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (hasCompetition) ...[
-                    _navItem(
-                      context,
-                      glyph: AdaptiveGlyph.leaderboard,
-                      label: context.l10n.leaderboardTitle,
-                      selected: current == CompetitionSection.leaderboard,
-                      onTap: () =>
-                          onSelectSection(CompetitionSection.leaderboard),
-                    ),
-                    _navItem(
-                      context,
-                      glyph: AdaptiveGlyph.matches,
-                      label: context.l10n.matchesTitle,
-                      selected: current == CompetitionSection.matches,
-                      onTap: () =>
-                          onSelectSection(CompetitionSection.matches),
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    const HorizontalDivider(),
-                    SectionLabel(
-                      context.l10n.competitionMenuSectionCompetition,
-                    ),
-                    if (canManageSettings)
-                      _navItem(
-                        context,
-                        glyph: AdaptiveGlyph.settings,
-                        label: context.l10n.competitionSettingsTitle,
-                        selected: current == CompetitionSection.settings,
-                        onTap: () =>
-                            onSelectSection(CompetitionSection.settings),
-                      ),
-                    _navItem(
-                      context,
-                      glyph: AdaptiveGlyph.history,
-                      label: context.l10n.historyTitle,
-                      selected: current == CompetitionSection.history,
-                      onTap: () =>
-                          onSelectSection(CompetitionSection.history),
-                    ),
-                    if (isRegistered)
-                      _navItem(
-                        context,
-                        glyph: AdaptiveGlyph.players,
-                        label: context.l10n.playersManageTitle,
-                        selected: current == CompetitionSection.players,
-                        onTap: () =>
-                            onSelectSection(CompetitionSection.players),
-                      ),
-                    const SizedBox(height: AppSpacing.md),
-                  ],
-                  SectionLabel(context.l10n.competitionMenuSectionUser),
-                  _navItem(
-                    context,
-                    glyph: AdaptiveGlyph.competitions,
-                    label: context.l10n.competitionsTitle,
-                    selected: current == CompetitionSection.competitions,
-                    onTap: onOpenHome,
-                  ),
-                ],
-              ),
-            ),
-          ),
+          Expanded(child: _navList(context)),
           _actionItem(
             context,
             label: context.l10n.settingsThemeTitle,
@@ -154,6 +88,71 @@ class Sidebar extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _navList(BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (hasCompetition) ..._competitionNavItems(context),
+          SectionLabel(context.l10n.competitionMenuSectionUser),
+          _navItem(
+            context,
+            glyph: AdaptiveGlyph.competitions,
+            label: context.l10n.competitionsTitle,
+            selected: current == CompetitionSection.competitions,
+            onTap: onOpenHome,
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _competitionNavItems(BuildContext context) {
+    return [
+      _navItem(
+        context,
+        glyph: AdaptiveGlyph.leaderboard,
+        label: context.l10n.leaderboardTitle,
+        selected: current == CompetitionSection.leaderboard,
+        onTap: () => onSelectSection(CompetitionSection.leaderboard),
+      ),
+      _navItem(
+        context,
+        glyph: AdaptiveGlyph.matches,
+        label: context.l10n.matchesTitle,
+        selected: current == CompetitionSection.matches,
+        onTap: () => onSelectSection(CompetitionSection.matches),
+      ),
+      const SizedBox(height: AppSpacing.lg),
+      const HorizontalDivider(),
+      SectionLabel(context.l10n.competitionMenuSectionCompetition),
+      if (canManageSettings)
+        _navItem(
+          context,
+          glyph: AdaptiveGlyph.settings,
+          label: context.l10n.competitionSettingsTitle,
+          selected: current == CompetitionSection.settings,
+          onTap: () => onSelectSection(CompetitionSection.settings),
+        ),
+      _navItem(
+        context,
+        glyph: AdaptiveGlyph.history,
+        label: context.l10n.historyTitle,
+        selected: current == CompetitionSection.history,
+        onTap: () => onSelectSection(CompetitionSection.history),
+      ),
+      if (isRegistered)
+        _navItem(
+          context,
+          glyph: AdaptiveGlyph.players,
+          label: context.l10n.playersManageTitle,
+          selected: current == CompetitionSection.players,
+          onTap: () => onSelectSection(CompetitionSection.players),
+        ),
+      const SizedBox(height: AppSpacing.md),
+    ];
   }
 
   Widget _brand(BuildContext context) {

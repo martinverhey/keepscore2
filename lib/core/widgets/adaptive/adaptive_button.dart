@@ -54,11 +54,20 @@ class AdaptiveButton extends StatelessWidget {
   }
 
   Widget _material(BuildContext context, bool enabled) {
+    return expand
+        ? SizedBox(
+            width: double.infinity,
+            child: _materialButton(context, enabled),
+          )
+        : _materialButton(context, enabled);
+  }
+
+  Widget _materialButton(BuildContext context, bool enabled) {
     final scheme = Theme.of(context).colorScheme;
     final callback = enabled ? onPressed : null;
     final size = expand ? const Size.fromHeight(52) : Size.zero;
 
-    final button = switch (kind) {
+    return switch (kind) {
       AdaptiveButtonKind.filled => FilledButton(
         onPressed: callback,
         style: FilledButton.styleFrom(minimumSize: size),
@@ -84,14 +93,22 @@ class AdaptiveButton extends StatelessWidget {
         child: _child(scheme.onErrorContainer),
       ),
     };
-
-    return expand ? SizedBox(width: double.infinity, child: button) : button;
   }
 
   Widget _cupertino(BuildContext context, bool enabled) {
+    return expand
+        ? SizedBox(
+            width: double.infinity,
+            child: _cupertinoButton(context, enabled),
+          )
+        : _cupertinoButton(context, enabled);
+  }
+
+  Widget _cupertinoButton(BuildContext context, bool enabled) {
     final callback = enabled ? onPressed : null;
     final accent = AdaptiveColors.accent(context);
-    final button = switch (kind) {
+
+    return switch (kind) {
       AdaptiveButtonKind.filled => CupertinoButton.filled(
         onPressed: callback,
         child: _child(CupertinoColors.white),
@@ -116,7 +133,5 @@ class AdaptiveButton extends StatelessWidget {
         ),
       ),
     };
-
-    return expand ? SizedBox(width: double.infinity, child: button) : button;
   }
 }

@@ -35,57 +35,58 @@ class CompetitionTile extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    competition.name,
-                    style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                AdaptiveIconButton(
-                  glyph: AdaptiveGlyph.invite,
-                  semanticLabel: context.l10n.competitionInviteAction,
-                  onPressed: () =>
-                      showInviteSheet(context, code: competition.joinCode),
-                ),
-                const SizedBox(width: AppSpacing.xs),
-                Tag(
-                  competition.joinCode,
-                  color: AdaptiveColors.accent(context),
-                  style: TagStyle.code,
-                ),
-              ],
-            ),
+            _header(context, competition),
             const SizedBox(height: AppSpacing.xs),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    '${context.l10n.competitionPlayers(overview.playerCount)}'
-                    ' · ${context.l10n.competitionMatches(overview.matchCount)}',
-                    style: const TextStyle(
-                      color: AppColors.neutral,
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
-                if (onManage != null)
-                  AdaptiveButton(
-                    label: context.l10n.competitionManage,
-                    kind: AdaptiveButtonKind.plain,
-                    expand: false,
-                    onPressed: onManage,
-                  ),
-              ],
-            ),
+            _statsRow(context),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _header(BuildContext context, Competition competition) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            competition.name,
+            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        AdaptiveIconButton(
+          glyph: AdaptiveGlyph.invite,
+          semanticLabel: context.l10n.competitionInviteAction,
+          onPressed: () => showInviteSheet(context, code: competition.joinCode),
+        ),
+        const SizedBox(width: AppSpacing.xs),
+        Tag(
+          competition.joinCode,
+          color: AdaptiveColors.accent(context),
+          style: TagStyle.code,
+        ),
+      ],
+    );
+  }
+
+  Widget _statsRow(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            '${context.l10n.competitionPlayers(overview.playerCount)}'
+            ' · ${context.l10n.competitionMatches(overview.matchCount)}',
+            style: const TextStyle(color: AppColors.neutral, fontSize: 13),
+          ),
+        ),
+        if (onManage != null)
+          AdaptiveButton(
+            label: context.l10n.competitionManage,
+            kind: AdaptiveButtonKind.plain,
+            expand: false,
+            onPressed: onManage,
+          ),
+      ],
     );
   }
 }

@@ -30,9 +30,22 @@ class MatchTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: onTap == null
+          ? _content(context)
+          : AdaptiveTappable(
+              onTap: onTap!,
+              borderRadius: AppRadius.card,
+              child: _content(context),
+            ),
+    );
+  }
+
+  Widget _content(BuildContext context) {
     final rail = BorderSide(color: AdaptiveColors.accent(context), width: 1);
 
-    final content = Container(
+    return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
         vertical: AppSpacing.md,
@@ -64,17 +77,6 @@ class MatchTile extends StatelessWidget {
           Expanded(child: _side(team: MatchTeam.b)),
         ],
       ),
-    );
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: onTap == null
-          ? content
-          : AdaptiveTappable(
-              onTap: onTap!,
-              borderRadius: AppRadius.card,
-              child: content,
-            ),
     );
   }
 

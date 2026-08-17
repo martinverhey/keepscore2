@@ -37,96 +37,134 @@ class MatchesPage extends StatelessWidget {
     final cubit = context.read<MatchListCubit>();
 
     return BlocBuilder<MatchListCubit, MatchListState>(
-      builder: (context, state) {
-        if (state.status == MatchListStatus.loading) {
-          return const Padding(
-            padding: EdgeInsets.all(AppSpacing.xl),
-            child: AdaptiveLoader(),
-          );
-        }
+      builder: (context, state) => _body(context, state, cubit),
+    );
+  }
 
-        if (state.status == MatchListStatus.failed && state.matches.isEmpty) {
-          return ErrorRetry(
-            message: state.failure!.localized(context.l10n),
-            retryLabel: context.l10n.commonRetry,
-            onRetry: cubit.load,
-          );
-        }
+  Widget _body(
+    BuildContext context,
+    MatchListState state,
+    MatchListCubit cubit,
+  ) {
+    if (state.status == MatchListStatus.loading) {
+      return const Padding(
+        padding: EdgeInsets.all(AppSpacing.xl),
+        child: AdaptiveLoader(),
+      );
+    }
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (!isRegistered)
-              GuestNotice(message: context.l10n.matchGuestCannotLog),
+    if (state.status == MatchListStatus.failed && state.matches.isEmpty) {
+      return ErrorRetry(
+        message: state.failure!.localized(context.l10n),
+        retryLabel: context.l10n.commonRetry,
+        onRetry: cubit.load,
+      );
+    }
 
-            if (isRegistered && hasPlayers)
-              Padding(
-                padding: const EdgeInsets.only(top: AppSpacing.sm),
-                child: Text(
-                  context.l10n.matchNeedsPlayers,
-                  style: const TextStyle(
-                    color: AppColors.neutral,
-                    fontSize: 13,
-                  ),
+    return _list(context, state, cubit);
+  }
+
+  Widget _list(
+    BuildContext context,
+    MatchListState state,
+    MatchListCubit cubit,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (!isRegistered)
+          GuestNotice(message: context.l10n.matchGuestCannotLog),
+        if (isRegistered && hasPlayers) _needsPlayersHint(context),
+        const SizedBox(height: AppSpacing.lg),
+        _matchesSection(context, state),
+        if (state.hasMore) _loadMoreButton(context, state, cubit),
+        if (state.actionFailure != null) _actionFailureText(context, state),
+      ],
+    );
+  }
+
+  Widget _needsPlayersHint(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.sm),
+      child: Text(
+        context.l10n.matchNeedsPlayers,
+        style: const TextStyle(color: AppColors.neutral, fontSize: 13),
+      ),
+    );
+  }
+
+  Widget _matchesSection(BuildContext context, MatchListState state) {
+    if (state.busy) {
+      return const Padding(
+        padding: EdgeInsets.all(AppSpacing.xl),
+        child: AdaptiveLoader(),
+      );
+    }
+
+    if (state.matches.isEmpty) return _emptyState(context, state);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (final group in groupByDay(state.matches)) ...[
+          DayHeader(day: group.day),
+          for (final match in group.matches)
+            MatchTile(
+              match: match,
+              myPlayerId: myPlayerId,
+              onTap: () => onOpenMatch(match.id),
+            ),
+        ],
+      ],
+    );
+  }
+
+  Widget _emptyState(BuildContext context, MatchListState state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        EmptyState(
+          message: state.selectedGameType == null
+              ? context.l10n.matchesEmpty
+              : context.l10n.matchesFilterEmpty(
+                  gameTypeLabel(context, state.selectedGameType!),
                 ),
-              ),
+        ),
+        if (isOwner && state.selectedGameType == null) ...[
+          const SizedBox(height: AppSpacing.sm),
+          HintCard(
+            message: context.l10n.matchesCreateHint,
+            actionLabel: context.l10n.matchesCreateHintAction,
+            onAction: onCreateMatch,
+          ),
+        ],
+      ],
+    );
+  }
 
-            const SizedBox(height: AppSpacing.lg),
+  Widget _loadMoreButton(
+    BuildContext context,
+    MatchListState state,
+    MatchListCubit cubit,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.sm),
+      child: AdaptiveButton(
+        label: context.l10n.matchLoadMore,
+        kind: AdaptiveButtonKind.plain,
+        busy: state.loadingMore,
+        onPressed: cubit.loadMore,
+      ),
+    );
+  }
 
-            if (state.busy)
-              const Padding(
-                padding: EdgeInsets.all(AppSpacing.xl),
-                child: AdaptiveLoader(),
-              )
-            else if (state.matches.isEmpty) ...[
-              EmptyState(
-                message: state.selectedGameType == null
-                    ? context.l10n.matchesEmpty
-                    : context.l10n.matchesFilterEmpty(
-                        gameTypeLabel(context, state.selectedGameType!),
-                      ),
-              ),
-              if (isOwner && state.selectedGameType == null) ...[
-                const SizedBox(height: AppSpacing.sm),
-                HintCard(
-                  message: context.l10n.matchesCreateHint,
-                  actionLabel: context.l10n.matchesCreateHintAction,
-                  onAction: onCreateMatch,
-                ),
-              ],
-            ] else
-              for (final group in groupByDay(state.matches)) ...[
-                DayHeader(day: group.day),
-                for (final match in group.matches)
-                  MatchTile(
-                    match: match,
-                    myPlayerId: myPlayerId,
-                    onTap: () => onOpenMatch(match.id),
-                  ),
-              ],
-
-            if (state.hasMore)
-              Padding(
-                padding: const EdgeInsets.only(top: AppSpacing.sm),
-                child: AdaptiveButton(
-                  label: context.l10n.matchLoadMore,
-                  kind: AdaptiveButtonKind.plain,
-                  busy: state.loadingMore,
-                  onPressed: cubit.loadMore,
-                ),
-              ),
-
-            if (state.actionFailure != null)
-              Padding(
-                padding: const EdgeInsets.only(top: AppSpacing.md),
-                child: Text(
-                  state.actionFailure!.localized(context.l10n),
-                  style: const TextStyle(color: AppColors.negative),
-                ),
-              ),
-          ],
-        );
-      },
+  Widget _actionFailureText(BuildContext context, MatchListState state) {
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.md),
+      child: Text(
+        state.actionFailure!.localized(context.l10n),
+        style: const TextStyle(color: AppColors.negative),
+      ),
     );
   }
 }

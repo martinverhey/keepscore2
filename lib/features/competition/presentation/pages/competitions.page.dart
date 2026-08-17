@@ -74,23 +74,7 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
             : null,
         onRefresh: context.read<CompetitionListCubit>().refresh,
         body: BlocBuilder<CompetitionListCubit, CompetitionListState>(
-          builder: (context, state) {
-            return switch (state.status) {
-              CompetitionListStatus.loading => const AdaptiveLoader(),
-              CompetitionListStatus.failed when state.competitions.isEmpty =>
-                ErrorRetry(
-                  message: state.failure!.localized(context.l10n),
-                  retryLabel: context.l10n.commonRetry,
-                  onRetry: context.read<CompetitionListCubit>().load,
-                ),
-              _ => _loaded(
-                context,
-                state,
-                canCreate: session.canWrite,
-                myUserId: session.user?.id,
-              ),
-            };
-          },
+          builder: (context, state) => _body(context, state, session),
         ),
       ),
     );
@@ -101,6 +85,28 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
     semanticLabel: context.l10n.authSignOut,
     onPressed: () => context.read<AuthBloc>().add(const AuthSignOutRequested()),
   );
+
+  Widget _body(
+    BuildContext context,
+    CompetitionListState state,
+    AuthSessionState session,
+  ) {
+    return switch (state.status) {
+      CompetitionListStatus.loading => const AdaptiveLoader(),
+      CompetitionListStatus.failed when state.competitions.isEmpty =>
+        ErrorRetry(
+          message: state.failure!.localized(context.l10n),
+          retryLabel: context.l10n.commonRetry,
+          onRetry: context.read<CompetitionListCubit>().load,
+        ),
+      _ => _loaded(
+        context,
+        state,
+        canCreate: session.canWrite,
+        myUserId: session.user?.id,
+      ),
+    };
+  }
 
   Widget _loaded(
     BuildContext context,
@@ -145,15 +151,18 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
             onPressed: () => context.push(Routes.joinCompetition),
           ),
 
-          if (state.actionFailure != null)
-            Padding(
-              padding: const EdgeInsets.only(top: AppSpacing.md),
-              child: Text(
-                state.actionFailure!.localized(context.l10n),
-                style: const TextStyle(color: AppColors.negative),
-              ),
-            ),
+          if (state.actionFailure != null) _actionFailureText(context, state),
         ],
+      ),
+    );
+  }
+
+  Widget _actionFailureText(BuildContext context, CompetitionListState state) {
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.md),
+      child: Text(
+        state.actionFailure!.localized(context.l10n),
+        style: const TextStyle(color: AppColors.negative),
       ),
     );
   }

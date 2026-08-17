@@ -36,64 +36,88 @@ class LeaderboardPage extends StatelessWidget {
     final cubit = context.read<LeaderboardCubit>();
 
     return BlocBuilder<LeaderboardCubit, LeaderboardState>(
-      builder: (context, state) {
-        if (state.status == LeaderboardStatus.loading) {
-          return const Padding(
-            padding: EdgeInsets.all(AppSpacing.xl),
-            child: AdaptiveLoader(),
-          );
-        }
+      builder: (context, state) => _body(context, state, cubit),
+    );
+  }
 
-        if (state.status == LeaderboardStatus.failed &&
-            state.leaderboards.isEmpty) {
-          return ErrorRetry(
-            message: state.failure!.localized(context.l10n),
-            retryLabel: context.l10n.commonRetry,
-            onRetry: cubit.load,
-          );
-        }
+  Widget _body(
+    BuildContext context,
+    LeaderboardState state,
+    LeaderboardCubit cubit,
+  ) {
+    if (state.status == LeaderboardStatus.loading) {
+      return const Padding(
+        padding: EdgeInsets.all(AppSpacing.xl),
+        child: AdaptiveLoader(),
+      );
+    }
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (state.season != null) _seasonBar(context, state.season!),
-            const SizedBox(height: AppSpacing.md),
+    if (state.status == LeaderboardStatus.failed &&
+        state.leaderboards.isEmpty) {
+      return ErrorRetry(
+        message: state.failure!.localized(context.l10n),
+        retryLabel: context.l10n.commonRetry,
+        onRetry: cubit.load,
+      );
+    }
 
-            if (state.busy)
-              const Padding(
-                padding: EdgeInsets.all(AppSpacing.xl),
-                child: AdaptiveLoader(),
-              )
-            else if (state.leaderboards.isEmpty)
-              EmptyState(
-                message: state.selectedGameType == null
-                    ? context.l10n.leaderboardNoPlayers
-                    : context.l10n.leaderboardFilterEmpty(
-                        gameTypeLabel(context, state.selectedGameType!),
-                      ),
-              )
-            else
-              for (final leaderboard in state.leaderboards)
-                LeaderboardRow(
-                  competitionId: competitionId,
-                  leaderboard: leaderboard,
-                  isMe: leaderboard.playerId == myPlayerId,
-                  myPlayerId: myPlayerId,
-                  seasonLength: seasonLength,
-                  medals: state.medals[leaderboard.playerId],
-                ),
+    return _list(context, state);
+  }
 
-            if (isOwner) ...[
-              const SizedBox(height: AppSpacing.md),
-              AdaptiveButton(
-                label: context.l10n.playersManageTitle,
-                kind: AdaptiveButtonKind.tinted,
-                onPressed: onManagePlayers,
+  Widget _list(BuildContext context, LeaderboardState state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (state.season != null) _seasonBar(context, state.season!),
+        const SizedBox(height: AppSpacing.md),
+        _rows(context, state),
+        if (isOwner) _manageButton(context),
+      ],
+    );
+  }
+
+  Widget _rows(BuildContext context, LeaderboardState state) {
+    if (state.busy) {
+      return const Padding(
+        padding: EdgeInsets.all(AppSpacing.xl),
+        child: AdaptiveLoader(),
+      );
+    }
+
+    if (state.leaderboards.isEmpty) {
+      return EmptyState(
+        message: state.selectedGameType == null
+            ? context.l10n.leaderboardNoPlayers
+            : context.l10n.leaderboardFilterEmpty(
+                gameTypeLabel(context, state.selectedGameType!),
               ),
-            ],
-          ],
-        );
-      },
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (final leaderboard in state.leaderboards)
+          LeaderboardRow(
+            competitionId: competitionId,
+            leaderboard: leaderboard,
+            isMe: leaderboard.playerId == myPlayerId,
+            myPlayerId: myPlayerId,
+            seasonLength: seasonLength,
+            medals: state.medals[leaderboard.playerId],
+          ),
+      ],
+    );
+  }
+
+  Widget _manageButton(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.md),
+      child: AdaptiveButton(
+        label: context.l10n.playersManageTitle,
+        kind: AdaptiveButtonKind.tinted,
+        onPressed: onManagePlayers,
+      ),
     );
   }
 

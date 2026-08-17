@@ -33,76 +33,78 @@ class Players extends StatelessWidget {
     final cubit = context.read<PlayersCubit>();
 
     return BlocBuilder<PlayersCubit, PlayersState>(
-      builder: (context, state) {
-        if (state.status == PlayersStatus.loading) {
-          return const Padding(
-            padding: EdgeInsets.all(AppSpacing.xl),
-            child: AdaptiveLoader(),
-          );
-        }
+      builder: (context, state) => _body(context, state, cubit),
+    );
+  }
 
-        if (state.status == PlayersStatus.failed && state.players.isEmpty) {
-          return ErrorRetry(
-            message: state.failure!.localized(context.l10n),
-            retryLabel: context.l10n.commonRetry,
-            onRetry: cubit.load,
-          );
-        }
+  Widget _body(BuildContext context, PlayersState state, PlayersCubit cubit) {
+    if (state.status == PlayersStatus.loading) {
+      return const Padding(
+        padding: EdgeInsets.all(AppSpacing.xl),
+        child: AdaptiveLoader(),
+      );
+    }
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (!isRegistered) ...[
-              GuestNotice(message: context.l10n.playersGuestCannotAdd),
-              const SizedBox(height: AppSpacing.md),
-            ],
+    if (state.status == PlayersStatus.failed && state.players.isEmpty) {
+      return ErrorRetry(
+        message: state.failure!.localized(context.l10n),
+        retryLabel: context.l10n.commonRetry,
+        onRetry: cubit.load,
+      );
+    }
 
-            if (state.active.isEmpty)
-              EmptyState(message: context.l10n.playersEmpty)
-            else
-              for (final player in state.active)
-                PlayerRow(
-                  player: player,
-                  isOwnerRow:
-                      player.userId != null && player.userId == ownerUserId,
-                  isMe: player.userId != null && player.userId == myUserId,
-                  canEdit: _canEdit(player),
-                ),
+    return _list(context, state);
+  }
 
-            if (state.inactive.isNotEmpty) ...[
-              const SizedBox(height: AppSpacing.lg),
-              SectionLabel(context.l10n.playersRemoved),
-              for (final player in state.inactive)
-                PlayerRow(
-                  player: player,
-                  isOwnerRow:
-                      player.userId != null && player.userId == ownerUserId,
-                  isMe: player.userId != null && player.userId == myUserId,
-                  canEdit: _canEdit(player),
-                ),
-            ],
+  Widget _list(BuildContext context, PlayersState state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (!isRegistered) ...[
+          GuestNotice(message: context.l10n.playersGuestCannotAdd),
+          const SizedBox(height: AppSpacing.md),
+        ],
+        if (state.active.isEmpty)
+          EmptyState(message: context.l10n.playersEmpty)
+        else
+          for (final player in state.active) _playerRow(player),
+        if (state.inactive.isNotEmpty) ...[
+          const SizedBox(height: AppSpacing.lg),
+          SectionLabel(context.l10n.playersRemoved),
+          for (final player in state.inactive) _playerRow(player),
+        ],
+        const SizedBox(height: AppSpacing.md),
+        if (_isOwner) _addPlaceholderButton(context, state),
+        if (state.actionFailure != null) _actionFailureText(context, state),
+      ],
+    );
+  }
 
-            const SizedBox(height: AppSpacing.md),
+  Widget _playerRow(Player player) {
+    return PlayerRow(
+      player: player,
+      isOwnerRow: player.userId != null && player.userId == ownerUserId,
+      isMe: player.userId != null && player.userId == myUserId,
+      canEdit: _canEdit(player),
+    );
+  }
 
-            if (_isOwner)
-              AdaptiveButton(
-                label: context.l10n.playersAddDummy,
-                kind: AdaptiveButtonKind.tinted,
-                busy: state.busy,
-                onPressed: () => addPlaceholderPlayer(context),
-              ),
+  Widget _addPlaceholderButton(BuildContext context, PlayersState state) {
+    return AdaptiveButton(
+      label: context.l10n.playersAddDummy,
+      kind: AdaptiveButtonKind.tinted,
+      busy: state.busy,
+      onPressed: () => addPlaceholderPlayer(context),
+    );
+  }
 
-            if (state.actionFailure != null)
-              Padding(
-                padding: const EdgeInsets.only(top: AppSpacing.md),
-                child: Text(
-                  state.actionFailure!.localized(context.l10n),
-                  style: const TextStyle(color: AppColors.negative),
-                ),
-              ),
-          ],
-        );
-      },
+  Widget _actionFailureText(BuildContext context, PlayersState state) {
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.md),
+      child: Text(
+        state.actionFailure!.localized(context.l10n),
+        style: const TextStyle(color: AppColors.negative),
+      ),
     );
   }
 

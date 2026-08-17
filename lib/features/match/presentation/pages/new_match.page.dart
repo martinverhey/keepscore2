@@ -99,24 +99,32 @@ class _NewMatchPageState extends State<NewMatchPage> {
             if (_scoreA.text != state.scoreA) _scoreA.text = state.scoreA;
             if (_scoreB.text != state.scoreB) _scoreB.text = state.scoreB;
           },
-          builder: (context, state) => switch (state.status) {
-            MatchFormStatus.loading => const AdaptiveLoader(),
-            MatchFormStatus.missing => EmptyState(
-              message: context.l10n.competitionNotFound,
-            ),
-            MatchFormStatus.failed => ErrorRetry(
-              message: state.failure!.localized(context.l10n),
-              retryLabel: context.l10n.commonRetry,
-              onRetry: cubit.load,
-            ),
-            MatchFormStatus.ready => Padding(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              child: _form(context, state),
-            ),
-          },
+          builder: (context, state) => _body(context, state, cubit),
         ),
       ),
     );
+  }
+
+  Widget _body(
+    BuildContext context,
+    MatchFormState state,
+    MatchFormCubit cubit,
+  ) {
+    return switch (state.status) {
+      MatchFormStatus.loading => const AdaptiveLoader(),
+      MatchFormStatus.missing => EmptyState(
+        message: context.l10n.competitionNotFound,
+      ),
+      MatchFormStatus.failed => ErrorRetry(
+        message: state.failure!.localized(context.l10n),
+        retryLabel: context.l10n.commonRetry,
+        onRetry: cubit.load,
+      ),
+      MatchFormStatus.ready => Padding(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: _form(context, state),
+      ),
+    };
   }
 
   Widget _form(BuildContext context, MatchFormState state) {
@@ -139,38 +147,7 @@ class _NewMatchPageState extends State<NewMatchPage> {
         if (state.players.isEmpty)
           EmptyState(message: context.l10n.matchNeedsPlayers)
         else
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: _teamArea(
-                  context,
-                  key: const ValueKey(NewMatchKey.teamAreaA),
-                  title: context.l10n.matchTeamA,
-                  color: AdaptiveColors.teamA(context),
-                  members: state.teamA,
-                  rating: state.teamRating(MatchTeam.a),
-                  ratingOf: state.ratingOf,
-                  placeholder: context.l10n.matchTapToSelectPlayers,
-                  onTap: () => _pickTeam(context, state, MatchTeam.a),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: _teamArea(
-                  context,
-                  key: const ValueKey(NewMatchKey.teamAreaB),
-                  title: context.l10n.matchTeamB,
-                  color: AdaptiveColors.teamB(context),
-                  members: state.teamB,
-                  rating: state.teamRating(MatchTeam.b),
-                  ratingOf: state.ratingOf,
-                  placeholder: context.l10n.matchTapToSelectPlayers,
-                  onTap: () => _pickTeam(context, state, MatchTeam.b),
-                ),
-              ),
-            ],
-          ),
+          _teamsRow(context, state),
 
         const SizedBox(height: AppSpacing.lg),
         Text(
@@ -178,38 +155,7 @@ class _NewMatchPageState extends State<NewMatchPage> {
           style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: AppSpacing.md),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: AdaptiveTextField(
-                label: context.l10n.matchScoreTeam(
-                  context.l10n.matchTeamA.toUpperCase(),
-                ),
-                controller: _scoreA,
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                maxLength: 3,
-                onChanged: cubit.scoreAChanged,
-                accentColor: AdaptiveColors.teamA(context),
-              ),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: AdaptiveTextField(
-                label: context.l10n.matchScoreTeam(
-                  context.l10n.matchTeamB.toUpperCase(),
-                ),
-                controller: _scoreB,
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                maxLength: 3,
-                onChanged: cubit.scoreBChanged,
-                accentColor: AdaptiveColors.teamB(context),
-              ),
-            ),
-          ],
-        ),
+        _scoreFields(context, cubit),
 
         if (state.preview != null) ...[
           const SizedBox(height: AppSpacing.lg),
@@ -218,15 +164,7 @@ class _NewMatchPageState extends State<NewMatchPage> {
 
         const SizedBox(height: AppSpacing.lg),
 
-        if (_hint(state, context) case final hint?)
-          Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-            child: Text(
-              hint,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.neutral, fontSize: 13),
-            ),
-          ),
+        if (_hint(state, context) case final hint?) _hintText(hint),
 
         AdaptiveButton(
           label: context.l10n.matchSubmit,
@@ -234,18 +172,102 @@ class _NewMatchPageState extends State<NewMatchPage> {
           onPressed: state.canSubmit ? _submit : null,
         ),
 
-        if (state.submitFailure != null)
-          Padding(
-            padding: const EdgeInsets.only(top: AppSpacing.md),
-            child: Text(
-              state.submitFailure!.localized(context.l10n),
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.negative),
-            ),
-          ),
+        if (state.submitFailure != null) _submitFailureText(context, state),
 
         const SizedBox(height: AppSpacing.xl),
       ],
+    );
+  }
+
+  Widget _teamsRow(BuildContext context, MatchFormState state) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: _teamArea(
+            context,
+            key: const ValueKey(NewMatchKey.teamAreaA),
+            title: context.l10n.matchTeamA,
+            color: AdaptiveColors.teamA(context),
+            members: state.teamA,
+            rating: state.teamRating(MatchTeam.a),
+            ratingOf: state.ratingOf,
+            placeholder: context.l10n.matchTapToSelectPlayers,
+            onTap: () => _pickTeam(context, state, MatchTeam.a),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        Expanded(
+          child: _teamArea(
+            context,
+            key: const ValueKey(NewMatchKey.teamAreaB),
+            title: context.l10n.matchTeamB,
+            color: AdaptiveColors.teamB(context),
+            members: state.teamB,
+            rating: state.teamRating(MatchTeam.b),
+            ratingOf: state.ratingOf,
+            placeholder: context.l10n.matchTapToSelectPlayers,
+            onTap: () => _pickTeam(context, state, MatchTeam.b),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _scoreFields(BuildContext context, MatchFormCubit cubit) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: AdaptiveTextField(
+            label: context.l10n.matchScoreTeam(
+              context.l10n.matchTeamA.toUpperCase(),
+            ),
+            controller: _scoreA,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            maxLength: 3,
+            onChanged: cubit.scoreAChanged,
+            accentColor: AdaptiveColors.teamA(context),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: AdaptiveTextField(
+            label: context.l10n.matchScoreTeam(
+              context.l10n.matchTeamB.toUpperCase(),
+            ),
+            controller: _scoreB,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            maxLength: 3,
+            onChanged: cubit.scoreBChanged,
+            accentColor: AdaptiveColors.teamB(context),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _hintText(String hint) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Text(
+        hint,
+        textAlign: TextAlign.center,
+        style: const TextStyle(color: AppColors.neutral, fontSize: 13),
+      ),
+    );
+  }
+
+  Widget _submitFailureText(BuildContext context, MatchFormState state) {
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.md),
+      child: Text(
+        state.submitFailure!.localized(context.l10n),
+        textAlign: TextAlign.center,
+        style: const TextStyle(color: AppColors.negative),
+      ),
     );
   }
 
@@ -315,36 +337,11 @@ class _NewMatchPageState extends State<NewMatchPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Text(
-                    title.toUpperCase(),
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.2,
-                      color: color,
-                    ),
-                  ),
-                ),
-                if (members.isNotEmpty)
-                  TweenAnimationBuilder<double>(
-                    tween: Tween<double>(end: rating),
-                    duration: const Duration(milliseconds: 500),
-                    curve: Curves.easeOutCubic,
-                    builder: (_, value, _) => Text(
-                      formatRating(value),
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w800,
-                        color: color,
-                        fontFeatures: const [FontFeature.tabularFigures()],
-                      ),
-                    ),
-                  ),
-              ],
+            _teamAreaHeader(
+              title: title,
+              color: color,
+              members: members,
+              rating: rating,
             ),
             const SizedBox(height: AppSpacing.sm),
             if (members.isEmpty)
@@ -354,42 +351,81 @@ class _NewMatchPageState extends State<NewMatchPage> {
               )
             else
               for (final player in _sortedByName(members))
-                Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          player.displayName,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      Text(
-                        formatRating(ratingOf(player.id)),
-                        style: const TextStyle(
-                          color: AppColors.neutral,
-                          fontSize: 12,
-                          fontFeatures: [FontFeature.tabularFigures()],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                _teamMemberRow(player, ratingOf),
           ],
         ),
       ),
     );
   }
 
-  Widget _previewCard(BuildContext context, MatchFormState state) {
-    final preview = state.preview!;
-    final colorA = AdaptiveColors.teamA(context);
-    final colorB = AdaptiveColors.teamB(context);
+  Widget _teamAreaHeader({
+    required String title,
+    required Color color,
+    required List<Player> members,
+    required double rating,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Text(
+            title.toUpperCase(),
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.2,
+              color: color,
+            ),
+          ),
+        ),
+        if (members.isNotEmpty)
+          TweenAnimationBuilder<double>(
+            tween: Tween<double>(end: rating),
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeOutCubic,
+            builder: (_, value, _) => Text(
+              formatRating(value),
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w800,
+                color: color,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
 
+  Widget _teamMemberRow(
+    Player player,
+    double Function(String playerId) ratingOf,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              player.displayName,
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          Text(
+            formatRating(ratingOf(player.id)),
+            style: const TextStyle(
+              color: AppColors.neutral,
+              fontSize: 12,
+              fontFeatures: [FontFeature.tabularFigures()],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _previewCard(BuildContext context, MatchFormState state) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
@@ -409,102 +445,13 @@ class _NewMatchPageState extends State<NewMatchPage> {
             ),
           ),
           const SizedBox(height: AppSpacing.md),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  context.l10n.matchTeamA,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: colorA,
-                  ),
-                ),
-              ),
-              Expanded(
-                child: Text(
-                  context.l10n.matchTeamB,
-                  textAlign: TextAlign.end,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: colorB,
-                  ),
-                ),
-              ),
-            ],
-          ),
+          _previewTeamLabels(context),
           const SizedBox(height: 2),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    for (final player in state.teamA)
-                      Text(
-                        player.displayName,
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    for (final player in state.teamB)
-                      Text(
-                        player.displayName,
-                        textAlign: TextAlign.end,
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+          _previewRosters(state),
           const SizedBox(height: AppSpacing.xs),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  context.l10n.matchTeamRating(
-                    formatRating(preview.teamARating),
-                  ),
-                  style: const TextStyle(
-                    color: AppColors.neutral,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-              Expanded(
-                child: Text(
-                  context.l10n.matchTeamRating(
-                    formatRating(preview.teamBRating),
-                  ),
-                  textAlign: TextAlign.end,
-                  style: const TextStyle(
-                    color: AppColors.neutral,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-            ],
-          ),
+          _previewTeamRatings(context, state),
           const SizedBox(height: 2),
-          Row(
-            children: [
-              Expanded(child: RatingDelta(value: preview.deltaA, fontSize: 18)),
-              Expanded(
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: RatingDelta(value: preview.deltaB, fontSize: 18),
-                ),
-              ),
-            ],
-          ),
+          _previewDeltas(state),
           const SizedBox(height: AppSpacing.md),
           Text(
             context.l10n.matchPreviewCaveat,
@@ -512,6 +459,102 @@ class _NewMatchPageState extends State<NewMatchPage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _previewTeamLabels(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            context.l10n.matchTeamA,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: AdaptiveColors.teamA(context),
+            ),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            context.l10n.matchTeamB,
+            textAlign: TextAlign.end,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: AdaptiveColors.teamB(context),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _previewRosters(MatchFormState state) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (final player in state.teamA)
+                Text(player.displayName, style: const TextStyle(fontSize: 14)),
+            ],
+          ),
+        ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              for (final player in state.teamB)
+                Text(
+                  player.displayName,
+                  textAlign: TextAlign.end,
+                  style: const TextStyle(fontSize: 14),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _previewTeamRatings(BuildContext context, MatchFormState state) {
+    final preview = state.preview!;
+
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            context.l10n.matchTeamRating(formatRating(preview.teamARating)),
+            style: const TextStyle(color: AppColors.neutral, fontSize: 12),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            context.l10n.matchTeamRating(formatRating(preview.teamBRating)),
+            textAlign: TextAlign.end,
+            style: const TextStyle(color: AppColors.neutral, fontSize: 12),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _previewDeltas(MatchFormState state) {
+    final preview = state.preview!;
+
+    return Row(
+      children: [
+        Expanded(child: RatingDelta(value: preview.deltaA, fontSize: 18)),
+        Expanded(
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: RatingDelta(value: preview.deltaB, fontSize: 18),
+          ),
+        ),
+      ],
     );
   }
 }

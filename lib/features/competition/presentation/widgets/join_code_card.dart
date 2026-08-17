@@ -45,32 +45,7 @@ class _JoinCodeCardState extends State<JoinCodeCard> {
       ),
       child: Row(
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  widget.code,
-                  style: TextStyle(
-                    fontFeatures: const [FontFeature.tabularFigures()],
-                    fontSize: 24,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 3,
-                    color: AdaptiveColors.accent(context),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  context.l10n.competitionCodeHelp,
-                  style: const TextStyle(
-                    color: AppColors.neutral,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          Expanded(child: _codeLabel(context)),
           AdaptiveButton(
             label: _copied
                 ? context.l10n.competitionCodeCopied
@@ -81,6 +56,30 @@ class _JoinCodeCardState extends State<JoinCodeCard> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _codeLabel(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          widget.code,
+          style: TextStyle(
+            fontFeatures: const [FontFeature.tabularFigures()],
+            fontSize: 24,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 3,
+            color: AdaptiveColors.accent(context),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        Text(
+          context.l10n.competitionCodeHelp,
+          style: const TextStyle(color: AppColors.neutral, fontSize: 13),
+        ),
+      ],
     );
   }
 }

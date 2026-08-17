@@ -13,6 +13,7 @@ import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/section_label.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
+import '../../domain/competition.model.dart';
 import '../cubit/competition_detail_cubit.dart';
 import '../widgets/join_code_card.dart';
 import '../widgets/join_qr_card.dart';
@@ -34,89 +35,108 @@ class _CompetitionMenuPageState extends State<CompetitionMenuPage> {
 
     return BlocBuilder<CompetitionDetailCubit, CompetitionDetailState>(
       builder: (context, state) {
-        final competition = state.competition;
-        final isOwner = competition.isOwnedBySession(session);
         setPageTitle(context, context.l10n.competitionSettings);
-
         return AdaptiveScaffold(
           title: context.l10n.competitionSettings,
-          body: switch (state.status) {
-            CompetitionDetailStatus.loading => const AdaptiveLoader(),
-            CompetitionDetailStatus.missing => EmptyState(
-              message: context.l10n.competitionNotFound,
-            ),
-            CompetitionDetailStatus.failed when competition == null =>
-              ErrorRetry(
-                message: state.failure!.localized(context.l10n),
-                retryLabel: context.l10n.commonRetry,
-                onRetry: context.read<CompetitionDetailCubit>().load,
-              ),
-            _ => SingleChildScrollView(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  JoinCodeCard(code: competition!.joinCode),
-                  if (_showQr) ...[
-                    const SizedBox(height: AppSpacing.sm),
-                    JoinQrCard(code: competition.joinCode),
-                  ] else
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: AdaptiveButton(
-                        label: context.l10n.competitionUseQrInstead,
-                        kind: AdaptiveButtonKind.plain,
-                        expand: false,
-                        onPressed: () => setState(() => _showQr = true),
-                      ),
-                    ),
-                  const SizedBox(height: AppSpacing.lg),
-                  SectionLabel(context.l10n.competitionMenuSectionCompetition),
-                  if (session.canWrite && isOwner)
-                    NavRow(
-                      label: context.l10n.competitionSettingsTitle,
-                      onTap: () => context.push(
-                        Routes.competitionSettings(widget.competitionId),
-                      ),
-                    ),
-                  NavRow(
-                    label: context.l10n.historyTitle,
-                    onTap: () =>
-                        context.push(Routes.history(widget.competitionId)),
-                  ),
-                  if (session.canWrite)
-                    NavRow(
-                      label: context.l10n.playersManageTitle,
-                      onTap: () =>
-                          context.push(Routes.players(widget.competitionId)),
-                    ),
-                  const SizedBox(height: AppSpacing.md),
-                  SectionLabel(context.l10n.competitionMenuSectionUser),
-                  NavRow(
-                    label: context.l10n.competitionsTitle,
-                    onTap: () => context.push(Routes.home),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  SectionLabel(context.l10n.competitionMenuSectionSystem),
-                  NavRow(
-                    label: context.l10n.settingsThemeTitle,
-                    onTap: () => context.push(Routes.theme),
-                  ),
-                  const SizedBox(height: AppSpacing.xl),
-                  AdaptiveButton(
-                    label: context.l10n.authSignOut,
-                    kind: AdaptiveButtonKind.plain,
-                    onPressed: () => context.read<AuthBloc>().add(
-                      const AuthSignOutRequested(),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          },
+          body: _body(context, state, session),
         );
       },
+    );
+  }
+
+  Widget _body(
+    BuildContext context,
+    CompetitionDetailState state,
+    AuthSessionState session,
+  ) {
+    final competition = state.competition;
+    return switch (state.status) {
+      CompetitionDetailStatus.loading => const AdaptiveLoader(),
+      CompetitionDetailStatus.missing => EmptyState(
+        message: context.l10n.competitionNotFound,
+      ),
+      CompetitionDetailStatus.failed when competition == null => ErrorRetry(
+        message: state.failure!.localized(context.l10n),
+        retryLabel: context.l10n.commonRetry,
+        onRetry: context.read<CompetitionDetailCubit>().load,
+      ),
+      _ => _menu(context, competition!, session),
+    };
+  }
+
+  Widget _menu(
+    BuildContext context,
+    Competition competition,
+    AuthSessionState session,
+  ) {
+    final isOwner = competition.isOwnedBySession(session);
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          JoinCodeCard(code: competition.joinCode),
+          _qrToggle(context, competition.joinCode),
+          const SizedBox(height: AppSpacing.lg),
+          SectionLabel(context.l10n.competitionMenuSectionCompetition),
+          if (session.canWrite && isOwner)
+            NavRow(
+              label: context.l10n.competitionSettingsTitle,
+              onTap: () => context.push(
+                Routes.competitionSettings(widget.competitionId),
+              ),
+            ),
+          NavRow(
+            label: context.l10n.historyTitle,
+            onTap: () => context.push(Routes.history(widget.competitionId)),
+          ),
+          if (session.canWrite)
+            NavRow(
+              label: context.l10n.playersManageTitle,
+              onTap: () => context.push(Routes.players(widget.competitionId)),
+            ),
+          const SizedBox(height: AppSpacing.md),
+          SectionLabel(context.l10n.competitionMenuSectionUser),
+          NavRow(
+            label: context.l10n.competitionsTitle,
+            onTap: () => context.push(Routes.home),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          SectionLabel(context.l10n.competitionMenuSectionSystem),
+          NavRow(
+            label: context.l10n.settingsThemeTitle,
+            onTap: () => context.push(Routes.theme),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          AdaptiveButton(
+            label: context.l10n.authSignOut,
+            kind: AdaptiveButtonKind.plain,
+            onPressed: () =>
+                context.read<AuthBloc>().add(const AuthSignOutRequested()),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _qrToggle(BuildContext context, String joinCode) {
+    if (_showQr) {
+      return Padding(
+        padding: const EdgeInsets.only(top: AppSpacing.sm),
+        child: JoinQrCard(code: joinCode),
+      );
+    }
+
+    return Align(
+      alignment: Alignment.centerRight,
+      child: AdaptiveButton(
+        label: context.l10n.competitionUseQrInstead,
+        kind: AdaptiveButtonKind.plain,
+        expand: false,
+        onPressed: () => setState(() => _showQr = true),
+      ),
     );
   }
 }

@@ -9,6 +9,7 @@ import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/selectable_row.dart';
 import '../../../player/presentation/widgets/player_name_sheet.dart';
+import '../../domain/join_preview.model.dart';
 import '../cubit/join_competition_cubit.dart';
 import '../widgets/join_code_step.dart';
 
@@ -73,64 +74,92 @@ class JoinCompetitionPage extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.xl),
 
-        if (preview.alreadyMember) ...[
-          Text(context.l10n.joinAlreadyMember),
-          const SizedBox(height: AppSpacing.md),
-          AdaptiveButton(
-            label: context.l10n.joinViewCompetition,
-            onPressed: () => _viewCompetition(context, preview.competitionId),
-          ),
-        ] else ...[
-          if (preview.claimable.isNotEmpty) ...[
-            Text(
-              context.l10n.joinClaimTitle,
-              style: const TextStyle(fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              context.l10n.joinClaimSubtitle,
-              style: const TextStyle(color: AppColors.neutral, fontSize: 13),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Expanded(
-              child: ListView.separated(
-                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                itemCount: preview.claimable.length,
-                separatorBuilder: (_, _) =>
-                    const SizedBox(height: AppSpacing.sm),
-                itemBuilder: (context, index) {
-                  final candidate = preview.claimable[index];
-                  return SelectableRow(
-                    label: candidate.displayName,
-                    selected: state.selectedClaimId == candidate.id,
-                    onTap: () => cubit.claimSelected(candidate.id),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: AppSpacing.md),
-          ],
+        if (preview.alreadyMember)
+          ..._alreadyMemberContent(context, preview.competitionId)
+        else
+          ..._joinFormContent(context, cubit, state, preview),
 
-          AdaptiveButton(
-            label: state.selectedClaimId == null
-                ? context.l10n.joinAsNewPlayer
-                : context.l10n.joinConfirm,
-            busy: state.busy,
-            onPressed: state.canJoin
-                ? () => _join(context, cubit, state)
-                : null,
-          ),
-        ],
-
-        if (state.failure != null)
-          Padding(
-            padding: const EdgeInsets.only(top: AppSpacing.md),
-            child: Text(
-              state.failure!.localized(context.l10n),
-              style: const TextStyle(color: AppColors.negative),
-            ),
-          ),
+        if (state.failure != null) _failureText(context, state),
       ],
+    );
+  }
+
+  List<Widget> _alreadyMemberContent(
+    BuildContext context,
+    String competitionId,
+  ) {
+    return [
+      Text(context.l10n.joinAlreadyMember),
+      const SizedBox(height: AppSpacing.md),
+      AdaptiveButton(
+        label: context.l10n.joinViewCompetition,
+        onPressed: () => _viewCompetition(context, competitionId),
+      ),
+    ];
+  }
+
+  List<Widget> _joinFormContent(
+    BuildContext context,
+    JoinCompetitionCubit cubit,
+    JoinCompetitionState state,
+    JoinPreview preview,
+  ) {
+    return [
+      if (preview.claimable.isNotEmpty)
+        ..._claimListContent(context, cubit, state, preview),
+      AdaptiveButton(
+        label: state.selectedClaimId == null
+            ? context.l10n.joinAsNewPlayer
+            : context.l10n.joinConfirm,
+        busy: state.busy,
+        onPressed: state.canJoin ? () => _join(context, cubit, state) : null,
+      ),
+    ];
+  }
+
+  List<Widget> _claimListContent(
+    BuildContext context,
+    JoinCompetitionCubit cubit,
+    JoinCompetitionState state,
+    JoinPreview preview,
+  ) {
+    return [
+      Text(
+        context.l10n.joinClaimTitle,
+        style: const TextStyle(fontWeight: FontWeight.w700),
+      ),
+      const SizedBox(height: AppSpacing.xs),
+      Text(
+        context.l10n.joinClaimSubtitle,
+        style: const TextStyle(color: AppColors.neutral, fontSize: 13),
+      ),
+      const SizedBox(height: AppSpacing.md),
+      Expanded(
+        child: ListView.separated(
+          padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+          itemCount: preview.claimable.length,
+          separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
+          itemBuilder: (context, index) {
+            final candidate = preview.claimable[index];
+            return SelectableRow(
+              label: candidate.displayName,
+              selected: state.selectedClaimId == candidate.id,
+              onTap: () => cubit.claimSelected(candidate.id),
+            );
+          },
+        ),
+      ),
+      const SizedBox(height: AppSpacing.md),
+    ];
+  }
+
+  Widget _failureText(BuildContext context, JoinCompetitionState state) {
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.md),
+      child: Text(
+        state.failure!.localized(context.l10n),
+        style: const TextStyle(color: AppColors.negative),
+      ),
     );
   }
 

@@ -74,167 +74,184 @@ class _CompetitionSettingsPageState extends State<CompetitionSettingsPage> {
       listenWhen: (previous, current) =>
           previous.competition != current.competition,
       listener: (context, state) => _syncControllers(state),
-      builder: (context, state) {
-        final cubit = context.read<CompetitionSettingsCubit>();
-        final session = context.watch<AuthBloc>().state;
-        final competitionDetail = context
-            .watch<CompetitionDetailCubit>()
-            .state
-            .competition;
-        setPageTitle(context, context.l10n.competitionSettingsTitle);
+      builder: (context, state) => _sidebar(context, state),
+    );
+  }
 
-        final isOwner =
-            session.canWrite &&
-            session.user?.id != null &&
-            session.user?.id == competitionDetail?.ownerId;
+  Widget _sidebar(BuildContext context, CompetitionSettingsState state) {
+    final cubit = context.read<CompetitionSettingsCubit>();
+    final session = context.watch<AuthBloc>().state;
+    final competitionDetail = context
+        .watch<CompetitionDetailCubit>()
+        .state
+        .competition;
+    setPageTitle(context, context.l10n.competitionSettingsTitle);
 
-        return Sidebar(
-          competitionName: competitionDetail?.name,
-          current: CompetitionSection.settings,
-          canManageSettings: isOwner,
-          isRegistered: session.canWrite,
-          onSelectSection: _selectSection,
-          onNewMatch: () =>
-              context.push<bool>(Routes.newMatch(cubit.competitionId)),
-          onOpenHome: () => openHome(
-            context,
-            replace: true,
-            competitionId: cubit.competitionId,
-            competitionName: competitionDetail?.name,
-            canManageSettings: isOwner,
+    final isOwner =
+        session.canWrite &&
+        session.user?.id != null &&
+        session.user?.id == competitionDetail?.ownerId;
+
+    return Sidebar(
+      competitionName: competitionDetail?.name,
+      current: CompetitionSection.settings,
+      canManageSettings: isOwner,
+      isRegistered: session.canWrite,
+      onSelectSection: _selectSection,
+      onNewMatch: () =>
+          context.push<bool>(Routes.newMatch(cubit.competitionId)),
+      onOpenHome: () => openHome(
+        context,
+        replace: true,
+        competitionId: cubit.competitionId,
+        competitionName: competitionDetail?.name,
+        canManageSettings: isOwner,
+      ),
+      onOpenTheme: () => context.pushReplacement(Routes.theme),
+      onSignOut: () =>
+          context.read<AuthBloc>().add(const AuthSignOutRequested()),
+      child: AdaptiveScaffold(
+        title: context.l10n.competitionSettingsTitle,
+        body: _body(context, state, cubit: cubit, session: session),
+      ),
+    );
+  }
+
+  Widget _body(
+    BuildContext context,
+    CompetitionSettingsState state, {
+    required CompetitionSettingsCubit cubit,
+    required AuthSessionState session,
+  }) {
+    return switch (state.status) {
+      CompetitionSettingsStatus.loading => const AdaptiveLoader(),
+      CompetitionSettingsStatus.missing => EmptyState(
+        message: context.l10n.competitionNotFound,
+      ),
+      CompetitionSettingsStatus.ready
+          when !state.competition!.isOwnedBy(session.user?.id) =>
+        EmptyState(message: context.l10n.competitionSettingsOwnerOnly),
+      CompetitionSettingsStatus.failed when state.competition == null =>
+        ErrorRetry(
+          message: state.failure!.localized(context.l10n),
+          retryLabel: context.l10n.commonRetry,
+          onRetry: cubit.load,
+        ),
+      _ => _form(context, state, cubit),
+    };
+  }
+
+  Widget _form(
+    BuildContext context,
+    CompetitionSettingsState state,
+    CompetitionSettingsCubit cubit,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          AdaptiveTextField(
+            label: context.l10n.competitionNameLabel,
+            controller: _nameController,
+            enabled: !state.busy,
+            maxLength: 60,
+            errorText: state.name.isEmpty || state.nameIsValid
+                ? null
+                : context.l10n.competitionNameTooShort,
+            onChanged: cubit.nameChanged,
           ),
-          onOpenTheme: () => context.pushReplacement(Routes.theme),
-          onSignOut: () =>
-              context.read<AuthBloc>().add(const AuthSignOutRequested()),
-          child: AdaptiveScaffold(
-            title: context.l10n.competitionSettingsTitle,
-            body: switch (state.status) {
-              CompetitionSettingsStatus.loading => const AdaptiveLoader(),
-              CompetitionSettingsStatus.missing => EmptyState(
-                message: context.l10n.competitionNotFound,
-              ),
-              CompetitionSettingsStatus.ready
-                  when !state.competition!.isOwnedBy(session.user?.id) =>
-                EmptyState(message: context.l10n.competitionSettingsOwnerOnly),
-              CompetitionSettingsStatus.failed when state.competition == null =>
-                ErrorRetry(
-                  message: state.failure!.localized(context.l10n),
-                  retryLabel: context.l10n.commonRetry,
-                  onRetry: cubit.load,
-                ),
-              _ => Padding(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    AdaptiveTextField(
-                      label: context.l10n.competitionNameLabel,
-                      controller: _nameController,
-                      enabled: !state.busy,
-                      maxLength: 60,
-                      errorText: state.name.isEmpty || state.nameIsValid
-                          ? null
-                          : context.l10n.competitionNameTooShort,
-                      onChanged: cubit.nameChanged,
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.lg),
 
-                    SectionLabel(context.l10n.competitionSeasonLengthLabel),
-                    AdaptiveSegmented<SeasonLength>(
-                      value: state.seasonLength,
-                      onChanged: cubit.seasonLengthChanged,
-                      segments: {
-                        SeasonLength.monthly: context.l10n.seasonMonthly,
-                        SeasonLength.quarterly: context.l10n.seasonQuarterly,
-                        SeasonLength.yearly: context.l10n.seasonYearly,
-                      },
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    HelpText(context.l10n.competitionSeasonLengthWarning),
-                    const SizedBox(height: AppSpacing.lg),
-
-                    AdaptiveTextField(
-                      label: context.l10n.competitionKFactorLabel,
-                      controller: _kFactorController,
-                      enabled: !state.busy,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      maxLength: 3,
-                      errorText: state.kFactor.isEmpty || state.kFactorIsValid
-                          ? null
-                          : context.l10n.competitionKFactorInvalid,
-                      onChanged: cubit.kFactorChanged,
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    HelpText(context.l10n.competitionKFactorHelp),
-                    const SizedBox(height: AppSpacing.lg),
-
-                    SettingsSwitchRow(
-                      label: context.l10n.competitionMovLabel,
-                      help: context.l10n.competitionMovHelp,
-                      value: state.movEnabled,
-                      onChanged: state.busy ? null : cubit.movEnabledChanged,
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-
-                    AdaptiveTextField(
-                      label: context.l10n.competitionMovCapLabel,
-                      controller: _movCapController,
-                      enabled: !state.busy,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
-                      ],
-                      maxLength: 4,
-                      errorText: state.movCap.isEmpty || state.movCapIsValid
-                          ? null
-                          : context.l10n.competitionMovCapInvalid,
-                      onChanged: cubit.movCapChanged,
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    HelpText(context.l10n.competitionMovCapHelp),
-                    const SizedBox(height: AppSpacing.lg),
-
-                    SettingsSwitchRow(
-                      label: context.l10n.competitionAllowDrawsLabel,
-                      help: context.l10n.competitionAllowDrawsHelp,
-                      value: state.allowDraws,
-                      onChanged: state.busy ? null : cubit.allowDrawsChanged,
-                    ),
-                    const SizedBox(height: AppSpacing.xl),
-
-                    AdaptiveButton(
-                      label: context.l10n.competitionSettingsSave,
-                      busy: state.busy,
-                      onPressed: state.canSubmit ? cubit.submit : null,
-                    ),
-
-                    if (state.saved)
-                      Padding(
-                        padding: const EdgeInsets.only(top: AppSpacing.md),
-                        child: Text(
-                          context.l10n.competitionSettingsSaved,
-                          style: const TextStyle(color: AppColors.positive),
-                        ),
-                      ),
-
-                    if (state.failure != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: AppSpacing.md),
-                        child: Text(
-                          state.failure!.localized(context.l10n),
-                          style: const TextStyle(color: AppColors.negative),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
+          SectionLabel(context.l10n.competitionSeasonLengthLabel),
+          AdaptiveSegmented<SeasonLength>(
+            value: state.seasonLength,
+            onChanged: cubit.seasonLengthChanged,
+            segments: {
+              SeasonLength.monthly: context.l10n.seasonMonthly,
+              SeasonLength.quarterly: context.l10n.seasonQuarterly,
+              SeasonLength.yearly: context.l10n.seasonYearly,
             },
           ),
-        );
-      },
+          const SizedBox(height: AppSpacing.sm),
+          HelpText(context.l10n.competitionSeasonLengthWarning),
+          const SizedBox(height: AppSpacing.lg),
+
+          AdaptiveTextField(
+            label: context.l10n.competitionKFactorLabel,
+            controller: _kFactorController,
+            enabled: !state.busy,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            maxLength: 3,
+            errorText: state.kFactor.isEmpty || state.kFactorIsValid
+                ? null
+                : context.l10n.competitionKFactorInvalid,
+            onChanged: cubit.kFactorChanged,
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          HelpText(context.l10n.competitionKFactorHelp),
+          const SizedBox(height: AppSpacing.lg),
+
+          SettingsSwitchRow(
+            label: context.l10n.competitionMovLabel,
+            help: context.l10n.competitionMovHelp,
+            value: state.movEnabled,
+            onChanged: state.busy ? null : cubit.movEnabledChanged,
+          ),
+          const SizedBox(height: AppSpacing.md),
+
+          AdaptiveTextField(
+            label: context.l10n.competitionMovCapLabel,
+            controller: _movCapController,
+            enabled: !state.busy,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+            ],
+            maxLength: 4,
+            errorText: state.movCap.isEmpty || state.movCapIsValid
+                ? null
+                : context.l10n.competitionMovCapInvalid,
+            onChanged: cubit.movCapChanged,
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          HelpText(context.l10n.competitionMovCapHelp),
+          const SizedBox(height: AppSpacing.lg),
+
+          SettingsSwitchRow(
+            label: context.l10n.competitionAllowDrawsLabel,
+            help: context.l10n.competitionAllowDrawsHelp,
+            value: state.allowDraws,
+            onChanged: state.busy ? null : cubit.allowDrawsChanged,
+          ),
+          const SizedBox(height: AppSpacing.xl),
+
+          AdaptiveButton(
+            label: context.l10n.competitionSettingsSave,
+            busy: state.busy,
+            onPressed: state.canSubmit ? cubit.submit : null,
+          ),
+
+          if (state.saved)
+            Padding(
+              padding: const EdgeInsets.only(top: AppSpacing.md),
+              child: Text(
+                context.l10n.competitionSettingsSaved,
+                style: const TextStyle(color: AppColors.positive),
+              ),
+            ),
+
+          if (state.failure != null)
+            Padding(
+              padding: const EdgeInsets.only(top: AppSpacing.md),
+              child: Text(
+                state.failure!.localized(context.l10n),
+                style: const TextStyle(color: AppColors.negative),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

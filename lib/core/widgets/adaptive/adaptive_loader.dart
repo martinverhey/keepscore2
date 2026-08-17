@@ -9,13 +9,16 @@ class AdaptiveLoader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final child = AppPlatform.useCupertino
-        ? const CupertinoActivityIndicator()
-        : const CircularProgressIndicator();
     return Center(
       child: size == null
-          ? child
-          : SizedBox(width: size, height: size, child: child),
+          ? _indicator()
+          : SizedBox(width: size, height: size, child: _indicator()),
     );
+  }
+
+  Widget _indicator() {
+    return AppPlatform.useCupertino
+        ? const CupertinoActivityIndicator()
+        : const CircularProgressIndicator();
   }
 }

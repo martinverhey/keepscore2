@@ -41,103 +41,113 @@ class AdaptiveTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!AppPlatform.useCupertino) {
-      final accentBorder = accentColor == null
-          ? null
-          : OutlineInputBorder(
-              borderRadius: AppRadius.card,
-              borderSide: BorderSide(
-                color: accentColor!.withValues(alpha: 0.4),
+    return AppPlatform.useCupertino ? _cupertino(context) : _material();
+  }
+
+  Widget _material() {
+    final accentBorder = accentColor == null
+        ? null
+        : OutlineInputBorder(
+            borderRadius: AppRadius.card,
+            borderSide: BorderSide(color: accentColor!.withValues(alpha: 0.4)),
+          );
+
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      textInputAction: textInputAction,
+      inputFormatters: inputFormatters,
+      autofillHints: autofillHints,
+      maxLength: maxLength,
+      autofocus: autofocus,
+      enabled: enabled,
+      onChanged: onChanged,
+      onSubmitted: onSubmitted,
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hintText,
+        errorText: errorText,
+        counterText: '',
+        filled: accentColor != null,
+        fillColor: accentColor?.withValues(alpha: 0.08),
+        labelStyle: accentColor == null ? null : TextStyle(color: accentColor),
+        border: accentBorder,
+        enabledBorder: accentBorder,
+        focusedBorder: accentColor == null
+            ? null
+            : OutlineInputBorder(
+                borderRadius: AppRadius.card,
+                borderSide: BorderSide(color: accentColor!, width: 2),
               ),
-            );
+      ),
+    );
+  }
 
-      return TextField(
-        controller: controller,
-        keyboardType: keyboardType,
-        textInputAction: textInputAction,
-        inputFormatters: inputFormatters,
-        autofillHints: autofillHints,
-        maxLength: maxLength,
-        autofocus: autofocus,
-        enabled: enabled,
-        onChanged: onChanged,
-        onSubmitted: onSubmitted,
-        decoration: InputDecoration(
-          labelText: label,
-          hintText: hintText,
-          errorText: errorText,
-          counterText: '',
-          filled: accentColor != null,
-          fillColor: accentColor?.withValues(alpha: 0.08),
-          labelStyle: accentColor == null
-              ? null
-              : TextStyle(color: accentColor),
-          border: accentBorder,
-          enabledBorder: accentBorder,
-          focusedBorder: accentColor == null
-              ? null
-              : OutlineInputBorder(
-                  borderRadius: AppRadius.card,
-                  borderSide: BorderSide(color: accentColor!, width: 2),
-                ),
-        ),
-      );
-    }
-
+  Widget _cupertino(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(
-            bottom: AppSpacing.xs,
-            left: AppSpacing.xs,
-          ),
-          child: Text(
-            label,
-            style: CupertinoTheme.of(context).textTheme.tabLabelTextStyle
-                .copyWith(fontSize: 13, color: accentColor),
-          ),
-        ),
-        CupertinoTextField(
-          controller: controller,
-          placeholder: hintText,
-          keyboardType: keyboardType,
-          textInputAction: textInputAction,
-          inputFormatters: inputFormatters,
-          autofillHints: autofillHints,
-          maxLength: maxLength,
-          autofocus: autofocus,
-          enabled: enabled,
-          onChanged: onChanged,
-          onSubmitted: onSubmitted,
-          padding: const EdgeInsets.all(AppSpacing.md - 2),
-          decoration: BoxDecoration(
-            color:
-                accentColor?.withValues(alpha: 0.08) ??
-                CupertinoColors.tertiarySystemFill.resolveFrom(context),
-            borderRadius: AppRadius.card,
-            border: errorText != null
-                ? Border.all(color: CupertinoColors.destructiveRed)
-                : accentColor == null
-                ? null
-                : Border.all(color: accentColor!.withValues(alpha: 0.4)),
-          ),
-        ),
-        if (errorText != null)
-          Padding(
-            padding: const EdgeInsets.only(
-              top: AppSpacing.xs,
-              left: AppSpacing.xs,
-            ),
-            child: Text(
-              errorText!,
-              style: const TextStyle(
-                color: CupertinoColors.destructiveRed,
-                fontSize: 13,
-              ),
-            ),
-          ),
+        _cupertinoLabel(context),
+        _cupertinoField(context),
+        if (errorText != null) _cupertinoErrorText(),
       ],
+    );
+  }
+
+  Widget _cupertinoLabel(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(
+        bottom: AppSpacing.xs,
+        left: AppSpacing.xs,
+      ),
+      child: Text(
+        label,
+        style: CupertinoTheme.of(context).textTheme.tabLabelTextStyle.copyWith(
+          fontSize: 13,
+          color: accentColor,
+        ),
+      ),
+    );
+  }
+
+  Widget _cupertinoField(BuildContext context) {
+    return CupertinoTextField(
+      controller: controller,
+      placeholder: hintText,
+      keyboardType: keyboardType,
+      textInputAction: textInputAction,
+      inputFormatters: inputFormatters,
+      autofillHints: autofillHints,
+      maxLength: maxLength,
+      autofocus: autofocus,
+      enabled: enabled,
+      onChanged: onChanged,
+      onSubmitted: onSubmitted,
+      padding: const EdgeInsets.all(AppSpacing.md - 2),
+      decoration: BoxDecoration(
+        color:
+            accentColor?.withValues(alpha: 0.08) ??
+            CupertinoColors.tertiarySystemFill.resolveFrom(context),
+        borderRadius: AppRadius.card,
+        border: errorText != null
+            ? Border.all(color: CupertinoColors.destructiveRed)
+            : accentColor == null
+            ? null
+            : Border.all(color: accentColor!.withValues(alpha: 0.4)),
+      ),
+    );
+  }
+
+  Widget _cupertinoErrorText() {
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.xs, left: AppSpacing.xs),
+      child: Text(
+        errorText!,
+        style: const TextStyle(
+          color: CupertinoColors.destructiveRed,
+          fontSize: 13,
+        ),
+      ),
     );
   }
 }

@@ -69,29 +69,15 @@ class Sheet extends StatelessWidget {
   }
 
   Widget _header(BuildContext context) {
-    final titleWidget = title == null
-        ? null
-        : Text(
-            title!,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: titleColor,
-            ),
-            overflow: TextOverflow.ellipsis,
-          );
-    final resolvedSubtitle =
-        subtitleWidget ?? (subtitle == null ? null : HelpText(subtitle!));
-
     if (avatar == null) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
-          ?titleWidget,
-          if (resolvedSubtitle != null) ...[
+          ?_titleWidget(),
+          if (_resolvedSubtitle() case final subtitle?) ...[
             const SizedBox(height: AppSpacing.xs),
-            resolvedSubtitle,
+            subtitle,
           ],
         ],
       );
@@ -106,10 +92,10 @@ class Sheet extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              ?titleWidget,
-              if (resolvedSubtitle != null) ...[
+              ?_titleWidget(),
+              if (_resolvedSubtitle() case final subtitle?) ...[
                 const SizedBox(height: 2),
-                resolvedSubtitle,
+                subtitle,
               ],
             ],
           ),
@@ -121,4 +107,20 @@ class Sheet extends StatelessWidget {
       ],
     );
   }
+
+  Widget? _titleWidget() {
+    if (title == null) return null;
+    return Text(
+      title!,
+      style: TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.w700,
+        color: titleColor,
+      ),
+      overflow: TextOverflow.ellipsis,
+    );
+  }
+
+  Widget? _resolvedSubtitle() =>
+      subtitleWidget ?? (subtitle == null ? null : HelpText(subtitle!));
 }
