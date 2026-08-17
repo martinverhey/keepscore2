@@ -2,20 +2,35 @@ import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/failure.dart';
 
-enum SignInStep { chooser, email, code }
+sealed class SignInState extends Equatable {
+  const SignInState();
+}
 
-class SignInState extends Equatable {
-  const SignInState({
-    this.step = SignInStep.chooser,
-    this.email = '',
-    this.code = '',
-    this.busy = false,
-    this.failure,
-  });
+class SignInChooser extends SignInState {
+  const SignInChooser({this.busy = false, this.failure});
 
-  final SignInStep step;
+  final bool busy;
+  final Failure? failure;
+
+  SignInChooser copyWith({
+    bool? busy,
+    Failure? failure,
+    bool clearFailure = false,
+  }) {
+    return SignInChooser(
+      busy: busy ?? this.busy,
+      failure: clearFailure ? null : (failure ?? this.failure),
+    );
+  }
+
+  @override
+  List<Object?> get props => [busy, failure];
+}
+
+class SignInEmailStep extends SignInState {
+  const SignInEmailStep({this.email = '', this.busy = false, this.failure});
+
   final String email;
-  final String code;
   final bool busy;
   final Failure? failure;
 
@@ -23,23 +38,50 @@ class SignInState extends Equatable {
 
   bool get emailIsValid => _emailPattern.hasMatch(email.trim());
 
-  bool get codeIsValid => code.trim().length == 6;
-
   bool get canSendCode => emailIsValid && !busy;
+
+  SignInEmailStep copyWith({
+    String? email,
+    bool? busy,
+    Failure? failure,
+    bool clearFailure = false,
+  }) {
+    return SignInEmailStep(
+      email: email ?? this.email,
+      busy: busy ?? this.busy,
+      failure: clearFailure ? null : (failure ?? this.failure),
+    );
+  }
+
+  @override
+  List<Object?> get props => [email, busy, failure];
+}
+
+class SignInCodeStep extends SignInState {
+  const SignInCodeStep({
+    required this.email,
+    this.code = '',
+    this.busy = false,
+    this.failure,
+  });
+
+  final String email;
+  final String code;
+  final bool busy;
+  final Failure? failure;
+
+  bool get codeIsValid => code.trim().length == 6;
 
   bool get canVerify => codeIsValid && !busy;
 
-  SignInState copyWith({
-    SignInStep? step,
-    String? email,
+  SignInCodeStep copyWith({
     String? code,
     bool? busy,
     Failure? failure,
     bool clearFailure = false,
   }) {
-    return SignInState(
-      step: step ?? this.step,
-      email: email ?? this.email,
+    return SignInCodeStep(
+      email: email,
       code: code ?? this.code,
       busy: busy ?? this.busy,
       failure: clearFailure ? null : (failure ?? this.failure),
@@ -47,5 +89,5 @@ class SignInState extends Equatable {
   }
 
   @override
-  List<Object?> get props => [step, email, code, busy, failure];
+  List<Object?> get props => [email, code, busy, failure];
 }

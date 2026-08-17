@@ -35,7 +35,13 @@ class AuthFailureText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final failure = context.select((SignInCubit c) => c.state.failure);
+    final failure = context.select(
+      (SignInCubit c) => switch (c.state) {
+        SignInChooser(:final failure) => failure,
+        SignInEmailStep(:final failure) => failure,
+        SignInCodeStep(:final failure) => failure,
+      },
+    );
     if (failure == null) return const SizedBox.shrink();
 
     return Padding(
@@ -60,7 +66,7 @@ class AuthEmailStep extends StatefulWidget {
 
 class _AuthEmailStepState extends State<AuthEmailStep> {
   late final TextEditingController _controller = TextEditingController(
-    text: context.read<SignInCubit>().state.email,
+    text: (context.read<SignInCubit>().state as SignInEmailStep).email,
   );
 
   @override
@@ -72,7 +78,7 @@ class _AuthEmailStepState extends State<AuthEmailStep> {
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<SignInCubit>();
-    final state = context.watch<SignInCubit>().state;
+    final state = context.watch<SignInCubit>().state as SignInEmailStep;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -123,7 +129,7 @@ class _AuthCodeStepState extends State<AuthCodeStep> {
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<SignInCubit>();
-    final state = context.watch<SignInCubit>().state;
+    final state = context.watch<SignInCubit>().state as SignInCodeStep;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

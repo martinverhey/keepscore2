@@ -27,14 +27,14 @@ class UpgradeAccountPage extends StatelessWidget {
               label: context.l10n.commonBack,
               kind: AdaptiveButtonKind.plain,
               expand: false,
-              onPressed: state.step == SignInStep.code
+              onPressed: state is SignInCodeStep
                   ? context.read<SignInCubit>().back
                   : context.pop,
             ),
             body: Padding(
               padding: const EdgeInsets.all(AppSpacing.lg),
-              child: switch (state.step) {
-                SignInStep.code => const AuthCodeStep(),
+              child: switch (state) {
+                SignInCodeStep() => const AuthCodeStep(),
                 _ => AuthEmailStep(
                   title: context.l10n.authUpgradeTitle,
                   subtitle: context.l10n.authUpgradeBody,

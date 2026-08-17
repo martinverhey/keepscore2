@@ -11,11 +11,9 @@ export 'sign_in_state.dart';
 class SignInCubit extends Cubit<SignInState> {
   SignInCubit(this._repository, {this.mode = SignInMode.signIn})
     : super(
-        SignInState(
-          step: mode == SignInMode.upgrade
-              ? SignInStep.email
-              : SignInStep.chooser,
-        ),
+        mode == SignInMode.upgrade
+            ? const SignInEmailStep()
+            : const SignInChooser(),
       );
 
   final AuthRepository _repository;
@@ -25,45 +23,68 @@ class SignInCubit extends Cubit<SignInState> {
 
   bool get isUpgrading => mode == SignInMode.upgrade;
 
-  void emailChanged(String value) =>
-      emit(state.copyWith(email: value, clearFailure: true));
+  SignInEmailStep? get _email => switch (state) {
+    SignInEmailStep email => email,
+    _ => null,
+  };
 
-  void codeChanged(String value) =>
-      emit(state.copyWith(code: value, clearFailure: true));
+  SignInCodeStep? get _codeStep => switch (state) {
+    SignInCodeStep code => code,
+    _ => null,
+  };
 
-  void showEmailEntry() =>
-      emit(state.copyWith(step: SignInStep.email, clearFailure: true));
+  void emailChanged(String value) {
+    final email = _email;
+    if (email == null) return;
+    emit(email.copyWith(email: value, clearFailure: true));
+  }
+
+  void codeChanged(String value) {
+    final code = _codeStep;
+    if (code == null) return;
+    emit(code.copyWith(code: value, clearFailure: true));
+  }
+
+  void showEmailEntry() {
+    if (state is! SignInChooser) return;
+    emit(const SignInEmailStep());
+  }
 
   void back() {
-    final previous = switch (state.step) {
-      SignInStep.code => SignInStep.email,
-      _ => isUpgrading ? SignInStep.email : SignInStep.chooser,
-    };
-    emit(state.copyWith(step: previous, code: '', clearFailure: true));
+    switch (state) {
+      case SignInCodeStep(:final email):
+        emit(SignInEmailStep(email: email));
+      case SignInEmailStep():
+        if (!isUpgrading) emit(const SignInChooser());
+      case SignInChooser():
+        return;
+    }
   }
 
   Future<void> sendCode() async {
-    if (!state.canSendCode) return;
+    final email = _email;
+    if (email == null || !email.canSendCode) return;
     await _run(() async {
       await switch (mode) {
-        SignInMode.signIn => _repository.sendEmailCode(state.email),
-        SignInMode.upgrade => _repository.upgradeGuestWithEmail(state.email),
+        SignInMode.signIn => _repository.sendEmailCode(email.email),
+        SignInMode.upgrade => _repository.upgradeGuestWithEmail(email.email),
       };
-      emit(state.copyWith(step: SignInStep.code, code: ''));
+      if (!isClosed) emit(SignInCodeStep(email: email.email, busy: true));
     });
   }
 
   Future<void> verifyCode() async {
-    if (!state.canVerify) return;
+    final code = _codeStep;
+    if (code == null || !code.canVerify) return;
     await _run(
       () => switch (mode) {
         SignInMode.signIn => _repository.verifyEmailCode(
-          email: state.email,
-          token: state.code,
+          email: code.email,
+          token: code.code,
         ),
         SignInMode.upgrade => _repository.verifyUpgradeCode(
-          email: state.email,
-          token: state.code,
+          email: code.email,
+          token: code.code,
         ),
       },
     );
@@ -76,12 +97,24 @@ class SignInCubit extends Cubit<SignInState> {
   Future<void> continueAsGuest() => _run(_repository.signInAsGuest);
 
   Future<void> _run(Future<void> Function() action) async {
-    emit(state.copyWith(busy: true, clearFailure: true));
+    emit(_withBusy(true));
     try {
       await action();
-      if (!isClosed) emit(state.copyWith(busy: false));
+      if (!isClosed) emit(_withBusy(false));
     } on Failure catch (failure) {
-      if (!isClosed) emit(state.copyWith(busy: false, failure: failure));
+      if (!isClosed) emit(_withFailure(failure));
     }
   }
+
+  SignInState _withBusy(bool busy) => switch (state) {
+    SignInChooser s => s.copyWith(busy: busy),
+    SignInEmailStep s => s.copyWith(busy: busy),
+    SignInCodeStep s => s.copyWith(busy: busy),
+  };
+
+  SignInState _withFailure(Failure failure) => switch (state) {
+    SignInChooser s => s.copyWith(busy: false, failure: failure),
+    SignInEmailStep s => s.copyWith(busy: false, failure: failure),
+    SignInCodeStep s => s.copyWith(busy: false, failure: failure),
+  };
 }

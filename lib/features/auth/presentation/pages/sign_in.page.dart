@@ -15,7 +15,7 @@ class SignInPage extends StatelessWidget {
     return BlocBuilder<SignInCubit, SignInState>(
       builder: (context, state) {
         return AdaptiveScaffold(
-          leading: state.step == SignInStep.chooser
+          leading: state is SignInChooser
               ? null
               : AdaptiveButton(
                   label: context.l10n.commonBack,
@@ -25,13 +25,13 @@ class SignInPage extends StatelessWidget {
                 ),
           body: Padding(
             padding: const EdgeInsets.all(AppSpacing.lg),
-            child: switch (state.step) {
-              SignInStep.chooser => _chooserStep(context),
-              SignInStep.email => AuthEmailStep(
+            child: switch (state) {
+              SignInChooser() => _chooserStep(context, state),
+              SignInEmailStep() => AuthEmailStep(
                 title: context.l10n.authEmailTitle,
                 subtitle: context.l10n.authEmailSubtitle,
               ),
-              SignInStep.code => const AuthCodeStep(),
+              SignInCodeStep() => const AuthCodeStep(),
             },
           ),
         );
@@ -39,9 +39,8 @@ class SignInPage extends StatelessWidget {
     );
   }
 
-  Widget _chooserStep(BuildContext context) {
+  Widget _chooserStep(BuildContext context, SignInChooser state) {
     final cubit = context.read<SignInCubit>();
-    final state = context.watch<SignInCubit>().state;
     final providers = cubit.providers;
 
     return Column(

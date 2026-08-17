@@ -12,16 +12,23 @@ void main() {
 
   setUp(() {
     repository = MockAuthRepository();
-    when(() => repository.availableProviders)
-        .thenReturn(const AuthProviders(apple: false, google: false));
+    when(
+      () => repository.availableProviders,
+    ).thenReturn(const AuthProviders(apple: false, google: false));
   });
 
   group('email validation', () {
     test('accepts a plausible address and rejects the usual mistakes', () {
-      var state = const SignInState();
+      var state = const SignInEmailStep();
 
-      for (final bad in ['', 'marieke', 'marieke@', '@example.com',
-                         'marieke@example', 'a b@example.com']) {
+      for (final bad in [
+        '',
+        'marieke',
+        'marieke@',
+        '@example.com',
+        'marieke@example',
+        'a b@example.com',
+      ]) {
         state = state.copyWith(email: bad);
         expect(state.emailIsValid, isFalse, reason: 'should reject "$bad"');
         expect(state.canSendCode, isFalse);
@@ -33,7 +40,7 @@ void main() {
     });
 
     test('cannot send while a request is already in flight', () {
-      const state = SignInState(email: 'marieke@example.com', busy: true);
+      const state = SignInEmailStep(email: 'marieke@example.com', busy: true);
       expect(state.canSendCode, isFalse);
     });
   });
@@ -41,29 +48,28 @@ void main() {
   group('sending a code', () {
     blocTest<SignInCubit, SignInState>(
       'moves to code entry on success',
-      setUp: () => when(() => repository.sendEmailCode(any()))
-          .thenAnswer((_) async {}),
+      setUp: () =>
+          when(() => repository.sendEmailCode(any())).thenAnswer((_) async {}),
       build: () => SignInCubit(repository),
       act: (cubit) async {
+        cubit.showEmailEntry();
         cubit.emailChanged('marieke@example.com');
         await cubit.sendCode();
       },
       expect: () => [
-        const SignInState(email: 'marieke@example.com'),
-        const SignInState(email: 'marieke@example.com', busy: true),
-        const SignInState(
-          email: 'marieke@example.com',
-          step: SignInStep.code,
-          busy: true,
-        ),
-        const SignInState(email: 'marieke@example.com', step: SignInStep.code),
+        const SignInEmailStep(),
+        const SignInEmailStep(email: 'marieke@example.com'),
+        const SignInEmailStep(email: 'marieke@example.com', busy: true),
+        const SignInCodeStep(email: 'marieke@example.com', busy: true),
+        const SignInCodeStep(email: 'marieke@example.com'),
       ],
     );
 
     blocTest<SignInCubit, SignInState>(
       'surfaces the failure and stays on email entry',
-      setUp: () => when(() => repository.sendEmailCode(any()))
-          .thenThrow(const NetworkFailure()),
+      setUp: () => when(
+        () => repository.sendEmailCode(any()),
+      ).thenThrow(const NetworkFailure()),
       build: () => SignInCubit(repository),
       act: (cubit) async {
         cubit.showEmailEntry();
@@ -71,9 +77,9 @@ void main() {
         await cubit.sendCode();
       },
       verify: (cubit) {
-        expect(cubit.state.step, SignInStep.email);
-        expect(cubit.state.failure, isA<NetworkFailure>());
-        expect(cubit.state.busy, isFalse);
+        final state = cubit.state as SignInEmailStep;
+        expect(state.failure, isA<NetworkFailure>());
+        expect(state.busy, isFalse);
       },
     );
 
@@ -106,15 +112,20 @@ void main() {
 
     blocTest<SignInCubit, SignInState>(
       'passes the trimmed email and code through',
-      setUp: () => when(
-        () => repository.verifyEmailCode(
-          email: any(named: 'email'),
-          token: any(named: 'token'),
-        ),
-      ).thenAnswer((_) async {}),
+      setUp: () {
+        when(() => repository.sendEmailCode(any())).thenAnswer((_) async {});
+        when(
+          () => repository.verifyEmailCode(
+            email: any(named: 'email'),
+            token: any(named: 'token'),
+          ),
+        ).thenAnswer((_) async {});
+      },
       build: () => SignInCubit(repository),
       act: (cubit) async {
+        cubit.showEmailEntry();
         cubit.emailChanged('marieke@example.com');
+        await cubit.sendCode();
         cubit.codeChanged('123456');
         await cubit.verifyCode();
       },
@@ -128,22 +139,28 @@ void main() {
 
     blocTest<SignInCubit, SignInState>(
       'a wrong code leaves the user on the code step to retry',
-      setUp: () => when(
-        () => repository.verifyEmailCode(
-          email: any(named: 'email'),
-          token: any(named: 'token'),
-        ),
-      ).thenThrow(const AuthFailure('Token has expired or is invalid')),
+      setUp: () {
+        when(() => repository.sendEmailCode(any())).thenAnswer((_) async {});
+        when(
+          () => repository.verifyEmailCode(
+            email: any(named: 'email'),
+            token: any(named: 'token'),
+          ),
+        ).thenThrow(const AuthFailure('Token has expired or is invalid'));
+      },
       build: () => SignInCubit(repository),
       act: (cubit) async {
+        cubit.showEmailEntry();
         cubit.emailChanged('marieke@example.com');
+        await cubit.sendCode();
         cubit.codeChanged('000000');
         await cubit.verifyCode();
       },
       verify: (cubit) {
-        expect(cubit.state.failure, isA<AuthFailure>());
-        expect(cubit.state.busy, isFalse);
-        expect(cubit.state.code, '000000');
+        final state = cubit.state as SignInCodeStep;
+        expect(state.failure, isA<AuthFailure>());
+        expect(state.busy, isFalse);
+        expect(state.code, '000000');
       },
     );
   });
@@ -157,57 +174,64 @@ void main() {
       cubit.emailChanged('marieke@example.com');
       await cubit.sendCode();
       cubit.codeChanged('111111');
-      expect(cubit.state.step, SignInStep.code);
+      expect(cubit.state, isA<SignInCodeStep>());
 
       cubit.back();
 
-      expect(cubit.state.step, SignInStep.email);
-      expect(cubit.state.email, 'marieke@example.com');
-      expect(cubit.state.code, isEmpty);
+      final state = cubit.state as SignInEmailStep;
+      expect(state.email, 'marieke@example.com');
     });
 
     test('back from email returns to the chooser', () {
       final cubit = SignInCubit(repository)..showEmailEntry();
       cubit.back();
-      expect(cubit.state.step, SignInStep.chooser);
+      expect(cubit.state, isA<SignInChooser>());
     });
   });
 
   group('upgrading a guest', () {
     test('opens on email entry, because there is nothing to choose', () {
       final cubit = SignInCubit(repository, mode: SignInMode.upgrade);
-      expect(cubit.state.step, SignInStep.email);
+      expect(cubit.state, isA<SignInEmailStep>());
       expect(cubit.isUpgrading, isTrue);
     });
 
     blocTest<SignInCubit, SignInState>(
       'attaches the address to the anonymous user instead of signing in',
-      setUp: () => when(() => repository.upgradeGuestWithEmail(any()))
-          .thenAnswer((_) async {}),
+      setUp: () => when(
+        () => repository.upgradeGuestWithEmail(any()),
+      ).thenAnswer((_) async {}),
       build: () => SignInCubit(repository, mode: SignInMode.upgrade),
       act: (cubit) async {
         cubit.emailChanged('marieke@example.com');
         await cubit.sendCode();
       },
       verify: (cubit) {
-        expect(cubit.state.step, SignInStep.code);
-        verify(() => repository.upgradeGuestWithEmail('marieke@example.com'))
-            .called(1);
+        expect(cubit.state, isA<SignInCodeStep>());
+        verify(
+          () => repository.upgradeGuestWithEmail('marieke@example.com'),
+        ).called(1);
         verifyNever(() => repository.sendEmailCode(any()));
       },
     );
 
     blocTest<SignInCubit, SignInState>(
       'verifies against the email-change flow, not a fresh sign-in',
-      setUp: () => when(
-        () => repository.verifyUpgradeCode(
-          email: any(named: 'email'),
-          token: any(named: 'token'),
-        ),
-      ).thenAnswer((_) async {}),
+      setUp: () {
+        when(
+          () => repository.upgradeGuestWithEmail(any()),
+        ).thenAnswer((_) async {});
+        when(
+          () => repository.verifyUpgradeCode(
+            email: any(named: 'email'),
+            token: any(named: 'token'),
+          ),
+        ).thenAnswer((_) async {});
+      },
       build: () => SignInCubit(repository, mode: SignInMode.upgrade),
       act: (cubit) async {
         cubit.emailChanged('marieke@example.com');
+        await cubit.sendCode();
         cubit.codeChanged('123456');
         await cubit.verifyCode();
       },
@@ -229,7 +253,7 @@ void main() {
 
     test('back from email stays put — the page itself is the way out', () {
       final cubit = SignInCubit(repository, mode: SignInMode.upgrade)..back();
-      expect(cubit.state.step, SignInStep.email);
+      expect(cubit.state, isA<SignInEmailStep>());
     });
   });
 
