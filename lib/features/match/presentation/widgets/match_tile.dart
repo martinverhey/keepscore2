@@ -9,12 +9,12 @@ class MatchTile extends StatelessWidget {
   const MatchTile({
     super.key,
     required this.match,
-    required this.onTap,
+    this.onTap,
     this.myPlayerId,
   });
 
   final MatchEntry match;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final String? myPlayerId;
 
   MatchTeam? get _myTeam {
@@ -32,45 +32,49 @@ class MatchTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final rail = BorderSide(color: AdaptiveColors.accent(context), width: 1);
 
+    final content = Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.md,
+      ),
+      decoration: BoxDecoration(
+        borderRadius: AppRadius.card,
+        color: AppColors.neutral.withValues(alpha: 0.08),
+        border: switch (_myTeam) {
+          MatchTeam.a => Border(left: rail),
+          MatchTeam.b => Border(right: rail),
+          null => null,
+        },
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(child: _side(team: MatchTeam.a)),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+            child: Text(
+              '${match.teamAScore} – ${match.teamBScore}',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                fontFeatures: [FontFeature.tabularFigures()],
+              ),
+            ),
+          ),
+          Expanded(child: _side(team: MatchTeam.b)),
+        ],
+      ),
+    );
+
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: AdaptiveTappable(
-        onTap: onTap,
-        borderRadius: AppRadius.card,
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.md,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: AppRadius.card,
-            color: AppColors.neutral.withValues(alpha: 0.08),
-            border: switch (_myTeam) {
-              MatchTeam.a => Border(left: rail),
-              MatchTeam.b => Border(right: rail),
-              null => null,
-            },
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(child: _side(team: MatchTeam.a)),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-                child: Text(
-                  '${match.teamAScore} – ${match.teamBScore}',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    fontFeatures: [FontFeature.tabularFigures()],
-                  ),
-                ),
-              ),
-              Expanded(child: _side(team: MatchTeam.b)),
-            ],
-          ),
-        ),
-      ),
+      child: onTap == null
+          ? content
+          : AdaptiveTappable(
+              onTap: onTap!,
+              borderRadius: AppRadius.card,
+              child: content,
+            ),
     );
   }
 

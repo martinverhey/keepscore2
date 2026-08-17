@@ -1,9 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../app/dependency_injection/injector.dart';
-import '../../../../app/router/app_router.dart';
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/extensions/medal_color.dart';
@@ -502,11 +500,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
   }
 
   Widget _recentMatchTile(MatchEntry match) {
-    return MatchTile(
-      match: match,
-      myPlayerId: widget.myPlayerId,
-      onTap: () => context.push(Routes.match(match.competitionId, match.id)),
-    );
+    return MatchTile(match: match, myPlayerId: widget.myPlayerId);
   }
 
   Widget _historyTab(BuildContext context) {
