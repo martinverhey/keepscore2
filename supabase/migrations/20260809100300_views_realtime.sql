@@ -43,8 +43,8 @@ left join public.player_ratings pr
 -- match_feed
 -- ---------------------------------------------------------------------------
 
--- Rosters are aggregated into JSON so the match list is a single round trip
--- instead of an N+1 over match_players.
+-- Each team's players are aggregated into JSON so the match list is a single
+-- round trip instead of an N+1 over match_players.
 create view public.match_feed
 with (security_invoker = true) as
 select
@@ -58,8 +58,8 @@ select
   m.team_b_rating,
   m.created_by,
   m.created_at,
-  roster.team_a,
-  roster.team_b
+  team_players.team_a,
+  team_players.team_b
 from public.matches m
 cross join lateral (
   select
@@ -79,7 +79,7 @@ cross join lateral (
     where mp.match_id = m.id
     order by pl.display_name
   ) ordered
-) roster;
+) team_players;
 
 grant select on public.leaderboard to authenticated;
 grant select on public.match_feed to authenticated;

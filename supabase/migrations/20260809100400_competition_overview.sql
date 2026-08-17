@@ -19,7 +19,7 @@ select
      from public.matches m
     where m.competition_id = c.id)           as last_played_at,
   -- Which player row is *me* in this competition. The match form needs it to
-  -- preselect the current user, and the roster to mark "you".
+  -- preselect the current user, and the players list to mark "you".
   (select p.id
      from public.players p
     where p.competition_id = c.id

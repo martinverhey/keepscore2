@@ -36,7 +36,7 @@ Map<String, dynamic> _row({Object? teamARating = 1002.5}) => {
 };
 
 void main() {
-  test('reads a match_feed row, rosters and all', () {
+  test('reads a match_feed row, players and all', () {
     final match = MatchEntry.fromMap(_row());
 
     expect(match.id, 'm1');

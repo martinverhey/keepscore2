@@ -2,7 +2,7 @@
 --
 -- game_type and match_players.outcome are snapshotted at write time, the same
 -- way team_a_rating/team_b_rating and rating_before/after/delta already are:
--- a match's roster and final score never change after apply_match_ratings has
+-- a match's players and final score never change after apply_match_ratings has
 -- run for it, so both facts are safe to persist once and never recompute.
 --
 -- season_history / player_medals stay views. There is no "a season just

@@ -31,8 +31,8 @@ class MatchEntry extends Equatable {
     teamARating: _toDouble(map['team_a_rating']),
     teamBRating: _toDouble(map['team_b_rating']),
     createdBy: map['created_by'] as String?,
-    teamA: _roster(map['team_a']),
-    teamB: _roster(map['team_b']),
+    teamA: _players(map['team_a']),
+    teamB: _players(map['team_b']),
   );
 
   final String id;
@@ -57,7 +57,7 @@ class MatchEntry extends Equatable {
 
   double get deltaA => teamA.isEmpty ? 0 : teamA.first.ratingDelta;
 
-  List<MatchParticipant> roster(MatchTeam team) =>
+  List<MatchParticipant> players(MatchTeam team) =>
       team == MatchTeam.a ? teamA : teamB;
 
   int score(MatchTeam team) => team == MatchTeam.a ? teamAScore : teamBScore;
@@ -81,7 +81,7 @@ class MatchEntry extends Equatable {
   ];
 }
 
-List<MatchParticipant> _roster(Object? value) => switch (value) {
+List<MatchParticipant> _players(Object? value) => switch (value) {
   final List<dynamic> rows =>
     rows
         .map((row) => MatchParticipant.fromMap(row as Map<String, dynamic>))

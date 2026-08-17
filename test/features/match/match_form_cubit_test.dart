@@ -67,7 +67,7 @@ void main() {
 
   void stubLoad({
     Competition? competition,
-    List<Player>? roster,
+    List<Player>? playerList,
     List<Leaderboard> leaderboards = const [],
   }) {
     when(() => competitions.overview('c1')).thenAnswer(
@@ -78,7 +78,8 @@ void main() {
       ),
     );
     when(() => players.currentPlayers('c1')).thenAnswer(
-      (_) async => roster ?? [_player('p1', 'Ada'), _player('p2', 'Grace')],
+      (_) async =>
+          playerList ?? [_player('p1', 'Ada'), _player('p2', 'Grace')],
     );
     when(() => leaderboard.currentSeason('c1')).thenAnswer(
       (_) async => SeasonWindow(
@@ -100,9 +101,9 @@ void main() {
   });
 
   blocTest<MatchFormCubit, MatchFormState>(
-    'loads the active roster and this season\'s ratings',
+    'loads the active players and this season\'s ratings',
     setUp: () => stubLoad(
-      roster: [
+      playerList: [
         _player('p1', 'Ada'),
         _player('p2', 'Grace'),
         _player('p3', 'Zoe', isActive: false),
@@ -137,7 +138,7 @@ void main() {
   blocTest<MatchFormCubit, MatchFormState>(
     'refreshing players picks up a rename without disturbing assignments',
     setUp: () =>
-        stubLoad(roster: [_player('p1', 'Ada'), _player('p2', 'Grace')]),
+        stubLoad(playerList: [_player('p1', 'Ada'), _player('p2', 'Grace')]),
     build: build,
     act: (cubit) async {
       await cubit.load();
@@ -157,7 +158,7 @@ void main() {
   );
 
   blocTest<MatchFormCubit, MatchFormState>(
-    'a failed refresh keeps the roster already on screen',
+    'a failed refresh keeps the players already on screen',
     setUp: stubLoad,
     build: build,
     act: (cubit) async {
@@ -191,7 +192,7 @@ void main() {
   blocTest<MatchFormCubit, MatchFormState>(
     'setting a team replaces its members and moves anyone picked off the other side',
     setUp: () => stubLoad(
-      roster: [
+      playerList: [
         _player('p1', 'Ada'),
         _player('p2', 'Grace'),
         _player('p3', 'Zoe'),
@@ -252,10 +253,10 @@ void main() {
   );
 
   blocTest<MatchFormCubit, MatchFormState>(
-    'submitting sends both rosters and the scores',
+    'submitting sends both teams and the scores',
     setUp: () {
       stubLoad(
-        roster: [
+        playerList: [
           _player('p1', 'Ada'),
           _player('p2', 'Grace'),
           _player('p3', 'Zoe'),

@@ -19,8 +19,8 @@ select
   m.team_b_rating,
   m.created_by,
   m.created_at,
-  roster.team_a,
-  roster.team_b,
+  team_players.team_a,
+  team_players.team_b,
   m.game_type
 from public.matches m
 cross join lateral (
@@ -41,6 +41,6 @@ cross join lateral (
     where mp.match_id = m.id
     order by pl.display_name
   ) ordered
-) roster;
+) team_players;
 
 grant select on public.match_feed to authenticated;

@@ -715,5 +715,5 @@ begin
 end;
 $$;
 
--- To edit a roster, delete the match and log it again — rewriting team
--- membership in place would need the same replay anyway.
+-- To edit a match's players, delete the match and log it again — rewriting
+-- team membership in place would need the same replay anyway.

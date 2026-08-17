@@ -79,7 +79,7 @@ class MatchTile extends StatelessWidget {
   }
 
   Widget _side({required MatchTeam team}) {
-    final roster = match.roster(team);
+    final players = match.players(team);
     final won = match.winner == team;
     final alignEnd = team == MatchTeam.b;
 
@@ -89,7 +89,7 @@ class MatchTile extends StatelessWidget {
           : CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        for (final entry in roster)
+        for (final entry in players)
           Text(
             entry.displayName,
             textAlign: alignEnd ? TextAlign.end : TextAlign.start,
@@ -102,7 +102,7 @@ class MatchTile extends StatelessWidget {
           ),
         const SizedBox(height: 2),
         RatingDelta(
-          value: roster.isEmpty ? 0 : roster.first.ratingDelta,
+          value: players.isEmpty ? 0 : players.first.ratingDelta,
           fontSize: AppTypography.labelLargeSize,
         ),
       ],

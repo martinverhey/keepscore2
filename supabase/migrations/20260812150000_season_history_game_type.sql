@@ -2,8 +2,9 @@
 --
 -- Parallel to season_history, but built on game_type_leaderboard instead of
 -- leaderboard — the same relationship game_type_leaderboard already has to
--- leaderboard (20260812140000_leaderboard_game_type.sql). Not roster-backed,
--- same as its source: a player who never played a given type in a season
+-- leaderboard (20260812140000_leaderboard_game_type.sql). Not backed by the
+-- full player list, same as its source: a player who never played a given
+-- type in a season
 -- just doesn't have a row there, so they don't get a season-history row for
 -- it either.
 

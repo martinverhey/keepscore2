@@ -62,7 +62,7 @@ class Leaderboard extends Equatable {
         medal: leaderboard.medal,
       );
 
-  factory Leaderboard.forRosterPlayer(
+  factory Leaderboard.forPlayer(
     Map<String, dynamic> map, {
     required String competitionId,
   }) {

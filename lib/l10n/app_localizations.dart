@@ -1091,7 +1091,7 @@ abstract class AppLocalizations {
   /// No description provided for @playersRemove.
   ///
   /// In en, this message translates to:
-  /// **'Remove from roster'**
+  /// **'Remove from player list'**
   String get playersRemove;
 
   /// No description provided for @playersRemoveConfirmTitle.

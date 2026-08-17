@@ -38,9 +38,7 @@ class SupabaseLeaderboardRepository implements LeaderboardRepository {
     GameType? gameType,
   }) => guard(() async {
     if (seasonId == null) {
-      return gameType == null
-          ? _rosterLeaderboards(competitionId)
-          : <Leaderboard>[];
+      return gameType == null ? _leaderboards(competitionId) : <Leaderboard>[];
     }
 
     var query = _client
@@ -55,7 +53,7 @@ class SupabaseLeaderboardRepository implements LeaderboardRepository {
     return rows.map((row) => Leaderboard.fromMap(row)).toList(growable: false);
   });
 
-  Future<List<Leaderboard>> _rosterLeaderboards(String competitionId) async {
+  Future<List<Leaderboard>> _leaderboards(String competitionId) async {
     final rows = await _client
         .from('players')
         .select(
@@ -66,10 +64,7 @@ class SupabaseLeaderboardRepository implements LeaderboardRepository {
         .order('display_name', ascending: true);
 
     return rows
-        .map(
-          (row) =>
-              Leaderboard.forRosterPlayer(row, competitionId: competitionId),
-        )
+        .map((row) => Leaderboard.forPlayer(row, competitionId: competitionId))
         .toList(growable: false);
   }
 

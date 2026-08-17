@@ -359,7 +359,7 @@ begin
     perform public.recalc_season(v_new_season);
   end if;
 
-  -- A score edit never touches the roster, so game_type is unchanged.
+  -- A score edit never touches the match's players, so game_type is unchanged.
   perform public.recalc_season_game_type(v_match.season_id, v_match.game_type);
   if v_new_season <> v_match.season_id then
     perform public.recalc_season_game_type(v_new_season, v_match.game_type);
@@ -409,7 +409,7 @@ to authenticated;
 -- ---------------------------------------------------------------------------
 -- game_type_leaderboard — the per-type sibling of the leaderboard view.
 --
--- Unlike leaderboard, this is not driven from the full roster: a player who
+-- Unlike leaderboard, this is not driven from the full player list: a player who
 -- hasn't played this game type this season simply doesn't appear, rather
 -- than showing everyone tied at starting_rating for a type nobody's played.
 -- ---------------------------------------------------------------------------

@@ -194,8 +194,6 @@ class _MatchDetailPageState extends State<MatchDetailPage> {
     required MatchEntry match,
     required MatchTeam team,
   }) {
-    final roster = match.roster(team);
-
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
@@ -219,7 +217,8 @@ class _MatchDetailPageState extends State<MatchDetailPage> {
             team: team,
           ),
           const SizedBox(height: AppSpacing.sm),
-          for (final participant in roster) _participantRow(participant),
+          for (final participant in match.players(team))
+            _participantRow(participant),
         ],
       ),
     );

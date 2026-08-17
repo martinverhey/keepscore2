@@ -1,4 +1,4 @@
--- Verifies the roster and settings paths the app takes in step 5, from the
+-- Verifies the players and settings paths the app takes in step 5, from the
 -- client's point of view rather than as postgres.
 --
 --   ./scripts/db.sh -f supabase/tests/players_check.sql
@@ -150,13 +150,13 @@ begin
     'a non-owner changing settings must match no rows (not raise)';
 
   -- -------------------------------------------------------------------
-  -- Guest: reads the roster, changes nothing
+  -- Guest: reads the players, changes nothing
   -- -------------------------------------------------------------------
   perform pg_temp.act_as(v_guest, true);
 
   select count(*) into v_n
     from public.players where competition_id = v_comp.id;
-  assert v_n > 0, 'a guest should still read the roster';
+  assert v_n > 0, 'a guest should still read the players';
 
   select id into v_mine
     from public.players

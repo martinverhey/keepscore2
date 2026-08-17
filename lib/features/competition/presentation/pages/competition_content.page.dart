@@ -8,6 +8,7 @@ import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/box_constraints.extension.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/extensions/competition.extension.dart';
+import '../../../../core/extensions/player_list.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/page_title.dart';
@@ -19,6 +20,7 @@ import '../../../leaderboard/presentation/widgets/leaderboard.page.dart';
 import '../../../match/presentation/cubit/game_type_filter_cubit.dart';
 import '../../../match/presentation/cubit/match_list_cubit.dart';
 import '../../../match/presentation/widgets/matches.page.dart';
+import '../../../player/domain/player.model.dart';
 import '../../../player/presentation/cubit/players_cubit.dart';
 import '../../domain/competition.model.dart';
 import '../cubit/competition_cubit.dart';
@@ -27,6 +29,13 @@ import '../widgets/open_home.dart';
 import '../widgets/sidebar.dart';
 
 enum CompetitionTab { leaderboard, matches }
+
+extension CompetitionTabTitle on CompetitionTab {
+  String title(BuildContext context) => switch (this) {
+    CompetitionTab.leaderboard => context.l10n.leaderboardTitle,
+    CompetitionTab.matches => context.l10n.matchesTitle,
+  };
+}
 
 class CompetitionContent extends StatefulWidget {
   const CompetitionContent({super.key, required this.competitionId});
@@ -83,7 +92,7 @@ class _CompetitionContentState extends State<CompetitionContent> {
   @override
   Widget build(BuildContext context) {
     final session = context.watch<AuthBloc>().state;
-    final roster = context.watch<PlayersCubit>().state;
+    final playersState = context.watch<PlayersCubit>().state;
 
     return BlocConsumer<CompetitionCubit, CompetitionState>(
       listener: (context, state) {
@@ -96,27 +105,19 @@ class _CompetitionContentState extends State<CompetitionContent> {
         final competition = state.competition;
         final isRegistered = session.canWrite;
         final isOwner = competition.isOwnedBySession(session);
-        final hasPlayers = roster is PlayersReady && roster.active.length >= 2;
+        final hasPlayers =
+            playersState is PlayersReady && playersState.active.length >= 2;
         final myPlayerId = state.myPlayerId;
 
-        final rosterPlayers = roster is PlayersReady
-            ? roster.players
+        final List<Player> players = playersState is PlayersReady
+            ? playersState.players
             : const [];
-        String? myDisplayName;
-        for (final player in rosterPlayers) {
-          if (player.id == myPlayerId) {
-            myDisplayName = player.displayName;
-            break;
-          }
-        }
 
-        final tabTitle = switch (_tab) {
-          CompetitionTab.leaderboard => context.l10n.leaderboardTitle,
-          CompetitionTab.matches => context.l10n.matchesTitle,
-        };
         setPageTitle(
           context,
-          competition == null ? tabTitle : '${competition.name} · $tabTitle',
+          competition == null
+              ? _tab.title(context)
+              : '${competition.name} · ${_tab.title(context)}',
         );
 
         return Sidebar(
@@ -139,7 +140,7 @@ class _CompetitionContentState extends State<CompetitionContent> {
           onSignOut: () =>
               context.read<AuthBloc>().add(const AuthSignOutRequested()),
           child: AdaptiveScaffold(
-            title: tabTitle,
+            title: _tab.title(context),
             onRefresh: _refresh,
             hasScrollBody: true,
             trailing: _trailingRow(context),
@@ -163,7 +164,7 @@ class _CompetitionContentState extends State<CompetitionContent> {
                 isOwner: isOwner,
                 hasPlayers: hasPlayers,
                 myPlayerId: myPlayerId,
-                myDisplayName: myDisplayName,
+                myDisplayName: players.displayNameFor(myPlayerId),
               ),
             },
           ),

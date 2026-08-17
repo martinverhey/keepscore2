@@ -234,7 +234,7 @@
   "playersNameTooShort": "Enter a name of at least 2 characters.",
   "playersRenameTitle": "Rename player",
   "playersRename": "Rename",
-  "playersRemove": "Remove from roster",
+  "playersRemove": "Remove from player list",
   "playersRemoveConfirmTitle": "Remove {name}?",
   "@playersRemoveConfirmTitle": {
     "placeholders": { "name": { "type": "String" } }

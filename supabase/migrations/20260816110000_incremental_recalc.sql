@@ -332,7 +332,7 @@ begin
     -- where anything downstream could start differing.
     v_boundary := least(v_match.played_at, v_new_played_at);
     perform public.recalc_season_from(v_match.season_id, v_boundary, p_match_id);
-    -- A score edit never touches the roster, so game_type is unchanged.
+    -- A score edit never touches the match's players, so game_type is unchanged.
     perform public.recalc_season_game_type_from(
       v_match.season_id, v_match.game_type, v_boundary, p_match_id
     );

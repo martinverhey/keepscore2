@@ -573,7 +573,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playersRename => 'Rename';
 
   @override
-  String get playersRemove => 'Remove from roster';
+  String get playersRemove => 'Remove from player list';
 
   @override
   String playersRemoveConfirmTitle(String name) {

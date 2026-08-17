@@ -28,15 +28,15 @@ void main() {
 
   setUp(() => repository = MockPlayerRepository());
 
-  void stubRoster(List<Player> players) {
+  void stubPlayers(List<Player> players) {
     when(
       () => repository.currentPlayers('c1'),
     ).thenAnswer((_) async => players);
   }
 
   blocTest<PlayersCubit, PlayersState>(
-    'loads the roster',
-    setUp: () => stubRoster([_player('p1', 'Ada'), _player('p2', 'Grace')]),
+    'loads the players',
+    setUp: () => stubPlayers([_player('p1', 'Ada'), _player('p2', 'Grace')]),
     build: () => PlayersCubit(repository, 'c1'),
     act: (cubit) => cubit.load(),
     verify: (cubit) {
@@ -47,8 +47,8 @@ void main() {
   );
 
   blocTest<PlayersCubit, PlayersState>(
-    'loads the roster sorted a to z, regardless of server order',
-    setUp: () => stubRoster([
+    'loads the players sorted a to z, regardless of server order',
+    setUp: () => stubPlayers([
       _player('p1', 'Zoe'),
       _player('p2', 'ada'),
       _player('p3', 'Grace'),
@@ -62,8 +62,8 @@ void main() {
   );
 
   blocTest<PlayersCubit, PlayersState>(
-    'splits the active roster into claimed and unclaimed players',
-    setUp: () => stubRoster([
+    'splits active players into claimed and unclaimed',
+    setUp: () => stubPlayers([
       _player('p1', 'Ada', userId: 'u1'),
       _player('p2', 'Grace'),
     ]),
@@ -89,9 +89,9 @@ void main() {
   );
 
   blocTest<PlayersCubit, PlayersState>(
-    'a silent refresh keeps the current roster when the refetch fails',
+    'a silent refresh keeps the current players when the refetch fails',
     setUp: () {
-      stubRoster([_player('p1', 'Ada')]);
+      stubPlayers([_player('p1', 'Ada')]);
     },
     build: () => PlayersCubit(repository, 'c1'),
     act: (cubit) async {
@@ -110,7 +110,7 @@ void main() {
   blocTest<PlayersCubit, PlayersState>(
     'an added placeholder lands in name order without a refetch',
     setUp: () {
-      stubRoster([_player('p1', 'Ada'), _player('p3', 'Zoe')]);
+      stubPlayers([_player('p1', 'Ada'), _player('p3', 'Zoe')]);
       when(
         () => repository.addPlaceholder(
           competitionId: any(named: 'competitionId'),
@@ -136,7 +136,7 @@ void main() {
   blocTest<PlayersCubit, PlayersState>(
     'a rename replaces the row and re-sorts it',
     setUp: () {
-      stubRoster([_player('p1', 'Ada'), _player('p2', 'Grace')]);
+      stubPlayers([_player('p1', 'Ada'), _player('p2', 'Grace')]);
       when(
         () => repository.rename(playerId: 'p1', displayName: 'Zoe'),
       ).thenAnswer((_) async => _player('p1', 'Zoe'));
@@ -153,9 +153,9 @@ void main() {
   );
 
   blocTest<PlayersCubit, PlayersState>(
-    'removing a player moves them out of the active roster',
+    'removing a player moves them out of the active players',
     setUp: () {
-      stubRoster([_player('p1', 'Ada'), _player('p2', 'Grace')]);
+      stubPlayers([_player('p1', 'Ada'), _player('p2', 'Grace')]);
       when(
         () => repository.setActive(playerId: 'p2', isActive: false),
       ).thenAnswer((_) async => _player('p2', 'Grace', isActive: false));
@@ -172,9 +172,9 @@ void main() {
   );
 
   blocTest<PlayersCubit, PlayersState>(
-    'a refused edit is reported without disturbing the roster',
+    'a refused edit is reported without disturbing the players',
     setUp: () {
-      stubRoster([_player('p1', 'Ada')]);
+      stubPlayers([_player('p1', 'Ada')]);
       when(
         () => repository.rename(
           playerId: any(named: 'playerId'),
