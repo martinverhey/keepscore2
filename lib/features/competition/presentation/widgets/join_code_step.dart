@@ -17,7 +17,7 @@ class JoinCodeStep extends StatefulWidget {
 
 class _JoinCodeStepState extends State<JoinCodeStep> {
   late final TextEditingController _controller = TextEditingController(
-    text: context.read<JoinCompetitionCubit>().state.code,
+    text: (context.read<JoinCompetitionCubit>().state as JoinCode).code,
   );
 
   @override
@@ -29,7 +29,7 @@ class _JoinCodeStepState extends State<JoinCodeStep> {
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<JoinCompetitionCubit>();
-    final state = context.watch<JoinCompetitionCubit>().state;
+    final state = context.watch<JoinCompetitionCubit>().state as JoinCode;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

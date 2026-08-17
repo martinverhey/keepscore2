@@ -29,6 +29,8 @@ const _joined = Player(
   userId: 'user-9',
 );
 
+JoinConfirm _confirm(JoinCompetitionCubit cubit) => cubit.state as JoinConfirm;
+
 void main() {
   late MockCompetitionRepository repository;
 
@@ -53,16 +55,16 @@ void main() {
         'HDH-S39',
         'hd hs 39',
       ]) {
-        final state = JoinCompetitionState(code: input);
+        final state = JoinCode(code: input);
         expect(state.normalizedCode, 'HDHS39', reason: 'for "$input"');
         expect(state.codeIsValid, isTrue, reason: 'for "$input"');
       }
     });
 
     test('rejects the wrong length', () {
-      expect(const JoinCompetitionState(code: 'HDHS3').codeIsValid, isFalse);
-      expect(const JoinCompetitionState(code: 'HDHS391').codeIsValid, isFalse);
-      expect(const JoinCompetitionState(code: '').codeIsValid, isFalse);
+      expect(const JoinCode(code: 'HDHS3').codeIsValid, isFalse);
+      expect(const JoinCode(code: 'HDHS391').codeIsValid, isFalse);
+      expect(const JoinCode(code: '').codeIsValid, isFalse);
     });
   });
 
@@ -75,10 +77,9 @@ void main() {
         await cubit.lookUp();
       },
       verify: (cubit) {
-        expect(cubit.state.step, JoinStep.confirm);
-        expect(cubit.state.preview, _preview);
-        expect(cubit.state.selectedClaimId, isNull);
-        expect(cubit.state.canJoin, isTrue);
+        expect(_confirm(cubit).preview, _preview);
+        expect(_confirm(cubit).selectedClaimId, isNull);
+        expect(_confirm(cubit).canJoin, isTrue);
       },
     );
 
@@ -103,9 +104,9 @@ void main() {
         await cubit.lookUp();
       },
       verify: (cubit) {
-        expect(cubit.state.step, JoinStep.code);
-        expect(cubit.state.failure, isA<ValidationFailure>());
-        expect(cubit.state.busy, isFalse);
+        final state = cubit.state as JoinCode;
+        expect(state.failure, isA<ValidationFailure>());
+        expect(state.busy, isFalse);
       },
     );
 
@@ -125,7 +126,7 @@ void main() {
         cubit.codeChanged('hdhs39');
         await cubit.lookUp();
       },
-      verify: (cubit) => expect(cubit.state.canJoin, isFalse),
+      verify: (cubit) => expect(_confirm(cubit).canJoin, isFalse),
     );
   });
 
@@ -147,7 +148,7 @@ void main() {
             displayName: null,
           ),
         ).called(1);
-        expect(cubit.state.joined, _joined);
+        expect(_confirm(cubit).joined, _joined);
       },
     );
 
@@ -162,7 +163,7 @@ void main() {
         await cubit.join();
       },
       verify: (cubit) {
-        expect(cubit.state.selectedClaimId, isNull);
+        expect(_confirm(cubit).selectedClaimId, isNull);
         verify(
           () => repository.join(
             joinCode: 'hdhs39',
@@ -212,9 +213,8 @@ void main() {
         await cubit.join();
       },
       verify: (cubit) {
-        expect(cubit.state.joined, isNull);
-        expect(cubit.state.failure, isA<ValidationFailure>());
-        expect(cubit.state.step, JoinStep.confirm);
+        expect(_confirm(cubit).joined, isNull);
+        expect(_confirm(cubit).failure, isA<ValidationFailure>());
       },
     );
 
@@ -228,9 +228,8 @@ void main() {
         cubit.back();
       },
       verify: (cubit) {
-        expect(cubit.state.step, JoinStep.code);
-        expect(cubit.state.selectedClaimId, isNull);
-        expect(cubit.state.code, 'hdhs39');
+        expect(cubit.state, isA<JoinCode>());
+        expect((cubit.state as JoinCode).code, 'hdhs39');
       },
     );
   });

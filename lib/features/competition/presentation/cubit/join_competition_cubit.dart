@@ -7,59 +7,76 @@ import 'join_competition_state.dart';
 export 'join_competition_state.dart';
 
 class JoinCompetitionCubit extends Cubit<JoinCompetitionState> {
-  JoinCompetitionCubit(this._repository) : super(const JoinCompetitionState());
+  JoinCompetitionCubit(this._repository) : super(const JoinCode());
 
   final CompetitionRepository _repository;
 
-  void codeChanged(String value) =>
-      emit(state.copyWith(code: value, clearFailure: true));
+  JoinCode? get _code => switch (state) {
+    JoinCode code => code,
+    _ => null,
+  };
+
+  JoinConfirm? get _confirm => switch (state) {
+    JoinConfirm confirm => confirm,
+    _ => null,
+  };
+
+  void codeChanged(String value) {
+    final code = _code;
+    if (code == null) return;
+    emit(code.copyWith(code: value, clearFailure: true));
+  }
 
   void claimSelected(String? playerId) {
-    if (playerId == null || playerId == state.selectedClaimId) {
-      emit(state.copyWith(clearClaim: true, clearFailure: true));
+    final confirm = _confirm;
+    if (confirm == null) return;
+    if (playerId == null || playerId == confirm.selectedClaimId) {
+      emit(confirm.copyWith(clearClaim: true, clearFailure: true));
     } else {
-      emit(state.copyWith(selectedClaimId: playerId, clearFailure: true));
+      emit(confirm.copyWith(selectedClaimId: playerId, clearFailure: true));
     }
   }
 
-  void back() => emit(
-    state.copyWith(step: JoinStep.code, clearClaim: true, clearFailure: true),
-  );
+  void back() {
+    final confirm = _confirm;
+    if (confirm == null) return;
+    emit(JoinCode(code: confirm.code));
+  }
 
   Future<void> lookUp() async {
-    if (!state.canLookUp) return;
-    emit(state.copyWith(busy: true, clearFailure: true));
+    final code = _code;
+    if (code == null || !code.canLookUp) return;
+    emit(code.copyWith(busy: true, clearFailure: true));
     try {
-      final preview = await _repository.preview(state.code);
+      final preview = await _repository.preview(code.code);
       if (isClosed) return;
-      emit(
-        state.copyWith(
-          busy: false,
-          preview: preview,
-          step: JoinStep.confirm,
-          clearClaim: true,
-        ),
-      );
+      emit(JoinConfirm(code: code.code, preview: preview));
     } on Failure catch (failure) {
       if (isClosed) return;
-      emit(state.copyWith(busy: false, failure: failure));
+      final latest = _code;
+      if (latest != null) emit(latest.copyWith(busy: false, failure: failure));
     }
   }
 
   Future<void> join({String? displayName}) async {
-    if (!state.canJoin) return;
-    emit(state.copyWith(busy: true, clearFailure: true));
+    final confirm = _confirm;
+    if (confirm == null || !confirm.canJoin) return;
+    emit(confirm.copyWith(busy: true, clearFailure: true));
     try {
       final player = await _repository.join(
-        joinCode: state.code,
-        claimPlayerId: state.selectedClaimId,
+        joinCode: confirm.code,
+        claimPlayerId: confirm.selectedClaimId,
         displayName: displayName,
       );
       if (isClosed) return;
-      emit(state.copyWith(busy: false, joined: player));
+      final latest = _confirm;
+      if (latest != null) emit(latest.copyWith(busy: false, joined: player));
     } on Failure catch (failure) {
       if (isClosed) return;
-      emit(state.copyWith(busy: false, failure: failure));
+      final latest = _confirm;
+      if (latest != null) {
+        emit(latest.copyWith(busy: false, failure: failure));
+      }
     }
   }
 }

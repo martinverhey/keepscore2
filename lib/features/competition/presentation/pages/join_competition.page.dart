@@ -19,9 +19,10 @@ class JoinCompetitionPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<JoinCompetitionCubit, JoinCompetitionState>(
-      listenWhen: (previous, current) => current.joined != null,
+      listenWhen: (previous, current) =>
+          current is JoinConfirm && current.joined != null,
       listener: (context, state) {
-        final competitionId = state.preview!.competitionId;
+        final competitionId = (state as JoinConfirm).preview.competitionId;
         context.pop();
         context.push('/competition/$competitionId');
       },
@@ -31,7 +32,7 @@ class JoinCompetitionPage extends StatelessWidget {
 
         return AdaptiveScaffold(
           hasScrollBody: true,
-          leading: state.step == JoinStep.code
+          leading: state is JoinCode
               ? null
               : AdaptiveButton(
                   label: context.l10n.commonBack,
@@ -41,9 +42,9 @@ class JoinCompetitionPage extends StatelessWidget {
                 ),
           body: Padding(
             padding: const EdgeInsets.all(AppSpacing.lg),
-            child: switch (state.step) {
-              JoinStep.code => const JoinCodeStep(),
-              JoinStep.confirm => _confirmStep(context),
+            child: switch (state) {
+              JoinCode() => const JoinCodeStep(),
+              JoinConfirm() => _confirmStep(context),
             },
           ),
         );
@@ -53,8 +54,8 @@ class JoinCompetitionPage extends StatelessWidget {
 
   Widget _confirmStep(BuildContext context) {
     final cubit = context.read<JoinCompetitionCubit>();
-    final state = context.watch<JoinCompetitionCubit>().state;
-    final preview = state.preview!;
+    final state = context.watch<JoinCompetitionCubit>().state as JoinConfirm;
+    final preview = state.preview;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -101,7 +102,7 @@ class JoinCompetitionPage extends StatelessWidget {
   List<Widget> _joinFormContent(
     BuildContext context,
     JoinCompetitionCubit cubit,
-    JoinCompetitionState state,
+    JoinConfirm state,
     JoinPreview preview,
   ) {
     return [
@@ -120,7 +121,7 @@ class JoinCompetitionPage extends StatelessWidget {
   List<Widget> _claimListContent(
     BuildContext context,
     JoinCompetitionCubit cubit,
-    JoinCompetitionState state,
+    JoinConfirm state,
     JoinPreview preview,
   ) {
     return [
@@ -153,7 +154,7 @@ class JoinCompetitionPage extends StatelessWidget {
     ];
   }
 
-  Widget _failureText(BuildContext context, JoinCompetitionState state) {
+  Widget _failureText(BuildContext context, JoinConfirm state) {
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.md),
       child: Text(
@@ -166,7 +167,7 @@ class JoinCompetitionPage extends StatelessWidget {
   Future<void> _join(
     BuildContext context,
     JoinCompetitionCubit cubit,
-    JoinCompetitionState state,
+    JoinConfirm state,
   ) async {
     if (state.selectedClaimId != null) {
       await cubit.join();

@@ -5,25 +5,15 @@ import '../../../../core/extensions/string_join_code.dart';
 import '../../../player/domain/player.model.dart';
 import '../../domain/join_preview.model.dart';
 
-enum JoinStep { code, confirm }
+sealed class JoinCompetitionState extends Equatable {
+  const JoinCompetitionState();
+}
 
-class JoinCompetitionState extends Equatable {
-  const JoinCompetitionState({
-    this.step = JoinStep.code,
-    this.code = '',
-    this.busy = false,
-    this.preview,
-    this.selectedClaimId,
-    this.joined,
-    this.failure,
-  });
+class JoinCode extends JoinCompetitionState {
+  const JoinCode({this.code = '', this.busy = false, this.failure});
 
-  final JoinStep step;
   final String code;
   final bool busy;
-  final JoinPreview? preview;
-  final String? selectedClaimId;
-  final Player? joined;
   final Failure? failure;
 
   String get normalizedCode => code.normalizedJoinCode;
@@ -32,28 +22,57 @@ class JoinCompetitionState extends Equatable {
 
   bool get canLookUp => codeIsValid && !busy;
 
-  bool get canJoin =>
-      preview != null && !busy && !(preview?.alreadyMember ?? false);
-
-  JoinCompetitionState copyWith({
-    JoinStep? step,
+  JoinCode copyWith({
     String? code,
     bool? busy,
-    JoinPreview? preview,
+    Failure? failure,
+    bool clearFailure = false,
+  }) {
+    return JoinCode(
+      code: code ?? this.code,
+      busy: busy ?? this.busy,
+      failure: clearFailure ? null : (failure ?? this.failure),
+    );
+  }
+
+  @override
+  List<Object?> get props => [code, busy, failure];
+}
+
+class JoinConfirm extends JoinCompetitionState {
+  const JoinConfirm({
+    required this.code,
+    required this.preview,
+    this.selectedClaimId,
+    this.busy = false,
+    this.joined,
+    this.failure,
+  });
+
+  final String code;
+  final JoinPreview preview;
+  final String? selectedClaimId;
+  final bool busy;
+  final Player? joined;
+  final Failure? failure;
+
+  bool get canJoin => !busy && !preview.alreadyMember;
+
+  JoinConfirm copyWith({
     String? selectedClaimId,
     bool clearClaim = false,
+    bool? busy,
     Player? joined,
     Failure? failure,
     bool clearFailure = false,
   }) {
-    return JoinCompetitionState(
-      step: step ?? this.step,
-      code: code ?? this.code,
-      busy: busy ?? this.busy,
-      preview: preview ?? this.preview,
+    return JoinConfirm(
+      code: code,
+      preview: preview,
       selectedClaimId: clearClaim
           ? null
           : (selectedClaimId ?? this.selectedClaimId),
+      busy: busy ?? this.busy,
       joined: joined ?? this.joined,
       failure: clearFailure ? null : (failure ?? this.failure),
     );
@@ -61,11 +80,10 @@ class JoinCompetitionState extends Equatable {
 
   @override
   List<Object?> get props => [
-    step,
     code,
-    busy,
     preview,
     selectedClaimId,
+    busy,
     joined,
     failure,
   ];
