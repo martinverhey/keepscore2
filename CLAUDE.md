@@ -97,6 +97,18 @@ lib/
   l10n/         app_en.arb, app_nl.arb (+ generated app_localizations*.dart)
 ```
 
+`features/settings/` is the one deliberate exception to "a feature owns the
+domain it presents": alongside its own theme-preference domain, it also holds
+the presentation for the competition-admin menu — `CompetitionMenuPage`,
+`CompetitionSettingsPage`/`CompetitionSettingsCubit`, `HistoryPage`/
+`HistoryCubit` — even though those read `CompetitionRepository`/
+`LeaderboardRepository`, which stay put in `competition`/`leaderboard`. They
+moved here because they're conceptually "settings" screens, not because they
+own any data. Player management stayed in `features/player/` despite being
+reachable from the same menu: `PlayersCubit` is also read directly by
+`CompetitionDetailPage` for roster data, not just by the management screen,
+so it's a real cross-feature dependency rather than a settings-only concern.
+
 ## Coding conventions — read this before writing `lib/**`
 
 These are the conventions the codebase already follows. Match them in new

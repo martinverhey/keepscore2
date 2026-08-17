@@ -9,9 +9,7 @@ import '../../features/competition/data/supabase_competition_repository.dart';
 import '../../features/competition/domain/competition_repository.dart';
 import '../../features/competition/presentation/cubit/competition_detail_cubit.dart';
 import '../../features/competition/presentation/cubit/competition_list_cubit.dart';
-import '../../features/competition/presentation/cubit/competition_settings_cubit.dart';
 import '../../features/competition/presentation/cubit/create_competition_cubit.dart';
-import '../../features/competition/presentation/cubit/history_cubit.dart';
 import '../../features/competition/presentation/cubit/join_competition_cubit.dart';
 import '../../features/leaderboard/data/supabase_leaderboard_repository.dart';
 import '../../features/leaderboard/domain/leaderboard_repository.dart';
@@ -30,6 +28,8 @@ import '../../features/profile/domain/profile_repository.dart';
 import '../../features/profile/presentation/cubit/profile_history_cubit.dart';
 import '../../features/profile/presentation/cubit/profile_overview_cubit.dart';
 import '../../features/profile/presentation/cubit/profile_versus_cubit.dart';
+import '../../features/settings/presentation/cubit/competition_settings_cubit.dart';
+import '../../features/settings/presentation/cubit/history_cubit.dart';
 import '../../features/settings/presentation/cubit/theme_cubit.dart';
 
 final getIt = GetIt.instance;

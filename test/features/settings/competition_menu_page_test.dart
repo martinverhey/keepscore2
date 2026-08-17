@@ -7,7 +7,7 @@ import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_detail_cubit.dart';
-import 'package:keepscore2/features/competition/presentation/pages/competition_menu.page.dart';
+import 'package:keepscore2/features/settings/presentation/pages/competition_menu.page.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
 

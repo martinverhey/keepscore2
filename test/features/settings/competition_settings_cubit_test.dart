@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/error/failure.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
-import 'package:keepscore2/features/competition/presentation/cubit/competition_settings_cubit.dart';
+import 'package:keepscore2/features/settings/presentation/cubit/competition_settings_cubit.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockCompetitionRepository extends Mock implements CompetitionRepository {}

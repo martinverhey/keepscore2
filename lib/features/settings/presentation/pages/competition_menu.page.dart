@@ -13,10 +13,10 @@ import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/section_label.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
-import '../../domain/competition.model.dart';
-import '../cubit/competition_detail_cubit.dart';
-import '../widgets/join_code_card.dart';
-import '../widgets/join_qr_card.dart';
+import '../../../competition/domain/competition.model.dart';
+import '../../../competition/presentation/cubit/competition_detail_cubit.dart';
+import '../../../competition/presentation/widgets/join_code_card.dart';
+import '../../../competition/presentation/widgets/join_qr_card.dart';
 
 class CompetitionMenuPage extends StatefulWidget {
   const CompetitionMenuPage({super.key, required this.competitionId});

@@ -14,13 +14,13 @@ import '../../../../core/widgets/section_label.dart';
 import '../../../../core/widgets/settings_switch_row.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
-import '../../domain/competition.model.dart';
-import '../cubit/competition_detail_cubit.dart';
+import '../../../competition/domain/competition.model.dart';
+import '../../../competition/presentation/cubit/competition_detail_cubit.dart';
+import '../../../competition/presentation/widgets/competition_section.enum.dart';
+import '../../../competition/presentation/widgets/open_home.dart';
+import '../../../competition/presentation/widgets/select_competition_section.dart';
+import '../../../competition/presentation/widgets/sidebar.dart';
 import '../cubit/competition_settings_cubit.dart';
-import '../widgets/competition_section.enum.dart';
-import '../widgets/open_home.dart';
-import '../widgets/select_competition_section.dart';
-import '../widgets/sidebar.dart';
 
 class CompetitionSettingsPage extends StatefulWidget {
   const CompetitionSettingsPage({super.key});

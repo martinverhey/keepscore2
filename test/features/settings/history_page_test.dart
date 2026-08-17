@@ -8,14 +8,14 @@ import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_detail_cubit.dart';
-import 'package:keepscore2/features/competition/presentation/cubit/history_cubit.dart';
-import 'package:keepscore2/features/competition/presentation/pages/history.page.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
 import 'package:keepscore2/features/leaderboard/domain/medal.enum.dart';
 import 'package:keepscore2/features/leaderboard/domain/season.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/season_leaderboard.model.dart';
 import 'package:keepscore2/features/leaderboard/presentation/widgets/leaderboard_row.dart';
 import 'package:keepscore2/features/leaderboard/presentation/widgets/season_dropdown.dart';
+import 'package:keepscore2/features/settings/presentation/cubit/history_cubit.dart';
+import 'package:keepscore2/features/settings/presentation/pages/history.page.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
 

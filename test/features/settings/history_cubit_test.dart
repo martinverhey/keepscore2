@@ -1,11 +1,11 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/error/failure.dart';
-import 'package:keepscore2/features/competition/presentation/cubit/history_cubit.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
 import 'package:keepscore2/features/leaderboard/domain/season.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/season_leaderboard.model.dart';
 import 'package:keepscore2/features/match/domain/game_type.enum.dart';
+import 'package:keepscore2/features/settings/presentation/cubit/history_cubit.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockLeaderboardRepository extends Mock implements LeaderboardRepository {}

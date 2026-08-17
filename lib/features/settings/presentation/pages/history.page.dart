@@ -12,17 +12,17 @@ import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
+import '../../../competition/domain/competition.model.dart';
+import '../../../competition/presentation/cubit/competition_detail_cubit.dart';
+import '../../../competition/presentation/widgets/competition_section.enum.dart';
+import '../../../competition/presentation/widgets/open_home.dart';
+import '../../../competition/presentation/widgets/select_competition_section.dart';
+import '../../../competition/presentation/widgets/sidebar.dart';
 import '../../../leaderboard/domain/leaderboard.model.dart';
 import '../../../leaderboard/presentation/widgets/game_type_filter_dropdown.dart';
 import '../../../leaderboard/presentation/widgets/leaderboard_row.dart';
 import '../../../leaderboard/presentation/widgets/season_dropdown.dart';
-import '../../domain/competition.model.dart';
-import '../cubit/competition_detail_cubit.dart';
 import '../cubit/history_cubit.dart';
-import '../widgets/competition_section.enum.dart';
-import '../widgets/open_home.dart';
-import '../widgets/select_competition_section.dart';
-import '../widgets/sidebar.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});

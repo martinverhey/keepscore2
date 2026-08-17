@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/failure.dart';
-import '../../domain/competition.model.dart';
+import '../../../competition/domain/competition.model.dart';
 
 sealed class CompetitionSettingsState extends Equatable {
   const CompetitionSettingsState();
