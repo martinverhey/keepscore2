@@ -49,18 +49,21 @@ class _CompetitionMenuPageState extends State<CompetitionMenuPage> {
     CompetitionDetailState state,
     AuthSessionState session,
   ) {
-    final competition = state.competition;
-    return switch (state.status) {
-      CompetitionDetailStatus.loading => const AdaptiveLoader(),
-      CompetitionDetailStatus.missing => EmptyState(
+    return switch (state) {
+      CompetitionDetailLoading() => const AdaptiveLoader(),
+      CompetitionDetailMissing() => EmptyState(
         message: context.l10n.competitionNotFound,
       ),
-      CompetitionDetailStatus.failed when competition == null => ErrorRetry(
-        message: state.failure!.localized(context.l10n),
+      CompetitionDetailFailed(:final failure) => ErrorRetry(
+        message: failure.localized(context.l10n),
         retryLabel: context.l10n.commonRetry,
         onRetry: context.read<CompetitionDetailCubit>().load,
       ),
-      _ => _menu(context, competition!, session),
+      CompetitionDetailReady(:final competition) => _menu(
+        context,
+        competition,
+        session,
+      ),
     };
   }
 

@@ -8,33 +8,31 @@ export 'competition_detail_state.dart';
 
 class CompetitionDetailCubit extends Cubit<CompetitionDetailState> {
   CompetitionDetailCubit(this._repository, this.competitionId)
-    : super(const CompetitionDetailState());
+    : super(const CompetitionDetailLoading());
 
   final CompetitionRepository _repository;
   final String competitionId;
 
+  CompetitionDetailReady? get _ready => switch (state) {
+    CompetitionDetailReady ready => ready,
+    _ => null,
+  };
+
   Future<void> load({bool silent = false}) async {
-    if (!silent) emit(const CompetitionDetailState());
+    final ready = _ready;
+    if (!silent) emit(const CompetitionDetailLoading());
     try {
       final overview = await _repository.overview(competitionId);
       if (isClosed) return;
       emit(
-        CompetitionDetailState(
-          status: overview == null
-              ? CompetitionDetailStatus.missing
-              : CompetitionDetailStatus.ready,
-          overview: overview,
-        ),
+        overview == null
+            ? const CompetitionDetailMissing()
+            : CompetitionDetailReady(overview),
       );
     } on Failure catch (failure) {
       if (isClosed) return;
-      emit(
-        CompetitionDetailState(
-          status: CompetitionDetailStatus.failed,
-          overview: silent ? state.overview : null,
-          failure: failure,
-        ),
-      );
+      if (silent && ready != null) return;
+      emit(CompetitionDetailFailed(failure));
     }
   }
 

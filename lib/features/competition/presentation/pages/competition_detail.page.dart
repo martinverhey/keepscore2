@@ -96,7 +96,7 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
 
     return BlocConsumer<CompetitionDetailCubit, CompetitionDetailState>(
       listener: (context, state) {
-        if (state.status == CompetitionDetailStatus.missing) {
+        if (state is CompetitionDetailMissing) {
           RecentCompetitionStore.clear();
           context.go(Routes.home);
         }
@@ -165,19 +165,17 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
             bottomBar: AppPlatform.useWideWeb(context)
                 ? null
                 : _bottomTabBar(context, isRegistered: isRegistered),
-            body: switch (state.status) {
-              CompetitionDetailStatus.loading => const AdaptiveLoader(),
-              CompetitionDetailStatus.missing => EmptyState(
+            body: switch (state) {
+              CompetitionDetailLoading() => const AdaptiveLoader(),
+              CompetitionDetailMissing() => EmptyState(
                 message: context.l10n.competitionNotFound,
               ),
-              CompetitionDetailStatus.failed when competition == null =>
-                ErrorRetry(
-                  message: state.failure!.localized(context.l10n),
-                  retryLabel: context.l10n.commonRetry,
-                  onRetry: context.read<CompetitionDetailCubit>().load,
-                ),
-              _ when competition == null => const SizedBox.shrink(),
-              _ => _body(
+              CompetitionDetailFailed(:final failure) => ErrorRetry(
+                message: failure.localized(context.l10n),
+                retryLabel: context.l10n.commonRetry,
+                onRetry: context.read<CompetitionDetailCubit>().load,
+              ),
+              CompetitionDetailReady(:final competition) => _body(
                 context,
                 competition,
                 isRegistered: isRegistered,

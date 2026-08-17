@@ -41,7 +41,6 @@ void main() {
     build: () => CompetitionDetailCubit(repository, 'c1'),
     act: (cubit) => cubit.load(),
     verify: (cubit) {
-      expect(cubit.state.status, CompetitionDetailStatus.ready);
       expect(cubit.state.competition?.name, 'Office Table Tennis');
       expect(cubit.state.myPlayerId, 'p1');
     },
@@ -54,10 +53,7 @@ void main() {
         when(() => repository.overview('c1')).thenAnswer((_) async => null),
     build: () => CompetitionDetailCubit(repository, 'c1'),
     act: (cubit) => cubit.load(),
-    verify: (cubit) {
-      expect(cubit.state.status, CompetitionDetailStatus.missing);
-      expect(cubit.state.failure, isNull);
-    },
+    verify: (cubit) => expect(cubit.state, isA<CompetitionDetailMissing>()),
   );
 
   blocTest<CompetitionDetailCubit, CompetitionDetailState>(
@@ -72,7 +68,7 @@ void main() {
       await cubit.refresh();
     },
     verify: (cubit) {
-      expect(cubit.state.status, CompetitionDetailStatus.failed);
+      expect(cubit.state, isA<CompetitionDetailReady>());
       expect(cubit.state.competition, isNotNull);
     },
   );
