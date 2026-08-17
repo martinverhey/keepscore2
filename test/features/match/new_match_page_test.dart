@@ -6,7 +6,7 @@ import 'package:keepscore2/features/auth/domain/auth_user.model.dart';
 import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
-import 'package:keepscore2/features/competition/presentation/cubit/competition_detail_cubit.dart';
+import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
 import 'package:keepscore2/features/leaderboard/domain/season_window.model.dart';
 import 'package:keepscore2/features/match/domain/match_repository.dart';
@@ -94,7 +94,7 @@ void main() {
         'c1',
       );
       final authBloc = AuthBloc(auth);
-      final competitionDetailCubit = CompetitionDetailCubit(competitions, 'c1')
+      final competitionDetailCubit = CompetitionCubit(competitions, 'c1')
         ..load();
       addTearDown(cubit.close);
       addTearDown(authBloc.close);

@@ -13,7 +13,7 @@ import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
-import '../../../competition/presentation/cubit/competition_detail_cubit.dart';
+import '../../../competition/presentation/cubit/competition_cubit.dart';
 import '../../../competition/presentation/widgets/competition_section.enum.dart';
 import '../../../competition/presentation/widgets/open_home.dart';
 import '../../../competition/presentation/widgets/select_competition_section.dart';
@@ -73,10 +73,7 @@ class _NewMatchPageState extends State<NewMatchPage> {
   Widget build(BuildContext context) {
     final cubit = context.read<MatchFormCubit>();
     final session = context.watch<AuthBloc>().state;
-    final competition = context
-        .watch<CompetitionDetailCubit>()
-        .state
-        .competition;
+    final competition = context.watch<CompetitionCubit>().state.competition;
     final isOwner =
         session.canWrite &&
         session.user?.id != null &&

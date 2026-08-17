@@ -15,7 +15,7 @@ import '../../../../core/widgets/settings_switch_row.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../competition/domain/competition.model.dart';
-import '../../../competition/presentation/cubit/competition_detail_cubit.dart';
+import '../../../competition/presentation/cubit/competition_cubit.dart';
 import '../../../competition/presentation/widgets/competition_section.enum.dart';
 import '../../../competition/presentation/widgets/open_home.dart';
 import '../../../competition/presentation/widgets/select_competition_section.dart';
@@ -84,7 +84,7 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
     final cubit = context.read<ConfigurationCubit>();
     final session = context.watch<AuthBloc>().state;
     final competitionDetail = context
-        .watch<CompetitionDetailCubit>()
+        .watch<CompetitionCubit>()
         .state
         .competition;
     setPageTitle(context, context.l10n.configurationTitle);

@@ -8,8 +8,8 @@ import 'package:keepscore2/features/auth/domain/auth_user.model.dart';
 import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
-import 'package:keepscore2/features/competition/presentation/cubit/competition_detail_cubit.dart';
-import 'package:keepscore2/features/competition/presentation/pages/competition_detail.page.dart';
+import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
+import 'package:keepscore2/features/competition/presentation/pages/competition_content.page.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
 import 'package:keepscore2/features/leaderboard/domain/season_window.model.dart';
 import 'package:keepscore2/features/leaderboard/presentation/cubit/leaderboard_cubit.dart';
@@ -126,8 +126,7 @@ void main() {
               return MultiBlocProvider(
                 providers: [
                   BlocProvider(
-                    create: (_) =>
-                        CompetitionDetailCubit(competitions, id)..load(),
+                    create: (_) => CompetitionCubit(competitions, id)..load(),
                   ),
                   BlocProvider(create: (_) => PlayersCubit(players, id)),
                   BlocProvider(
@@ -139,7 +138,7 @@ void main() {
                         LeaderboardCubit(leaderboard, gameTypeFilterCubit, id),
                   ),
                 ],
-                child: CompetitionDetailPage(competitionId: id),
+                child: CompetitionContent(competitionId: id),
               );
             },
           ),
@@ -162,7 +161,7 @@ void main() {
       await tester.pumpAndSettle();
 
       final l10n = AppLocalizations.of(
-        tester.element(find.byType(CompetitionDetailPage)),
+        tester.element(find.byType(CompetitionContent)),
       );
       expect(find.text(l10n.competitionSettings), findsNothing);
 

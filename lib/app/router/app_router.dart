@@ -10,11 +10,11 @@ import '../../features/auth/presentation/cubit/sign_in_cubit.dart';
 import '../../features/auth/presentation/pages/sign_in.page.dart';
 import '../../features/auth/presentation/pages/upgrade_account.page.dart';
 import '../../features/competition/domain/competition_repository.dart';
-import '../../features/competition/presentation/cubit/competition_detail_cubit.dart';
+import '../../features/competition/presentation/cubit/competition_cubit.dart';
 import '../../features/competition/presentation/cubit/competition_list_cubit.dart';
 import '../../features/competition/presentation/cubit/create_competition_cubit.dart';
 import '../../features/competition/presentation/cubit/join_competition_cubit.dart';
-import '../../features/competition/presentation/pages/competition_detail.page.dart';
+import '../../features/competition/presentation/pages/competition_content.page.dart';
 import '../../features/competition/presentation/pages/competitions.page.dart';
 import '../../features/competition/presentation/pages/create_competition.page.dart';
 import '../../features/competition/presentation/pages/join_competition.page.dart';
@@ -178,7 +178,7 @@ GoRouter createRouter(AuthBloc authBloc) {
           return KeyedSubtree(
             key: ValueKey(id),
             child: BlocProvider(
-              create: (_) => getIt<CompetitionDetailCubit>(param1: id)..load(),
+              create: (_) => getIt<CompetitionCubit>(param1: id)..load(),
               child: child,
             ),
           );
@@ -202,7 +202,7 @@ GoRouter createRouter(AuthBloc authBloc) {
                       create: (_) => getIt<LeaderboardCubit>(param1: id),
                     ),
                   ],
-                  child: CompetitionDetailPage(competitionId: id),
+                  child: CompetitionContent(competitionId: id),
                 ),
               );
             },

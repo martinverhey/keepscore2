@@ -3,30 +3,30 @@ import 'package:equatable/equatable.dart';
 import '../../../../core/error/failure.dart';
 import '../../domain/competition.model.dart';
 
-sealed class CompetitionDetailState extends Equatable {
-  const CompetitionDetailState();
+sealed class CompetitionState extends Equatable {
+  const CompetitionState();
 
   Competition? get competition => null;
 
   String? get myPlayerId => null;
 }
 
-class CompetitionDetailLoading extends CompetitionDetailState {
-  const CompetitionDetailLoading();
+class CompetitionLoading extends CompetitionState {
+  const CompetitionLoading();
 
   @override
   List<Object?> get props => [];
 }
 
-class CompetitionDetailMissing extends CompetitionDetailState {
-  const CompetitionDetailMissing();
+class CompetitionMissing extends CompetitionState {
+  const CompetitionMissing();
 
   @override
   List<Object?> get props => [];
 }
 
-class CompetitionDetailFailed extends CompetitionDetailState {
-  const CompetitionDetailFailed(this.failure);
+class CompetitionFailed extends CompetitionState {
+  const CompetitionFailed(this.failure);
 
   final Failure failure;
 
@@ -34,8 +34,8 @@ class CompetitionDetailFailed extends CompetitionDetailState {
   List<Object?> get props => [failure];
 }
 
-class CompetitionDetailReady extends CompetitionDetailState {
-  const CompetitionDetailReady(this.overview);
+class CompetitionReady extends CompetitionState {
+  const CompetitionReady(this.overview);
 
   final CompetitionOverview overview;
 

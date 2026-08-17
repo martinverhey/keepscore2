@@ -14,7 +14,7 @@ import '../../../../core/widgets/section_label.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../competition/domain/competition.model.dart';
-import '../../../competition/presentation/cubit/competition_detail_cubit.dart';
+import '../../../competition/presentation/cubit/competition_cubit.dart';
 import '../../../competition/presentation/widgets/join_code_card.dart';
 import '../../../competition/presentation/widgets/join_qr_card.dart';
 
@@ -33,7 +33,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     final session = context.watch<AuthBloc>().state;
 
-    return BlocBuilder<CompetitionDetailCubit, CompetitionDetailState>(
+    return BlocBuilder<CompetitionCubit, CompetitionState>(
       builder: (context, state) {
         setPageTitle(context, context.l10n.competitionSettings);
         return AdaptiveScaffold(
@@ -46,20 +46,20 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Widget _body(
     BuildContext context,
-    CompetitionDetailState state,
+    CompetitionState state,
     AuthSessionState session,
   ) {
     return switch (state) {
-      CompetitionDetailLoading() => const AdaptiveLoader(),
-      CompetitionDetailMissing() => EmptyState(
+      CompetitionLoading() => const AdaptiveLoader(),
+      CompetitionMissing() => EmptyState(
         message: context.l10n.competitionNotFound,
       ),
-      CompetitionDetailFailed(:final failure) => ErrorRetry(
+      CompetitionFailed(:final failure) => ErrorRetry(
         message: failure.localized(context.l10n),
         retryLabel: context.l10n.commonRetry,
-        onRetry: context.read<CompetitionDetailCubit>().load,
+        onRetry: context.read<CompetitionCubit>().load,
       ),
-      CompetitionDetailReady(:final competition) => _settings(
+      CompetitionReady(:final competition) => _settings(
         context,
         competition,
         session,

@@ -13,7 +13,7 @@ import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../competition/domain/competition.model.dart';
-import '../../../competition/presentation/cubit/competition_detail_cubit.dart';
+import '../../../competition/presentation/cubit/competition_cubit.dart';
 import '../../../competition/presentation/widgets/competition_section.enum.dart';
 import '../../../competition/presentation/widgets/open_home.dart';
 import '../../../competition/presentation/widgets/select_competition_section.dart';
@@ -48,11 +48,8 @@ class _HistoryPageState extends State<HistoryPage> {
   @override
   Widget build(BuildContext context) {
     final session = context.watch<AuthBloc>().state;
-    final competition = context
-        .watch<CompetitionDetailCubit>()
-        .state
-        .competition;
-    final myPlayerId = context.watch<CompetitionDetailCubit>().state.myPlayerId;
+    final competition = context.watch<CompetitionCubit>().state.competition;
+    final myPlayerId = context.watch<CompetitionCubit>().state.myPlayerId;
     final seasonLength = competition?.seasonLength;
     final isOwner =
         session.canWrite &&

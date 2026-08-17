@@ -12,7 +12,6 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/state_views.dart';
-import '../../../../core/widgets/tag.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../leaderboard/domain/leaderboard.model.dart';
 import '../../../leaderboard/domain/medals.model.dart';
@@ -23,25 +22,23 @@ import '../../../match/presentation/cubit/game_type_filter_cubit.dart';
 import '../../../match/presentation/cubit/match_list_cubit.dart';
 import '../../../match/presentation/widgets/matches.page.dart';
 import '../../../player/presentation/cubit/players_cubit.dart';
-import '../../../profile/presentation/widgets/profile_section.dart';
 import '../../domain/competition.model.dart';
-import '../cubit/competition_detail_cubit.dart';
+import '../cubit/competition_cubit.dart';
 import '../widgets/competition_section.enum.dart';
 import '../widgets/open_home.dart';
 import '../widgets/sidebar.dart';
-import '../widgets/invite_sheet.dart';
 
 enum CompetitionTab { leaderboard, matches }
 
-class CompetitionDetailPage extends StatefulWidget {
-  const CompetitionDetailPage({super.key, required this.competitionId});
+class CompetitionContent extends StatefulWidget {
+  const CompetitionContent({super.key, required this.competitionId});
   final String competitionId;
 
   @override
-  State<CompetitionDetailPage> createState() => _CompetitionDetailPageState();
+  State<CompetitionContent> createState() => _CompetitionContentState();
 }
 
-class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
+class _CompetitionContentState extends State<CompetitionContent> {
   CompetitionTab _tab = CompetitionTab.leaderboard;
 
   @override
@@ -54,7 +51,7 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
   }
 
   Future<void> _refresh() => Future.wait([
-    context.read<CompetitionDetailCubit>().refresh(),
+    context.read<CompetitionCubit>().refresh(),
     context.read<PlayersCubit>().refresh(),
     context.read<MatchListCubit>().refresh(),
     context.read<LeaderboardCubit>().refresh(),
@@ -76,7 +73,7 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
   }
 
   Future<void> _reload() => Future.wait([
-    context.read<CompetitionDetailCubit>().refresh(),
+    context.read<CompetitionCubit>().refresh(),
     context.read<PlayersCubit>().refresh(),
     context.read<MatchListCubit>().refresh(),
     context.read<LeaderboardCubit>().refresh(),
@@ -94,9 +91,9 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
         ? leaderboardState.leaderboards
         : const [];
 
-    return BlocConsumer<CompetitionDetailCubit, CompetitionDetailState>(
+    return BlocConsumer<CompetitionCubit, CompetitionState>(
       listener: (context, state) {
-        if (state is CompetitionDetailMissing) {
+        if (state is CompetitionMissing) {
           RecentCompetitionStore.clear();
           context.go(Routes.home);
         }
@@ -166,16 +163,16 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
                 ? null
                 : _bottomTabBar(context, isRegistered: isRegistered),
             body: switch (state) {
-              CompetitionDetailLoading() => const AdaptiveLoader(),
-              CompetitionDetailMissing() => EmptyState(
+              CompetitionLoading() => const AdaptiveLoader(),
+              CompetitionMissing() => EmptyState(
                 message: context.l10n.competitionNotFound,
               ),
-              CompetitionDetailFailed(:final failure) => ErrorRetry(
+              CompetitionFailed(:final failure) => ErrorRetry(
                 message: failure.localized(context.l10n),
                 retryLabel: context.l10n.commonRetry,
-                onRetry: context.read<CompetitionDetailCubit>().load,
+                onRetry: context.read<CompetitionCubit>().load,
               ),
-              CompetitionDetailReady(:final competition) => _body(
+              CompetitionReady(:final competition) => _body(
                 context,
                 competition,
                 isRegistered: isRegistered,
@@ -209,7 +206,7 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
       case CompetitionSection.competitions:
         {
           final competition = context
-              .read<CompetitionDetailCubit>()
+              .read<CompetitionCubit>()
               .state
               .competition;
           final session = context.read<AuthBloc>().state;
@@ -307,15 +304,17 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
               AppSpacing.xl,
             ),
             child: switch (_tab) {
-              CompetitionTab.leaderboard => _leaderboardTab(
-                context,
-                competition,
+              CompetitionTab.leaderboard => LeaderboardPage(
+                competitionId: widget.competitionId,
+                competition: competition,
                 isOwner: isOwner,
                 myPlayerId: myPlayerId,
                 myDisplayName: myDisplayName,
                 myLeaderboard: myLeaderboard,
                 myMedals: myMedals,
                 playerCount: playerCount,
+                onManagePlayers: () =>
+                    _openAndReload(Routes.players(widget.competitionId)),
               ),
               CompetitionTab.matches => MatchesPage(
                 isRegistered: isRegistered,
@@ -330,95 +329,6 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _leaderboardTab(
-    BuildContext context,
-    Competition competition, {
-    required bool isOwner,
-    required String? myPlayerId,
-    required String? myDisplayName,
-    required Leaderboard? myLeaderboard,
-    required Medals? myMedals,
-    required int playerCount,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _competitionHeader(context, competition),
-        const SizedBox(height: AppSpacing.sm),
-        if (myPlayerId != null && myDisplayName != null)
-          ProfileSection(
-            competitionId: widget.competitionId,
-            playerId: myPlayerId,
-            displayName: myDisplayName,
-            seasonLength: competition.seasonLength,
-            leaderboard: myLeaderboard,
-            medals: myMedals,
-            playerCount: playerCount,
-          ),
-        const SizedBox(height: AppSpacing.lg),
-        LeaderboardPage(
-          competitionId: widget.competitionId,
-          seasonLength: competition.seasonLength,
-          myPlayerId: myPlayerId,
-          isOwner: isOwner,
-          onManagePlayers: () =>
-              _openAndReload(Routes.players(widget.competitionId)),
-        ),
-      ],
-    );
-  }
-
-  Widget _competitionHeader(BuildContext context, Competition competition) {
-    return Row(
-      children: [
-        _competitionButton(context, competition),
-        const SizedBox(width: AppSpacing.sm),
-        _inviteButton(context, competition.joinCode),
-        const SizedBox(width: AppSpacing.xs),
-        Tag(
-          competition.joinCode,
-          color: AdaptiveColors.accent(context),
-          style: TagStyle.code,
-        ),
-      ],
-    );
-  }
-
-  Widget _competitionButton(BuildContext context, Competition competition) {
-    return Expanded(
-      child: AdaptiveTappable(
-        onTap: () => context.push(Routes.home),
-        child: Row(
-          children: [
-            Flexible(
-              child: Text(
-                competition.name,
-                style: AppTypography.bodyLarge.copyWith(
-                  color: AppColors.neutral,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            const SizedBox(width: AppSpacing.xs),
-            const AdaptiveIcon(
-              AdaptiveGlyph.chevronRight,
-              color: AppColors.neutral,
-              size: 16,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _inviteButton(BuildContext context, String joinCode) {
-    return AdaptiveIconButton(
-      glyph: AdaptiveGlyph.invite,
-      semanticLabel: context.l10n.competitionInviteAction,
-      onPressed: () => showInviteSheet(context, code: joinCode),
     );
   }
 }

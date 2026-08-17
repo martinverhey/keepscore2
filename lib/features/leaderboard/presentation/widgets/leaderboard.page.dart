@@ -1,137 +1,119 @@
 import 'package:flutter/widgets.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 
-import '../../../../core/error/failure_messages.dart';
+import '../../../../app/router/app_router.dart';
 import '../../../../core/extensions/build_context.extension.dart';
-import '../../../../core/extensions/game_type.extension.dart';
-import '../../../../core/extensions/season.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
-import '../../../../core/widgets/state_views.dart';
+import '../../../../core/widgets/tag.dart';
 import '../../../competition/domain/competition.model.dart';
-import '../../domain/season.model.dart';
-import '../cubit/leaderboard_cubit.dart';
-import 'leaderboard_row.dart';
+import '../../../competition/presentation/widgets/invite_sheet.dart';
+import '../../../profile/presentation/widgets/profile_section.dart';
+import '../../domain/leaderboard.model.dart';
+import '../../domain/medals.model.dart';
+import 'leaderboard_list.dart';
 
 class LeaderboardPage extends StatelessWidget {
   const LeaderboardPage({
     super.key,
     required this.competitionId,
-    required this.seasonLength,
-    required this.myPlayerId,
+    required this.competition,
     required this.isOwner,
+    required this.myPlayerId,
+    required this.myDisplayName,
+    required this.myLeaderboard,
+    required this.myMedals,
+    required this.playerCount,
     required this.onManagePlayers,
   });
 
   final String competitionId;
-  final SeasonLength seasonLength;
-  final String? myPlayerId;
+  final Competition competition;
   final bool isOwner;
+  final String? myPlayerId;
+  final String? myDisplayName;
+  final Leaderboard? myLeaderboard;
+  final Medals? myMedals;
+  final int playerCount;
   final VoidCallback onManagePlayers;
 
   @override
   Widget build(BuildContext context) {
-    final cubit = context.read<LeaderboardCubit>();
-
-    return BlocBuilder<LeaderboardCubit, LeaderboardState>(
-      builder: (context, state) => _body(context, state, cubit),
-    );
-  }
-
-  Widget _body(
-    BuildContext context,
-    LeaderboardState state,
-    LeaderboardCubit cubit,
-  ) {
-    return switch (state) {
-      LeaderboardLoading() => const Padding(
-        padding: EdgeInsets.all(AppSpacing.xl),
-        child: AdaptiveLoader(),
-      ),
-      LeaderboardFailed(:final failure) => ErrorRetry(
-        message: failure.localized(context.l10n),
-        retryLabel: context.l10n.commonRetry,
-        onRetry: cubit.load,
-      ),
-      LeaderboardReady() => _list(context, state),
-    };
-  }
-
-  Widget _list(BuildContext context, LeaderboardReady state) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _seasonBar(context, state.season),
-        const SizedBox(height: AppSpacing.md),
-        _rows(context, state),
-        if (isOwner) _manageButton(context),
-      ],
-    );
-  }
-
-  Widget _rows(BuildContext context, LeaderboardReady state) {
-    if (state.busy) {
-      return const Padding(
-        padding: EdgeInsets.all(AppSpacing.xl),
-        child: AdaptiveLoader(),
-      );
-    }
-
-    if (state.leaderboards.isEmpty) {
-      return EmptyState(
-        message: state.selectedGameType == null
-            ? context.l10n.leaderboardNoPlayers
-            : context.l10n.leaderboardFilterEmpty(
-                state.selectedGameType!.label(context),
-              ),
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        for (final leaderboard in state.leaderboards)
-          LeaderboardRow(
+        _competitionHeader(context, competition),
+        const SizedBox(height: AppSpacing.sm),
+        if (myPlayerId != null && myDisplayName != null)
+          ProfileSection(
             competitionId: competitionId,
-            leaderboard: leaderboard,
-            isMe: leaderboard.playerId == myPlayerId,
-            myPlayerId: myPlayerId,
-            seasonLength: seasonLength,
-            medals: state.medals[leaderboard.playerId],
+            playerId: myPlayerId!,
+            displayName: myDisplayName!,
+            seasonLength: competition.seasonLength,
+            leaderboard: myLeaderboard,
+            medals: myMedals,
+            playerCount: playerCount,
           ),
+        const SizedBox(height: AppSpacing.lg),
+        LeaderboardList(
+          competitionId: competitionId,
+          seasonLength: competition.seasonLength,
+          myPlayerId: myPlayerId,
+          isOwner: isOwner,
+          onManagePlayers: onManagePlayers,
+        ),
       ],
     );
   }
 
-  Widget _manageButton(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.md),
-      child: AdaptiveButton(
-        label: context.l10n.playersManageTitle,
-        kind: AdaptiveButtonKind.tinted,
-        onPressed: onManagePlayers,
+  Widget _competitionHeader(BuildContext context, Competition competition) {
+    return Row(
+      children: [
+        _competitionButton(context, competition),
+        const SizedBox(width: AppSpacing.sm),
+        _inviteButton(context, competition.joinCode),
+        const SizedBox(width: AppSpacing.xs),
+        Tag(
+          competition.joinCode,
+          color: AdaptiveColors.accent(context),
+          style: TagStyle.code,
+        ),
+      ],
+    );
+  }
+
+  Widget _competitionButton(BuildContext context, Competition competition) {
+    return Expanded(
+      child: AdaptiveTappable(
+        onTap: () => context.push(Routes.home),
+        child: Row(
+          children: [
+            Flexible(
+              child: Text(
+                competition.name,
+                style: AppTypography.bodyLarge.copyWith(
+                  color: AppColors.neutral,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.xs),
+            const AdaptiveIcon(
+              AdaptiveGlyph.chevronRight,
+              color: AppColors.neutral,
+              size: 16,
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _seasonBar(BuildContext context, Season season) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          season.label(context, seasonLength),
-          style: AppTypography.titleSmall,
-        ),
-        const SizedBox(height: 2),
-        Text(
-          context.l10n.leaderboardSeasonEnds(
-            DateFormat.MMMd(context.languageTag).format(season.endsAt),
-          ),
-          style: AppTypography.captionSmall,
-        ),
-      ],
+  Widget _inviteButton(BuildContext context, String joinCode) {
+    return AdaptiveIconButton(
+      glyph: AdaptiveGlyph.invite,
+      semanticLabel: context.l10n.competitionInviteAction,
+      onPressed: () => showInviteSheet(context, code: joinCode),
     );
   }
 }

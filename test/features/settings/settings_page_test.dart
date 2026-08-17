@@ -6,7 +6,7 @@ import 'package:keepscore2/features/auth/domain/auth_user.model.dart';
 import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
-import 'package:keepscore2/features/competition/presentation/cubit/competition_detail_cubit.dart';
+import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
 import 'package:keepscore2/features/settings/presentation/pages/settings.page.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
@@ -50,7 +50,7 @@ void main() {
       when(() => auth.watchUser()).thenAnswer((_) => const Stream.empty());
       when(() => auth.signOut()).thenAnswer((_) async {});
 
-      final competitionDetailCubit = CompetitionDetailCubit(competitions, 'c1')
+      final competitionDetailCubit = CompetitionCubit(competitions, 'c1')
         ..load();
       final authBloc = AuthBloc(auth);
       addTearDown(competitionDetailCubit.close);
@@ -105,7 +105,7 @@ void main() {
       );
       when(() => auth.watchUser()).thenAnswer((_) => const Stream.empty());
 
-      final competitionDetailCubit = CompetitionDetailCubit(competitions, 'c1')
+      final competitionDetailCubit = CompetitionCubit(competitions, 'c1')
         ..load();
       final authBloc = AuthBloc(auth);
       addTearDown(competitionDetailCubit.close);

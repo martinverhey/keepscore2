@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/error/failure.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
-import 'package:keepscore2/features/competition/presentation/cubit/competition_detail_cubit.dart';
+import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockCompetitionRepository extends Mock implements CompetitionRepository {}
@@ -33,12 +33,12 @@ void main() {
 
   setUp(() => repository = MockCompetitionRepository());
 
-  blocTest<CompetitionDetailCubit, CompetitionDetailState>(
+  blocTest<CompetitionCubit, CompetitionState>(
     'loads the competition',
     setUp: () => when(
       () => repository.overview('c1'),
     ).thenAnswer((_) async => _overview()),
-    build: () => CompetitionDetailCubit(repository, 'c1'),
+    build: () => CompetitionCubit(repository, 'c1'),
     act: (cubit) => cubit.load(),
     verify: (cubit) {
       expect(cubit.state.competition?.name, 'Office Table Tennis');
@@ -46,29 +46,29 @@ void main() {
     },
   );
 
-  blocTest<CompetitionDetailCubit, CompetitionDetailState>(
+  blocTest<CompetitionCubit, CompetitionState>(
     'no row is "missing", not a failure — RLS hides a competition the same '
     'way as one that never existed',
     setUp: () =>
         when(() => repository.overview('c1')).thenAnswer((_) async => null),
-    build: () => CompetitionDetailCubit(repository, 'c1'),
+    build: () => CompetitionCubit(repository, 'c1'),
     act: (cubit) => cubit.load(),
-    verify: (cubit) => expect(cubit.state, isA<CompetitionDetailMissing>()),
+    verify: (cubit) => expect(cubit.state, isA<CompetitionMissing>()),
   );
 
-  blocTest<CompetitionDetailCubit, CompetitionDetailState>(
+  blocTest<CompetitionCubit, CompetitionState>(
     'a silent refresh keeps the loaded competition on screen',
     setUp: () => when(
       () => repository.overview('c1'),
     ).thenAnswer((_) async => _overview()),
-    build: () => CompetitionDetailCubit(repository, 'c1'),
+    build: () => CompetitionCubit(repository, 'c1'),
     act: (cubit) async {
       await cubit.load();
       when(() => repository.overview('c1')).thenThrow(const NetworkFailure());
       await cubit.refresh();
     },
     verify: (cubit) {
-      expect(cubit.state, isA<CompetitionDetailReady>());
+      expect(cubit.state, isA<CompetitionReady>());
       expect(cubit.state.competition, isNotNull);
     },
   );

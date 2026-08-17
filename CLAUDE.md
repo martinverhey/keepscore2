@@ -26,8 +26,13 @@ with `SignInMode.upgrade`, which routes the two email steps to
 renders `GuestNotice`, which carries the refusal *and* the way out; the page pops
 itself when `AuthBloc` reports the user is no longer anonymous.
 
-`/competition/:id` is the tab shell (`features/competition/.../competition_detail.page.dart`):
-Leaderboard (default), Matches, Players. The leaderboard tab always shows the
+`/competition/:id` is the tab shell (`features/competition/.../competition_content.page.dart`,
+`CompetitionContent`): Leaderboard (default), Matches, Players. `CompetitionContent` owns the
+sidebar/tab-bar chrome and the two tab-scoped cubits; it doesn't render tab content itself —
+the leaderboard tab is `LeaderboardPage` (`features/leaderboard/presentation/widgets/leaderboard.page.dart`,
+join code + invite + `ProfileSection` + the actual ranked list, which is `LeaderboardList` in
+the same directory's `leaderboard_list.dart`), the matches tab is `MatchesPage`. The leaderboard
+tab always shows the
 current calendar window — which has no row until the first match lands in it —
 and carries a game-type filter (`GameTypeFilterDropdown`, next to the title in
 the scaffold's `trailing`) — combined (default) or one of
@@ -75,7 +80,7 @@ or moved:
 - **Add/manage players, owner settings** — `players.page.dart` →
   `widgets/players.dart`, `isRegistered: session.canWrite`.
 - **Create a match** — the "new match" bottom tab item is omitted entirely for
-  guests in `competition_detail.page.dart`; `matches.page.dart` shows
+  guests in `competition_content.page.dart`; `matches.page.dart` shows
   `GuestNotice` instead of the log affordance.
 - **Edit/delete a match** — `match_detail.page.dart`,
   `session.canWrite && state.isManageableBy(session.user?.id)` (creator or
@@ -106,7 +111,7 @@ the presentation for the competition-admin menu — `SettingsPage`,
 moved here because they're conceptually "settings" screens, not because they
 own any data. Player management stayed in `features/player/` despite being
 reachable from the same menu: `PlayersCubit` is also read directly by
-`CompetitionDetailPage` for roster data, not just by the management screen,
+`CompetitionContent` for roster data, not just by the management screen,
 so it's a real cross-feature dependency rather than a settings-only concern.
 
 ## Coding conventions — read this before writing `lib/**`
@@ -144,7 +149,7 @@ code; don't relitigate them.
   guard, rather than an `if (cond) ...` list entry — see
   `ProfileOverviewCubit._loadForGameType`. Reach for actual `Future.wait` only
   when the futures are `Future<void>` with nothing to unpack (e.g.
-  `CompetitionDetailPage._reload`).
+  `CompetitionContent._reload`).
 - **Widget structure:**
   - Nested `Row`/`Column`/`Wrap`/`Stack` with multiple children or a
     conditional gets extracted into a small private method named for what it
@@ -237,7 +242,7 @@ code; don't relitigate them.
     and every phase's fields all nullable at once. The shape a given cubit
     needs falls into one of four recurring buckets — grep an existing
     `<name>_state.dart` for the closest match before inventing a new shape:
-    - **Fetch one thing, with a "not found" case** (`CompetitionDetailState`,
+    - **Fetch one thing, with a "not found" case** (`CompetitionState`,
       `ConfigurationState`, `MatchDetailState`): `XLoading`/`XMissing`/
       `XFailed(failure)`/`XReady(...)`. A field that was nullable purely to
       mean "not loaded yet" becomes non-nullable on `XReady` — e.g.
@@ -246,7 +251,7 @@ code; don't relitigate them.
       field that's genuinely optional *even once ready* (e.g.
       `MatchDetailReady.competition` — a match can exist with no
       resolvable competition) stays nullable there. When outside callers
-      need a value regardless of phase (`CompetitionDetailState.competition`/
+      need a value regardless of phase (`CompetitionState.competition`/
       `.myPlayerId`, read opportunistically by five different sibling
       pages before their own cubit has loaded), declare it as a virtual
       getter on the sealed base returning `null`, overridden non-null on
@@ -325,7 +330,7 @@ code; don't relitigate them.
     `adaptive_button_kind.enum.dart`, `adaptive_glyph.enum.dart`,
     `sign_in_mode.enum.dart`). **An enum referenced only within the single
     file that declares it may stay there** — a tab enum like `CompetitionTab`
-    in `competition_detail.page.dart` or `ProfileTab` in `profile_sheet.dart`
+    in `competition_content.page.dart` or `ProfileTab` in `profile_sheet.dart`
     doesn't earn its own file just for being an enum. Either way, **name it
     `Enum`, never `_Enum`** — Dart privacy is per-file, so a leading
     underscore would block the file-splitting `export` pattern above the
@@ -350,8 +355,8 @@ code; don't relitigate them.
     `streak_type.enum.dart`) — this applies everywhere a dedicated enum file
     exists, not just under `domain/`. A widget that is the root of a routed
     page, or that fills an entire tab the way `LeaderboardPage` and
-    `MatchesPage` do inside the competition shell, is `<name>.page.dart`
-    (e.g. `competition_detail.page.dart`, `leaderboard.page.dart`,
+    `MatchesPage` do inside the competition content shell, is `<name>.page.dart`
+    (e.g. `competition_content.page.dart`, `leaderboard.page.dart`,
     `matches.page.dart`). Repository interfaces, calculators/services, and
     widgets that are neither a page nor a tab stay unsuffixed
     (`leaderboard_repository.dart`, `elo_calculator.dart`,
@@ -501,7 +506,7 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   web engine uses under the hood to set `document.title` (it also sets
   Android's task-switcher label, harmlessly). Every routed page calls it once
   per relevant build, formatting `'$label · ${l10n.appTitle}'`.
-  `CompetitionDetailPage` is the one exception to the format: it puts the
+  `CompetitionContent` is the one exception to the format: it puts the
   competition name *ahead of* the tab name
   (`'${competition.name} · $tabTitle'`) because that's the field that
   disambiguates several same-shaped tabs open at once, and browsers truncate
@@ -543,7 +548,7 @@ the treatment below. Mirrors `debugOverrideCupertino` with
     scrollable down to the centered column's render box — and a
     `Scrollable`'s hit-test region is exactly its own render box, so a mouse
     wheel over the pane's side margins would stop reaching it. Callers that
-    pass `hasScrollBody: true` (`competition_detail.page.dart`'s `_body`,
+    pass `hasScrollBody: true` (`competition_content.page.dart`'s `_body`,
     `history.page.dart`'s `_ready`) center their content themselves instead,
     via `BoxConstraints.contentHorizontalInset`
     (`core/extensions/box_constraints_content_inset.dart`) applied as
@@ -571,7 +576,7 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   thin wrapper — `if (!AppPlatform.useWideWeb(context)) return child;`,
   otherwise a fixed-width sidebar `Row`-ed next to `Expanded(child: child)` —
   composed by every page reached from within a competition
-  (`CompetitionDetailPage`, `PlayersPage`, `HistoryPage`,
+  (`CompetitionContent`, `PlayersPage`, `HistoryPage`,
   `ConfigurationPage`, `NewMatchPage`) around their existing
   `AdaptiveScaffold`, each supplying its own `CompetitionSection`
   (`competition_section.enum.dart`: leaderboard, matches, players, history,
@@ -597,12 +602,12 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   *not* a go_router `ShellRoute` — each page keeps its own route, cubits, and
   `AdaptiveScaffold` untouched; the sidebar is purely a visual wrapper
   re-composed per page. Navigating between pages that all sit "underneath"
-  `CompetitionDetailPage` (History/Players/Settings/NewMatch) goes through the
+  `CompetitionContent` (History/Players/Settings/NewMatch) goes through the
   shared `selectCompetitionSection` helper
   (`widgets/select_competition_section.dart`): `context.pop()` back to
-  `CompetitionDetailPage` for leaderboard/matches (it owns those as local
+  `CompetitionContent` for leaderboard/matches (it owns those as local
   `_tab` state, not routes), `context.pushReplacement` to swap among the other
-  three without growing the stack. `CompetitionDetailPage` itself keeps a
+  three without growing the stack. `CompetitionContent` itself keeps a
   custom `_selectSection` (flips `_tab` locally for leaderboard/matches, a
   plain `context.push` + reload for players/history/settings) since it's the
   base of that stack, not one of the pages sitting on top of it — reusing the
@@ -626,13 +631,13 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   `adaptivePage` instead, so New Match reads as an in-place page inside the
   sidebar rather than a modal takeover of the whole viewport.
   **Every value a page hands `Sidebar` (`competitionName`, `canManageSettings`)
-  must come from the already-loaded `CompetitionDetailCubit`, never from that
+  must come from the already-loaded `CompetitionCubit`, never from that
   page's own cubit** — `ConfigurationCubit`/`HistoryCubit`/etc. all
   start out `loading` with their own `competition` field `null` even though
-  `CompetitionDetailCubit` already has the answer (it loaded when
-  `CompetitionDetailPage` first mounted and the ShellRoute keeps it alive).
+  `CompetitionCubit` already has the answer (it loaded when
+  `CompetitionContent` first mounted and the ShellRoute keeps it alive).
   Sourcing `canManageSettings` from the page's own cubit instead of
-  `CompetitionDetailCubit` briefly evaluates to `false` while that cubit's
+  `CompetitionCubit` briefly evaluates to `false` while that cubit's
   own fetch is in flight, so an owner-only nav row (e.g. "Competition
   settings") visibly disappears and reappears a moment later.
   **No existing test exercises this at all** — `kIsWeb` is always `false`

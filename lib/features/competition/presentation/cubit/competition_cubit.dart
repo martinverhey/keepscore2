@@ -2,37 +2,37 @@ import 'package:bloc/bloc.dart';
 
 import '../../../../core/error/failure.dart';
 import '../../domain/competition_repository.dart';
-import 'competition_detail_state.dart';
+import 'competition_state.dart';
 
-export 'competition_detail_state.dart';
+export 'competition_state.dart';
 
-class CompetitionDetailCubit extends Cubit<CompetitionDetailState> {
-  CompetitionDetailCubit(this._repository, this.competitionId)
-    : super(const CompetitionDetailLoading());
+class CompetitionCubit extends Cubit<CompetitionState> {
+  CompetitionCubit(this._repository, this.competitionId)
+    : super(const CompetitionLoading());
 
   final CompetitionRepository _repository;
   final String competitionId;
 
-  CompetitionDetailReady? get _ready => switch (state) {
-    CompetitionDetailReady ready => ready,
+  CompetitionReady? get _ready => switch (state) {
+    CompetitionReady ready => ready,
     _ => null,
   };
 
   Future<void> load({bool silent = false}) async {
     final ready = _ready;
-    if (!silent) emit(const CompetitionDetailLoading());
+    if (!silent) emit(const CompetitionLoading());
     try {
       final overview = await _repository.overview(competitionId);
       if (isClosed) return;
       emit(
         overview == null
-            ? const CompetitionDetailMissing()
-            : CompetitionDetailReady(overview),
+            ? const CompetitionMissing()
+            : CompetitionReady(overview),
       );
     } on Failure catch (failure) {
       if (isClosed) return;
       if (silent && ready != null) return;
-      emit(CompetitionDetailFailed(failure));
+      emit(CompetitionFailed(failure));
     }
   }
 

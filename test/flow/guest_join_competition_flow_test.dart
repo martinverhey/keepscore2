@@ -15,9 +15,9 @@ import 'package:keepscore2/features/auth/presentation/pages/sign_in.page.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/domain/join_preview.model.dart';
-import 'package:keepscore2/features/competition/presentation/cubit/competition_detail_cubit.dart';
+import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/join_competition_cubit.dart';
-import 'package:keepscore2/features/competition/presentation/pages/competition_detail.page.dart';
+import 'package:keepscore2/features/competition/presentation/pages/competition_content.page.dart';
 import 'package:keepscore2/features/competition/presentation/pages/join_competition.page.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
@@ -315,7 +315,7 @@ Future<void> _joinCompetitionAndClaimPlayer(
 }
 
 void _expectLeaderboardTabIsPopulated() {
-  expect(find.byType(CompetitionDetailPage), findsOneWidget);
+  expect(find.byType(CompetitionContent), findsOneWidget);
   expect(find.text('Ada'), findsWidgets);
   expect(find.text('Chris'), findsWidgets);
 }
@@ -379,7 +379,7 @@ GoRouter _buildRouter(
             providers: [
               BlocProvider(
                 create: (_) =>
-                    CompetitionDetailCubit(competitionRepository, id)..load(),
+                    CompetitionCubit(competitionRepository, id)..load(),
               ),
               BlocProvider(create: (_) => PlayersCubit(playerRepository, id)),
               BlocProvider(
@@ -394,7 +394,7 @@ GoRouter _buildRouter(
                 ),
               ),
             ],
-            child: CompetitionDetailPage(competitionId: id),
+            child: CompetitionContent(competitionId: id),
           );
         },
       ),
