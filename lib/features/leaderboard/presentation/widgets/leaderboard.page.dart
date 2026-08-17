@@ -5,11 +5,11 @@ import 'package:intl/intl.dart';
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/extensions/build_context_locale.dart';
+import '../../../../core/extensions/game_type_label.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../competition/domain/competition.model.dart';
-import '../../../profile/presentation/widgets/game_type_label.dart';
 import '../../domain/season.model.dart';
 import '../cubit/leaderboard_cubit.dart';
 import 'leaderboard_row.dart';
@@ -84,7 +84,7 @@ class LeaderboardPage extends StatelessWidget {
         message: state.selectedGameType == null
             ? context.l10n.leaderboardNoPlayers
             : context.l10n.leaderboardFilterEmpty(
-                gameTypeLabel(context, state.selectedGameType!),
+                state.selectedGameType!.label(context),
               ),
       );
     }

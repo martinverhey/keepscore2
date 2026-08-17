@@ -6,6 +6,7 @@ import '../../../../app/router/app_router.dart';
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/box_constraints_content_inset.dart';
 import '../../../../core/extensions/build_context_l10n.dart';
+import '../../../../core/extensions/game_type_label.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/page_title.dart';
@@ -15,7 +16,6 @@ import '../../../leaderboard/domain/leaderboard.model.dart';
 import '../../../leaderboard/presentation/widgets/game_type_filter_dropdown.dart';
 import '../../../leaderboard/presentation/widgets/leaderboard_row.dart';
 import '../../../leaderboard/presentation/widgets/season_dropdown.dart';
-import '../../../profile/presentation/widgets/game_type_label.dart';
 import '../../domain/competition.model.dart';
 import '../cubit/competition_detail_cubit.dart';
 import '../cubit/history_cubit.dart';
@@ -180,7 +180,7 @@ class _HistoryPageState extends State<HistoryPage> {
         message: state.selectedGameType == null
             ? context.l10n.historyEmpty
             : context.l10n.historyFilterEmpty(
-                gameTypeLabel(context, state.selectedGameType!),
+                state.selectedGameType!.label(context),
               ),
       );
     }

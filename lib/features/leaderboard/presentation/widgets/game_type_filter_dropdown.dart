@@ -1,11 +1,11 @@
 import 'package:flutter/widgets.dart';
 
 import '../../../../core/extensions/build_context_l10n.dart';
+import '../../../../core/extensions/game_type_label.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/pill_dropdown.dart';
 import '../../../../core/widgets/sheet.dart';
 import '../../../match/domain/game_type.enum.dart';
-import '../../../profile/presentation/widgets/game_type_label.dart';
 
 enum GameTypeFilterOption {
   all,
@@ -48,7 +48,7 @@ class GameTypeFilterDropdown extends StatelessWidget {
   Widget build(BuildContext context) {
     final label = selected == null
         ? context.l10n.leaderboardFilterAll
-        : gameTypeLabel(context, selected!);
+        : selected!.label(context);
 
     return PillDropdown(label: label, onTap: () => _pick(context));
   }
@@ -80,7 +80,7 @@ class GameTypeFilterSheet extends StatelessWidget {
             AdaptiveButton(
               label: option == GameTypeFilterOption.all
                   ? context.l10n.leaderboardFilterAll
-                  : gameTypeLabel(context, option.gameType!),
+                  : option.gameType!.label(context),
               kind: option == selected
                   ? AdaptiveButtonKind.tinted
                   : AdaptiveButtonKind.plain,
