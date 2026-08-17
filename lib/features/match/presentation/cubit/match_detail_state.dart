@@ -4,46 +4,63 @@ import '../../../../core/error/failure.dart';
 import '../../../competition/domain/competition.model.dart';
 import '../../domain/match_entry.model.dart';
 
-enum MatchDetailStatus { loading, ready, missing, failed }
+sealed class MatchDetailState extends Equatable {
+  const MatchDetailState();
+}
 
-class MatchDetailState extends Equatable {
-  const MatchDetailState({
-    this.status = MatchDetailStatus.loading,
-    this.match,
+class MatchDetailLoading extends MatchDetailState {
+  const MatchDetailLoading();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class MatchDetailMissing extends MatchDetailState {
+  const MatchDetailMissing();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class MatchDetailFailed extends MatchDetailState {
+  const MatchDetailFailed(this.failure);
+
+  final Failure failure;
+
+  @override
+  List<Object?> get props => [failure];
+}
+
+class MatchDetailReady extends MatchDetailState {
+  const MatchDetailReady({
+    required this.match,
     this.competition,
     this.busy = false,
-    this.failure,
     this.actionFailure,
   });
 
-  final MatchDetailStatus status;
-  final MatchEntry? match;
+  final MatchEntry match;
   final Competition? competition;
   final bool busy;
-  final Failure? failure;
   final Failure? actionFailure;
 
   bool isManageableBy(String? userId) {
-    final entry = match;
     final ownerId = competition?.ownerId;
-    if (entry == null || ownerId == null) return false;
-    return entry.isManageableBy(userId, ownerId: ownerId);
+    if (ownerId == null) return false;
+    return match.isManageableBy(userId, ownerId: ownerId);
   }
 
-  MatchDetailState copyWith({
-    MatchDetailStatus? status,
+  MatchDetailReady copyWith({
     MatchEntry? match,
     Competition? competition,
     bool? busy,
     Failure? actionFailure,
     bool clearActionFailure = false,
   }) {
-    return MatchDetailState(
-      status: status ?? this.status,
+    return MatchDetailReady(
       match: match ?? this.match,
       competition: competition ?? this.competition,
       busy: busy ?? this.busy,
-      failure: failure,
       actionFailure: clearActionFailure
           ? null
           : (actionFailure ?? this.actionFailure),
@@ -51,12 +68,5 @@ class MatchDetailState extends Equatable {
   }
 
   @override
-  List<Object?> get props => [
-    status,
-    match,
-    competition,
-    busy,
-    failure,
-    actionFailure,
-  ];
+  List<Object?> get props => [match, competition, busy, actionFailure];
 }

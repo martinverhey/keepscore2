@@ -81,11 +81,11 @@ void main() {
     build: build,
     act: (cubit) => cubit.load(),
     verify: (cubit) {
-      expect(cubit.state.status, MatchDetailStatus.ready);
-      expect(cubit.state.match!.teamAScore, 11);
-      expect(cubit.state.isManageableBy('u2'), isTrue);
-      expect(cubit.state.isManageableBy('u1'), isTrue);
-      expect(cubit.state.isManageableBy('u3'), isFalse);
+      final state = cubit.state as MatchDetailReady;
+      expect(state.match.teamAScore, 11);
+      expect(state.isManageableBy('u2'), isTrue);
+      expect(state.isManageableBy('u1'), isTrue);
+      expect(state.isManageableBy('u3'), isFalse);
     },
   );
 
@@ -94,10 +94,7 @@ void main() {
     setUp: () => when(() => matches.byId('m1')).thenAnswer((_) async => null),
     build: build,
     act: (cubit) => cubit.load(),
-    verify: (cubit) {
-      expect(cubit.state.status, MatchDetailStatus.missing);
-      expect(cubit.state.isManageableBy('u1'), isFalse);
-    },
+    verify: (cubit) => expect(cubit.state, isA<MatchDetailMissing>()),
   );
 
   blocTest<MatchDetailCubit, MatchDetailState>(
@@ -118,8 +115,9 @@ void main() {
       expect(await cubit.updateScore(scoreA: 11, scoreB: 9), isTrue);
     },
     verify: (cubit) {
-      expect(cubit.state.match!.teamBScore, 9);
-      expect(cubit.state.busy, isFalse);
+      final state = cubit.state as MatchDetailReady;
+      expect(state.match.teamBScore, 9);
+      expect(state.busy, isFalse);
       verify(() => matches.byId('m1')).called(2);
     },
   );
@@ -141,9 +139,9 @@ void main() {
       expect(await cubit.delete(), isFalse);
     },
     verify: (cubit) {
-      expect(cubit.state.actionFailure, isA<ValidationFailure>());
-      expect(cubit.state.match, isNotNull);
-      expect(cubit.state.busy, isFalse);
+      final state = cubit.state as MatchDetailReady;
+      expect(state.actionFailure, isA<ValidationFailure>());
+      expect(state.busy, isFalse);
     },
   );
 }

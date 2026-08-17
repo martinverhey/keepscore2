@@ -81,26 +81,24 @@ class _MatchDetailPageState extends State<MatchDetailPage> {
     AuthSessionState session,
     MatchDetailCubit cubit,
   ) {
-    return switch (state.status) {
-      MatchDetailStatus.loading => const AdaptiveLoader(),
-      MatchDetailStatus.missing => EmptyState(
-        message: context.l10n.matchNotFound,
-      ),
-      MatchDetailStatus.failed => ErrorRetry(
-        message: state.failure!.localized(context.l10n),
+    return switch (state) {
+      MatchDetailLoading() => const AdaptiveLoader(),
+      MatchDetailMissing() => EmptyState(message: context.l10n.matchNotFound),
+      MatchDetailFailed(:final failure) => ErrorRetry(
+        message: failure.localized(context.l10n),
         retryLabel: context.l10n.commonRetry,
         onRetry: cubit.load,
       ),
-      MatchDetailStatus.ready => _ready(context, state, session),
+      MatchDetailReady() => _ready(context, state, session),
     };
   }
 
   Widget _ready(
     BuildContext context,
-    MatchDetailState state,
+    MatchDetailReady state,
     AuthSessionState session,
   ) {
-    final match = state.match!;
+    final match = state.match;
     final canManage =
         session.canWrite && state.isManageableBy(session.user?.id);
 
@@ -137,7 +135,7 @@ class _MatchDetailPageState extends State<MatchDetailPage> {
   Widget _manageButtons(
     BuildContext context,
     MatchEntry match,
-    MatchDetailState state,
+    MatchDetailReady state,
   ) {
     return Column(
       children: [
@@ -158,7 +156,7 @@ class _MatchDetailPageState extends State<MatchDetailPage> {
     );
   }
 
-  Widget _actionFailureText(BuildContext context, MatchDetailState state) {
+  Widget _actionFailureText(BuildContext context, MatchDetailReady state) {
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.md),
       child: Text(
