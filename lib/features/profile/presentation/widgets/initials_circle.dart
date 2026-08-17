@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 
+import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 
 class InitialsCircle extends StatelessWidget {
@@ -27,7 +28,9 @@ class InitialsCircle extends StatelessWidget {
       alignment: Alignment.center,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: AdaptiveColors.accent(context).withValues(alpha: 0.16),
+        color: AdaptiveColors.accent(
+          context,
+        ).withValues(alpha: AppOpacity.badgeFill),
       ),
       child: Text(
         _initials,

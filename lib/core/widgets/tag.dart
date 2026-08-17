@@ -29,7 +29,9 @@ class Tag extends StatelessWidget {
         borderRadius: isCode
             ? BorderRadius.circular(AppRadius.sm)
             : AppRadius.pill,
-        color: color.withValues(alpha: isCode ? 0.14 : 0.16),
+        color: color.withValues(
+          alpha: isCode ? AppOpacity.selectedFill : AppOpacity.badgeFill,
+        ),
       ),
       child: Text(
         label,

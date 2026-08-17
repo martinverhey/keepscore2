@@ -200,9 +200,12 @@ class _MatchDetailPageState extends State<MatchDetailPage> {
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         borderRadius: AppRadius.card,
-        color: AppColors.neutral.withValues(alpha: 0.08),
+        color: AppColors.neutralSurface,
         border: match.winner == team
-            ? Border.all(color: color.withValues(alpha: 0.6), width: 2)
+            ? Border.all(
+                color: color.withValues(alpha: AppOpacity.winnerBorder),
+                width: 2,
+              )
             : null,
       ),
       child: Column(

@@ -70,8 +70,10 @@ class LeaderboardRow extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: AppRadius.card,
             color: isMe
-                ? AdaptiveColors.accent(context).withValues(alpha: 0.12)
-                : AppColors.neutral.withValues(alpha: 0.08),
+                ? AdaptiveColors.accent(
+                    context,
+                  ).withValues(alpha: AppOpacity.selectedFill)
+                : AppColors.neutralSurface,
           ),
           child: Row(
             children: [
@@ -189,7 +191,7 @@ class LeaderboardRow extends StatelessWidget {
           ),
           decoration: BoxDecoration(
             borderRadius: AppRadius.pill,
-            color: AppColors.fireCore.withValues(alpha: 0.16),
+            color: AppColors.fireBadgeFill,
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,

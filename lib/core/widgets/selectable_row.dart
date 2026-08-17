@@ -33,11 +33,9 @@ class SelectableRow extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: AppRadius.card,
           color: selected
-              ? accent.withValues(alpha: 0.14)
-              : AppColors.neutral.withValues(alpha: 0.08),
-          border: Border.all(
-            color: selected ? accent : const Color(0x00000000),
-          ),
+              ? accent.withValues(alpha: AppOpacity.selectedFill)
+              : AppColors.neutralSurface,
+          border: Border.all(color: selected ? accent : AppColors.transparent),
         ),
         child: Row(
           children: [

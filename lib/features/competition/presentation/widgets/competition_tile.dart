@@ -30,7 +30,7 @@ class CompetitionTile extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
           borderRadius: AppRadius.card,
-          color: AppColors.neutral.withValues(alpha: 0.08),
+          color: AppColors.neutralSurface,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

@@ -19,13 +19,15 @@ class CheckMark extends StatelessWidget {
         shape: BoxShape.circle,
         color: selected ? color : null,
         border: Border.all(
-          color: selected ? color : AppColors.neutral.withValues(alpha: 0.35),
+          color: selected
+              ? color
+              : AppColors.neutral.withValues(alpha: AppOpacity.controlBorder),
         ),
       ),
       child: selected
           ? const AdaptiveIcon(
               AdaptiveGlyph.check,
-              color: Color(0xFFFFFFFF),
+              color: AppColors.white,
               size: 14,
             )
           : null,

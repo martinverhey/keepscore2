@@ -330,8 +330,10 @@ class _NewMatchPageState extends State<NewMatchPage> {
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
           borderRadius: AppRadius.card,
-          color: color.withValues(alpha: 0.10),
-          border: Border.all(color: color.withValues(alpha: 0.4)),
+          color: color.withValues(alpha: AppOpacity.accentFill),
+          border: Border.all(
+            color: color.withValues(alpha: AppOpacity.fieldBorder),
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

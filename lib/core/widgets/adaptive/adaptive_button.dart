@@ -114,7 +114,7 @@ class AdaptiveButton extends StatelessWidget {
         child: _child(CupertinoColors.white),
       ),
       AdaptiveButtonKind.tinted => CupertinoButton(
-        color: accent.withValues(alpha: 0.15),
+        color: accent.withValues(alpha: AppOpacity.tintedButtonFill),
         onPressed: callback,
         child: DefaultTextStyle.merge(
           style: TextStyle(color: accent),

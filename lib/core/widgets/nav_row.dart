@@ -22,7 +22,7 @@ class NavRow extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           borderRadius: AppRadius.card,
-          color: AppColors.neutral.withValues(alpha: 0.08),
+          color: AppColors.neutralSurface,
         ),
         child: Row(
           children: [

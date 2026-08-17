@@ -49,7 +49,9 @@ class AdaptiveTextField extends StatelessWidget {
         ? null
         : OutlineInputBorder(
             borderRadius: AppRadius.card,
-            borderSide: BorderSide(color: accentColor!.withValues(alpha: 0.4)),
+            borderSide: BorderSide(
+              color: accentColor!.withValues(alpha: AppOpacity.fieldBorder),
+            ),
           );
 
     return TextField(
@@ -69,7 +71,7 @@ class AdaptiveTextField extends StatelessWidget {
         errorText: errorText,
         counterText: '',
         filled: accentColor != null,
-        fillColor: accentColor?.withValues(alpha: 0.08),
+        fillColor: accentColor?.withValues(alpha: AppOpacity.surfaceFill),
         labelStyle: accentColor == null ? null : TextStyle(color: accentColor),
         border: accentBorder,
         enabledBorder: accentBorder,
@@ -126,14 +128,16 @@ class AdaptiveTextField extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.md - 2),
       decoration: BoxDecoration(
         color:
-            accentColor?.withValues(alpha: 0.08) ??
+            accentColor?.withValues(alpha: AppOpacity.surfaceFill) ??
             CupertinoColors.tertiarySystemFill.resolveFrom(context),
         borderRadius: AppRadius.card,
         border: errorText != null
             ? Border.all(color: CupertinoColors.destructiveRed)
             : accentColor == null
             ? null
-            : Border.all(color: accentColor!.withValues(alpha: 0.4)),
+            : Border.all(
+                color: accentColor!.withValues(alpha: AppOpacity.fieldBorder),
+              ),
       ),
     );
   }

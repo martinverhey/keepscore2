@@ -22,9 +22,11 @@ class PillDropdown extends StatelessWidget {
           vertical: AppSpacing.xs,
         ),
         decoration: BoxDecoration(
-          color: accent.withValues(alpha: 0.10),
+          color: accent.withValues(alpha: AppOpacity.accentFill),
           borderRadius: AppRadius.pill,
-          border: Border.all(color: accent.withValues(alpha: 0.22)),
+          border: Border.all(
+            color: accent.withValues(alpha: AppOpacity.accentBorder),
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

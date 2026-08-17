@@ -20,15 +20,17 @@ class JoinQrCard extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         borderRadius: AppRadius.card,
-        color: accent.withValues(alpha: 0.10),
-        border: Border.all(color: accent.withValues(alpha: 0.25)),
+        color: accent.withValues(alpha: AppOpacity.accentFill),
+        border: Border.all(
+          color: accent.withValues(alpha: AppOpacity.accentBorder),
+        ),
       ),
       child: Column(
         children: [
           Container(
             padding: const EdgeInsets.all(AppSpacing.sm),
             decoration: BoxDecoration(
-              color: const Color(0xFFFFFFFF),
+              color: AppColors.white,
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
             child: SizedBox(
@@ -38,7 +40,7 @@ class JoinQrCard extends StatelessWidget {
                 data: code,
                 size: _qrSize,
                 padding: EdgeInsets.zero,
-                backgroundColor: const Color(0xFFFFFFFF),
+                backgroundColor: AppColors.white,
                 semanticsLabel: code,
               ),
             ),

@@ -212,7 +212,9 @@ class Sidebar extends StatelessWidget {
           ),
           decoration: BoxDecoration(
             borderRadius: AppRadius.card,
-            color: selected ? accent.withValues(alpha: 0.14) : null,
+            color: selected
+                ? accent.withValues(alpha: AppOpacity.selectedFill)
+                : null,
           ),
           child: Row(
             children: [

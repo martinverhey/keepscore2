@@ -60,9 +60,11 @@ class ProfileSection extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: accent.withValues(alpha: 0.06),
+          color: accent.withValues(alpha: AppOpacity.cardFillFaint),
           borderRadius: AppRadius.card,
-          border: Border.all(color: accent.withValues(alpha: 0.16)),
+          border: Border.all(
+            color: accent.withValues(alpha: AppOpacity.badgeFill),
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,

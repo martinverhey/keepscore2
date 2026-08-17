@@ -375,6 +375,29 @@ code; don't relitigate them.
   rather than a bare number, so the scale still has exactly one source. The
   one deliberate exception is `InitialsCircle`, whose `fontSize: size * 0.36`
   is computed from the avatar's own diameter, not picked from the scale.
+- **The same tokenization applies to translucency: `AppOpacity`
+  (`core/theme/app_tokens.dart`, alongside `AppTypography`) is the only
+  source for a `.withValues(alpha: N)` literal in `lib/**`.** `cardFillFaint`/
+  `surfaceFill`/`accentFill`/`selectedFill`/`tintedButtonFill`/`badgeFill`
+  cover background washes, `accentBorder`/`controlBorder`/`fieldBorder`/
+  `winnerBorder` cover outlines. Two call sites had drifted onto a slightly
+  different value than everywhere else doing the same job — a match's own
+  row in the leaderboard was highlighted at 0.12 while every other
+  "selected/highlighted row" (picker rows, the sidebar's current section)
+  used 0.14, and one dropdown's border sat at 0.22 next to another card's
+  otherwise-identical 0.25 — both were folded onto the shared token rather
+  than kept as their own one-off value; every other call site kept its exact
+  existing alpha. `AppColors.neutral.withValues(alpha: AppOpacity.surfaceFill)`
+  was, verbatim, the single most-repeated color expression in the app (a
+  neutral card/row background, a dozen-odd call sites) — instead of routing
+  every one of those through the opacity token individually, it's
+  pre-combined once as `AppColors.neutralSurface`, and `AppColors.fireBadgeFill`
+  is the same move for the streak-badge background. `AppColors.white`/
+  `AppColors.transparent` name the two raw hex literals (`0xFFFFFFFF`,
+  `0x00000000`) that show up where a *theme-independent* color is genuinely
+  needed — the QR code's white quiet zone has to stay white in dark mode for
+  scanners to read it, and `0x00000000` is `Colors.transparent` reached
+  through a file that can't import `material.dart` for it.
 - **All repository methods wrap their body in `guard()`** from
   `core/error/failure.dart`, which converts Postgrest/socket exceptions into
   a sealed `Failure`. UI renders them via `failure.localized(l10n)`.

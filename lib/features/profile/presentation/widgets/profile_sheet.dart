@@ -292,7 +292,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.neutral.withValues(alpha: 0.08),
+        color: AppColors.neutralSurface,
         borderRadius: AppRadius.card,
       ),
       child: Row(children: children),
@@ -341,7 +341,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
       decoration: BoxDecoration(
-        color: AppColors.neutral.withValues(alpha: 0.08),
+        color: AppColors.neutralSurface,
         borderRadius: AppRadius.card,
       ),
       child: Row(
@@ -427,7 +427,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
       ),
       decoration: BoxDecoration(
         borderRadius: AppRadius.pill,
-        color: AppColors.fireCore.withValues(alpha: 0.16),
+        color: AppColors.fireBadgeFill,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

@@ -20,6 +20,19 @@ abstract final class AppRadius {
   );
 }
 
+abstract final class AppOpacity {
+  static const double cardFillFaint = 0.06;
+  static const double surfaceFill = 0.08;
+  static const double accentFill = 0.10;
+  static const double selectedFill = 0.14;
+  static const double tintedButtonFill = 0.15;
+  static const double badgeFill = 0.16;
+  static const double accentBorder = 0.25;
+  static const double controlBorder = 0.35;
+  static const double fieldBorder = 0.4;
+  static const double winnerBorder = 0.6;
+}
+
 abstract final class AppColors {
   static const Color seed = Color(0xFFBC4D08);
   static const Color seedOnDark = Color(0xFFFFB694);
@@ -37,6 +50,16 @@ abstract final class AppColors {
 
   static const Color fireCore = Color(0xFFFF6D00);
   static const Color iceCore = Color(0xFF29B6F6);
+
+  static const Color white = Color(0xFFFFFFFF);
+  static const Color transparent = Color(0x00000000);
+
+  static final Color neutralSurface = neutral.withValues(
+    alpha: AppOpacity.surfaceFill,
+  );
+  static final Color fireBadgeFill = fireCore.withValues(
+    alpha: AppOpacity.badgeFill,
+  );
 }
 
 abstract final class AppTypography {

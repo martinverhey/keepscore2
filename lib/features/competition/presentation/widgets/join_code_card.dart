@@ -41,7 +41,9 @@ class _JoinCodeCardState extends State<JoinCodeCard> {
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         borderRadius: AppRadius.card,
-        color: AdaptiveColors.accent(context).withValues(alpha: 0.10),
+        color: AdaptiveColors.accent(
+          context,
+        ).withValues(alpha: AppOpacity.accentFill),
       ),
       child: Row(
         children: [
