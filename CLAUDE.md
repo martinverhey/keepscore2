@@ -126,6 +126,28 @@ code; don't relitigate them.
     renders, not its widget type (`_playerName(context)`, not `_row1()`).
     Leave single, already-flat widget calls inline — `build()` itself should
     read as a short, flat assembly of these named pieces.
+  - **A local `final` variable that holds a widget is the same extraction,
+    spelled wrong — it becomes a private method instead**, even when it's
+    used only once later in the same `build()`/helper. `final scrollView =
+    CustomScrollView(...)` becomes a `Widget _scrollView(...) { return
+    CustomScrollView(...); }` called where the variable would have been used.
+    A local var reads as scratch state; a named method reads as part of the
+    widget's structure and shows up next to the other `_foo(context)` helpers
+    instead of buried inline. **Prefer a zero-arg method (`Widget
+    _content() { ... }`) over a zero-arg getter (`Widget get _content`)** —
+    even when it takes no parameters, a trailing `()` at every call site
+    reads as "this does work", which is what it's doing; keep `get` for
+    values that are genuinely just stored-field lookups.
+  - **Private methods/getters are ordered by proximity to use, not by the
+    order they were written or alphabetically.** `build()` is followed
+    immediately by the methods it dispatches to, in the order it calls
+    them — in `adaptive_scaffold.dart`, that's `_cupertino` then
+    `_material`, not the lower-level sliver plumbing they both happen to
+    consume as a passed-in parameter. Each of those is in turn immediately
+    followed by the helpers it calls, so the file reads top-down as
+    decreasing levels of abstraction. A helper called from more than one
+    place (`_bareBar`) sits after the last of its callers, grouped with
+    other shared/leaf helpers toward the bottom of the class.
   - A new private local widget (`class _Foo extends StatelessWidget` /
     `StatefulWidget` inside a feature file) that takes only
     primitives/`Color`/callbacks — no `Player`, `Match`, `Competition`, etc. —
@@ -194,10 +216,15 @@ code; don't relitigate them.
   file or a shared static helper.** One extension per file, unsuffixed,
   named `<Type><Concept>` (e.g. `BuildContextL10n` on `BuildContext` in
   `build_context_l10n.dart`, `StreakTypeTier` on `StreakType` in
-  `streak_type_tier.dart`). `core/extensions/` may import a feature's domain
-  type to extend it (`core/data/game_type_filter_store.dart` already does
-  this for `GameType`) — extending a type is not a layering violation the way
-  a core file depending on feature *behaviour* would be.
+  `streak_type_tier.dart`, `BuildContextLocale.languageTag` on `BuildContext`
+  in `build_context_locale.dart` for the `Localizations.localeOf(context)
+  .toLanguageTag()` every `DateFormat` call site needed). `core/extensions/`
+  may import a feature's domain type to extend it
+  (`core/data/game_type_filter_store.dart` already does this for `GameType`)
+  — extending a type is not a layering violation the way a core file
+  depending on feature *behaviour* would be. This applies just as much to a
+  repeated expression chain (`x.y().z()`) as to a repeated block of
+  statements — don't wait for the duplication to grow before extracting it.
 - **Feature code never imports `package:flutter/cupertino.dart` or Material
   widgets directly.** Everything platform-specific goes through
   `core/widgets/adaptive/adaptive.dart`. `AppPlatform.useCupertino` is the
@@ -290,6 +317,35 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   plain, fixed-height, `pinned: true` `SliverAppBar` instead — mouse/trackpad
   scrolling has no reason to animate the title away, and doing so anyway reads
   as an unintentional phone skin on a desktop window.
+- **`AdaptiveScaffold(hasScrollBody: true)` hands `body` the sliver's full
+  remaining space, unconstrained, and expects `body` to own a scrollable and
+  center its own content — it deliberately does not wrap `body` in the usual
+  `constrainWidth` `Center`/`ConstrainedBox`.** Two desktop-only bugs forced
+  this, both invisible on native/touch:
+  - Flutter's `SliverFillRemaining(hasScrollBody: true)` reports its
+    `scrollExtent` as the *full viewport height* regardless of the child's
+    actual size — built for `NestedScrollView`'s coordinator to absorb. Used
+    bare in `AdaptiveScaffold`'s plain `CustomScrollView`, that phantom range
+    made the outer `CustomScrollView` independently scrollable over empty
+    space next to the content — a second, uncoordinated scroll region with
+    its own desktop scrollbar, on top of `body`'s real one.
+    `AdaptiveScaffold._ownScrollSliver` replaces it: a `SliverLayoutBuilder`
+    measures the actual remaining space and hands `body` exactly that height
+    through a `SliverToBoxAdapter`, so its `scrollExtent` is honest and
+    `body`'s own internal `ListView`/`SingleChildScrollView` is the only
+    thing that scrolls.
+  - Wrapping `body` in `Center`/`ConstrainedBox(maxWidth: kContentMaxWidth)`
+    the way `constrainWidth` normally does would narrow `body`'s own
+    scrollable down to the centered column's render box — and a
+    `Scrollable`'s hit-test region is exactly its own render box, so a mouse
+    wheel over the pane's side margins would stop reaching it. Callers that
+    pass `hasScrollBody: true` (`competition_detail.page.dart`'s `_body`,
+    `history.page.dart`'s `_ready`) center their content themselves instead,
+    via `BoxConstraints.contentHorizontalInset`
+    (`core/extensions/box_constraints_content_inset.dart`) applied as
+    *padding inside* their own scrollable rather than a wrapper around it —
+    padding is still part of the scrollable's render box, so scrolling
+    anywhere across the pane keeps working.
 - **Web gets one deliberate page-transition, not whatever the host OS
   happens to use.** `ThemeData.pageTransitionsTheme`'s default is keyed by
   `defaultTargetPlatform`, and on Flutter Web that reflects the *browsing
@@ -310,26 +366,75 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   (`features/competition/presentation/widgets/sidebar.dart`) is a
   thin wrapper — `if (!AppPlatform.useWideWeb(context)) return child;`,
   otherwise a fixed-width sidebar `Row`-ed next to `Expanded(child: child)` —
-  composed by `CompetitionDetailPage`, `PlayersPage`, and `HistoryPage`
-  around their existing `AdaptiveScaffold`, each supplying its own
-  `CompetitionSection` (`competition_section.enum.dart`: leaderboard, matches,
-  players, history) as `current` for highlighting. It is *not* a go_router
-  `ShellRoute` — each page keeps its own route, cubits, and `AdaptiveScaffold`
-  untouched; the sidebar is purely a visual wrapper re-composed per page, so
-  switching sections between two pages that both wrap the shell
-  (`Players` ↔ `History`) uses `context.pushReplacement`, and switching to
-  `leaderboard`/`matches` from either uses `context.pop()` back to the
-  still-alive `CompetitionDetailPage` instance underneath — `context.go`
-  would rebuild it from scratch and lose whichever of the two tabs was
-  active. `CompetitionSettingsPage` deliberately isn't wrapped — a deep,
-  owner-only settings form is fine as a plain full-width page reached by a
-  normal push, same as it already was. The sidebar's own account section
-  (competition settings, theme, sign out) replaced the old gear-icon popover
-  entirely, so `AdaptiveMenuButton` was deleted rather than left unused.
+  composed by every page reached from within a competition
+  (`CompetitionDetailPage`, `PlayersPage`, `HistoryPage`,
+  `CompetitionSettingsPage`, `NewMatchPage`) around their existing
+  `AdaptiveScaffold`, each supplying its own `CompetitionSection`
+  (`competition_section.enum.dart`: leaderboard, matches, players, history,
+  settings, competitions) as `current` for highlighting — `null` for a page
+  with no matching nav row (`NewMatchPage`). `CompetitionsPage` (the
+  top-level competitions list, outside any competition) composes it too,
+  always with `current: CompetitionSection.competitions`. Whether it also
+  shows the per-competition group (New match button,
+  leaderboard/matches/settings/history/players, "Competition" section label)
+  depends on `hasCompetition`, which is `true` whenever a
+  `HomeSidebarCompetition` (`widgets/home_sidebar_competition.dart` —
+  competition id/name/`canManageSettings`, nothing that needs its own fetch)
+  was carried over: every page's Sidebar routes its "Competitions" row and
+  brand tap through `openHome` (`widgets/open_home.dart`) instead of a bare
+  `context.push`/`pushReplacement(Routes.home)`, which attaches one as
+  go_router `extra` from data that page already has loaded — so the sidebar
+  the user leaves behind is exactly the one they land on, with nothing in the
+  per-competition group highlighted and "Competitions" highlighted instead,
+  letting them jump straight back in without a second trip through the list.
+  Landing on `/` any other way (app launch, sign-in redirect) leaves `extra`
+  null, so `hasCompetition` is `false` and the group is hidden — there's
+  nothing to carry over. It is
+  *not* a go_router `ShellRoute` — each page keeps its own route, cubits, and
+  `AdaptiveScaffold` untouched; the sidebar is purely a visual wrapper
+  re-composed per page. Navigating between pages that all sit "underneath"
+  `CompetitionDetailPage` (History/Players/Settings/NewMatch) goes through the
+  shared `selectCompetitionSection` helper
+  (`widgets/select_competition_section.dart`): `context.pop()` back to
+  `CompetitionDetailPage` for leaderboard/matches (it owns those as local
+  `_tab` state, not routes), `context.pushReplacement` to swap among the other
+  three without growing the stack. `CompetitionDetailPage` itself keeps a
+  custom `_selectSection` (flips `_tab` locally for leaderboard/matches, a
+  plain `context.push` + reload for players/history/settings) since it's the
+  base of that stack, not one of the pages sitting on top of it — reusing the
+  shared helper's `pop`-for-leaderboard/matches case there would pop the
+  competition itself. The sidebar's own account section (competition
+  settings, theme, sign out) replaced the old gear-icon popover entirely, so
+  `AdaptiveMenuButton` was deleted rather than left unused. A page pushed
+  underneath the sidebar (History, Players, Settings, NewMatch — reached via
+  `context.push`) would otherwise still get an auto-implied back button from
+  `AdaptiveScaffold`'s app bar, since `Navigator.canPop()` is true regardless
+  of the sidebar being visually present; the sidebar *is* the way back, so a
+  second back arrow next to it is redundant. `Sidebar` wraps `child` in
+  `SuppressedBackButtonScope` (`core/widgets/adaptive/suppressed_back_button_scope.dart`)
+  whenever it renders the wide-web layout, and `AdaptiveScaffold` reads that
+  ambient marker to pass `automaticallyImplyLeading: false` to both the
+  Cupertino and Material app bars — this is automatic for any current or
+  future page composed with `Sidebar`, no per-page opt-in needed.
+  `adaptiveModalPage` (`core/widgets/adaptive/adaptive_page.dart`) is
+  wide-web-aware for the same reason: native/narrow web still gets a true
+  `fullscreenDialog` page (used by `match/new`), but on wide web it defers to
+  `adaptivePage` instead, so New Match reads as an in-place page inside the
+  sidebar rather than a modal takeover of the whole viewport.
+  **Every value a page hands `Sidebar` (`competitionName`, `canManageSettings`)
+  must come from the already-loaded `CompetitionDetailCubit`, never from that
+  page's own cubit** — `CompetitionSettingsCubit`/`HistoryCubit`/etc. all
+  start out `loading` with their own `competition` field `null` even though
+  `CompetitionDetailCubit` already has the answer (it loaded when
+  `CompetitionDetailPage` first mounted and the ShellRoute keeps it alive).
+  Sourcing `canManageSettings` from the page's own cubit instead of
+  `CompetitionDetailCubit` briefly evaluates to `false` while that cubit's
+  own fetch is in flight, so an owner-only nav row (e.g. "Competition
+  settings") visibly disappears and reappears a moment later.
   **No existing test exercises this at all** — `kIsWeb` is always `false`
   under `flutter test`, so `useWideWeb` never trips regardless of the pumped
   viewport size, which is exactly why `AppPlatform.debugOverrideWideWeb`
-  exists: `sidebar_test.dart` is the one test in the suite that
+  exists: `sidebar_test.dart` is the one file in the suite that
   sets it, and it caught a real `RenderFlex` overflow (a nav-item label
   missing its `Expanded`) on the first run — a reminder that this whole
   surface is otherwise invisible to `flutter test` and worth exercising

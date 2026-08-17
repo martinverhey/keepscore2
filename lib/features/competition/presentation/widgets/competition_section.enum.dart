@@ -1,1 +1,8 @@
-enum CompetitionSection { leaderboard, matches, players, history }
+enum CompetitionSection {
+  leaderboard,
+  matches,
+  players,
+  history,
+  settings,
+  competitions,
+}

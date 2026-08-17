@@ -16,10 +16,16 @@ import '../../domain/competition.model.dart';
 import '../cubit/competition_list_cubit.dart';
 import '../widgets/competition_action.enum.dart';
 import '../widgets/competition_action_sheet.dart';
+import '../widgets/competition_section.enum.dart';
 import '../widgets/competition_tile.dart';
+import '../widgets/home_sidebar_competition.dart';
+import '../widgets/select_competition_section.dart';
+import '../widgets/sidebar.dart';
 
 class CompetitionsPage extends StatefulWidget {
-  const CompetitionsPage({super.key});
+  const CompetitionsPage({super.key, this.sidebarCompetition});
+
+  final HomeSidebarCompetition? sidebarCompetition;
 
   @override
   State<CompetitionsPage> createState() => _CompetitionsPageState();
@@ -35,30 +41,57 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
   @override
   Widget build(BuildContext context) {
     final session = context.watch<AuthBloc>().state;
+    final sidebarCompetition = widget.sidebarCompetition;
     setPageTitle(context, context.l10n.competitionsTitle);
 
-    return AdaptiveScaffold(
-      title: context.l10n.competitionsTitle,
-      trailing: context.canPop() ? null : _signOutButton(context),
-      onRefresh: context.read<CompetitionListCubit>().refresh,
-      body: BlocBuilder<CompetitionListCubit, CompetitionListState>(
-        builder: (context, state) {
-          return switch (state.status) {
-            CompetitionListStatus.loading => const AdaptiveLoader(),
-            CompetitionListStatus.failed when state.competitions.isEmpty =>
-              ErrorRetry(
-                message: state.failure!.localized(context.l10n),
-                retryLabel: context.l10n.commonRetry,
-                onRetry: context.read<CompetitionListCubit>().load,
-              ),
-            _ => _loaded(
+    return Sidebar(
+      competitionName: sidebarCompetition?.competitionName,
+      current: CompetitionSection.competitions,
+      hasCompetition: sidebarCompetition != null,
+      canManageSettings: sidebarCompetition?.canManageSettings ?? false,
+      isRegistered: session.canWrite,
+      onSelectSection: sidebarCompetition == null
+          ? (_) {}
+          : (section) => selectCompetitionSection(
               context,
-              state,
-              canCreate: session.canWrite,
-              myUserId: session.user?.id,
+              competitionId: sidebarCompetition.competitionId,
+              current: CompetitionSection.competitions,
+              target: section,
             ),
-          };
-        },
+      onNewMatch: sidebarCompetition == null
+          ? () {}
+          : () => context.push<bool>(
+              Routes.newMatch(sidebarCompetition.competitionId),
+            ),
+      onOpenHome: () {},
+      onOpenTheme: () => context.push(Routes.theme),
+      onSignOut: () =>
+          context.read<AuthBloc>().add(const AuthSignOutRequested()),
+      child: AdaptiveScaffold(
+        title: context.l10n.competitionsTitle,
+        trailing: !AppPlatform.useWideWeb(context) && !context.canPop()
+            ? _signOutButton(context)
+            : null,
+        onRefresh: context.read<CompetitionListCubit>().refresh,
+        body: BlocBuilder<CompetitionListCubit, CompetitionListState>(
+          builder: (context, state) {
+            return switch (state.status) {
+              CompetitionListStatus.loading => const AdaptiveLoader(),
+              CompetitionListStatus.failed when state.competitions.isEmpty =>
+                ErrorRetry(
+                  message: state.failure!.localized(context.l10n),
+                  retryLabel: context.l10n.commonRetry,
+                  onRetry: context.read<CompetitionListCubit>().load,
+                ),
+              _ => _loaded(
+                context,
+                state,
+                canCreate: session.canWrite,
+                myUserId: session.user?.id,
+              ),
+            };
+          },
+        ),
       ),
     );
   }
@@ -66,8 +99,7 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
   Widget _signOutButton(BuildContext context) => AdaptiveIconButton(
     glyph: AdaptiveGlyph.signOut,
     semanticLabel: context.l10n.authSignOut,
-    onPressed: () =>
-        context.read<AuthBloc>().add(const AuthSignOutRequested()),
+    onPressed: () => context.read<AuthBloc>().add(const AuthSignOutRequested()),
   );
 
   Widget _loaded(

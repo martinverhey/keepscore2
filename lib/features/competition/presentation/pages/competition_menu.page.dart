@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/router/app_router.dart';
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context_l10n.dart';
+import '../../../../core/extensions/competition_ownership.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/nav_row.dart';
@@ -34,7 +35,7 @@ class _CompetitionMenuPageState extends State<CompetitionMenuPage> {
     return BlocBuilder<CompetitionDetailCubit, CompetitionDetailState>(
       builder: (context, state) {
         final competition = state.competition;
-        final isOwner = competition?.isOwnedBy(session.user?.id) ?? false;
+        final isOwner = competition.isOwnedBySession(session);
         setPageTitle(context, context.l10n.competitionSettings);
 
         return AdaptiveScaffold(

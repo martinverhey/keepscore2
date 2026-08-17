@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/app_router.dart';
 import '../../../../core/error/failure_messages.dart';
+import '../../../../core/extensions/box_constraints_content_inset.dart';
 import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
@@ -19,6 +20,8 @@ import '../../domain/competition.model.dart';
 import '../cubit/competition_detail_cubit.dart';
 import '../cubit/history_cubit.dart';
 import '../widgets/competition_section.enum.dart';
+import '../widgets/open_home.dart';
+import '../widgets/select_competition_section.dart';
 import '../widgets/sidebar.dart';
 
 class HistoryPage extends StatefulWidget {
@@ -35,18 +38,12 @@ class _HistoryPageState extends State<HistoryPage> {
     context.read<HistoryCubit>().load();
   }
 
-  void _selectSection(CompetitionSection section) {
-    final competitionId = context.read<HistoryCubit>().competitionId;
-    switch (section) {
-      case CompetitionSection.leaderboard:
-      case CompetitionSection.matches:
-        context.pop();
-      case CompetitionSection.players:
-        context.pushReplacement(Routes.players(competitionId));
-      case CompetitionSection.history:
-        break;
-    }
-  }
+  void _selectSection(CompetitionSection section) => selectCompetitionSection(
+    context,
+    competitionId: context.read<HistoryCubit>().competitionId,
+    current: CompetitionSection.history,
+    target: section,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -75,10 +72,14 @@ class _HistoryPageState extends State<HistoryPage> {
           onSelectSection: _selectSection,
           onNewMatch: () =>
               context.push<bool>(Routes.newMatch(cubit.competitionId)),
-          onOpenHome: () => context.push(Routes.home),
-          onOpenSettings: () =>
-              context.push(Routes.competitionSettings(cubit.competitionId)),
-          onOpenTheme: () => context.push(Routes.theme),
+          onOpenHome: () => openHome(
+            context,
+            replace: true,
+            competitionId: cubit.competitionId,
+            competitionName: competition?.name,
+            canManageSettings: isOwner,
+          ),
+          onOpenTheme: () => context.pushReplacement(Routes.theme),
           onSignOut: () =>
               context.read<AuthBloc>().add(const AuthSignOutRequested()),
           child: AdaptiveScaffold(
@@ -124,37 +125,38 @@ class _HistoryPageState extends State<HistoryPage> {
     String? myPlayerId,
     SeasonLength seasonLength,
   ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (state.selectedSeason != null)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.md,
-              AppSpacing.md,
-              AppSpacing.md,
-              0,
-            ),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: SeasonDropdown(
-                seasons: state.seasons,
-                selected: state.selectedSeason!,
-                seasonLength: seasonLength,
-                onSelected: cubit.selectSeason,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final inset = constraints.contentHorizontalInset;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (state.selectedSeason != null)
+              Padding(
+                padding: EdgeInsets.fromLTRB(inset, AppSpacing.md, inset, 0),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: SeasonDropdown(
+                    seasons: state.seasons,
+                    selected: state.selectedSeason!,
+                    seasonLength: seasonLength,
+                    onSelected: cubit.selectSeason,
+                  ),
+                ),
+              ),
+            Expanded(
+              child: _content(
+                context,
+                state,
+                competitionId,
+                myPlayerId,
+                seasonLength,
+                inset,
               ),
             ),
-          ),
-        Expanded(
-          child: _content(
-            context,
-            state,
-            competitionId,
-            myPlayerId,
-            seasonLength,
-          ),
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
 
@@ -164,6 +166,7 @@ class _HistoryPageState extends State<HistoryPage> {
     String competitionId,
     String? myPlayerId,
     SeasonLength seasonLength,
+    double horizontalInset,
   ) {
     if (state.busy) return const Center(child: AdaptiveLoader());
 
@@ -178,7 +181,10 @@ class _HistoryPageState extends State<HistoryPage> {
     }
 
     return ListView(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: EdgeInsets.symmetric(
+        horizontal: horizontalInset,
+        vertical: AppSpacing.md,
+      ),
       children: [
         for (final leaderboard in state.leaderboards)
           LeaderboardRow(

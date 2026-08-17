@@ -17,6 +17,7 @@ GoRouter buildRouter() {
           GoRoute(
             path: 'modal',
             pageBuilder: (context, state) => adaptiveModalPage<bool>(
+              context,
               child: const AdaptiveScaffold(
                 title: 'Log a match',
                 body: Text('form'),

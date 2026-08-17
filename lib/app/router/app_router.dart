@@ -23,6 +23,7 @@ import '../../features/competition/presentation/pages/competitions.page.dart';
 import '../../features/competition/presentation/pages/create_competition.page.dart';
 import '../../features/competition/presentation/pages/history.page.dart';
 import '../../features/competition/presentation/pages/join_competition.page.dart';
+import '../../features/competition/presentation/widgets/home_sidebar_competition.dart';
 import '../../features/leaderboard/presentation/cubit/leaderboard_cubit.dart';
 import '../../features/match/presentation/cubit/match_detail_cubit.dart';
 import '../../features/match/presentation/cubit/match_form_cubit.dart';
@@ -46,18 +47,12 @@ abstract final class Routes {
   static const theme = '/settings/theme';
 
   static String competition(String id) => '/competition/$id';
-
   static String competitionMenu(String id) => '/competition/$id/settings';
-
   static String competitionSettings(String id) =>
       '/competition/$id/settings/competition';
-
   static String players(String id) => '/competition/$id/settings/players';
-
   static String history(String id) => '/competition/$id/settings/history';
-
   static String newMatch(String id) => '/competition/$id/match/new';
-
   static String match(String id, String matchId) =>
       '/competition/$id/match/$matchId';
 }
@@ -145,9 +140,17 @@ GoRouter createRouter(AuthBloc authBloc) {
       ),
       GoRoute(
         path: Routes.home,
-        builder: (context, state) => BlocProvider(
-          create: (_) => getIt<CompetitionListCubit>(),
-          child: const CompetitionsPage(),
+        pageBuilder: (context, state) => adaptivePage(
+          context,
+          child: BlocProvider(
+            create: (_) => getIt<CompetitionListCubit>(),
+            child: CompetitionsPage(
+              sidebarCompetition: switch (state.extra) {
+                final HomeSidebarCompetition extra => extra,
+                _ => null,
+              },
+            ),
+          ),
         ),
       ),
       GoRoute(
@@ -166,7 +169,8 @@ GoRouter createRouter(AuthBloc authBloc) {
       ),
       GoRoute(
         path: Routes.theme,
-        builder: (context, state) => const ThemePage(),
+        pageBuilder: (context, state) =>
+            adaptivePage(context, child: const ThemePage()),
       ),
       ShellRoute(
         builder: (context, state, child) {
@@ -200,35 +204,47 @@ GoRouter createRouter(AuthBloc authBloc) {
             routes: [
               GoRoute(
                 path: 'settings',
-                builder: (context, state) => CompetitionMenuPage(
-                  competitionId: state.pathParameters['id']!,
+                pageBuilder: (context, state) => adaptivePage(
+                  context,
+                  child: CompetitionMenuPage(
+                    competitionId: state.pathParameters['id']!,
+                  ),
                 ),
                 routes: [
                   GoRoute(
                     path: 'competition',
-                    builder: (context, state) => BlocProvider(
-                      create: (_) => getIt<CompetitionSettingsCubit>(
-                        param1: state.pathParameters['id']!,
+                    pageBuilder: (context, state) => adaptivePage(
+                      context,
+                      child: BlocProvider(
+                        create: (_) => getIt<CompetitionSettingsCubit>(
+                          param1: state.pathParameters['id']!,
+                        ),
+                        child: const CompetitionSettingsPage(),
                       ),
-                      child: const CompetitionSettingsPage(),
                     ),
                   ),
                   GoRoute(
                     path: 'players',
-                    builder: (context, state) => BlocProvider(
-                      create: (_) => getIt<PlayersCubit>(
-                        param1: state.pathParameters['id']!,
+                    pageBuilder: (context, state) => adaptivePage(
+                      context,
+                      child: BlocProvider(
+                        create: (_) => getIt<PlayersCubit>(
+                          param1: state.pathParameters['id']!,
+                        ),
+                        child: const PlayersPage(),
                       ),
-                      child: const PlayersPage(),
                     ),
                   ),
                   GoRoute(
                     path: 'history',
-                    builder: (context, state) => BlocProvider(
-                      create: (_) => getIt<HistoryCubit>(
-                        param1: state.pathParameters['id']!,
+                    pageBuilder: (context, state) => adaptivePage(
+                      context,
+                      child: BlocProvider(
+                        create: (_) => getIt<HistoryCubit>(
+                          param1: state.pathParameters['id']!,
+                        ),
+                        child: const HistoryPage(),
                       ),
-                      child: const HistoryPage(),
                     ),
                   ),
                 ],
@@ -236,6 +252,7 @@ GoRouter createRouter(AuthBloc authBloc) {
               GoRoute(
                 path: 'match/new',
                 pageBuilder: (context, state) => adaptiveModalPage<bool>(
+                  context,
                   child: BlocProvider(
                     create: (_) => getIt<MatchFormCubit>(
                       param1: state.pathParameters['id']!,

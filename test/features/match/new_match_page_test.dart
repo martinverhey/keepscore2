@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keepscore2/features/auth/domain/auth_repository.dart';
+import 'package:keepscore2/features/auth/domain/auth_user.model.dart';
+import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
+import 'package:keepscore2/features/competition/presentation/cubit/competition_detail_cubit.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
 import 'package:keepscore2/features/leaderboard/domain/season_window.model.dart';
 import 'package:keepscore2/features/match/domain/match_repository.dart';
@@ -13,6 +17,8 @@ import 'package:keepscore2/features/player/domain/player.model.dart';
 import 'package:keepscore2/features/player/domain/player_repository.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
+
+class MockAuthRepository extends Mock implements AuthRepository {}
 
 class MockMatchRepository extends Mock implements MatchRepository {}
 
@@ -44,10 +50,16 @@ void main() {
   testWidgets(
     'picking players from a team sheet renders them alphabetically inside that team',
     (tester) async {
+      final auth = MockAuthRepository();
       final matches = MockMatchRepository();
       final competitions = MockCompetitionRepository();
       final players = MockPlayerRepository();
       final leaderboard = MockLeaderboardRepository();
+
+      when(() => auth.currentUser).thenReturn(
+        const AuthUser(id: 'u1', displayName: 'Ada', isGuest: false),
+      );
+      when(() => auth.watchUser()).thenAnswer((_) => const Stream.empty());
 
       when(() => competitions.overview('c1')).thenAnswer(
         (_) async => CompetitionOverview(
@@ -81,13 +93,25 @@ void main() {
         leaderboard,
         'c1',
       );
+      final authBloc = AuthBloc(auth);
+      final competitionDetailCubit = CompetitionDetailCubit(competitions, 'c1')
+        ..load();
       addTearDown(cubit.close);
+      addTearDown(authBloc.close);
+      addTearDown(competitionDetailCubit.close);
 
       await tester.pumpWidget(
-        MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: BlocProvider.value(value: cubit, child: const NewMatchPage()),
+        MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: cubit),
+            BlocProvider.value(value: authBloc),
+            BlocProvider.value(value: competitionDetailCubit),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const NewMatchPage(),
+          ),
         ),
       );
       await tester.pumpAndSettle();

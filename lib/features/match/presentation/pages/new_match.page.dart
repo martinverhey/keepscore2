@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/app_router.dart';
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context_l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
@@ -10,6 +11,12 @@ import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/rating_delta.dart';
 import '../../../../core/widgets/state_views.dart';
+import '../../../auth/presentation/cubit/auth_bloc.dart';
+import '../../../competition/presentation/cubit/competition_detail_cubit.dart';
+import '../../../competition/presentation/widgets/competition_section.enum.dart';
+import '../../../competition/presentation/widgets/open_home.dart';
+import '../../../competition/presentation/widgets/select_competition_section.dart';
+import '../../../competition/presentation/widgets/sidebar.dart';
 import '../../../player/domain/player.model.dart';
 import '../../domain/match_entry.model.dart';
 import '../cubit/match_form_cubit.dart';
@@ -45,36 +52,69 @@ class _NewMatchPageState extends State<NewMatchPage> {
     if (id != null && mounted) context.pop(true);
   }
 
+  void _selectSection(CompetitionSection section) => selectCompetitionSection(
+    context,
+    competitionId: context.read<MatchFormCubit>().competitionId,
+    target: section,
+  );
+
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<MatchFormCubit>();
+    final session = context.watch<AuthBloc>().state;
+    final competition = context
+        .watch<CompetitionDetailCubit>()
+        .state
+        .competition;
+    final isOwner =
+        session.canWrite &&
+        session.user?.id != null &&
+        session.user?.id == competition?.ownerId;
     setPageTitle(context, context.l10n.matchNewTitle);
 
-    return AdaptiveScaffold(
-      title: context.l10n.matchNewTitle,
-      body: BlocConsumer<MatchFormCubit, MatchFormState>(
-        listenWhen: (previous, current) =>
-            previous.scoreA != current.scoreA ||
-            previous.scoreB != current.scoreB,
-        listener: (context, state) {
-          if (_scoreA.text != state.scoreA) _scoreA.text = state.scoreA;
-          if (_scoreB.text != state.scoreB) _scoreB.text = state.scoreB;
-        },
-        builder: (context, state) => switch (state.status) {
-          MatchFormStatus.loading => const AdaptiveLoader(),
-          MatchFormStatus.missing => EmptyState(
-            message: context.l10n.competitionNotFound,
-          ),
-          MatchFormStatus.failed => ErrorRetry(
-            message: state.failure!.localized(context.l10n),
-            retryLabel: context.l10n.commonRetry,
-            onRetry: cubit.load,
-          ),
-          MatchFormStatus.ready => Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            child: _form(context, state),
-          ),
-        },
+    return Sidebar(
+      competitionName: competition?.name,
+      current: null,
+      canManageSettings: isOwner,
+      isRegistered: session.canWrite,
+      onSelectSection: _selectSection,
+      onNewMatch: () {},
+      onOpenHome: () => openHome(
+        context,
+        replace: false,
+        competitionId: cubit.competitionId,
+        competitionName: competition?.name,
+        canManageSettings: isOwner,
+      ),
+      onOpenTheme: () => context.push(Routes.theme),
+      onSignOut: () =>
+          context.read<AuthBloc>().add(const AuthSignOutRequested()),
+      child: AdaptiveScaffold(
+        title: context.l10n.matchNewTitle,
+        body: BlocConsumer<MatchFormCubit, MatchFormState>(
+          listenWhen: (previous, current) =>
+              previous.scoreA != current.scoreA ||
+              previous.scoreB != current.scoreB,
+          listener: (context, state) {
+            if (_scoreA.text != state.scoreA) _scoreA.text = state.scoreA;
+            if (_scoreB.text != state.scoreB) _scoreB.text = state.scoreB;
+          },
+          builder: (context, state) => switch (state.status) {
+            MatchFormStatus.loading => const AdaptiveLoader(),
+            MatchFormStatus.missing => EmptyState(
+              message: context.l10n.competitionNotFound,
+            ),
+            MatchFormStatus.failed => ErrorRetry(
+              message: state.failure!.localized(context.l10n),
+              retryLabel: context.l10n.commonRetry,
+              onRetry: cubit.load,
+            ),
+            MatchFormStatus.ready => Padding(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: _form(context, state),
+            ),
+          },
+        ),
       ),
     );
   }

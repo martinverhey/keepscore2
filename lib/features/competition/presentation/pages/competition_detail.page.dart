@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/router/app_router.dart';
 import '../../../../core/data/recent_competition_store.dart';
 import '../../../../core/error/failure_messages.dart';
+import '../../../../core/extensions/box_constraints_content_inset.dart';
 import '../../../../core/extensions/build_context_l10n.dart';
+import '../../../../core/extensions/competition_ownership.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/page_title.dart';
@@ -25,6 +27,7 @@ import '../../../profile/presentation/widgets/profile_section.dart';
 import '../../domain/competition.model.dart';
 import '../cubit/competition_detail_cubit.dart';
 import '../widgets/competition_section.enum.dart';
+import '../widgets/open_home.dart';
 import '../widgets/sidebar.dart';
 import '../widgets/invite_sheet.dart';
 
@@ -99,7 +102,7 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
       builder: (context, state) {
         final competition = state.competition;
         final isRegistered = session.canWrite;
-        final isOwner = competition?.isOwnedBy(session.user?.id) ?? false;
+        final isOwner = competition.isOwnedBySession(session);
         final hasPlayers = roster.active.length >= 2;
         final myPlayerId = state.myPlayerId;
 
@@ -137,9 +140,13 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
           isRegistered: isRegistered,
           onSelectSection: _selectSection,
           onNewMatch: _openNewMatch,
-          onOpenHome: () => context.push(Routes.home),
-          onOpenSettings: () =>
-              _openAndReload(Routes.competitionSettings(widget.competitionId)),
+          onOpenHome: () => openHome(
+            context,
+            replace: false,
+            competitionId: widget.competitionId,
+            competitionName: competition?.name,
+            canManageSettings: session.canWrite && isOwner,
+          ),
           onOpenTheme: () => context.push(Routes.theme),
           onSignOut: () =>
               context.read<AuthBloc>().add(const AuthSignOutRequested()),
@@ -192,6 +199,25 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
         _openAndReload(Routes.players(widget.competitionId));
       case CompetitionSection.history:
         _openAndReload(Routes.history(widget.competitionId));
+      case CompetitionSection.settings:
+        _openAndReload(Routes.competitionSettings(widget.competitionId));
+      case CompetitionSection.competitions:
+        {
+          final competition = context
+              .read<CompetitionDetailCubit>()
+              .state
+              .competition;
+          final session = context.read<AuthBloc>().state;
+          openHome(
+            context,
+            replace: false,
+            competitionId: widget.competitionId,
+            competitionName: competition?.name,
+            canManageSettings:
+                session.canWrite &&
+                (competition?.isOwnedBy(session.user?.id) ?? false),
+          );
+        }
     }
   }
 
@@ -269,10 +295,10 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
         child: ConstrainedBox(
           constraints: BoxConstraints(minHeight: constraints.maxHeight),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.md,
+            padding: EdgeInsets.fromLTRB(
+              constraints.contentHorizontalInset,
               AppSpacing.sm,
-              AppSpacing.md,
+              constraints.contentHorizontalInset,
               AppSpacing.xl,
             ),
             child: switch (_tab) {

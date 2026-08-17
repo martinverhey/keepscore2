@@ -12,25 +12,25 @@ class Sidebar extends StatelessWidget {
     super.key,
     required this.competitionName,
     required this.current,
+    this.hasCompetition = true,
     required this.canManageSettings,
     required this.isRegistered,
     required this.onSelectSection,
     required this.onNewMatch,
     required this.onOpenHome,
-    required this.onOpenSettings,
     required this.onOpenTheme,
     required this.onSignOut,
     required this.child,
   });
 
   final String? competitionName;
-  final CompetitionSection current;
+  final CompetitionSection? current;
+  final bool hasCompetition;
   final bool canManageSettings;
   final bool isRegistered;
   final ValueChanged<CompetitionSection> onSelectSection;
   final VoidCallback onNewMatch;
   final VoidCallback onOpenHome;
-  final VoidCallback onOpenSettings;
   final VoidCallback onOpenTheme;
   final VoidCallback onSignOut;
   final Widget child;
@@ -43,7 +43,7 @@ class Sidebar extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         AdaptiveMaterialScope(child: _content(context)),
-        Expanded(child: child),
+        Expanded(child: SuppressedBackButtonScope(child: child)),
       ],
     );
   }
@@ -66,7 +66,7 @@ class Sidebar extends StatelessWidget {
         children: [
           _brand(context),
           const SizedBox(height: AppSpacing.lg),
-          if (isRegistered) ...[
+          if (hasCompetition && isRegistered) ...[
             AdaptiveButton(
               label: context.l10n.matchNew,
               icon: const AdaptiveIcon(AdaptiveGlyph.newMatch, size: 18),
@@ -79,52 +79,62 @@ class Sidebar extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _navItem(
-                    context,
-                    glyph: AdaptiveGlyph.leaderboard,
-                    label: context.l10n.leaderboardTitle,
-                    selected: current == CompetitionSection.leaderboard,
-                    onTap: () =>
-                        onSelectSection(CompetitionSection.leaderboard),
-                  ),
-                  _navItem(
-                    context,
-                    glyph: AdaptiveGlyph.matches,
-                    label: context.l10n.matchesTitle,
-                    selected: current == CompetitionSection.matches,
-                    onTap: () => onSelectSection(CompetitionSection.matches),
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  const HorizontalDivider(),
-                  SectionLabel(context.l10n.competitionMenuSectionCompetition),
-                  if (canManageSettings)
+                  if (hasCompetition) ...[
                     _navItem(
                       context,
-                      glyph: AdaptiveGlyph.settings,
-                      label: context.l10n.competitionSettingsTitle,
-                      onTap: onOpenSettings,
+                      glyph: AdaptiveGlyph.leaderboard,
+                      label: context.l10n.leaderboardTitle,
+                      selected: current == CompetitionSection.leaderboard,
+                      onTap: () =>
+                          onSelectSection(CompetitionSection.leaderboard),
                     ),
-                  _navItem(
-                    context,
-                    glyph: AdaptiveGlyph.history,
-                    label: context.l10n.historyTitle,
-                    selected: current == CompetitionSection.history,
-                    onTap: () => onSelectSection(CompetitionSection.history),
-                  ),
-                  if (isRegistered)
                     _navItem(
                       context,
-                      glyph: AdaptiveGlyph.players,
-                      label: context.l10n.playersManageTitle,
-                      selected: current == CompetitionSection.players,
-                      onTap: () => onSelectSection(CompetitionSection.players),
+                      glyph: AdaptiveGlyph.matches,
+                      label: context.l10n.matchesTitle,
+                      selected: current == CompetitionSection.matches,
+                      onTap: () =>
+                          onSelectSection(CompetitionSection.matches),
                     ),
-                  const SizedBox(height: AppSpacing.md),
+                    const SizedBox(height: AppSpacing.lg),
+                    const HorizontalDivider(),
+                    SectionLabel(
+                      context.l10n.competitionMenuSectionCompetition,
+                    ),
+                    if (canManageSettings)
+                      _navItem(
+                        context,
+                        glyph: AdaptiveGlyph.settings,
+                        label: context.l10n.competitionSettingsTitle,
+                        selected: current == CompetitionSection.settings,
+                        onTap: () =>
+                            onSelectSection(CompetitionSection.settings),
+                      ),
+                    _navItem(
+                      context,
+                      glyph: AdaptiveGlyph.history,
+                      label: context.l10n.historyTitle,
+                      selected: current == CompetitionSection.history,
+                      onTap: () =>
+                          onSelectSection(CompetitionSection.history),
+                    ),
+                    if (isRegistered)
+                      _navItem(
+                        context,
+                        glyph: AdaptiveGlyph.players,
+                        label: context.l10n.playersManageTitle,
+                        selected: current == CompetitionSection.players,
+                        onTap: () =>
+                            onSelectSection(CompetitionSection.players),
+                      ),
+                    const SizedBox(height: AppSpacing.md),
+                  ],
                   SectionLabel(context.l10n.competitionMenuSectionUser),
                   _navItem(
                     context,
                     glyph: AdaptiveGlyph.competitions,
                     label: context.l10n.competitionsTitle,
+                    selected: current == CompetitionSection.competitions,
                     onTap: onOpenHome,
                   ),
                 ],

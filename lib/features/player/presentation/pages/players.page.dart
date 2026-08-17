@@ -10,6 +10,8 @@ import '../../../../core/widgets/page_title.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../competition/presentation/cubit/competition_detail_cubit.dart';
 import '../../../competition/presentation/widgets/competition_section.enum.dart';
+import '../../../competition/presentation/widgets/open_home.dart';
+import '../../../competition/presentation/widgets/select_competition_section.dart';
 import '../../../competition/presentation/widgets/sidebar.dart';
 import '../cubit/players_cubit.dart';
 import '../widgets/players.dart';
@@ -28,18 +30,12 @@ class _PlayersPageState extends State<PlayersPage> {
     context.read<PlayersCubit>().load();
   }
 
-  void _selectSection(CompetitionSection section) {
-    final competitionId = context.read<PlayersCubit>().competitionId;
-    switch (section) {
-      case CompetitionSection.leaderboard:
-      case CompetitionSection.matches:
-        context.pop();
-      case CompetitionSection.players:
-        break;
-      case CompetitionSection.history:
-        context.pushReplacement(Routes.history(competitionId));
-    }
-  }
+  void _selectSection(CompetitionSection section) => selectCompetitionSection(
+    context,
+    competitionId: context.read<PlayersCubit>().competitionId,
+    current: CompetitionSection.players,
+    target: section,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -62,10 +58,14 @@ class _PlayersPageState extends State<PlayersPage> {
       isRegistered: session.canWrite,
       onSelectSection: _selectSection,
       onNewMatch: () => context.push<bool>(Routes.newMatch(competitionId)),
-      onOpenHome: () => context.push(Routes.home),
-      onOpenSettings: () =>
-          context.push(Routes.competitionSettings(competitionId)),
-      onOpenTheme: () => context.push(Routes.theme),
+      onOpenHome: () => openHome(
+        context,
+        replace: true,
+        competitionId: competitionId,
+        competitionName: competition?.name,
+        canManageSettings: isOwner,
+      ),
+      onOpenTheme: () => context.pushReplacement(Routes.theme),
       onSignOut: () =>
           context.read<AuthBloc>().add(const AuthSignOutRequested()),
       child: AdaptiveScaffold(
