@@ -89,7 +89,7 @@ class _CreateCompetitionPageState extends State<CreateCompetitionPage> {
           const SizedBox(height: AppSpacing.sm),
           Text(
             context.l10n.competitionSeasonExplainer(1000),
-            style: const TextStyle(color: AppColors.neutral, fontSize: 13),
+            style: AppTypography.caption,
           ),
           const SizedBox(height: AppSpacing.xl),
 

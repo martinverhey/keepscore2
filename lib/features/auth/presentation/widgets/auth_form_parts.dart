@@ -18,10 +18,7 @@ class AuthHeading extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
-        ),
+        Text(title, style: AppTypography.headlineLarge),
         const SizedBox(height: AppSpacing.sm),
         Text(subtitle, style: const TextStyle(color: AppColors.neutral)),
         const SizedBox(height: AppSpacing.xl),

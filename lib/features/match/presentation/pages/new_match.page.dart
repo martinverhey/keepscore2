@@ -140,15 +140,9 @@ class _NewMatchPageState extends State<NewMatchPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          context.l10n.matchPickTeamsTitle,
-          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
-        ),
+        Text(context.l10n.matchPickTeamsTitle, style: AppTypography.titleSmall),
         const SizedBox(height: AppSpacing.xs),
-        Text(
-          context.l10n.matchPickTeamsHelp,
-          style: const TextStyle(color: AppColors.neutral, fontSize: 13),
-        ),
+        Text(context.l10n.matchPickTeamsHelp, style: AppTypography.caption),
         const SizedBox(height: AppSpacing.md),
 
         if (state.players.isEmpty)
@@ -157,10 +151,7 @@ class _NewMatchPageState extends State<NewMatchPage> {
           _teamsRow(context, state),
 
         const SizedBox(height: AppSpacing.lg),
-        Text(
-          context.l10n.matchScoreTitle,
-          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
-        ),
+        Text(context.l10n.matchScoreTitle, style: AppTypography.titleSmall),
         const SizedBox(height: AppSpacing.md),
         _scoreFields(context),
 
@@ -253,7 +244,7 @@ class _NewMatchPageState extends State<NewMatchPage> {
       child: Text(
         hint,
         textAlign: TextAlign.center,
-        style: const TextStyle(color: AppColors.neutral, fontSize: 13),
+        style: AppTypography.caption,
       ),
     );
   }
@@ -353,10 +344,7 @@ class _NewMatchPageState extends State<NewMatchPage> {
             ),
             const SizedBox(height: AppSpacing.sm),
             if (members.isEmpty)
-              Text(
-                placeholder,
-                style: const TextStyle(color: AppColors.neutral, fontSize: 13),
-              )
+              Text(placeholder, style: AppTypography.caption)
             else
               for (final player in _sortedByName(members))
                 _teamMemberRow(player, ratingOf),
@@ -378,12 +366,7 @@ class _NewMatchPageState extends State<NewMatchPage> {
         Expanded(
           child: Text(
             title.toUpperCase(),
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.2,
-              color: color,
-            ),
+            style: AppTypography.eyebrow.copyWith(color: color),
           ),
         ),
         if (members.isNotEmpty)
@@ -393,11 +376,10 @@ class _NewMatchPageState extends State<NewMatchPage> {
             curve: Curves.easeOutCubic,
             builder: (_, value, _) => Text(
               formatRating(value),
-              style: TextStyle(
-                fontSize: 24,
+              style: AppTypography.headlineMedium.copyWith(
                 fontWeight: FontWeight.w800,
                 color: color,
-                fontFeatures: const [FontFeature.tabularFigures()],
+                fontFeatures: AppTypography.tabularFigures,
               ),
             ),
           ),
@@ -416,16 +398,14 @@ class _NewMatchPageState extends State<NewMatchPage> {
           Expanded(
             child: Text(
               player.displayName,
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+              style: AppTypography.bodyMedium,
               overflow: TextOverflow.ellipsis,
             ),
           ),
           Text(
             formatRating(ratingOf(player.id)),
-            style: const TextStyle(
-              color: AppColors.neutral,
-              fontSize: 12,
-              fontFeatures: [FontFeature.tabularFigures()],
+            style: AppTypography.captionSmall.copyWith(
+              fontFeatures: AppTypography.tabularFigures,
             ),
           ),
         ],

@@ -97,10 +97,7 @@ class ProfileSection extends StatelessWidget {
             children: [
               Text(
                 displayName,
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: AppTypography.titleSmall,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -108,10 +105,7 @@ class ProfileSection extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   context.l10n.profileRank(leaderboard.rank, playerCount),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.neutral,
-                  ),
+                  style: AppTypography.captionSmall,
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
@@ -154,21 +148,21 @@ class ProfileSection extends StatelessWidget {
           color: AppColors.gold,
           count: medals.gold,
           iconSize: 20,
-          fontSize: 18,
+          fontSize: AppTypography.titleMediumSize,
         ),
       if (medals.silver > 0)
         MedalChip(
           color: AppColors.silver,
           count: medals.silver,
           iconSize: 20,
-          fontSize: 18,
+          fontSize: AppTypography.titleMediumSize,
         ),
       if (medals.bronze > 0)
         MedalChip(
           color: AppColors.bronze,
           count: medals.bronze,
           iconSize: 20,
-          fontSize: 18,
+          fontSize: AppTypography.titleMediumSize,
         ),
     ];
     return chips;
@@ -211,10 +205,9 @@ class ProfileSection extends StatelessWidget {
         children: [
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 15,
+            style: AppTypography.bodyMedium.copyWith(
               fontWeight: FontWeight.w700,
-              fontFeatures: [FontFeature.tabularFigures()],
+              fontFeatures: AppTypography.tabularFigures,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -223,7 +216,7 @@ class ProfileSection extends StatelessWidget {
           Text(
             label,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 11, color: AppColors.neutral),
+            style: AppTypography.labelTiny,
           ),
         ],
       ),

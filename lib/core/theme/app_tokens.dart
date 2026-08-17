@@ -39,4 +39,81 @@ abstract final class AppColors {
   static const Color iceCore = Color(0xFF29B6F6);
 }
 
+abstract final class AppTypography {
+  static const List<FontFeature> tabularFigures = [
+    FontFeature.tabularFigures(),
+  ];
+
+  static const double displaySize = 40;
+  static const double headlineLargeSize = 28;
+  static const double headlineMediumSize = 24;
+  static const double titleLargeSize = 20;
+  static const double titleMediumSize = 18;
+  static const double titleSmallSize = 17;
+  static const double bodyLargeSize = 16;
+  static const double bodyMediumSize = 15;
+  static const double bodySmallSize = 14;
+  static const double labelLargeSize = 13;
+  static const double captionSmallSize = 12;
+  static const double labelTinySize = 11;
+
+  static const TextStyle displayLarge = TextStyle(
+    fontSize: displaySize,
+    fontWeight: FontWeight.w700,
+  );
+  static const TextStyle headlineLarge = TextStyle(
+    fontSize: headlineLargeSize,
+    fontWeight: FontWeight.w700,
+  );
+  static const TextStyle headlineMedium = TextStyle(
+    fontSize: headlineMediumSize,
+    fontWeight: FontWeight.w700,
+  );
+  static const TextStyle titleLarge = TextStyle(
+    fontSize: titleLargeSize,
+    fontWeight: FontWeight.w700,
+  );
+  static const TextStyle titleMedium = TextStyle(
+    fontSize: titleMediumSize,
+    fontWeight: FontWeight.w700,
+  );
+  static const TextStyle titleSmall = TextStyle(
+    fontSize: titleSmallSize,
+    fontWeight: FontWeight.w700,
+  );
+  static const TextStyle bodyLarge = TextStyle(
+    fontSize: bodyLargeSize,
+    fontWeight: FontWeight.w600,
+  );
+  static const TextStyle bodyMedium = TextStyle(
+    fontSize: bodyMediumSize,
+    fontWeight: FontWeight.w600,
+  );
+  static const TextStyle bodySmall = TextStyle(
+    fontSize: bodySmallSize,
+    fontWeight: FontWeight.w600,
+  );
+  static const TextStyle labelLarge = TextStyle(
+    fontSize: labelLargeSize,
+    fontWeight: FontWeight.w600,
+  );
+  static const TextStyle eyebrow = TextStyle(
+    fontSize: bodyMediumSize,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 1.2,
+  );
+  static const TextStyle caption = TextStyle(
+    fontSize: labelLargeSize,
+    color: AppColors.neutral,
+  );
+  static const TextStyle captionSmall = TextStyle(
+    fontSize: captionSmallSize,
+    color: AppColors.neutral,
+  );
+  static const TextStyle labelTiny = TextStyle(
+    fontSize: labelTinySize,
+    color: AppColors.neutral,
+  );
+}
+
 const double kContentMaxWidth = 640;

@@ -9,9 +9,6 @@ class HelpText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: const TextStyle(color: AppColors.neutral, fontSize: 13),
-    );
+    return Text(text, style: AppTypography.caption);
   }
 }

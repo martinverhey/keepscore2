@@ -26,15 +26,7 @@ class NavRow extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Expanded(
-              child: Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
+            Expanded(child: Text(label, style: AppTypography.bodyLarge)),
             const AdaptiveIcon(
               AdaptiveGlyph.chevronRight,
               color: AppColors.neutral,

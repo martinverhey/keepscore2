@@ -170,15 +170,15 @@ class Sidebar extends StatelessWidget {
           children: [
             Text(
               context.l10n.appTitle,
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+              style: AppTypography.bodyMedium.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
             ),
             if (competitionName != null) ...[
               const SizedBox(height: 2),
               Text(
                 competitionName!,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: AppColors.neutral,
+                style: AppTypography.captionSmall.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
                 overflow: TextOverflow.ellipsis,
@@ -226,8 +226,7 @@ class Sidebar extends StatelessWidget {
                 child: Text(
                   label,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 14,
+                  style: AppTypography.bodySmall.copyWith(
                     fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                     color: selected ? accent : null,
                   ),
@@ -257,7 +256,10 @@ class Sidebar extends StatelessWidget {
           ),
           child: Text(
             label,
-            style: const TextStyle(fontSize: 14, color: AppColors.neutral),
+            style: AppTypography.bodySmall.copyWith(
+              fontWeight: FontWeight.w400,
+              color: AppColors.neutral,
+            ),
           ),
         ),
       ),

@@ -31,11 +31,7 @@ class PillDropdown extends StatelessWidget {
           children: [
             Text(
               label,
-              style: TextStyle(
-                color: accent,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
+              style: AppTypography.labelLarge.copyWith(color: accent),
             ),
             const SizedBox(width: 2),
             AdaptiveIcon(AdaptiveGlyph.chevronDown, color: accent, size: 16),

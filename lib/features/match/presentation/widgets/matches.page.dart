@@ -82,10 +82,7 @@ class MatchesPage extends StatelessWidget {
   Widget _needsPlayersHint(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.sm),
-      child: Text(
-        context.l10n.matchNeedsPlayers,
-        style: const TextStyle(color: AppColors.neutral, fontSize: 13),
-      ),
+      child: Text(context.l10n.matchNeedsPlayers, style: AppTypography.caption),
     );
   }
 

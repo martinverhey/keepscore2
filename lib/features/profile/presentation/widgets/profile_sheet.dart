@@ -156,19 +156,13 @@ class _ProfileSheetState extends State<ProfileSheet> {
             draws: leaderboard.draws,
           ),
           const SizedBox(height: AppSpacing.lg),
-          Text(
-            context.l10n.profileGamesTitle,
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-          ),
+          Text(context.l10n.profileGamesTitle, style: AppTypography.bodyMedium),
           const SizedBox(height: AppSpacing.sm),
           _gamesRow(context, state),
           const SizedBox(height: AppSpacing.md),
           _streaksRow(context, state),
           const SizedBox(height: AppSpacing.lg),
-          Text(
-            context.l10n.profileTrendTitle,
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-          ),
+          Text(context.l10n.profileTrendTitle, style: AppTypography.bodyMedium),
           const SizedBox(height: AppSpacing.sm),
           if (state.history.length < 2)
             EmptyState(message: context.l10n.profileNotEnoughMatches)
@@ -243,7 +237,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
         Flexible(
           child: Text(
             context.l10n.profileRank(leaderboard.rank, state.playerCount),
-            style: const TextStyle(fontSize: 12, color: AppColors.neutral),
+            style: AppTypography.captionSmall,
             overflow: TextOverflow.ellipsis,
           ),
         ),
@@ -314,10 +308,8 @@ class _ProfileSheetState extends State<ProfileSheet> {
             children: [
               Text(
                 formatRating(leaderboard.rating),
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
-                  fontFeatures: [FontFeature.tabularFigures()],
+                style: AppTypography.titleSmall.copyWith(
+                  fontFeatures: AppTypography.tabularFigures,
                 ),
               ),
               if (leaderboard.todayDelta != 0) ...[
@@ -330,7 +322,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
           Text(
             context.l10n.profileSeasonRatingLabel,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 11, color: AppColors.neutral),
+            style: AppTypography.labelTiny,
           ),
         ],
       ),
@@ -369,17 +361,15 @@ class _ProfileSheetState extends State<ProfileSheet> {
         children: [
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-              fontFeatures: [FontFeature.tabularFigures()],
+            style: AppTypography.titleSmall.copyWith(
+              fontFeatures: AppTypography.tabularFigures,
             ),
           ),
           const SizedBox(height: 2),
           Text(
             label,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 11, color: AppColors.neutral),
+            style: AppTypography.labelTiny,
           ),
         ],
       ),
@@ -478,7 +468,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
         Flexible(
           child: Text(
             '= ${context.l10n.profileStreakMilestoneWins(wins)}',
-            style: const TextStyle(fontSize: 11, color: AppColors.neutral),
+            style: AppTypography.labelTiny,
             overflow: TextOverflow.ellipsis,
           ),
         ),
@@ -492,7 +482,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
       children: [
         Text(
           context.l10n.profileRecentMatchesTitle,
-          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+          style: AppTypography.bodyMedium,
         ),
         const SizedBox(height: AppSpacing.sm),
         for (final match in matches) _recentMatchTile(match),
@@ -548,21 +538,20 @@ class _ProfileSheetState extends State<ProfileSheet> {
           Expanded(
             child: Text(
               seasonLabel(context, leaderboard.season, widget.seasonLength),
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+              style: AppTypography.bodySmall,
             ),
           ),
           if (medal != null) ...[
             AdaptiveIcon(AdaptiveGlyph.medal, color: medal.color, size: 16),
             const SizedBox(width: AppSpacing.sm),
           ],
-          Text(
-            '#${leaderboard.rank}',
-            style: const TextStyle(fontSize: 13, color: AppColors.neutral),
-          ),
+          Text('#${leaderboard.rank}', style: AppTypography.caption),
           const SizedBox(width: AppSpacing.sm),
           Text(
             formatRating(leaderboard.rating),
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+            style: AppTypography.bodySmall.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ],
       ),

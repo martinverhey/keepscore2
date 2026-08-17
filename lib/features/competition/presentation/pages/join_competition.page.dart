@@ -62,7 +62,7 @@ class JoinCompetitionPage extends StatelessWidget {
       children: [
         Text(
           context.l10n.joinConfirmTitle(preview.name),
-          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+          style: AppTypography.headlineMedium,
         ),
         const SizedBox(height: AppSpacing.xs),
         Text(
@@ -130,10 +130,7 @@ class JoinCompetitionPage extends StatelessWidget {
         style: const TextStyle(fontWeight: FontWeight.w700),
       ),
       const SizedBox(height: AppSpacing.xs),
-      Text(
-        context.l10n.joinClaimSubtitle,
-        style: const TextStyle(color: AppColors.neutral, fontSize: 13),
-      ),
+      Text(context.l10n.joinClaimSubtitle, style: AppTypography.caption),
       const SizedBox(height: AppSpacing.md),
       Expanded(
         child: ListView.separated(

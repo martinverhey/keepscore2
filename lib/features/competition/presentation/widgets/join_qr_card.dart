@@ -47,8 +47,7 @@ class JoinQrCard extends StatelessWidget {
           Text(
             context.l10n.competitionQrInvite,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 15,
+            style: AppTypography.bodyMedium.copyWith(
               fontWeight: FontWeight.w700,
               color: accent,
             ),
@@ -57,7 +56,7 @@ class JoinQrCard extends StatelessWidget {
           Text(
             context.l10n.competitionQrHelp,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.neutral, fontSize: 12),
+            style: AppTypography.captionSmall,
           ),
         ],
       ),

@@ -352,6 +352,29 @@ code; don't relitigate them.
   its hue. `test/core/adaptive_colors_test.dart` asserts the ratios against
   the app's own surface — note that surface is a warm tint, not white, so
   measuring against `#FFFFFF` flatters a colour by roughly 0.2.
+- **Text styling goes through `AppTypography` (`core/theme/app_tokens.dart`),
+  never a raw `TextStyle(fontSize: N, ...)` literal.** It's a fixed scale —
+  `displayLarge`/`headlineLarge`/`headlineMedium`/`titleLarge`/`titleMedium`/
+  `titleSmall`/`bodyLarge`/`bodyMedium`/`bodySmall`/`labelLarge`/`eyebrow`,
+  plus three colour-baked muted variants (`caption`/`captionSmall`/
+  `labelTiny`, all `AppColors.neutral`) for the "secondary text" role that
+  showed up identically in a dozen files before this existed. Each carries
+  its own weight (`titleSmall` is bold, `bodyLarge` is semibold, etc.) since
+  that pairing was already consistent across the app wherever a given size
+  showed up. A call site needing a different colour/weight/feature than the
+  token's default calls `.copyWith(...)` on it rather than constructing a new
+  `TextStyle` — `AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w700,
+  color: color)`, not a fresh literal that happens to share bodyMedium's size.
+  `AppTypography.tabularFigures` is the shared `[FontFeature.tabularFigures()]`
+  list for the same reason — every rating/score number spliced it in via
+  copyWith instead of redeclaring the literal. A handful of reusable widgets
+  parametrize their own `fontSize` at the call site
+  (`RatingDelta`/`MedalChip`, used at a couple of different sizes depending on
+  context) — those default to and get overridden with the matching
+  `AppTypography.*Size` scalar (`bodySmallSize`, `captionSmallSize`, …)
+  rather than a bare number, so the scale still has exactly one source. The
+  one deliberate exception is `InitialsCircle`, whose `fontSize: size * 0.36`
+  is computed from the avatar's own diameter, not picked from the scale.
 - **All repository methods wrap their body in `guard()`** from
   `core/error/failure.dart`, which converts Postgrest/socket exceptions into
   a sealed `Failure`. UI renders them via `failure.localized(l10n)`.

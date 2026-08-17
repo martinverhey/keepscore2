@@ -382,10 +382,8 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
                 Flexible(
                   child: Text(
                     competition.name,
-                    style: const TextStyle(
+                    style: AppTypography.labelLarge.copyWith(
                       color: AppColors.neutral,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),

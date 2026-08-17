@@ -44,10 +44,7 @@ class SelectableRow extends StatelessWidget {
             Expanded(
               child: Text(
                 label,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: AppTypography.bodyLarge,
                 overflow: TextOverflow.ellipsis,
               ),
             ),

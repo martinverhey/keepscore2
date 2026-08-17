@@ -123,14 +123,14 @@ class LeaderboardPage extends StatelessWidget {
       children: [
         Text(
           seasonLabel(context, season, seasonLength),
-          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+          style: AppTypography.titleSmall,
         ),
         const SizedBox(height: 2),
         Text(
           context.l10n.leaderboardSeasonEnds(
             DateFormat.MMMd(context.languageTag).format(season.endsAt),
           ),
-          style: const TextStyle(color: AppColors.neutral, fontSize: 12),
+          style: AppTypography.captionSmall,
         ),
       ],
     );

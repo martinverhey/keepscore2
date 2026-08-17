@@ -19,7 +19,11 @@ Color deltaColor(double value) {
 }
 
 class RatingDelta extends StatelessWidget {
-  const RatingDelta({super.key, required this.value, this.fontSize = 14});
+  const RatingDelta({
+    super.key,
+    required this.value,
+    this.fontSize = AppTypography.bodySmallSize,
+  });
 
   final double value;
   final double fontSize;
@@ -28,11 +32,10 @@ class RatingDelta extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       formatDelta(value),
-      style: TextStyle(
+      style: AppTypography.bodySmall.copyWith(
         color: deltaColor(value),
         fontSize: fontSize,
-        fontWeight: FontWeight.w600,
-        fontFeatures: const [FontFeature.tabularFigures()],
+        fontFeatures: AppTypography.tabularFigures,
       ),
     );
   }

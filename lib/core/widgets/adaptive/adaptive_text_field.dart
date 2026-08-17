@@ -103,7 +103,7 @@ class AdaptiveTextField extends StatelessWidget {
       child: Text(
         label,
         style: CupertinoTheme.of(context).textTheme.tabLabelTextStyle.copyWith(
-          fontSize: 13,
+          fontSize: AppTypography.labelLargeSize,
           color: accentColor,
         ),
       ),
@@ -145,7 +145,7 @@ class AdaptiveTextField extends StatelessWidget {
         errorText!,
         style: const TextStyle(
           color: CupertinoColors.destructiveRed,
-          fontSize: 13,
+          fontSize: AppTypography.labelLargeSize,
         ),
       ),
     );

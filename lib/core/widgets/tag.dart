@@ -33,13 +33,13 @@ class Tag extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: TextStyle(
-          fontSize: isCode ? 13 : 11,
-          fontWeight: FontWeight.w700,
-          color: color,
-          letterSpacing: isCode ? 1.2 : null,
-          fontFeatures: isCode ? const [FontFeature.tabularFigures()] : null,
-        ),
+        style: (isCode ? AppTypography.labelLarge : AppTypography.labelTiny)
+            .copyWith(
+              fontWeight: FontWeight.w700,
+              color: color,
+              letterSpacing: isCode ? 1.2 : null,
+              fontFeatures: isCode ? AppTypography.tabularFigures : null,
+            ),
       ),
     );
   }

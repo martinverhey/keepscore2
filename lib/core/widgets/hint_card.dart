@@ -30,10 +30,7 @@ class HintCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (badge != null) ...[badge!, const SizedBox(height: AppSpacing.sm)],
-          Text(
-            message,
-            style: const TextStyle(color: AppColors.neutral, fontSize: 13),
-          ),
+          Text(message, style: AppTypography.caption),
           const SizedBox(height: AppSpacing.sm),
           AdaptiveButton(
             label: actionLabel,

@@ -67,10 +67,8 @@ class MatchTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
             child: Text(
               '${match.teamAScore} – ${match.teamBScore}',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                fontFeatures: [FontFeature.tabularFigures()],
+              style: AppTypography.titleMedium.copyWith(
+                fontFeatures: AppTypography.tabularFigures,
               ),
             ),
           ),
@@ -97,8 +95,7 @@ class MatchTile extends StatelessWidget {
             textAlign: alignEnd ? TextAlign.end : TextAlign.start,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 15,
+            style: AppTypography.bodyMedium.copyWith(
               fontWeight: won ? FontWeight.w700 : FontWeight.w500,
               color: won ? null : AppColors.neutral,
             ),
@@ -106,7 +103,7 @@ class MatchTile extends StatelessWidget {
         const SizedBox(height: 2),
         RatingDelta(
           value: roster.isEmpty ? 0 : roster.first.ratingDelta,
-          fontSize: 13,
+          fontSize: AppTypography.labelLargeSize,
         ),
       ],
     );

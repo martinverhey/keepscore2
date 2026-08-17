@@ -112,11 +112,7 @@ class Sheet extends StatelessWidget {
     if (title == null) return null;
     return Text(
       title!,
-      style: TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.w700,
-        color: titleColor,
-      ),
+      style: AppTypography.titleLarge.copyWith(color: titleColor),
       overflow: TextOverflow.ellipsis,
     );
   }

@@ -67,9 +67,7 @@ class PlayerRow extends StatelessWidget {
         Flexible(
           child: Text(
             player.displayName,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
+            style: AppTypography.bodyLarge.copyWith(
               color: player.isActive ? null : AppColors.neutral,
             ),
             overflow: TextOverflow.ellipsis,

@@ -172,21 +172,16 @@ class _MatchDetailPageState extends State<MatchDetailPage> {
       children: [
         Text(
           '${match.teamAScore} – ${match.teamBScore}',
-          style: const TextStyle(
-            fontSize: 40,
-            fontWeight: FontWeight.w700,
-            fontFeatures: [FontFeature.tabularFigures()],
+          style: AppTypography.displayLarge.copyWith(
+            fontFeatures: AppTypography.tabularFigures,
           ),
         ),
         const SizedBox(height: AppSpacing.xs),
         if (match.isDraw)
-          Text(
-            context.l10n.matchDraw,
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-          ),
+          Text(context.l10n.matchDraw, style: AppTypography.bodyMedium),
         Text(
           DateFormat.yMMMd(context.languageTag).add_Hm().format(match.playedAt),
-          style: const TextStyle(color: AppColors.neutral, fontSize: 13),
+          style: AppTypography.caption,
         ),
       ],
     );
@@ -239,8 +234,7 @@ class _MatchDetailPageState extends State<MatchDetailPage> {
         Expanded(
           child: Text(
             title,
-            style: TextStyle(
-              fontSize: 15,
+            style: AppTypography.bodyMedium.copyWith(
               fontWeight: FontWeight.w700,
               color: color,
             ),
@@ -252,7 +246,7 @@ class _MatchDetailPageState extends State<MatchDetailPage> {
               team == MatchTeam.a ? match.teamARating : match.teamBRating,
             ),
           ),
-          style: const TextStyle(color: AppColors.neutral, fontSize: 12),
+          style: AppTypography.captionSmall,
         ),
       ],
     );
@@ -266,17 +260,17 @@ class _MatchDetailPageState extends State<MatchDetailPage> {
           Expanded(
             child: Text(
               participant.displayName,
-              style: const TextStyle(fontSize: 16),
+              style: AppTypography.bodyLarge.copyWith(
+                fontWeight: FontWeight.w400,
+              ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
           Text(
             '${formatRating(participant.ratingBefore)} → '
             '${formatRating(participant.ratingAfter)}',
-            style: const TextStyle(
-              color: AppColors.neutral,
-              fontSize: 13,
-              fontFeatures: [FontFeature.tabularFigures()],
+            style: AppTypography.caption.copyWith(
+              fontFeatures: AppTypography.tabularFigures,
             ),
           ),
           const SizedBox(width: AppSpacing.sm),

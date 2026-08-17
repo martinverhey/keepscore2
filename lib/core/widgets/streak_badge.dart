@@ -22,14 +22,7 @@ class StreakBadge extends StatelessWidget {
           size: 18,
         ),
         const SizedBox(width: AppSpacing.xs),
-        Text(
-          label,
-          style: TextStyle(
-            color: color,
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        Text(label, style: AppTypography.labelLarge.copyWith(color: color)),
       ],
     );
   }

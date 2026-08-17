@@ -50,7 +50,7 @@ class CompetitionTile extends StatelessWidget {
         Expanded(
           child: Text(
             competition.name,
-            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+            style: AppTypography.titleSmall,
             overflow: TextOverflow.ellipsis,
           ),
         ),
@@ -76,7 +76,7 @@ class CompetitionTile extends StatelessWidget {
           child: Text(
             '${context.l10n.competitionPlayers(overview.playerCount)}'
             ' · ${context.l10n.competitionMatches(overview.matchCount)}',
-            style: const TextStyle(color: AppColors.neutral, fontSize: 13),
+            style: AppTypography.caption,
           ),
         ),
         if (onManage != null)

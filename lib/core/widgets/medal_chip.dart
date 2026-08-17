@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 
+import '../theme/app_tokens.dart';
 import 'adaptive/adaptive.dart';
 
 class MedalChip extends StatelessWidget {
@@ -8,7 +9,7 @@ class MedalChip extends StatelessWidget {
     required this.color,
     required this.count,
     this.iconSize = 14,
-    this.fontSize = 12,
+    this.fontSize = AppTypography.captionSmallSize,
   });
 
   final Color color;
@@ -25,11 +26,11 @@ class MedalChip extends StatelessWidget {
         const SizedBox(width: 2),
         Text(
           '$count',
-          style: TextStyle(
+          style: AppTypography.captionSmall.copyWith(
             color: color,
             fontSize: fontSize,
             fontWeight: FontWeight.w700,
-            fontFeatures: const [FontFeature.tabularFigures()],
+            fontFeatures: AppTypography.tabularFigures,
           ),
         ),
       ],

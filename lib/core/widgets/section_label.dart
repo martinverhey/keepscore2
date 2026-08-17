@@ -13,11 +13,7 @@ class SectionLabel extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: Text(
         text,
-        style: TextStyle(
-          fontWeight: FontWeight.w600,
-          color: AppColors.neutral,
-          fontSize: 13,
-        ),
+        style: AppTypography.labelLarge.copyWith(color: AppColors.neutral),
       ),
     );
   }

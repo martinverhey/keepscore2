@@ -90,11 +90,10 @@ class LeaderboardRow extends StatelessWidget {
     width: 32,
     child: Text(
       '${leaderboard.rank}',
-      style: TextStyle(
-        fontSize: 16,
+      style: AppTypography.bodyLarge.copyWith(
         fontWeight: FontWeight.w700,
         color: leaderboard.rank.rankColor ?? AppColors.neutral,
-        fontFeatures: const [FontFeature.tabularFigures()],
+        fontFeatures: AppTypography.tabularFigures,
       ),
     ),
   );
@@ -111,10 +110,7 @@ class LeaderboardRow extends StatelessWidget {
             Flexible(
               child: Text(
                 leaderboard.displayName,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: AppTypography.bodyLarge,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -155,10 +151,8 @@ class LeaderboardRow extends StatelessWidget {
             ],
             Text(
               formatRating(leaderboard.rating),
-              style: const TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w700,
-                fontFeatures: [FontFeature.tabularFigures()],
+              style: AppTypography.titleSmall.copyWith(
+                fontFeatures: AppTypography.tabularFigures,
               ),
             ),
           ],
@@ -202,7 +196,11 @@ class LeaderboardRow extends StatelessWidget {
             children: [
               for (var i = 0; i < tier; i++) ...[
                 if (i > 0) const SizedBox(width: 2),
-                AdaptiveIcon(AdaptiveGlyph.fire, color: AppColors.fireCore, size: 13),
+                AdaptiveIcon(
+                  AdaptiveGlyph.fire,
+                  color: AppColors.fireCore,
+                  size: 13,
+                ),
               ],
             ],
           ),

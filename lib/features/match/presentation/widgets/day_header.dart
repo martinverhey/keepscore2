@@ -14,8 +14,7 @@ class DayHeader extends StatelessWidget {
       padding: const EdgeInsets.only(top: AppSpacing.xs, bottom: AppSpacing.sm),
       child: Text(
         matchDayLabel(context, day),
-        style: const TextStyle(
-          fontSize: 13,
+        style: AppTypography.labelLarge.copyWith(
           fontWeight: FontWeight.w700,
           color: AppColors.neutral,
         ),

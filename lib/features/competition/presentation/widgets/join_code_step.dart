@@ -35,10 +35,7 @@ class _JoinCodeStepState extends State<JoinCodeStep> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const SizedBox(height: AppSpacing.xxl),
-        Text(
-          context.l10n.joinTitle,
-          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
-        ),
+        Text(context.l10n.joinTitle, style: AppTypography.headlineMedium),
         const SizedBox(height: AppSpacing.xs),
         Text(
           context.l10n.joinSubtitle,

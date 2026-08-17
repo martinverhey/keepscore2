@@ -31,11 +31,10 @@ class TodayDeltaBadge extends StatelessWidget {
             const SizedBox(width: 2),
             Text(
               amount,
-              style: TextStyle(
+              style: AppTypography.captionSmall.copyWith(
                 color: color,
-                fontSize: 12,
                 fontWeight: FontWeight.w700,
-                fontFeatures: const [FontFeature.tabularFigures()],
+                fontFeatures: AppTypography.tabularFigures,
               ),
             ),
           ],
