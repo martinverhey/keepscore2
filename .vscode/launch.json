@@ -1,0 +1,19 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "App",
+      "request": "launch",
+      "type": "dart"
+    },
+    {
+      "name": "Web",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "chrome",
+      "args": [
+        "--web-port=8080"
+      ]
+    }
+  ]
+}
