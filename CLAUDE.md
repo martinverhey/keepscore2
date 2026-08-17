@@ -120,6 +120,19 @@ code; don't relitigate them.
 - **No freezed, no build_runner, no json_serializable.** Plain classes with
   `Equatable` and hand-written `fromMap`. (Explicit user preference.)
 - **No usecase layer.** Blocs call repositories directly.
+- **Awaiting several independent repository calls in a cubit starts each one
+  first, unawaited, then `await`s each in turn — never `Future.wait<Object?>`
+  with positional-index casts.** `final a = repo.one(); final b = repo.two();
+  final resultA = await a; final resultB = await b;` keeps the same
+  concurrency as `Future.wait` (every call starts before the first `await`)
+  while each variable comes back its own real type, so there's no `results[0]
+  as Foo` to keep in sync by hand as calls are added, reordered, or made
+  conditional. A call that's only sometimes needed (guarded on a nullable id,
+  say) is a nullable `Future<T>?` local, awaited with `!` inside the same
+  guard, rather than an `if (cond) ...` list entry — see
+  `ProfileOverviewCubit._loadForGameType`. Reach for actual `Future.wait` only
+  when the futures are `Future<void>` with nothing to unpack (e.g.
+  `CompetitionDetailPage._reload`).
 - **Widget structure:**
   - Nested `Row`/`Column`/`Wrap`/`Stack` with multiple children or a
     conditional gets extracted into a small private method named for what it
@@ -160,6 +173,27 @@ code; don't relitigate them.
     pinned at bottom. For an action-sheet shape (a variable-length column of
     choices plus Cancel), the choice column is `content` and only Cancel is
     `secondaryButton`.
+  - **A raw `TextEditingController`'s text never lives in cubit state.**
+    `MatchScoreSheet` and `NewMatchPage`'s score fields both keep the
+    controller itself as page-local state and redraw with a bare
+    `setState(() {})` in `onChanged`; the cubit only ever receives the
+    parsed value at the moment of commit — `MatchDetailCubit.updateScore(
+    scoreA:, scoreB:)`, `MatchFormCubit.submit(scoreA:, scoreB:)` — never a
+    per-keystroke callback. `NewMatchPage` used to route score through
+    `MatchFormCubit` instead (`scoreAChanged`/`scoreBChanged` emitting on
+    every keystroke, plus a `BlocConsumer` `listener` writing the emitted
+    value back into the same controller it came from to keep the two in
+    sync); that round-trip existed only because the text lived in the wrong
+    layer, and the sync code disappeared entirely once it moved local — a
+    plain `BlocBuilder` was enough again. A business-rule check that
+    genuinely needs the live text (`MatchFormReady.canSubmit`/
+    `scoresAreValid`/`drawIsRefused`) takes the parsed value as a
+    `{required int? scoreAValue, ...}` parameter instead of reading a field
+    off state, with the page computing it from its own controller
+    (`_scoreAValue`/`_scoreBValue` getters, `int.tryParse` on the
+    trimmed text) each time it's needed — the same shape `ratingOf`/
+    `teamRating` already use for values that depend on more than just the
+    state's own fields.
 - **One class or enum per file.** This applies to Cubit states and to domain
   enums/models alike:
   - **Every Cubit's state lives in its own `<name>_state.dart` file**, next to
@@ -168,6 +202,32 @@ code; don't relitigate them.
     any private helper used only by the state (e.g. a `copyWith`-adjacent
     formatter). This applies to Cubits. `AuthBloc` is a `Bloc` (state *and*
     events tightly coupled, one small file) and stays as-is.
+  - **A cubit state file may hold a `sealed` hierarchy of subclasses instead
+    of one flat class** — "one class per file" is about not scattering a
+    type across the codebase, not about how many related classes one state
+    file may declare. `match_form_state.dart` is the one cubit built this
+    way: `MatchFormLoading`/`MatchFormMissing`/`MatchFormFailed`/
+    `MatchFormReady` all live there, in place of the flat-`status`-enum +
+    nullable-fields shape every other cubit state uses (`MatchDetailState`,
+    `LeaderboardState`, etc.). Reach for it only when that flat shape would
+    leave a `!`-unwrap or a defensive `?? fallback` standing in for "this
+    can't actually be null here" — `MatchFormReady.competition` is
+    non-nullable, so `ratingOf`/`drawIsRefused` read `competition`/
+    `competition.allowDraws` straight, with no `?? 1000`/`?? true`; a
+    `MatchFormReady` instance *is* the proof `competition` finished loading.
+    `canSubmit`/`scoresAreValid`/`isDraw`/`drawIsRefused` live as methods on
+    `MatchFormReady` rather than getters, because the score itself is never
+    cubit state (see the `TextEditingController` bullet above) and has to be
+    passed in. The trade-off: every
+    mutator that isn't `load()` now has to check the current phase before
+    doing anything, where a flat state needed that check in exactly one
+    place. `MatchFormCubit._ready` (a private `MatchFormReady? get`,
+    re-read after every `await` rather than captured once, so a mutation
+    that lands mid-request — `assign`/`setTeam` while `submit` is
+    in flight — isn't clobbered by a stale copy) is what `refreshPlayers`/
+    `assign`/`setTeam`/`submit` all guard on before touching `state`. Most
+    cubits don't have a `Ready` payload with this much real per-phase logic
+    on it and should stay flat.
   - **Domain enums and secondary models get their own file too**, out of
     whichever file originally bundled them (e.g. `match_team.enum.dart` and
     `match_participant.model.dart` came out of `match_entry.model.dart`;
