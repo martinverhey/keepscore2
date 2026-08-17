@@ -83,7 +83,7 @@ class _CompetitionDetailPageState extends State<CompetitionDetailPage> {
   ]);
 
   Future<void> _openSettings() =>
-      _openAndReload(Routes.competitionMenu(widget.competitionId));
+      _openAndReload(Routes.settings(widget.competitionId));
 
   @override
   Widget build(BuildContext context) {

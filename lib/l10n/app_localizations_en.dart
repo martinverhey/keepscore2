@@ -211,13 +211,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get competitionSettings => 'Settings';
 
   @override
-  String get competitionMenuSectionCompetition => 'Competition';
+  String get competitionSettingsSectionCompetition => 'Competition';
 
   @override
-  String get competitionMenuSectionUser => 'User';
+  String get competitionSettingsSectionUser => 'User';
 
   @override
-  String get competitionMenuSectionSystem => 'System';
+  String get competitionSettingsSectionSystem => 'System';
 
   @override
   String get competitionSettingsTitle => 'Competition settings';

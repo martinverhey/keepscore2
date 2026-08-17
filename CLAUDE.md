@@ -80,7 +80,7 @@ or moved:
 - **Edit/delete a match** — `match_detail.page.dart`,
   `session.canWrite && state.isManageableBy(session.user?.id)` (creator or
   owner only, not just registered).
-- **History** (`competition_menu.page.dart`) is deliberately *outside*
+- **History** (`settings.page.dart`) is deliberately *outside*
   this gate — it's read-only historical data a guest may read. Competition
   Settings and Manage players in the same menu stay gated.
 
@@ -99,7 +99,7 @@ lib/
 
 `features/settings/` is the one deliberate exception to "a feature owns the
 domain it presents": alongside its own theme-preference domain, it also holds
-the presentation for the competition-admin menu — `CompetitionMenuPage`,
+the presentation for the competition-admin menu — `SettingsPage`,
 `CompetitionSettingsPage`/`CompetitionSettingsCubit`, `HistoryPage`/
 `HistoryCubit` — even though those read `CompetitionRepository`/
 `LeaderboardRepository`, which stay put in `competition`/`leaderboard`. They

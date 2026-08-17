@@ -29,7 +29,7 @@ import '../../features/player/presentation/cubit/players_cubit.dart';
 import '../../features/player/presentation/pages/players.page.dart';
 import '../../features/settings/presentation/cubit/competition_settings_cubit.dart';
 import '../../features/settings/presentation/cubit/history_cubit.dart';
-import '../../features/settings/presentation/pages/competition_menu.page.dart';
+import '../../features/settings/presentation/pages/settings.page.dart';
 import '../../features/settings/presentation/pages/competition_settings.page.dart';
 import '../../features/settings/presentation/pages/history.page.dart';
 import '../../features/settings/presentation/pages/theme.page.dart';
@@ -47,7 +47,7 @@ abstract final class Routes {
   static const theme = '/settings/theme';
 
   static String competition(String id) => '/competition/$id';
-  static String competitionMenu(String id) => '/competition/$id/settings';
+  static String settings(String id) => '/competition/$id/settings';
   static String competitionSettings(String id) =>
       '/competition/$id/settings/competition';
   static String players(String id) => '/competition/$id/settings/players';
@@ -211,7 +211,7 @@ GoRouter createRouter(AuthBloc authBloc) {
                 path: 'settings',
                 pageBuilder: (context, state) => adaptivePage(
                   context,
-                  child: CompetitionMenuPage(
+                  child: SettingsPage(
                     competitionId: state.pathParameters['id']!,
                   ),
                 ),

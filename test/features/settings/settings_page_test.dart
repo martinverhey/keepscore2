@@ -7,7 +7,7 @@ import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_detail_cubit.dart';
-import 'package:keepscore2/features/settings/presentation/pages/competition_menu.page.dart';
+import 'package:keepscore2/features/settings/presentation/pages/settings.page.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -65,17 +65,17 @@ void main() {
           child: MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            home: const CompetitionMenuPage(competitionId: 'c1'),
+            home: const SettingsPage(competitionId: 'c1'),
           ),
         ),
       );
       await tester.pumpAndSettle();
 
       final l10n = AppLocalizations.of(
-        tester.element(find.byType(CompetitionMenuPage)),
+        tester.element(find.byType(SettingsPage)),
       );
 
-      expect(find.text(l10n.competitionMenuSectionSystem), findsOneWidget);
+      expect(find.text(l10n.competitionSettingsSectionSystem), findsOneWidget);
       expect(find.text(l10n.settingsThemeTitle), findsOneWidget);
 
       final signOutButton = find.text(l10n.authSignOut);
@@ -120,14 +120,14 @@ void main() {
           child: MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            home: const CompetitionMenuPage(competitionId: 'c1'),
+            home: const SettingsPage(competitionId: 'c1'),
           ),
         ),
       );
       await tester.pumpAndSettle();
 
       final l10n = AppLocalizations.of(
-        tester.element(find.byType(CompetitionMenuPage)),
+        tester.element(find.byType(SettingsPage)),
       );
 
       expect(find.text(l10n.competitionSettingsTitle), findsNothing);

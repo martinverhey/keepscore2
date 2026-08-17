@@ -49,16 +49,21 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final l10n = AppLocalizations.of(tester.element(find.text('body content')));
+      final l10n = AppLocalizations.of(
+        tester.element(find.text('body content')),
+      );
 
       expect(find.text('Office Table Tennis'), findsOneWidget);
       expect(find.text(l10n.leaderboardTitle), findsOneWidget);
       expect(find.text(l10n.matchesTitle), findsOneWidget);
-      expect(find.text(l10n.competitionMenuSectionCompetition), findsOneWidget);
+      expect(
+        find.text(l10n.competitionSettingsSectionCompetition),
+        findsOneWidget,
+      );
       expect(find.text(l10n.competitionSettingsTitle), findsOneWidget);
       expect(find.text(l10n.historyTitle), findsOneWidget);
       expect(find.text(l10n.playersManageTitle), findsOneWidget);
-      expect(find.text(l10n.competitionMenuSectionUser), findsOneWidget);
+      expect(find.text(l10n.competitionSettingsSectionUser), findsOneWidget);
       expect(find.text(l10n.competitionsTitle), findsOneWidget);
       expect(find.text(l10n.settingsThemeTitle), findsOneWidget);
       expect(find.text(l10n.authSignOut), findsOneWidget);
@@ -115,11 +120,16 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final l10n = AppLocalizations.of(tester.element(find.text('body content')));
+      final l10n = AppLocalizations.of(
+        tester.element(find.text('body content')),
+      );
 
       expect(find.text(l10n.matchNew), findsNothing);
       expect(find.text(l10n.leaderboardTitle), findsNothing);
-      expect(find.text(l10n.competitionMenuSectionCompetition), findsNothing);
+      expect(
+        find.text(l10n.competitionSettingsSectionCompetition),
+        findsNothing,
+      );
       expect(find.text(l10n.competitionsTitle), findsOneWidget);
 
       expect(tester.takeException(), isNull);
@@ -156,7 +166,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final l10n = AppLocalizations.of(tester.element(find.text('body content')));
+      final l10n = AppLocalizations.of(
+        tester.element(find.text('body content')),
+      );
 
       expect(find.text('Office Table Tennis'), findsOneWidget);
       expect(find.text(l10n.leaderboardTitle), findsOneWidget);

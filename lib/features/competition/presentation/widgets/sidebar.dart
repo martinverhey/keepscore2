@@ -96,7 +96,7 @@ class Sidebar extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (hasCompetition) ..._competitionNavItems(context),
-          SectionLabel(context.l10n.competitionMenuSectionUser),
+          SectionLabel(context.l10n.competitionSettingsSectionUser),
           _navItem(
             context,
             glyph: AdaptiveGlyph.competitions,
@@ -127,7 +127,7 @@ class Sidebar extends StatelessWidget {
       ),
       const SizedBox(height: AppSpacing.lg),
       const HorizontalDivider(),
-      SectionLabel(context.l10n.competitionMenuSectionCompetition),
+      SectionLabel(context.l10n.competitionSettingsSectionCompetition),
       if (canManageSettings)
         _navItem(
           context,

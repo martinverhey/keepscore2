@@ -76,9 +76,9 @@
   "competitionNotFound": "This competition is gone, or you're no longer in it.",
 
   "competitionSettings": "Settings",
-  "competitionMenuSectionCompetition": "Competition",
-  "competitionMenuSectionUser": "User",
-  "competitionMenuSectionSystem": "System",
+  "competitionSettingsSectionCompetition": "Competition",
+  "competitionSettingsSectionUser": "User",
+  "competitionSettingsSectionSystem": "System",
   "competitionSettingsTitle": "Competition settings",
   "playersManageTitle": "Manage players",
   "historyTitle": "History",

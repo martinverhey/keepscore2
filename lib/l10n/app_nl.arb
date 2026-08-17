@@ -76,9 +76,9 @@
   "competitionNotFound": "Deze competitie bestaat niet meer, of je zit er niet meer in.",
 
   "competitionSettings": "Instellingen",
-  "competitionMenuSectionCompetition": "Competitie",
-  "competitionMenuSectionUser": "Gebruiker",
-  "competitionMenuSectionSystem": "Systeem",
+  "competitionSettingsSectionCompetition": "Competitie",
+  "competitionSettingsSectionUser": "Gebruiker",
+  "competitionSettingsSectionSystem": "Systeem",
   "competitionSettingsTitle": "Competitie-instellingen",
   "playersManageTitle": "Spelers beheren",
   "historyTitle": "Geschiedenis",

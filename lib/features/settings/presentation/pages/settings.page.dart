@@ -18,15 +18,15 @@ import '../../../competition/presentation/cubit/competition_detail_cubit.dart';
 import '../../../competition/presentation/widgets/join_code_card.dart';
 import '../../../competition/presentation/widgets/join_qr_card.dart';
 
-class CompetitionMenuPage extends StatefulWidget {
-  const CompetitionMenuPage({super.key, required this.competitionId});
+class SettingsPage extends StatefulWidget {
+  const SettingsPage({super.key, required this.competitionId});
   final String competitionId;
 
   @override
-  State<CompetitionMenuPage> createState() => _CompetitionMenuPageState();
+  State<SettingsPage> createState() => _SettingsPageState();
 }
 
-class _CompetitionMenuPageState extends State<CompetitionMenuPage> {
+class _SettingsPageState extends State<SettingsPage> {
   bool _showQr = false;
 
   @override
@@ -59,7 +59,7 @@ class _CompetitionMenuPageState extends State<CompetitionMenuPage> {
         retryLabel: context.l10n.commonRetry,
         onRetry: context.read<CompetitionDetailCubit>().load,
       ),
-      CompetitionDetailReady(:final competition) => _menu(
+      CompetitionDetailReady(:final competition) => _settings(
         context,
         competition,
         session,
@@ -67,7 +67,7 @@ class _CompetitionMenuPageState extends State<CompetitionMenuPage> {
     };
   }
 
-  Widget _menu(
+  Widget _settings(
     BuildContext context,
     Competition competition,
     AuthSessionState session,
@@ -83,7 +83,7 @@ class _CompetitionMenuPageState extends State<CompetitionMenuPage> {
           JoinCodeCard(code: competition.joinCode),
           _qrToggle(context, competition.joinCode),
           const SizedBox(height: AppSpacing.lg),
-          SectionLabel(context.l10n.competitionMenuSectionCompetition),
+          SectionLabel(context.l10n.competitionSettingsSectionCompetition),
           if (session.canWrite && isOwner)
             NavRow(
               label: context.l10n.competitionSettingsTitle,
@@ -101,13 +101,13 @@ class _CompetitionMenuPageState extends State<CompetitionMenuPage> {
               onTap: () => context.push(Routes.players(widget.competitionId)),
             ),
           const SizedBox(height: AppSpacing.md),
-          SectionLabel(context.l10n.competitionMenuSectionUser),
+          SectionLabel(context.l10n.competitionSettingsSectionUser),
           NavRow(
             label: context.l10n.competitionsTitle,
             onTap: () => context.push(Routes.home),
           ),
           const SizedBox(height: AppSpacing.md),
-          SectionLabel(context.l10n.competitionMenuSectionSystem),
+          SectionLabel(context.l10n.competitionSettingsSectionSystem),
           NavRow(
             label: context.l10n.settingsThemeTitle,
             onTap: () => context.push(Routes.theme),

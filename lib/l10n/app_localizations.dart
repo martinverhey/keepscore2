@@ -446,23 +446,23 @@ abstract class AppLocalizations {
   /// **'Settings'**
   String get competitionSettings;
 
-  /// No description provided for @competitionMenuSectionCompetition.
+  /// No description provided for @competitionSettingsSectionCompetition.
   ///
   /// In en, this message translates to:
   /// **'Competition'**
-  String get competitionMenuSectionCompetition;
+  String get competitionSettingsSectionCompetition;
 
-  /// No description provided for @competitionMenuSectionUser.
+  /// No description provided for @competitionSettingsSectionUser.
   ///
   /// In en, this message translates to:
   /// **'User'**
-  String get competitionMenuSectionUser;
+  String get competitionSettingsSectionUser;
 
-  /// No description provided for @competitionMenuSectionSystem.
+  /// No description provided for @competitionSettingsSectionSystem.
   ///
   /// In en, this message translates to:
   /// **'System'**
-  String get competitionMenuSectionSystem;
+  String get competitionSettingsSectionSystem;
 
   /// No description provided for @competitionSettingsTitle.
   ///
