@@ -2,11 +2,8 @@ import 'package:bloc/bloc.dart';
 
 import '../../../../core/error/failure.dart';
 import '../../../../core/extensions/player_list_active.dart';
-import '../../../competition/domain/competition.model.dart';
 import '../../../competition/domain/competition_repository.dart';
 import '../../../leaderboard/domain/leaderboard_repository.dart';
-import '../../../leaderboard/domain/season_window.model.dart';
-import '../../../player/domain/player.model.dart';
 import '../../../player/domain/player_repository.dart';
 import '../../domain/match_entry.model.dart';
 import '../../domain/match_repository.dart';
@@ -37,29 +34,31 @@ class MatchFormCubit extends Cubit<MatchFormState> {
   Future<void> load() async {
     emit(const MatchFormLoading());
     try {
-      final results = await Future.wait<Object?>([
-        _competitions.overview(competitionId),
-        _players.roster(competitionId),
-        _leaderboard.currentSeason(competitionId),
-      ]);
-      if (isClosed) return;
+      final overviewFuture = _competitions.overview(competitionId);
+      final playersFuture = _players.currentPlayers(competitionId);
+      final seasonFuture = _leaderboard.currentSeason(competitionId);
 
-      final overview = results[0] as CompetitionOverview?;
+      final overview = await overviewFuture;
+      if (isClosed) return;
       if (overview == null) {
         emit(const MatchFormMissing());
         return;
       }
 
+      final players = await playersFuture;
+      final season = await seasonFuture;
+      if (isClosed) return;
+
       final leaderboards = await _leaderboard.leaderboards(
         competitionId: competitionId,
-        seasonId: (results[2] as SeasonWindow).id,
+        seasonId: season.id,
       );
       if (isClosed) return;
 
       emit(
         MatchFormReady(
           competition: overview.competition,
-          players: (results[1] as List<Player>).active,
+          players: players.active,
           ratings: {
             for (final leaderboard in leaderboards)
               leaderboard.playerId: leaderboard.rating,
@@ -75,7 +74,7 @@ class MatchFormCubit extends Cubit<MatchFormState> {
   Future<void> refreshPlayers() async {
     if (_ready == null) return;
     try {
-      final players = await _players.roster(competitionId);
+      final players = await _players.currentPlayers(competitionId);
       if (isClosed) return;
       final ready = _ready;
       if (ready != null) emit(ready.copyWith(players: players.active));

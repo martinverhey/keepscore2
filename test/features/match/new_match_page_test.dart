@@ -68,7 +68,7 @@ void main() {
           matchCount: 0,
         ),
       );
-      when(() => players.roster('c1')).thenAnswer(
+      when(() => players.currentPlayers('c1')).thenAnswer(
         (_) async => [
           _player('p1', 'Zoe'),
           _player('p2', 'Ada'),

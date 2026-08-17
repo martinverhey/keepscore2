@@ -27,7 +27,9 @@ void main() {
   setUp(() => repository = MockPlayerRepository());
 
   void stubRoster(List<Player> players) {
-    when(() => repository.roster('c1')).thenAnswer((_) async => players);
+    when(
+      () => repository.currentPlayers('c1'),
+    ).thenAnswer((_) async => players);
   }
 
   blocTest<PlayersCubit, PlayersState>(
@@ -73,8 +75,9 @@ void main() {
 
   blocTest<PlayersCubit, PlayersState>(
     'a failed load surfaces the error',
-    setUp: () =>
-        when(() => repository.roster('c1')).thenThrow(const NetworkFailure()),
+    setUp: () => when(
+      () => repository.currentPlayers('c1'),
+    ).thenThrow(const NetworkFailure()),
     build: () => PlayersCubit(repository, 'c1'),
     act: (cubit) => cubit.load(),
     verify: (cubit) {
@@ -91,7 +94,9 @@ void main() {
     build: () => PlayersCubit(repository, 'c1'),
     act: (cubit) async {
       await cubit.load();
-      when(() => repository.roster('c1')).thenThrow(const NetworkFailure());
+      when(
+        () => repository.currentPlayers('c1'),
+      ).thenThrow(const NetworkFailure());
       await cubit.refresh();
     },
     verify: (cubit) {
@@ -122,7 +127,7 @@ void main() {
         'Grace',
         'Zoe',
       ]);
-      verify(() => repository.roster('c1')).called(1);
+      verify(() => repository.currentPlayers('c1')).called(1);
     },
   );
 

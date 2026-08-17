@@ -17,7 +17,7 @@ class PlayersCubit extends Cubit<PlayersState> {
   Future<void> load({bool silent = false}) async {
     if (!silent) emit(const PlayersState());
     try {
-      final players = await _repository.roster(competitionId);
+      final players = await _repository.currentPlayers(competitionId);
       if (isClosed) return;
       emit(
         state.copyWith(

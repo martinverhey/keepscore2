@@ -4,10 +4,8 @@ import 'package:bloc/bloc.dart';
 
 import '../../../../core/error/failure.dart';
 import '../../../match/domain/game_type.enum.dart';
-import '../../../match/domain/match_entry.model.dart';
 import '../../../match/domain/match_repository.dart';
 import '../../../match/presentation/cubit/game_type_filter_cubit.dart';
-import '../../domain/head_to_head_record.model.dart';
 import '../../domain/profile_repository.dart';
 import 'profile_versus_state.dart';
 
@@ -36,24 +34,25 @@ class ProfileVersusCubit extends Cubit<ProfileVersusState> {
     emit(const ProfileVersusState());
     final gameType = _gameTypeFilterCubit.state;
     try {
-      final results = await Future.wait<Object?>([
-        _profileRepository.headToHead(
-          playerId: playerId,
-          opponentId: opponentId,
-        ),
-        _matchRepository.recentBetweenPlayers(
-          playerId: playerId,
-          opponentId: opponentId,
-          gameType: gameType,
-        ),
-      ]);
+      final headToHeadFuture = _profileRepository.headToHead(
+        playerId: playerId,
+        opponentId: opponentId,
+      );
+      final recentMatchesFuture = _matchRepository.recentBetweenPlayers(
+        playerId: playerId,
+        opponentId: opponentId,
+        gameType: gameType,
+      );
+
+      final headToHead = await headToHeadFuture;
+      final recentMatches = await recentMatchesFuture;
       if (isClosed || gameType != _gameTypeFilterCubit.state) return;
       emit(
         ProfileVersusState(
           status: ProfileVersusStatus.ready,
           selectedGameType: gameType,
-          headToHead: results[0] as List<HeadToHeadRecord>,
-          recentMatches: results[1] as List<MatchEntry>,
+          headToHead: headToHead,
+          recentMatches: recentMatches,
         ),
       );
     } on Failure catch (failure) {

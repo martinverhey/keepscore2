@@ -126,7 +126,7 @@ void main() {
         ),
       );
 
-      when(() => players.roster(_competitionId)).thenAnswer(
+      when(() => players.currentPlayers(_competitionId)).thenAnswer(
         (_) async => const [
           Player(
             id: 'p-chris',
@@ -360,8 +360,7 @@ GoRouter _buildRouter(
             providers: [
               BlocProvider(
                 create: (_) =>
-                    CompetitionDetailCubit(competitionRepository, id)
-                      ..load(),
+                    CompetitionDetailCubit(competitionRepository, id)..load(),
               ),
               BlocProvider(create: (_) => PlayersCubit(playerRepository, id)),
               BlocProvider(

@@ -10,7 +10,7 @@ class SupabasePlayerRepository implements PlayerRepository {
   final SupabaseClient _client;
 
   @override
-  Future<List<Player>> roster(String competitionId) => guard(() async {
+  Future<List<Player>> currentPlayers(String competitionId) => guard(() async {
     final rows = await _client
         .from('players')
         .select()

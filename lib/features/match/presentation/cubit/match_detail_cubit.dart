@@ -1,9 +1,7 @@
 import 'package:bloc/bloc.dart';
 
 import '../../../../core/error/failure.dart';
-import '../../../competition/domain/competition.model.dart';
 import '../../../competition/domain/competition_repository.dart';
-import '../../domain/match_entry.model.dart';
 import '../../domain/match_repository.dart';
 import 'match_detail_state.dart';
 
@@ -25,20 +23,20 @@ class MatchDetailCubit extends Cubit<MatchDetailState> {
   Future<void> load() async {
     emit(const MatchDetailState());
     try {
-      final results = await Future.wait<Object?>([
-        _matches.byId(matchId),
-        _competitions.overview(competitionId),
-      ]);
+      final matchFuture = _matches.byId(matchId);
+      final overviewFuture = _competitions.overview(competitionId);
+
+      final match = await matchFuture;
+      final overview = await overviewFuture;
       if (isClosed) return;
 
-      final match = results[0] as MatchEntry?;
       emit(
         MatchDetailState(
           status: match == null
               ? MatchDetailStatus.missing
               : MatchDetailStatus.ready,
           match: match,
-          competition: (results[1] as CompetitionOverview?)?.competition,
+          competition: overview?.competition,
         ),
       );
     } on Failure catch (failure) {

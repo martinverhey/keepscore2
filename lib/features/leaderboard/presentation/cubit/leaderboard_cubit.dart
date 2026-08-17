@@ -6,9 +6,7 @@ import '../../../../core/data/realtime.dart';
 import '../../../../core/error/failure.dart';
 import '../../../match/domain/game_type.enum.dart';
 import '../../../match/presentation/cubit/game_type_filter_cubit.dart';
-import '../../domain/leaderboard.model.dart';
 import '../../domain/leaderboard_repository.dart';
-import '../../domain/medals.model.dart';
 import '../../domain/season.model.dart';
 import 'leaderboard_state.dart';
 
@@ -49,19 +47,18 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
         endsAt: window.endsAt.toLocal(),
       );
 
-      final results = await Future.wait<Object?>([
-        _repository.leaderboards(
-          competitionId: competitionId,
-          seasonId: season.id,
-          gameType: gameType,
-        ),
-        medalsFuture,
-      ]);
+      final leaderboardsFuture = _repository.leaderboards(
+        competitionId: competitionId,
+        seasonId: season.id,
+        gameType: gameType,
+      );
+
+      final leaderboards = await leaderboardsFuture;
+      final medalTallies = await medalsFuture;
       if (isClosed || gameType != _gameTypeFilterCubit.state) return;
 
-      final leaderboards = results[0] as List<Leaderboard>;
       final medals = {
-        for (final tally in results[1] as List<Medals>) tally.playerId: tally,
+        for (final tally in medalTallies) tally.playerId: tally,
       };
 
       emit(
@@ -108,19 +105,19 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
     );
 
     try {
-      final results = await Future.wait<Object?>([
-        _repository.leaderboards(
-          competitionId: competitionId,
-          seasonId: state.season?.id,
-          gameType: gameType,
-        ),
-        _repository.medals(competitionId, gameType: gameType),
-      ]);
+      final leaderboardsFuture = _repository.leaderboards(
+        competitionId: competitionId,
+        seasonId: state.season?.id,
+        gameType: gameType,
+      );
+      final medalsFuture = _repository.medals(competitionId, gameType: gameType);
+
+      final leaderboards = await leaderboardsFuture;
+      final medalTallies = await medalsFuture;
       if (isClosed || gameType != _gameTypeFilterCubit.state) return;
 
-      final leaderboards = results[0] as List<Leaderboard>;
       final medals = {
-        for (final tally in results[1] as List<Medals>) tally.playerId: tally,
+        for (final tally in medalTallies) tally.playerId: tally,
       };
 
       emit(

@@ -77,7 +77,7 @@ void main() {
         matchCount: 0,
       ),
     );
-    when(() => players.roster('c1')).thenAnswer(
+    when(() => players.currentPlayers('c1')).thenAnswer(
       (_) async => roster ?? [_player('p1', 'Ada'), _player('p2', 'Grace')],
     );
     when(() => leaderboard.currentSeason('c1')).thenAnswer(
@@ -122,7 +122,9 @@ void main() {
     'a failed load is reported instead of an empty form',
     setUp: () {
       stubLoad();
-      when(() => players.roster('c1')).thenThrow(const NetworkFailure());
+      when(
+        () => players.currentPlayers('c1'),
+      ).thenThrow(const NetworkFailure());
     },
     build: build,
     act: (cubit) => cubit.load(),
@@ -140,7 +142,7 @@ void main() {
     act: (cubit) async {
       await cubit.load();
       cubit.assign('p1', MatchTeam.a);
-      when(() => players.roster('c1')).thenAnswer(
+      when(() => players.currentPlayers('c1')).thenAnswer(
         (_) async => [_player('p1', 'Adaeze'), _player('p2', 'Grace')],
       );
       await cubit.refreshPlayers();
@@ -160,7 +162,9 @@ void main() {
     build: build,
     act: (cubit) async {
       await cubit.load();
-      when(() => players.roster('c1')).thenThrow(const NetworkFailure());
+      when(
+        () => players.currentPlayers('c1'),
+      ).thenThrow(const NetworkFailure());
       await cubit.refreshPlayers();
     },
     verify: (cubit) {
@@ -211,10 +215,7 @@ void main() {
     build: build,
     act: (cubit) async {
       await cubit.load();
-      expect(
-        _ready(cubit).canSubmit(scoreAValue: 11, scoreBValue: 7),
-        isFalse,
-      );
+      expect(_ready(cubit).canSubmit(scoreAValue: 11, scoreBValue: 7), isFalse);
       cubit.assign('p1', MatchTeam.a);
       cubit.assign('p2', MatchTeam.b);
       expect(
@@ -246,10 +247,7 @@ void main() {
         _ready(cubit).drawIsRefused(scoreAValue: 7, scoreBValue: 7),
         isTrue,
       );
-      expect(
-        _ready(cubit).canSubmit(scoreAValue: 7, scoreBValue: 7),
-        isFalse,
-      );
+      expect(_ready(cubit).canSubmit(scoreAValue: 7, scoreBValue: 7), isFalse);
     },
   );
 

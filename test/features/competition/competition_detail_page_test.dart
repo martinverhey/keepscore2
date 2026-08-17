@@ -75,7 +75,9 @@ void main() {
           myPlayerId: 'p-ada',
         ),
       );
-      when(() => players.roster(_competitionId)).thenAnswer((_) async => []);
+      when(
+        () => players.currentPlayers(_competitionId),
+      ).thenAnswer((_) async => []);
       when(
         () => matches.feed(competitionId: _competitionId, limit: 20),
       ).thenAnswer((_) async => []);
@@ -133,11 +135,8 @@ void main() {
                         MatchListCubit(matches, gameTypeFilterCubit, id),
                   ),
                   BlocProvider(
-                    create: (_) => LeaderboardCubit(
-                      leaderboard,
-                      gameTypeFilterCubit,
-                      id,
-                    ),
+                    create: (_) =>
+                        LeaderboardCubit(leaderboard, gameTypeFilterCubit, id),
                   ),
                 ],
                 child: CompetitionDetailPage(competitionId: id),
