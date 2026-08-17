@@ -202,32 +202,89 @@ code; don't relitigate them.
     any private helper used only by the state (e.g. a `copyWith`-adjacent
     formatter). This applies to Cubits. `AuthBloc` is a `Bloc` (state *and*
     events tightly coupled, one small file) and stays as-is.
-  - **A cubit state file may hold a `sealed` hierarchy of subclasses instead
-    of one flat class** — "one class per file" is about not scattering a
-    type across the codebase, not about how many related classes one state
-    file may declare. `match_form_state.dart` is the one cubit built this
-    way: `MatchFormLoading`/`MatchFormMissing`/`MatchFormFailed`/
-    `MatchFormReady` all live there, in place of the flat-`status`-enum +
-    nullable-fields shape every other cubit state uses (`MatchDetailState`,
-    `LeaderboardState`, etc.). Reach for it only when that flat shape would
-    leave a `!`-unwrap or a defensive `?? fallback` standing in for "this
-    can't actually be null here" — `MatchFormReady.competition` is
-    non-nullable, so `ratingOf`/`drawIsRefused` read `competition`/
-    `competition.allowDraws` straight, with no `?? 1000`/`?? true`; a
-    `MatchFormReady` instance *is* the proof `competition` finished loading.
-    `canSubmit`/`scoresAreValid`/`isDraw`/`drawIsRefused` live as methods on
-    `MatchFormReady` rather than getters, because the score itself is never
-    cubit state (see the `TextEditingController` bullet above) and has to be
-    passed in. The trade-off: every
-    mutator that isn't `load()` now has to check the current phase before
-    doing anything, where a flat state needed that check in exactly one
-    place. `MatchFormCubit._ready` (a private `MatchFormReady? get`,
-    re-read after every `await` rather than captured once, so a mutation
-    that lands mid-request — `assign`/`setTeam` while `submit` is
-    in flight — isn't clobbered by a stale copy) is what `refreshPlayers`/
-    `assign`/`setTeam`/`submit` all guard on before touching `state`. Most
-    cubits don't have a `Ready` payload with this much real per-phase logic
-    on it and should stay flat.
+  - **Every cubit state is a `sealed` hierarchy of subclasses, not one flat
+    `status`-enum-plus-nullable-fields class** — "one class per file" is
+    about not scattering a type across the codebase, not about how many
+    related classes one state file may declare. `match_form_state.dart`
+    was the first cubit built this way and is still the template:
+    `MatchFormLoading`/`MatchFormMissing`/`MatchFormFailed`/`MatchFormReady`
+    each live there instead of one `MatchFormState` with a `status` field
+    and every phase's fields all nullable at once. The shape a given cubit
+    needs falls into one of four recurring buckets — grep an existing
+    `<name>_state.dart` for the closest match before inventing a new shape:
+    - **Fetch one thing, with a "not found" case** (`CompetitionDetailState`,
+      `CompetitionSettingsState`, `MatchDetailState`): `XLoading`/`XMissing`/
+      `XFailed(failure)`/`XReady(...)`. A field that was nullable purely to
+      mean "not loaded yet" becomes non-nullable on `XReady` — e.g.
+      `MatchFormReady.competition`/`MatchDetailReady.match` — so
+      `ratingOf`/`isManageableBy` read it straight, no `?? 1000`/`!`. A
+      field that's genuinely optional *even once ready* (e.g.
+      `MatchDetailReady.competition` — a match can exist with no
+      resolvable competition) stays nullable there. When outside callers
+      need a value regardless of phase (`CompetitionDetailState.competition`/
+      `.myPlayerId`, read opportunistically by five different sibling
+      pages before their own cubit has loaded), declare it as a virtual
+      getter on the sealed base returning `null`, overridden non-null on
+      `XReady` only — cheaper than every call site pattern-matching or
+      importing an extension.
+    - **Fetch a list/aggregate, no "not found" case** (`CompetitionListState`,
+      `LeaderboardState`, `MatchListState`, `PlayersState`, `HistoryState`,
+      `ProfileHistoryState`, `ProfileOverviewState`, `ProfileVersusState`):
+      `XLoading`/`XFailed(failure)`/`XReady(...)` — `XFailed` only ever
+      for a load with *no* prior data; a silent background refresh
+      (`load(silent: true)`) or reactive re-fetch
+      (`GameTypeFilterCubit`-driven `_applyGameType`) that fails while
+      `XReady` already has data just keeps that `XReady` unchanged rather
+      than transitioning anywhere, dropping the failure silently — check
+      the widget first, since in every one of these cubits the page never
+      actually rendered that failure while data was on screen anyway (only
+      `actionFailure`, a genuine mutation-error field on `XReady`, ever
+      renders). If the background op sets a `busy`-style flag first, still
+      reset it back on failure so the spinner doesn't stick — see
+      `HistoryCubit.selectSeason`/`LeaderboardCubit._applyGameType`.
+    - **Multi-step wizard, steps carry different data** (`SignInState`:
+      chooser/email/code; `JoinCompetitionState`: code/confirm): one
+      subclass per step (`SignInChooser`/`SignInEmailStep`/`SignInCodeStep`,
+      `JoinCode`/`JoinConfirm`), carrying only what that step needs — this
+      is the shape that most directly removes real `!`-unwraps
+      (`JoinConfirm.preview` is non-null, where the old flat
+      `JoinCompetitionState.preview` needed `!` at every read). A mutator
+      like `emailChanged`/`codeChanged` only compiles against the step
+      that has that field, so calling it from the wrong step is a
+      structural no-op, not a hybrid state with the wrong fields set — see
+      `SignInCubit.emailChanged`/`codeChanged` guarding on `_email`/
+      `_codeStep`. `back()`-style transitions construct the target step's
+      subclass, carrying over the fields that survive it (`email` survives
+      code→email; `code` does not). A helper like `SignInCubit._run` that
+      needs to toggle `busy`/`failure` regardless of which step is current
+      dispatches on the concrete subtype with a small `switch (state) {
+      XStepA s => s.copyWith(...), XStepB s => s.copyWith(...), ... }`.
+    - **Single form with a terminal "succeeded" case**
+      (`CreateCompetitionState`): `XEditing(...)` / `XCreated(result)` — the
+      editable fields and the result never coexist, unlike the old flat
+      class's `created` field sitting nullable next to `name`/`busy` the
+      whole time.
+
+    `canSubmit`/`scoresAreValid`/`isDraw`/`drawIsRefused`-style checks that
+    need the live value of a `TextEditingController` live as methods taking
+    that value as a parameter, not getters, on whichever `Ready`/step
+    subclass they belong to — see the `TextEditingController` bullet above.
+    Every mutator that isn't `load()` now has to check the current phase
+    before doing anything, where a flat state needed that check in exactly
+    one place: a private getter per relevant subclass (`_ready`, or
+    `_email`/`_codeStep` for a wizard), **re-read after every `await` rather
+    than captured once**, so a mutation that lands mid-request (`assign`/
+    `setTeam` while `submit` is in flight) isn't clobbered by a stale copy —
+    see `MatchFormCubit._ready`.
+
+    **`ThemeState` is the one deliberate exception, left flat.** It's
+    never anything but a fully-formed, synchronously-available value —
+    `ThemeCubit.load()`/`select()` both `emit` a complete `ThemeState`
+    directly, with no failure path and no "not ready yet" moment worth
+    modeling. There's no `!`/`?? fallback` a sealed split would remove, and
+    a sealed hierarchy with exactly one variant isn't the pattern — reach
+    for this exception only when a cubit's state genuinely has no phases at
+    all, not merely "usually loads fast."
   - **Domain enums and secondary models get their own file too**, out of
     whichever file originally bundled them (e.g. `match_team.enum.dart` and
     `match_participant.model.dart` came out of `match_entry.model.dart`;
