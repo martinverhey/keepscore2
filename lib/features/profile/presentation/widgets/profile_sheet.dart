@@ -87,33 +87,34 @@ class _ProfileSheetState extends State<ProfileSheet> {
         return Sheet(
           title: widget.displayName,
           avatar: InitialsCircle(displayName: widget.displayName, size: 48),
-          subtitleWidget: state.leaderboard == null
-              ? null
-              : _rankSummary(context, state),
-          headerTrailing: state.status == ProfileOverviewStatus.loading
+          subtitleWidget:
+              state is ProfileOverviewReady && state.leaderboard != null
+              ? _rankSummary(context, state)
+              : null,
+          headerTrailing: state is ProfileOverviewLoading
               ? null
               : GameTypeFilterDropdown(
                   selected: context.watch<GameTypeFilterCubit>().state,
                   onSelected: context.read<GameTypeFilterCubit>().select,
                 ),
-          content: switch (state.status) {
-            ProfileOverviewStatus.loading => const Padding(
+          content: switch (state) {
+            ProfileOverviewLoading() => const Padding(
               padding: EdgeInsets.all(AppSpacing.xl),
               child: AdaptiveLoader(),
             ),
-            ProfileOverviewStatus.failed => ErrorRetry(
-              message: state.failure!.localized(context.l10n),
+            ProfileOverviewFailed(:final failure) => ErrorRetry(
+              message: failure.localized(context.l10n),
               retryLabel: context.l10n.commonRetry,
               onRetry: cubit.load,
             ),
-            ProfileOverviewStatus.ready => _ready(context, state),
+            ProfileOverviewReady() => _ready(context, state),
           },
         );
       },
     );
   }
 
-  Widget _ready(BuildContext context, ProfileOverviewState state) {
+  Widget _ready(BuildContext context, ProfileOverviewReady state) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -137,7 +138,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
     );
   }
 
-  Widget _overview(BuildContext context, ProfileOverviewState state) {
+  Widget _overview(BuildContext context, ProfileOverviewReady state) {
     final leaderboard = state.leaderboard;
 
     return Column(
@@ -193,22 +194,22 @@ class _ProfileSheetState extends State<ProfileSheet> {
 
     return BlocBuilder<ProfileVersusCubit, ProfileVersusState>(
       bloc: cubit,
-      builder: (context, state) => switch (state.status) {
-        ProfileVersusStatus.loading => const Padding(
+      builder: (context, state) => switch (state) {
+        ProfileVersusLoading() => const Padding(
           padding: EdgeInsets.all(AppSpacing.xl),
           child: AdaptiveLoader(),
         ),
-        ProfileVersusStatus.failed => ErrorRetry(
-          message: state.failure!.localized(context.l10n),
+        ProfileVersusFailed(:final failure) => ErrorRetry(
+          message: failure.localized(context.l10n),
           retryLabel: context.l10n.commonRetry,
           onRetry: cubit.load,
         ),
-        ProfileVersusStatus.ready => _versus(context, state),
+        ProfileVersusReady() => _versus(context, state),
       },
     );
   }
 
-  Widget _versus(BuildContext context, ProfileVersusState state) {
+  Widget _versus(BuildContext context, ProfileVersusReady state) {
     final records = state.records;
     if (records.isEmpty) {
       return EmptyState(
@@ -233,7 +234,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
     );
   }
 
-  Widget _rankSummary(BuildContext context, ProfileOverviewState state) {
+  Widget _rankSummary(BuildContext context, ProfileOverviewReady state) {
     final leaderboard = state.leaderboard!;
     final tally = state.medals;
 
@@ -281,7 +282,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
 
   Widget _ratingSummary(
     BuildContext context,
-    ProfileOverviewState state,
+    ProfileOverviewReady state,
     Leaderboard leaderboard,
   ) {
     return _statCard([
@@ -385,7 +386,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
     );
   }
 
-  Widget _gamesRow(BuildContext context, ProfileOverviewState state) {
+  Widget _gamesRow(BuildContext context, ProfileOverviewReady state) {
     return _statCard([
       _statBlock(
         context.l10n.profileTodayGamesLabel,
@@ -403,7 +404,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
     ]);
   }
 
-  Widget _streaksRow(BuildContext context, ProfileOverviewState state) {
+  Widget _streaksRow(BuildContext context, ProfileOverviewReady state) {
     final streak = state.streak;
     final winStreak = streak.type == StreakType.win ? streak.count : 0;
     final tier = streak.type.tier(winStreak);
@@ -508,22 +509,22 @@ class _ProfileSheetState extends State<ProfileSheet> {
 
     return BlocBuilder<ProfileHistoryCubit, ProfileHistoryState>(
       bloc: cubit,
-      builder: (context, state) => switch (state.status) {
-        ProfileHistoryStatus.loading => const Padding(
+      builder: (context, state) => switch (state) {
+        ProfileHistoryLoading() => const Padding(
           padding: EdgeInsets.all(AppSpacing.xl),
           child: AdaptiveLoader(),
         ),
-        ProfileHistoryStatus.failed => ErrorRetry(
-          message: state.failure!.localized(context.l10n),
+        ProfileHistoryFailed(:final failure) => ErrorRetry(
+          message: failure.localized(context.l10n),
           retryLabel: context.l10n.commonRetry,
           onRetry: cubit.load,
         ),
-        ProfileHistoryStatus.ready => _history(context, state),
+        ProfileHistoryReady() => _history(context, state),
       },
     );
   }
 
-  Widget _history(BuildContext context, ProfileHistoryState state) {
+  Widget _history(BuildContext context, ProfileHistoryReady state) {
     if (state.leaderboards.isEmpty) {
       return EmptyState(message: context.l10n.profileHistoryEmpty);
     }

@@ -73,9 +73,9 @@ void main() {
     build: build,
     act: (cubit) => cubit.load(),
     verify: (cubit) {
-      expect(cubit.state.status, ProfileHistoryStatus.ready);
-      expect(cubit.state.leaderboards, hasLength(1));
-      expect(cubit.state.leaderboards.single.rating, 1120);
+      final state = cubit.state as ProfileHistoryReady;
+      expect(state.leaderboards, hasLength(1));
+      expect(state.leaderboards.single.rating, 1120);
     },
   );
 
@@ -91,8 +91,10 @@ void main() {
     build: build,
     act: (cubit) => cubit.load(),
     verify: (cubit) {
-      expect(cubit.state.status, ProfileHistoryStatus.failed);
-      expect(cubit.state.failure, isA<NetworkFailure>());
+      expect(
+        (cubit.state as ProfileHistoryFailed).failure,
+        isA<NetworkFailure>(),
+      );
     },
   );
 
@@ -112,8 +114,9 @@ void main() {
       await _settle();
     },
     verify: (cubit) {
-      expect(cubit.state.selectedGameType, GameType.oneVOne);
-      expect(cubit.state.leaderboards.single.rating, 1090);
+      final state = cubit.state as ProfileHistoryReady;
+      expect(state.selectedGameType, GameType.oneVOne);
+      expect(state.leaderboards.single.rating, 1090);
     },
   );
 
@@ -160,8 +163,9 @@ void main() {
       await _settle();
     },
     verify: (cubit) {
-      expect(cubit.state.selectedGameType, GameType.twoVTwo);
-      expect(cubit.state.leaderboards.single.rating, 1010);
+      final state = cubit.state as ProfileHistoryReady;
+      expect(state.selectedGameType, GameType.twoVTwo);
+      expect(state.leaderboards.single.rating, 1010);
     },
   );
 }

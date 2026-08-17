@@ -4,35 +4,45 @@ import '../../../../core/error/failure.dart';
 import '../../../leaderboard/domain/season_leaderboard.model.dart';
 import '../../../match/domain/game_type.enum.dart';
 
-enum ProfileHistoryStatus { loading, ready, failed }
+sealed class ProfileHistoryState extends Equatable {
+  const ProfileHistoryState();
+}
 
-class ProfileHistoryState extends Equatable {
-  const ProfileHistoryState({
-    this.status = ProfileHistoryStatus.loading,
-    this.selectedGameType,
+class ProfileHistoryLoading extends ProfileHistoryState {
+  const ProfileHistoryLoading();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class ProfileHistoryFailed extends ProfileHistoryState {
+  const ProfileHistoryFailed(this.failure);
+
+  final Failure failure;
+
+  @override
+  List<Object?> get props => [failure];
+}
+
+class ProfileHistoryReady extends ProfileHistoryState {
+  const ProfileHistoryReady({
+    required this.selectedGameType,
     this.leaderboards = const [],
-    this.failure,
   });
 
-  final ProfileHistoryStatus status;
   final GameType? selectedGameType;
   final List<SeasonLeaderboard> leaderboards;
-  final Failure? failure;
 
-  ProfileHistoryState copyWith({
-    ProfileHistoryStatus? status,
+  ProfileHistoryReady copyWith({
     GameType? selectedGameType,
     List<SeasonLeaderboard>? leaderboards,
-    Failure? failure,
   }) {
-    return ProfileHistoryState(
-      status: status ?? this.status,
+    return ProfileHistoryReady(
       selectedGameType: selectedGameType ?? this.selectedGameType,
       leaderboards: leaderboards ?? this.leaderboards,
-      failure: failure ?? this.failure,
     );
   }
 
   @override
-  List<Object?> get props => [status, selectedGameType, leaderboards, failure];
+  List<Object?> get props => [selectedGameType, leaderboards];
 }

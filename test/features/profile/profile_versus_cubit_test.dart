@@ -93,25 +93,26 @@ void main() {
     build: build,
     act: (cubit) => cubit.load(),
     verify: (cubit) {
-      expect(cubit.state.status, ProfileVersusStatus.ready);
-      expect(cubit.state.headToHead, hasLength(1));
-      expect(cubit.state.headToHead.single.wins, 3);
-      expect(cubit.state.recentMatches, hasLength(1));
-      expect(cubit.state.recentMatches.single.id, 'm-vs-1');
+      final state = cubit.state as ProfileVersusReady;
+      expect(state.headToHead, hasLength(1));
+      expect(state.headToHead.single.wins, 3);
+      expect(state.recentMatches, hasLength(1));
+      expect(state.recentMatches.single.id, 'm-vs-1');
     },
   );
 
   blocTest<ProfileVersusCubit, ProfileVersusState>(
     'a failed load surfaces the error',
     setUp: () => when(
-      () =>
-          profileRepository.headToHead(playerId: 'p1', opponentId: 'viewer'),
+      () => profileRepository.headToHead(playerId: 'p1', opponentId: 'viewer'),
     ).thenThrow(const NetworkFailure()),
     build: build,
     act: (cubit) => cubit.load(),
     verify: (cubit) {
-      expect(cubit.state.status, ProfileVersusStatus.failed);
-      expect(cubit.state.failure, isA<NetworkFailure>());
+      expect(
+        (cubit.state as ProfileVersusFailed).failure,
+        isA<NetworkFailure>(),
+      );
     },
   );
 
@@ -153,14 +154,13 @@ void main() {
       await _settle();
     },
     verify: (cubit) {
-      expect(cubit.state.recentMatches.single.id, 'm-1v1');
-      expect(cubit.state.records, hasLength(1));
-      expect(cubit.state.records.single.wins, 3);
+      final state = cubit.state as ProfileVersusReady;
+      expect(state.recentMatches.single.id, 'm-1v1');
+      expect(state.records, hasLength(1));
+      expect(state.records.single.wins, 3);
       verify(
-        () => profileRepository.headToHead(
-          playerId: 'p1',
-          opponentId: 'viewer',
-        ),
+        () =>
+            profileRepository.headToHead(playerId: 'p1', opponentId: 'viewer'),
       ).called(1);
     },
   );
@@ -197,8 +197,9 @@ void main() {
       await _settle();
     },
     verify: (cubit) {
-      expect(cubit.state.selectedGameType, GameType.twoVTwo);
-      expect(cubit.state.recentMatches.single.id, 'm-2v2');
+      final state = cubit.state as ProfileVersusReady;
+      expect(state.selectedGameType, GameType.twoVTwo);
+      expect(state.recentMatches.single.id, 'm-2v2');
     },
   );
 }

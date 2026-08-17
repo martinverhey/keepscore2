@@ -241,9 +241,7 @@ void main() {
       );
 
       final cubit = buildOverviewCubit()..load();
-      await cubit.stream.firstWhere(
-        (s) => s.status == ProfileOverviewStatus.ready,
-      );
+      await cubit.stream.firstWhere((s) => s is ProfileOverviewReady);
       await pumpSheet(tester, cubit);
 
       final l10n = AppLocalizations.of(
@@ -394,9 +392,7 @@ void main() {
       );
 
       final cubit = buildOverviewCubit()..load();
-      await cubit.stream.firstWhere(
-        (s) => s.status == ProfileOverviewStatus.ready,
-      );
+      await cubit.stream.firstWhere((s) => s is ProfileOverviewReady);
       await pumpSheet(tester, cubit, displayName: longName);
 
       final l10n = AppLocalizations.of(
@@ -473,9 +469,7 @@ void main() {
     ).thenAnswer((_) async => const []);
 
     final cubit = buildOverviewCubit()..load();
-    await cubit.stream.firstWhere(
-      (s) => s.status == ProfileOverviewStatus.ready,
-    );
+    await cubit.stream.firstWhere((s) => s is ProfileOverviewReady);
     await pumpSheet(tester, cubit);
 
     final l10n = AppLocalizations.of(tester.element(find.byType(ProfileSheet)));
@@ -563,9 +557,7 @@ void main() {
       ).thenAnswer((_) async => [_matchAgainstTheo()]);
 
       final cubit = buildOverviewCubit()..load(viewerPlayerId: 'viewer');
-      await cubit.stream.firstWhere(
-        (s) => s.status == ProfileOverviewStatus.ready,
-      );
+      await cubit.stream.firstWhere((s) => s is ProfileOverviewReady);
       await pumpSheet(tester, cubit, myPlayerId: 'viewer');
 
       final l10n = AppLocalizations.of(
@@ -662,9 +654,7 @@ void main() {
     ).thenAnswer((_) async => const []);
 
     final cubit = buildOverviewCubit()..load();
-    await cubit.stream.firstWhere(
-      (s) => s.status == ProfileOverviewStatus.ready,
-    );
+    await cubit.stream.firstWhere((s) => s is ProfileOverviewReady);
     await pumpSheet(tester, cubit);
 
     final l10n = AppLocalizations.of(tester.element(find.byType(ProfileSheet)));

@@ -18,7 +18,7 @@ class ProfileVersusCubit extends Cubit<ProfileVersusState> {
     this._gameTypeFilterCubit,
     this.playerId,
     this.opponentId,
-  ) : super(const ProfileVersusState()) {
+  ) : super(const ProfileVersusLoading()) {
     _gameTypeSubscription = _gameTypeFilterCubit.stream.listen(_applyGameType);
   }
 
@@ -30,8 +30,13 @@ class ProfileVersusCubit extends Cubit<ProfileVersusState> {
 
   StreamSubscription<GameType?>? _gameTypeSubscription;
 
+  ProfileVersusReady? get _ready => switch (state) {
+    ProfileVersusReady ready => ready,
+    _ => null,
+  };
+
   Future<void> load() async {
-    emit(const ProfileVersusState());
+    emit(const ProfileVersusLoading());
     final gameType = _gameTypeFilterCubit.state;
     try {
       final headToHeadFuture = _profileRepository.headToHead(
@@ -48,8 +53,7 @@ class ProfileVersusCubit extends Cubit<ProfileVersusState> {
       final recentMatches = await recentMatchesFuture;
       if (isClosed || gameType != _gameTypeFilterCubit.state) return;
       emit(
-        ProfileVersusState(
-          status: ProfileVersusStatus.ready,
+        ProfileVersusReady(
           selectedGameType: gameType,
           headToHead: headToHead,
           recentMatches: recentMatches,
@@ -57,15 +61,13 @@ class ProfileVersusCubit extends Cubit<ProfileVersusState> {
       );
     } on Failure catch (failure) {
       if (isClosed) return;
-      emit(
-        ProfileVersusState(status: ProfileVersusStatus.failed, failure: failure),
-      );
+      emit(ProfileVersusFailed(failure));
     }
   }
 
   Future<void> _applyGameType(GameType? gameType) async {
-    if (gameType == state.selectedGameType) return;
-    if (state.status != ProfileVersusStatus.ready) return;
+    final ready = _ready;
+    if (ready == null || gameType == ready.selectedGameType) return;
 
     try {
       final recentMatches = await _matchRepository.recentBetweenPlayers(
@@ -74,12 +76,17 @@ class ProfileVersusCubit extends Cubit<ProfileVersusState> {
         gameType: gameType,
       );
       if (isClosed || gameType != _gameTypeFilterCubit.state) return;
-      emit(
-        state.copyWith(selectedGameType: gameType, recentMatches: recentMatches),
-      );
-    } on Failure catch (failure) {
-      if (isClosed || gameType != _gameTypeFilterCubit.state) return;
-      emit(state.copyWith(failure: failure));
+      final latest = _ready;
+      if (latest != null) {
+        emit(
+          latest.copyWith(
+            selectedGameType: gameType,
+            recentMatches: recentMatches,
+          ),
+        );
+      }
+    } on Failure {
+      return;
     }
   }
 

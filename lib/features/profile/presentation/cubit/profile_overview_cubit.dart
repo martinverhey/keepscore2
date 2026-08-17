@@ -23,7 +23,7 @@ class ProfileOverviewCubit extends Cubit<ProfileOverviewState> {
     this._gameTypeFilterCubit,
     this.competitionId,
     this.playerId,
-  ) : super(const ProfileOverviewState()) {
+  ) : super(const ProfileOverviewLoading()) {
     _gameTypeSubscription = _gameTypeFilterCubit.stream.listen(_applyGameType);
   }
 
@@ -38,13 +38,16 @@ class ProfileOverviewCubit extends Cubit<ProfileOverviewState> {
   String? _seasonId;
   bool _hasOpponent = false;
 
+  ProfileOverviewReady? get _ready => switch (state) {
+    ProfileOverviewReady ready => ready,
+    _ => null,
+  };
+
   Future<void> load({String? viewerPlayerId}) async {
-    emit(const ProfileOverviewState());
+    emit(const ProfileOverviewLoading());
     _hasOpponent = viewerPlayerId != null && viewerPlayerId != playerId;
     try {
-      final window = await _leaderboardRepository.currentSeason(
-        competitionId,
-      );
+      final window = await _leaderboardRepository.currentSeason(competitionId);
       if (isClosed) return;
       _seasonId = window.id;
 
@@ -54,12 +57,7 @@ class ProfileOverviewCubit extends Cubit<ProfileOverviewState> {
       emit(loaded);
     } on Failure catch (failure) {
       if (isClosed) return;
-      emit(
-        ProfileOverviewState(
-          status: ProfileOverviewStatus.failed,
-          failure: failure,
-        ),
-      );
+      emit(ProfileOverviewFailed(failure));
     }
   }
 
@@ -67,20 +65,19 @@ class ProfileOverviewCubit extends Cubit<ProfileOverviewState> {
       _gameTypeFilterCubit.select(gameType);
 
   Future<void> _applyGameType(GameType? gameType) async {
-    if (gameType == state.selectedGameType) return;
-    if (state.status != ProfileOverviewStatus.ready) return;
+    final ready = _ready;
+    if (ready == null || gameType == ready.selectedGameType) return;
 
     try {
       final loaded = await _loadForGameType(gameType);
       if (isClosed || gameType != _gameTypeFilterCubit.state) return;
       emit(loaded);
-    } on Failure catch (failure) {
-      if (isClosed || gameType != _gameTypeFilterCubit.state) return;
-      emit(state.copyWith(failure: failure));
+    } on Failure {
+      return;
     }
   }
 
-  Future<ProfileOverviewState> _loadForGameType(GameType? gameType) async {
+  Future<ProfileOverviewReady> _loadForGameType(GameType? gameType) async {
     final seasonId = _seasonId;
 
     final statsFuture = _profileRepository.profileStats(
@@ -140,8 +137,7 @@ class ProfileOverviewCubit extends Cubit<ProfileOverviewState> {
       }
     }
 
-    return ProfileOverviewState(
-      status: ProfileOverviewStatus.ready,
+    return ProfileOverviewReady(
       selectedGameType: gameType,
       leaderboard: mine,
       medals: medals,

@@ -10,12 +10,29 @@ import '../../domain/rating_point.model.dart';
 import '../../domain/recent_played.model.dart';
 import '../../domain/streak.model.dart';
 
-enum ProfileOverviewStatus { loading, ready, failed }
+sealed class ProfileOverviewState extends Equatable {
+  const ProfileOverviewState();
+}
 
-class ProfileOverviewState extends Equatable {
-  const ProfileOverviewState({
-    this.status = ProfileOverviewStatus.loading,
-    this.selectedGameType,
+class ProfileOverviewLoading extends ProfileOverviewState {
+  const ProfileOverviewLoading();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class ProfileOverviewFailed extends ProfileOverviewState {
+  const ProfileOverviewFailed(this.failure);
+
+  final Failure failure;
+
+  @override
+  List<Object?> get props => [failure];
+}
+
+class ProfileOverviewReady extends ProfileOverviewState {
+  const ProfileOverviewReady({
+    required this.selectedGameType,
     this.leaderboard,
     this.medals,
     this.bestRating = 0,
@@ -27,10 +44,8 @@ class ProfileOverviewState extends Equatable {
     this.recentPlayed = const RecentPlayed.zero(),
     this.recentMatches = const [],
     this.hasOpponent = false,
-    this.failure,
   });
 
-  final ProfileOverviewStatus status;
   final GameType? selectedGameType;
   final Leaderboard? leaderboard;
   final Medals? medals;
@@ -43,45 +58,9 @@ class ProfileOverviewState extends Equatable {
   final RecentPlayed recentPlayed;
   final List<MatchEntry> recentMatches;
   final bool hasOpponent;
-  final Failure? failure;
-
-  ProfileOverviewState copyWith({
-    ProfileOverviewStatus? status,
-    GameType? selectedGameType,
-    Leaderboard? leaderboard,
-    Medals? medals,
-    double? bestRating,
-    int? playerCount,
-    List<RatingPoint>? history,
-    int? totalPlayed,
-    Streak? streak,
-    BestStreaks? bestStreaks,
-    RecentPlayed? recentPlayed,
-    List<MatchEntry>? recentMatches,
-    bool? hasOpponent,
-    Failure? failure,
-  }) {
-    return ProfileOverviewState(
-      status: status ?? this.status,
-      selectedGameType: selectedGameType ?? this.selectedGameType,
-      leaderboard: leaderboard ?? this.leaderboard,
-      medals: medals ?? this.medals,
-      bestRating: bestRating ?? this.bestRating,
-      playerCount: playerCount ?? this.playerCount,
-      history: history ?? this.history,
-      totalPlayed: totalPlayed ?? this.totalPlayed,
-      streak: streak ?? this.streak,
-      bestStreaks: bestStreaks ?? this.bestStreaks,
-      recentPlayed: recentPlayed ?? this.recentPlayed,
-      recentMatches: recentMatches ?? this.recentMatches,
-      hasOpponent: hasOpponent ?? this.hasOpponent,
-      failure: failure ?? this.failure,
-    );
-  }
 
   @override
   List<Object?> get props => [
-    status,
     selectedGameType,
     leaderboard,
     medals,
@@ -94,6 +73,5 @@ class ProfileOverviewState extends Equatable {
     recentPlayed,
     recentMatches,
     hasOpponent,
-    failure,
   ];
 }

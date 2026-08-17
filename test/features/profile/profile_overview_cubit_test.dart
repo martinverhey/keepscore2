@@ -168,15 +168,15 @@ void main() {
     build: build,
     act: (cubit) => cubit.load(),
     verify: (cubit) {
-      expect(cubit.state.status, ProfileOverviewStatus.ready);
-      expect(cubit.state.selectedGameType, isNull);
-      expect(cubit.state.leaderboard?.playerId, 'p1');
-      expect(cubit.state.playerCount, 2);
-      expect(cubit.state.history, hasLength(2));
-      expect(cubit.state.totalPlayed, 12);
-      expect(cubit.state.streak.type, StreakType.win);
-      expect(cubit.state.streak.count, 2);
-      expect(cubit.state.recentMatches, hasLength(2));
+      final state = cubit.state as ProfileOverviewReady;
+      expect(state.selectedGameType, isNull);
+      expect(state.leaderboard?.playerId, 'p1');
+      expect(state.playerCount, 2);
+      expect(state.history, hasLength(2));
+      expect(state.totalPlayed, 12);
+      expect(state.streak.type, StreakType.win);
+      expect(state.streak.count, 2);
+      expect(state.recentMatches, hasLength(2));
     },
   );
 
@@ -184,13 +184,18 @@ void main() {
     'the best rating comes straight off the all-time scalar, not the season list',
     setUp: () {
       stubSeason();
-      stubGameType(null, leaderboards: [_leaderboard('p1', 1000, 1)], bestRating: 1120);
+      stubGameType(
+        null,
+        leaderboards: [_leaderboard('p1', 1000, 1)],
+        bestRating: 1120,
+      );
     },
     build: build,
     act: (cubit) => cubit.load(),
     verify: (cubit) {
-      expect(cubit.state.leaderboard?.rating, 1000);
-      expect(cubit.state.bestRating, 1120);
+      final state = cubit.state as ProfileOverviewReady;
+      expect(state.leaderboard?.rating, 1000);
+      expect(state.bestRating, 1120);
     },
   );
 
@@ -200,10 +205,10 @@ void main() {
     build: build,
     act: (cubit) => cubit.load(),
     verify: (cubit) {
-      expect(cubit.state.status, ProfileOverviewStatus.ready);
-      expect(cubit.state.leaderboard, isNull);
-      expect(cubit.state.history, isEmpty);
-      expect(cubit.state.streak.type, StreakType.none);
+      final state = cubit.state as ProfileOverviewReady;
+      expect(state.leaderboard, isNull);
+      expect(state.history, isEmpty);
+      expect(state.streak.type, StreakType.none);
     },
   );
 
@@ -216,9 +221,9 @@ void main() {
     build: build,
     act: (cubit) => cubit.load(),
     verify: (cubit) {
-      expect(cubit.state.status, ProfileOverviewStatus.ready);
-      expect(cubit.state.leaderboard, isNull);
-      expect(cubit.state.playerCount, 1);
+      final state = cubit.state as ProfileOverviewReady;
+      expect(state.leaderboard, isNull);
+      expect(state.playerCount, 1);
     },
   );
 
@@ -230,7 +235,8 @@ void main() {
     },
     build: build,
     act: (cubit) => cubit.load(),
-    verify: (cubit) => expect(cubit.state.totalPlayed, 7),
+    verify: (cubit) =>
+        expect((cubit.state as ProfileOverviewReady).totalPlayed, 7),
   );
 
   blocTest<ProfileOverviewCubit, ProfileOverviewState>(
@@ -241,7 +247,8 @@ void main() {
     },
     build: build,
     act: (cubit) => cubit.load(viewerPlayerId: 'viewer'),
-    verify: (cubit) => expect(cubit.state.hasOpponent, isTrue),
+    verify: (cubit) =>
+        expect((cubit.state as ProfileOverviewReady).hasOpponent, isTrue),
   );
 
   blocTest<ProfileOverviewCubit, ProfileOverviewState>(
@@ -252,7 +259,8 @@ void main() {
     },
     build: build,
     act: (cubit) => cubit.load(viewerPlayerId: 'p1'),
-    verify: (cubit) => expect(cubit.state.hasOpponent, isFalse),
+    verify: (cubit) =>
+        expect((cubit.state as ProfileOverviewReady).hasOpponent, isFalse),
   );
 
   blocTest<ProfileOverviewCubit, ProfileOverviewState>(
@@ -263,7 +271,8 @@ void main() {
     },
     build: build,
     act: (cubit) => cubit.load(),
-    verify: (cubit) => expect(cubit.state.hasOpponent, isFalse),
+    verify: (cubit) =>
+        expect((cubit.state as ProfileOverviewReady).hasOpponent, isFalse),
   );
 
   blocTest<ProfileOverviewCubit, ProfileOverviewState>(
@@ -274,8 +283,10 @@ void main() {
     build: build,
     act: (cubit) => cubit.load(),
     verify: (cubit) {
-      expect(cubit.state.status, ProfileOverviewStatus.failed);
-      expect(cubit.state.failure, isA<NetworkFailure>());
+      expect(
+        (cubit.state as ProfileOverviewFailed).failure,
+        isA<NetworkFailure>(),
+      );
     },
   );
 
@@ -312,17 +323,13 @@ void main() {
       await _settle();
     },
     expect: () => [
-      isA<ProfileOverviewState>().having(
-        (s) => s.status,
-        'status',
-        ProfileOverviewStatus.loading,
-      ),
-      isA<ProfileOverviewState>()
+      isA<ProfileOverviewLoading>(),
+      isA<ProfileOverviewReady>()
           .having((s) => s.selectedGameType, 'selectedGameType', isNull)
           .having((s) => s.leaderboard?.rating, 'rating', 1040)
           .having((s) => s.medals?.gold, 'medals.gold', 1)
           .having((s) => s.hasOpponent, 'hasOpponent', isTrue),
-      isA<ProfileOverviewState>()
+      isA<ProfileOverviewReady>()
           .having(
             (s) => s.selectedGameType,
             'selectedGameType',
@@ -360,7 +367,8 @@ void main() {
       await cubit.selectGameTypeFilter(GameType.oneVOne);
       await _settle();
     },
-    verify: (cubit) => expect(cubit.state.medals, isNull),
+    verify: (cubit) =>
+        expect((cubit.state as ProfileOverviewReady).medals, isNull),
   );
 
   blocTest<ProfileOverviewCubit, ProfileOverviewState>(
@@ -417,9 +425,10 @@ void main() {
       await _settle();
     },
     verify: (cubit) {
-      expect(cubit.state.selectedGameType, GameType.twoVTwo);
-      expect(cubit.state.leaderboard?.rating, 1010);
-      expect(cubit.state.medals?.gold, 1);
+      final state = cubit.state as ProfileOverviewReady;
+      expect(state.selectedGameType, GameType.twoVTwo);
+      expect(state.leaderboard?.rating, 1010);
+      expect(state.medals?.gold, 1);
     },
   );
 
@@ -442,8 +451,9 @@ void main() {
       await _settle();
     },
     verify: (cubit) {
-      expect(cubit.state.selectedGameType, GameType.oneVOne);
-      expect(cubit.state.leaderboard?.rating, 1090);
+      final state = cubit.state as ProfileOverviewReady;
+      expect(state.selectedGameType, GameType.oneVOne);
+      expect(state.leaderboard?.rating, 1090);
     },
   );
 }
