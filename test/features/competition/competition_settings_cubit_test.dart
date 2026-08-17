@@ -36,6 +36,9 @@ CompetitionOverview _overview(Competition competition) => CompetitionOverview(
   matchCount: 11,
 );
 
+CompetitionSettingsReady _ready(CompetitionSettingsCubit cubit) =>
+    cubit.state as CompetitionSettingsReady;
+
 void main() {
   late MockCompetitionRepository repository;
 
@@ -55,12 +58,10 @@ void main() {
     build: () => CompetitionSettingsCubit(repository, 'c1'),
     act: (cubit) => cubit.load(),
     verify: (cubit) {
-      final state = cubit.state;
-      expect(state.status, CompetitionSettingsStatus.ready);
-      expect(state.name, 'Office Table Tennis');
-      expect(state.kFactor, '32');
-      expect(state.movCap, '2.5');
-      expect(state.canSubmit, isTrue);
+      expect(_ready(cubit).name, 'Office Table Tennis');
+      expect(_ready(cubit).kFactor, '32');
+      expect(_ready(cubit).movCap, '2.5');
+      expect(_ready(cubit).canSubmit, isTrue);
     },
   );
 
@@ -70,10 +71,7 @@ void main() {
         when(() => repository.overview('c1')).thenAnswer((_) async => null),
     build: () => CompetitionSettingsCubit(repository, 'c1'),
     act: (cubit) => cubit.load(),
-    verify: (cubit) {
-      expect(cubit.state.status, CompetitionSettingsStatus.missing);
-      expect(cubit.state.failure, isNull);
-    },
+    verify: (cubit) => expect(cubit.state, isA<CompetitionSettingsMissing>()),
   );
 
   blocTest<CompetitionSettingsCubit, CompetitionSettingsState>(
@@ -83,15 +81,15 @@ void main() {
     act: (cubit) async {
       await cubit.load();
       cubit.kFactorChanged('500');
-      expect(cubit.state.canSubmit, isFalse);
+      expect(_ready(cubit).canSubmit, isFalse);
       cubit.kFactorChanged('40');
-      expect(cubit.state.canSubmit, isTrue);
+      expect(_ready(cubit).canSubmit, isTrue);
       cubit.movCapChanged('9');
-      expect(cubit.state.canSubmit, isFalse);
+      expect(_ready(cubit).canSubmit, isFalse);
       cubit.movCapChanged('');
-      expect(cubit.state.canSubmit, isFalse);
+      expect(_ready(cubit).canSubmit, isFalse);
       cubit.nameChanged('X');
-      expect(cubit.state.canSubmit, isFalse);
+      expect(_ready(cubit).canSubmit, isFalse);
     },
   );
 
@@ -104,8 +102,8 @@ void main() {
       cubit.movCapChanged('1,8');
     },
     verify: (cubit) {
-      expect(cubit.state.movCapIsValid, isTrue);
-      expect(cubit.state.movCapValue, 1.8);
+      expect(_ready(cubit).movCapIsValid, isTrue);
+      expect(_ready(cubit).movCapValue, 1.8);
     },
   );
 
@@ -158,10 +156,10 @@ void main() {
         ),
       ).called(1);
 
-      expect(cubit.state.saved, isTrue);
-      expect(cubit.state.busy, isFalse);
-      expect(cubit.state.name, 'Table Tennis');
-      expect(cubit.state.movCap, '2.0');
+      expect(_ready(cubit).saved, isTrue);
+      expect(_ready(cubit).busy, isFalse);
+      expect(_ready(cubit).name, 'Table Tennis');
+      expect(_ready(cubit).movCap, '2.0');
     },
   );
 
@@ -185,10 +183,10 @@ void main() {
     act: (cubit) async {
       await cubit.load();
       await cubit.submit();
-      expect(cubit.state.saved, isTrue);
+      expect(_ready(cubit).saved, isTrue);
       cubit.kFactorChanged('40');
     },
-    verify: (cubit) => expect(cubit.state.saved, isFalse),
+    verify: (cubit) => expect(_ready(cubit).saved, isFalse),
   );
 
   blocTest<CompetitionSettingsCubit, CompetitionSettingsState>(
@@ -214,10 +212,10 @@ void main() {
       await cubit.submit();
     },
     verify: (cubit) {
-      expect(cubit.state.failure, isA<PermissionFailure>());
-      expect(cubit.state.saved, isFalse);
-      expect(cubit.state.busy, isFalse);
-      expect(cubit.state.kFactor, '40');
+      expect(_ready(cubit).failure, isA<PermissionFailure>());
+      expect(_ready(cubit).saved, isFalse);
+      expect(_ready(cubit).busy, isFalse);
+      expect(_ready(cubit).kFactor, '40');
     },
   );
 }

@@ -9,70 +9,80 @@ export 'competition_settings_state.dart';
 
 class CompetitionSettingsCubit extends Cubit<CompetitionSettingsState> {
   CompetitionSettingsCubit(this._repository, this.competitionId)
-    : super(const CompetitionSettingsState());
+    : super(const CompetitionSettingsLoading());
 
   final CompetitionRepository _repository;
   final String competitionId;
 
+  CompetitionSettingsReady? get _ready => switch (state) {
+    CompetitionSettingsReady ready => ready,
+    _ => null,
+  };
+
   Future<void> load() async {
-    emit(const CompetitionSettingsState());
+    emit(const CompetitionSettingsLoading());
     try {
       final overview = await _repository.overview(competitionId);
       if (isClosed) return;
       emit(
         overview == null
-            ? const CompetitionSettingsState(
-                status: CompetitionSettingsStatus.missing,
-              )
-            : CompetitionSettingsState.of(overview.competition),
+            ? const CompetitionSettingsMissing()
+            : CompetitionSettingsReady.of(overview.competition),
       );
     } on Failure catch (failure) {
       if (isClosed) return;
-      emit(
-        CompetitionSettingsState(
-          status: CompetitionSettingsStatus.failed,
-          failure: failure,
-        ),
-      );
+      emit(CompetitionSettingsFailed(failure));
     }
   }
 
-  void nameChanged(String value) => _edit(state.copyWith(name: value));
+  void nameChanged(String value) =>
+      _edit((ready) => ready.copyWith(name: value));
 
   void seasonLengthChanged(SeasonLength value) =>
-      _edit(state.copyWith(seasonLength: value));
+      _edit((ready) => ready.copyWith(seasonLength: value));
 
-  void kFactorChanged(String value) => _edit(state.copyWith(kFactor: value));
+  void kFactorChanged(String value) =>
+      _edit((ready) => ready.copyWith(kFactor: value));
 
   void movEnabledChanged(bool value) =>
-      _edit(state.copyWith(movEnabled: value));
+      _edit((ready) => ready.copyWith(movEnabled: value));
 
-  void movCapChanged(String value) => _edit(state.copyWith(movCap: value));
+  void movCapChanged(String value) =>
+      _edit((ready) => ready.copyWith(movCap: value));
 
   void allowDrawsChanged(bool value) =>
-      _edit(state.copyWith(allowDraws: value));
+      _edit((ready) => ready.copyWith(allowDraws: value));
 
-  void _edit(CompetitionSettingsState next) =>
-      emit(next.copyWith(saved: false, clearFailure: true));
+  void _edit(
+    CompetitionSettingsReady Function(CompetitionSettingsReady) apply,
+  ) {
+    final ready = _ready;
+    if (ready == null) return;
+    emit(apply(ready).copyWith(saved: false, clearFailure: true));
+  }
 
   Future<void> submit() async {
-    if (!state.canSubmit) return;
-    emit(state.copyWith(busy: true, saved: false, clearFailure: true));
+    final ready = _ready;
+    if (ready == null || !ready.canSubmit) return;
+    emit(ready.copyWith(busy: true, saved: false, clearFailure: true));
     try {
       final competition = await _repository.updateSettings(
         competitionId: competitionId,
-        name: state.name,
-        seasonLength: state.seasonLength,
-        kFactor: state.kFactorValue!,
-        movEnabled: state.movEnabled,
-        movCap: state.movCapValue!,
-        allowDraws: state.allowDraws,
+        name: ready.name,
+        seasonLength: ready.seasonLength,
+        kFactor: ready.kFactorValue!,
+        movEnabled: ready.movEnabled,
+        movCap: ready.movCapValue!,
+        allowDraws: ready.allowDraws,
       );
       if (isClosed) return;
-      emit(CompetitionSettingsState.of(competition).copyWith(saved: true));
+      emit(CompetitionSettingsReady.of(competition).copyWith(saved: true));
     } on Failure catch (failure) {
       if (isClosed) return;
-      emit(state.copyWith(busy: false, failure: failure));
+      final latest = _ready;
+      if (latest != null) {
+        emit(latest.copyWith(busy: false, failure: failure));
+      }
     }
   }
 }

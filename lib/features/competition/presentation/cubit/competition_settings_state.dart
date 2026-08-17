@@ -3,26 +3,49 @@ import 'package:equatable/equatable.dart';
 import '../../../../core/error/failure.dart';
 import '../../domain/competition.model.dart';
 
-enum CompetitionSettingsStatus { loading, ready, missing, failed }
+sealed class CompetitionSettingsState extends Equatable {
+  const CompetitionSettingsState();
+}
 
-class CompetitionSettingsState extends Equatable {
-  const CompetitionSettingsState({
-    this.status = CompetitionSettingsStatus.loading,
-    this.competition,
-    this.name = '',
-    this.seasonLength = SeasonLength.monthly,
-    this.kFactor = '',
-    this.movEnabled = true,
-    this.movCap = '',
-    this.allowDraws = true,
+class CompetitionSettingsLoading extends CompetitionSettingsState {
+  const CompetitionSettingsLoading();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class CompetitionSettingsMissing extends CompetitionSettingsState {
+  const CompetitionSettingsMissing();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class CompetitionSettingsFailed extends CompetitionSettingsState {
+  const CompetitionSettingsFailed(this.failure);
+
+  final Failure failure;
+
+  @override
+  List<Object?> get props => [failure];
+}
+
+class CompetitionSettingsReady extends CompetitionSettingsState {
+  const CompetitionSettingsReady({
+    required this.competition,
+    required this.name,
+    required this.seasonLength,
+    required this.kFactor,
+    required this.movEnabled,
+    required this.movCap,
+    required this.allowDraws,
     this.busy = false,
     this.saved = false,
     this.failure,
   });
 
-  factory CompetitionSettingsState.of(Competition competition) =>
-      CompetitionSettingsState(
-        status: CompetitionSettingsStatus.ready,
+  factory CompetitionSettingsReady.of(Competition competition) =>
+      CompetitionSettingsReady(
         competition: competition,
         name: competition.name,
         seasonLength: competition.seasonLength,
@@ -32,8 +55,7 @@ class CompetitionSettingsState extends Equatable {
         allowDraws: competition.allowDraws,
       );
 
-  final CompetitionSettingsStatus status;
-  final Competition? competition;
+  final Competition competition;
   final String name;
   final SeasonLength seasonLength;
   final String kFactor;
@@ -57,15 +79,9 @@ class CompetitionSettingsState extends Equatable {
   bool get movCapIsValid =>
       movCapValue != null && movCapValue! >= 1 && movCapValue! <= 5;
 
-  bool get canSubmit =>
-      status == CompetitionSettingsStatus.ready &&
-      nameIsValid &&
-      kFactorIsValid &&
-      movCapIsValid &&
-      !busy;
+  bool get canSubmit => nameIsValid && kFactorIsValid && movCapIsValid && !busy;
 
-  CompetitionSettingsState copyWith({
-    CompetitionSettingsStatus? status,
+  CompetitionSettingsReady copyWith({
     Competition? competition,
     String? name,
     SeasonLength? seasonLength,
@@ -78,8 +94,7 @@ class CompetitionSettingsState extends Equatable {
     Failure? failure,
     bool clearFailure = false,
   }) {
-    return CompetitionSettingsState(
-      status: status ?? this.status,
+    return CompetitionSettingsReady(
       competition: competition ?? this.competition,
       name: name ?? this.name,
       seasonLength: seasonLength ?? this.seasonLength,
@@ -95,7 +110,6 @@ class CompetitionSettingsState extends Equatable {
 
   @override
   List<Object?> get props => [
-    status,
     competition,
     name,
     seasonLength,

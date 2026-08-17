@@ -49,7 +49,7 @@ class _CompetitionSettingsPageState extends State<CompetitionSettingsPage> {
     super.dispose();
   }
 
-  void _syncControllers(CompetitionSettingsState state) {
+  void _syncControllers(CompetitionSettingsReady state) {
     if (_nameController.text != state.name) {
       _nameController.text = state.name;
     }
@@ -72,8 +72,11 @@ class _CompetitionSettingsPageState extends State<CompetitionSettingsPage> {
   Widget build(BuildContext context) {
     return BlocConsumer<CompetitionSettingsCubit, CompetitionSettingsState>(
       listenWhen: (previous, current) =>
-          previous.competition != current.competition,
-      listener: (context, state) => _syncControllers(state),
+          current is CompetitionSettingsReady &&
+          (previous is! CompetitionSettingsReady ||
+              previous.competition != current.competition),
+      listener: (context, state) =>
+          _syncControllers(state as CompetitionSettingsReady),
       builder: (context, state) => _sidebar(context, state),
     );
   }
@@ -123,27 +126,26 @@ class _CompetitionSettingsPageState extends State<CompetitionSettingsPage> {
     required CompetitionSettingsCubit cubit,
     required AuthSessionState session,
   }) {
-    return switch (state.status) {
-      CompetitionSettingsStatus.loading => const AdaptiveLoader(),
-      CompetitionSettingsStatus.missing => EmptyState(
+    return switch (state) {
+      CompetitionSettingsLoading() => const AdaptiveLoader(),
+      CompetitionSettingsMissing() => EmptyState(
         message: context.l10n.competitionNotFound,
       ),
-      CompetitionSettingsStatus.ready
-          when !state.competition!.isOwnedBy(session.user?.id) =>
+      CompetitionSettingsReady()
+          when !state.competition.isOwnedBy(session.user?.id) =>
         EmptyState(message: context.l10n.competitionSettingsOwnerOnly),
-      CompetitionSettingsStatus.failed when state.competition == null =>
-        ErrorRetry(
-          message: state.failure!.localized(context.l10n),
-          retryLabel: context.l10n.commonRetry,
-          onRetry: cubit.load,
-        ),
-      _ => _form(context, state, cubit),
+      CompetitionSettingsFailed(:final failure) => ErrorRetry(
+        message: failure.localized(context.l10n),
+        retryLabel: context.l10n.commonRetry,
+        onRetry: cubit.load,
+      ),
+      CompetitionSettingsReady() => _form(context, state, cubit),
     };
   }
 
   Widget _form(
     BuildContext context,
-    CompetitionSettingsState state,
+    CompetitionSettingsReady state,
     CompetitionSettingsCubit cubit,
   ) {
     return Padding(
