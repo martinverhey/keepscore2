@@ -30,22 +30,26 @@ class _CreateCompetitionPageState extends State<CreateCompetitionPage> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<CreateCompetitionCubit, CreateCompetitionState>(
-      listenWhen: (previous, current) => current.created != null,
+      listenWhen: (previous, current) => current is CreateCompetitionCreated,
       listener: (context, state) {
+        final created = state as CreateCompetitionCreated;
         context.pop();
-        context.push('/competition/${state.created!.id}');
+        context.push('/competition/${created.competition.id}');
       },
       builder: (context, state) {
         setPageTitle(context, context.l10n.competitionsCreate);
         return AdaptiveScaffold(
           title: context.l10n.competitionsCreate,
-          body: _form(context, state),
+          body: switch (state) {
+            CreateCompetitionEditing editing => _form(context, editing),
+            CreateCompetitionCreated() => const AdaptiveLoader(),
+          },
         );
       },
     );
   }
 
-  Widget _form(BuildContext context, CreateCompetitionState state) {
+  Widget _form(BuildContext context, CreateCompetitionEditing state) {
     final cubit = context.read<CreateCompetitionCubit>();
 
     return Padding(
@@ -101,7 +105,7 @@ class _CreateCompetitionPageState extends State<CreateCompetitionPage> {
     );
   }
 
-  Widget _failureText(BuildContext context, CreateCompetitionState state) {
+  Widget _failureText(BuildContext context, CreateCompetitionEditing state) {
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.md),
       child: Text(

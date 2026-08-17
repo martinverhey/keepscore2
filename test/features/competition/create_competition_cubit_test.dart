@@ -39,14 +39,14 @@ void main() {
   });
 
   test('a name needs at least two characters', () {
-    expect(const CreateCompetitionState(name: '').nameIsValid, isFalse);
-    expect(const CreateCompetitionState(name: 'A').nameIsValid, isFalse);
-    expect(const CreateCompetitionState(name: '  A  ').nameIsValid, isFalse);
-    expect(const CreateCompetitionState(name: 'Pool').nameIsValid, isTrue);
+    expect(const CreateCompetitionEditing(name: '').nameIsValid, isFalse);
+    expect(const CreateCompetitionEditing(name: 'A').nameIsValid, isFalse);
+    expect(const CreateCompetitionEditing(name: '  A  ').nameIsValid, isFalse);
+    expect(const CreateCompetitionEditing(name: 'Pool').nameIsValid, isTrue);
   });
 
   test('defaults to monthly seasons', () {
-    expect(const CreateCompetitionState().seasonLength, SeasonLength.monthly);
+    expect(const CreateCompetitionEditing().seasonLength, SeasonLength.monthly);
   });
 
   blocTest<CreateCompetitionCubit, CreateCompetitionState>(
@@ -64,7 +64,7 @@ void main() {
           seasonLength: SeasonLength.quarterly,
         ),
       ).called(1);
-      expect(cubit.state.created, _created);
+      expect(cubit.state, CreateCompetitionCreated(_created));
     },
   );
 
@@ -101,10 +101,10 @@ void main() {
       await cubit.submit();
     },
     verify: (cubit) {
-      expect(cubit.state.created, isNull);
-      expect(cubit.state.busy, isFalse);
+      final state = cubit.state as CreateCompetitionEditing;
+      expect(state.busy, isFalse);
       expect(
-        (cubit.state.failure! as ValidationFailure).message,
+        (state.failure! as ValidationFailure).message,
         'Create an account to start a competition',
       );
     },
