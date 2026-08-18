@@ -169,8 +169,15 @@ GoRouter createRouter(AuthBloc authBloc) {
       ),
       GoRoute(
         path: Routes.theme,
-        pageBuilder: (context, state) =>
-            adaptivePage(context, child: const ThemePage()),
+        pageBuilder: (context, state) => adaptivePage(
+          context,
+          child: ThemePage(
+            sidebarCompetition: switch (state.extra) {
+              final HomeSidebarCompetition extra => extra,
+              _ => null,
+            },
+          ),
+        ),
       ),
       ShellRoute(
         builder: (context, state, child) {

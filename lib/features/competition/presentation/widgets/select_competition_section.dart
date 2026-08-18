@@ -15,7 +15,7 @@ void selectCompetitionSection(
   switch (target) {
     case CompetitionSection.leaderboard:
     case CompetitionSection.matches:
-      context.pop();
+      context.pop(target);
     case CompetitionSection.players:
       context.pushReplacement(Routes.players(competitionId));
     case CompetitionSection.history:

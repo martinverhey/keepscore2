@@ -10,7 +10,9 @@ import '../../../../core/widgets/page_title.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
 import '../../../competition/presentation/widgets/competition_section.enum.dart';
+import '../../../competition/presentation/widgets/home_sidebar_competition.dart';
 import '../../../competition/presentation/widgets/open_home.dart';
+import '../../../competition/presentation/widgets/open_theme.dart';
 import '../../../competition/presentation/widgets/select_competition_section.dart';
 import '../../../competition/presentation/widgets/sidebar.dart';
 import '../cubit/players_cubit.dart';
@@ -62,7 +64,15 @@ class _PlayersPageState extends State<PlayersPage> {
         competitionName: competition?.name,
         canManageSettings: isOwner,
       ),
-      onOpenTheme: () => context.pushReplacement(Routes.theme),
+      onOpenTheme: () => openTheme(
+        context,
+        replace: true,
+        sidebarCompetition: HomeSidebarCompetition(
+          competitionId: competitionId,
+          competitionName: competition?.name,
+          canManageSettings: isOwner,
+        ),
+      ),
       onSignOut: () =>
           context.read<AuthBloc>().add(const AuthSignOutRequested()),
       child: AdaptiveScaffold(

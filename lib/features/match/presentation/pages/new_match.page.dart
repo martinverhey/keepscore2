@@ -3,7 +3,6 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../app/router/app_router.dart';
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/extensions/double.extension.dart';
@@ -15,7 +14,9 @@ import '../../../../core/widgets/state_views.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
 import '../../../competition/presentation/widgets/competition_section.enum.dart';
+import '../../../competition/presentation/widgets/home_sidebar_competition.dart';
 import '../../../competition/presentation/widgets/open_home.dart';
+import '../../../competition/presentation/widgets/open_theme.dart';
 import '../../../competition/presentation/widgets/select_competition_section.dart';
 import '../../../competition/presentation/widgets/sidebar.dart';
 import '../../../player/domain/player.model.dart';
@@ -94,7 +95,15 @@ class _NewMatchPageState extends State<NewMatchPage> {
         competitionName: competition?.name,
         canManageSettings: isOwner,
       ),
-      onOpenTheme: () => context.push(Routes.theme),
+      onOpenTheme: () => openTheme(
+        context,
+        replace: false,
+        sidebarCompetition: HomeSidebarCompetition(
+          competitionId: cubit.competitionId,
+          competitionName: competition?.name,
+          canManageSettings: isOwner,
+        ),
+      ),
       onSignOut: () =>
           context.read<AuthBloc>().add(const AuthSignOutRequested()),
       child: AdaptiveScaffold(

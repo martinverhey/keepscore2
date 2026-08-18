@@ -1,8 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../../app/router/app_router.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
@@ -23,6 +21,7 @@ class LeaderboardPage extends StatelessWidget {
     required this.myPlayerId,
     required this.myDisplayName,
     required this.onManagePlayers,
+    required this.onOpenCompetitions,
   });
 
   final String competitionId;
@@ -31,6 +30,7 @@ class LeaderboardPage extends StatelessWidget {
   final String? myPlayerId;
   final String? myDisplayName;
   final VoidCallback onManagePlayers;
+  final VoidCallback onOpenCompetitions;
 
   @override
   Widget build(BuildContext context) {
@@ -95,7 +95,7 @@ class LeaderboardPage extends StatelessWidget {
   Widget _competitionButton(BuildContext context, Competition competition) {
     return Expanded(
       child: AdaptiveTappable(
-        onTap: () => context.push(Routes.home),
+        onTap: onOpenCompetitions,
         child: Row(
           children: [
             Flexible(

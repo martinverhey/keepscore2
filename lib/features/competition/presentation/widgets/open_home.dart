@@ -2,9 +2,10 @@ import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/app_router.dart';
+import 'competition_section.enum.dart';
 import 'home_sidebar_competition.dart';
 
-void openHome(
+Future<CompetitionSection?> openHome(
   BuildContext context, {
   required bool replace,
   required String competitionId,
@@ -16,9 +17,9 @@ void openHome(
     competitionName: competitionName,
     canManageSettings: canManageSettings,
   );
-  if (replace) {
-    context.pushReplacement(Routes.home, extra: extra);
-  } else {
-    context.push(Routes.home, extra: extra);
-  }
+  return replace
+      ? GoRouter.of(
+          context,
+        ).pushReplacement<CompetitionSection>(Routes.home, extra: extra)
+      : context.push<CompetitionSection>(Routes.home, extra: extra);
 }

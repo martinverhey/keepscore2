@@ -25,7 +25,9 @@ import '../../../player/presentation/cubit/players_cubit.dart';
 import '../../domain/competition.model.dart';
 import '../cubit/competition_cubit.dart';
 import '../widgets/competition_section.enum.dart';
+import '../widgets/home_sidebar_competition.dart';
 import '../widgets/open_home.dart';
+import '../widgets/open_theme.dart';
 import '../widgets/sidebar.dart';
 
 enum CompetitionTab { leaderboard, matches }
@@ -65,9 +67,18 @@ class _CompetitionContentState extends State<CompetitionContent> {
   ]);
 
   Future<void> _openAndReload(String route) async {
-    await context.push<bool>(route);
+    final section = await context.push<CompetitionSection>(route);
     if (!mounted) return;
+    _applySection(section);
     await _reload();
+  }
+
+  void _applySection(CompetitionSection? section) {
+    if (section == CompetitionSection.leaderboard) {
+      setState(() => _tab = CompetitionTab.leaderboard);
+    } else if (section == CompetitionSection.matches) {
+      setState(() => _tab = CompetitionTab.matches);
+    }
   }
 
   Future<void> _openNewMatch() async {
@@ -88,6 +99,38 @@ class _CompetitionContentState extends State<CompetitionContent> {
 
   Future<void> _openSettings() =>
       _openAndReload(Routes.settings(widget.competitionId));
+
+  Future<void> _openTheme({
+    required String? competitionName,
+    required bool canManageSettings,
+  }) async {
+    final section = await openTheme(
+      context,
+      replace: false,
+      sidebarCompetition: HomeSidebarCompetition(
+        competitionId: widget.competitionId,
+        competitionName: competitionName,
+        canManageSettings: canManageSettings,
+      ),
+    );
+    if (!mounted) return;
+    _applySection(section);
+  }
+
+  Future<void> _openHome({
+    required String? competitionName,
+    required bool canManageSettings,
+  }) async {
+    final section = await openHome(
+      context,
+      replace: false,
+      competitionId: widget.competitionId,
+      competitionName: competitionName,
+      canManageSettings: canManageSettings,
+    );
+    if (!mounted) return;
+    _applySection(section);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -129,14 +172,14 @@ class _CompetitionContentState extends State<CompetitionContent> {
           isRegistered: isRegistered,
           onSelectSection: _selectSection,
           onNewMatch: _openNewMatch,
-          onOpenHome: () => openHome(
-            context,
-            replace: false,
-            competitionId: widget.competitionId,
+          onOpenHome: () => _openHome(
             competitionName: competition?.name,
             canManageSettings: session.canWrite && isOwner,
           ),
-          onOpenTheme: () => context.push(Routes.theme),
+          onOpenTheme: () => _openTheme(
+            competitionName: competition?.name,
+            canManageSettings: session.canWrite && isOwner,
+          ),
           onSignOut: () =>
               context.read<AuthBloc>().add(const AuthSignOutRequested()),
           child: AdaptiveScaffold(
@@ -192,14 +235,10 @@ class _CompetitionContentState extends State<CompetitionContent> {
               .state
               .competition;
           final session = context.read<AuthBloc>().state;
-          openHome(
-            context,
-            replace: false,
-            competitionId: widget.competitionId,
+          _openHome(
             competitionName: competition?.name,
             canManageSettings:
-                session.canWrite &&
-                (competition?.isOwnedBy(session.user?.id) ?? false),
+                session.canWrite && competition.isOwnedBySession(session),
           );
         }
     }
@@ -291,6 +330,10 @@ class _CompetitionContentState extends State<CompetitionContent> {
                 myDisplayName: myDisplayName,
                 onManagePlayers: () =>
                     _openAndReload(Routes.players(widget.competitionId)),
+                onOpenCompetitions: () => _openHome(
+                  competitionName: competition.name,
+                  canManageSettings: isRegistered && isOwner,
+                ),
               ),
               CompetitionTab.matches => MatchesPage(
                 isRegistered: isRegistered,

@@ -1,21 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keepscore2/features/auth/domain/auth_repository.dart';
+import 'package:keepscore2/features/auth/domain/auth_user.model.dart';
+import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
 import 'package:keepscore2/features/settings/domain/theme_preference.enum.dart';
 import 'package:keepscore2/features/settings/presentation/cubit/theme_cubit.dart';
 import 'package:keepscore2/features/settings/presentation/pages/theme.page.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+class MockAuthRepository extends Mock implements AuthRepository {}
 
 void main() {
   testWidgets('picking Dark selects and persists it', (tester) async {
     SharedPreferences.setMockInitialValues({});
     final cubit = ThemeCubit();
+    final auth = MockAuthRepository();
+    when(() => auth.currentUser).thenReturn(
+      const AuthUser(id: 'user-1', displayName: 'Ada', isGuest: false),
+    );
+    when(() => auth.watchUser()).thenAnswer((_) => const Stream.empty());
+    final authBloc = AuthBloc(auth);
     addTearDown(cubit.close);
+    addTearDown(authBloc.close);
 
     await tester.pumpWidget(
-      BlocProvider.value(
-        value: cubit,
+      MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: cubit),
+          BlocProvider.value(value: authBloc),
+        ],
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
