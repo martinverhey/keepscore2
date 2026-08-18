@@ -929,3 +929,12 @@ from the project-root `.env`.
   join code **HDHS39**, 5 players, 11 matches, 3 unclaimed placeholders.
 - Anonymous sign-ins: enabled. Apple/Google: **not** configured, so those
   buttons stay hidden behind `AUTH_APPLE_ENABLED` / `AUTH_GOOGLE_ENABLED`.
+
+### Web hosting — TODO, not yet set up
+
+`main.dart` calls `usePathUrlStrategy()`, so deep links look like
+`/competition/abc123` instead of `/#/competition/abc123`. That only works if
+the web host rewrites unknown paths to `index.html` (routing happens
+client-side) — a hard refresh or a shared link to a nested route will 404
+otherwise. Whichever static host ends up serving `flutter build web`'s output
+needs that rewrite rule configured before going live; not done yet.
