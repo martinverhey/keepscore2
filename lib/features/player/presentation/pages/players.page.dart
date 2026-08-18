@@ -56,7 +56,7 @@ class _PlayersPageState extends State<PlayersPage> {
       canManageSettings: isOwner,
       isRegistered: session.canWrite,
       onSelectSection: _selectSection,
-      onNewMatch: () => context.push<bool>(Routes.newMatch(competitionId)),
+      onNewMatch: () => context.push<Object?>(Routes.newMatch(competitionId)),
       onOpenHome: () => openHome(
         context,
         replace: true,

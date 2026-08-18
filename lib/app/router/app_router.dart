@@ -263,7 +263,7 @@ GoRouter createRouter(AuthBloc authBloc) {
               ),
               GoRoute(
                 path: 'match/new',
-                pageBuilder: (context, state) => adaptiveModalPage<bool>(
+                pageBuilder: (context, state) => adaptiveModalPage<Object?>(
                   context,
                   child: BlocProvider(
                     create: (_) => getIt<MatchFormCubit>(

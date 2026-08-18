@@ -75,7 +75,7 @@ class _HistoryPageState extends State<HistoryPage> {
           isRegistered: session.canWrite,
           onSelectSection: _selectSection,
           onNewMatch: () =>
-              context.push<bool>(Routes.newMatch(cubit.competitionId)),
+              context.push<Object?>(Routes.newMatch(cubit.competitionId)),
           onOpenHome: () => openHome(
             context,
             replace: true,

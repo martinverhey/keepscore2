@@ -82,11 +82,15 @@ class _CompetitionContentState extends State<CompetitionContent> {
   }
 
   Future<void> _openNewMatch() async {
-    final saved = await context.push<bool>(
+    final result = await context.push<Object?>(
       Routes.newMatch(widget.competitionId),
     );
     if (!mounted) return;
-    if (saved ?? false) setState(() => _tab = CompetitionTab.matches);
+    if (result == true) {
+      setState(() => _tab = CompetitionTab.matches);
+    } else if (result is CompetitionSection) {
+      _applySection(result);
+    }
     await _reload();
   }
 

@@ -45,7 +45,7 @@ class ThemePage extends StatelessWidget {
                 ),
           onNewMatch: sidebarCompetition == null
               ? () {}
-              : () => context.push<bool>(
+              : () => context.push<Object?>(
                   Routes.newMatch(sidebarCompetition.competitionId),
                 ),
           onOpenHome: sidebarCompetition == null

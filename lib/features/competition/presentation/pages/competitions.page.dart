@@ -61,7 +61,7 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
             ),
       onNewMatch: sidebarCompetition == null
           ? () {}
-          : () => context.push<bool>(
+          : () => context.push<Object?>(
               Routes.newMatch(sidebarCompetition.competitionId),
             ),
       onOpenHome: () {},
