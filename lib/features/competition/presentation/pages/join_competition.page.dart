@@ -40,12 +40,17 @@ class JoinCompetitionPage extends StatelessWidget {
                   expand: false,
                   onPressed: cubit.back,
                 ),
-          body: Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: switch (state) {
-              JoinCode() => const JoinCodeStep(),
-              JoinConfirm() => _confirmStep(context),
-            },
+          body: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: kContentMaxWidth),
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                child: switch (state) {
+                  JoinCode() => const JoinCodeStep(),
+                  JoinConfirm() => _confirmStep(context),
+                },
+              ),
+            ),
           ),
         );
       },
