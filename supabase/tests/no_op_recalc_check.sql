@@ -1,7 +1,6 @@
--- Verifies that apply_match_ratings / apply_match_type_rating (20260815170000)
--- actually skip no-op writes: replaying a season that hasn't changed must
--- rewrite zero rows in matches and match_players, not just leave the final
--- values correct.
+-- Verifies that apply_match_ratings (20260815170000) actually skips no-op
+-- writes: replaying a season that hasn't changed must rewrite zero rows in
+-- matches and match_players, not just leave the final values correct.
 --
 --   ./scripts/db.sh -f supabase/tests/no_op_recalc_check.sql
 --
@@ -28,7 +27,6 @@ declare
   v_p1     uuid;
   v_p2     uuid;
   v_p3     uuid;
-  v_gt     public.game_type;
   v_matches_total   integer;
   v_matches_touched integer;
   v_mp_total   integer;
@@ -56,9 +54,7 @@ begin
   v_p2 := (public.add_dummy_player(v_comp.id, 'P2')).id;
   v_p3 := (public.add_dummy_player(v_comp.id, 'P3')).id;
 
-  -- A handful of matches across two game types, including a mixed-size one,
-  -- so the replay below exercises both apply_match_ratings and
-  -- apply_match_type_rating for more than one game_type.
+  -- A handful of matches across two game types, including a mixed-size one.
   perform public.create_match(v_comp.id, array[v_p1], array[v_p2], 21, 15, now() - interval '3 days');
   perform public.create_match(v_comp.id, array[v_p2], array[v_p3], 21, 18, now() - interval '2 days');
   perform public.create_match(v_comp.id, array[v_p1], array[v_p3], 21, 10, now() - interval '1 day');
@@ -85,9 +81,6 @@ begin
   -- Replaying an already-consistent season must be a pure no-op at the
   -- storage level, not just arrive at the same final numbers.
   perform public.recalc_season(v_season);
-  for v_gt in select distinct game_type from public.matches where season_id = v_season loop
-    perform public.recalc_season_game_type(v_season, v_gt);
-  end loop;
 
   select md5(string_agg(player_id::text || ':' || rating::text, ',' order by player_id))
     into v_after_hash

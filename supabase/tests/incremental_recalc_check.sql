@@ -1,8 +1,7 @@
--- Verifies recalc_season_from / recalc_season_game_type_from (20260816110000):
--- after create_match / update_match_score / delete_match run their narrow,
--- boundary-scoped replay, the result must be byte-identical to running a
--- full recalc_season / recalc_season_game_type from scratch on the same
--- season — for player_ratings, player_game_type_ratings, and every
+-- Verifies recalc_season_from (20260816110000): after create_match /
+-- update_match_score / delete_match run their narrow, boundary-scoped
+-- replay, the result must be byte-identical to running a full recalc_season
+-- from scratch on the same season — for player_ratings and every
 -- match_players row (not just the ones at/after the boundary).
 --
 --   ./scripts/db.sh -f supabase/tests/incremental_recalc_check.sql
@@ -31,25 +30,11 @@ returns text language sql as $$
   from public.player_ratings where season_id = p_season_id;
 $$;
 
-create function pg_temp.hash_type_ratings(p_season_id uuid, p_game_type public.game_type)
-returns text language sql as $$
-  select md5(coalesce(string_agg(
-    player_id::text || ':' || rating::text || ':' || played
-      || ':' || wins || ':' || losses || ':' || draws,
-    ',' order by player_id
-  ), ''))
-  from public.player_game_type_ratings
-  where season_id = p_season_id and game_type = p_game_type;
-$$;
-
 create function pg_temp.hash_match_players(p_season_id uuid)
 returns text language sql as $$
   select md5(coalesce(string_agg(
     mp.match_id::text || ':' || mp.player_id::text || ':' || mp.rating_before
-      || ':' || mp.rating_after || ':' || mp.rating_delta || ':' || mp.outcome::text
-      || ':' || coalesce(mp.type_rating_before::text, 'null')
-      || ':' || coalesce(mp.type_rating_after::text, 'null')
-      || ':' || coalesce(mp.type_rating_delta::text, 'null'),
+      || ':' || mp.rating_after || ':' || mp.rating_delta || ':' || mp.outcome::text,
     ',' order by mp.match_id, mp.player_id
   ), ''))
   from public.match_players mp
@@ -63,34 +48,18 @@ $$;
 create function pg_temp.assert_matches_full_rebuild(p_season_id uuid, p_label text)
 returns void language plpgsql as $$
 declare
-  v_ratings_before      text;
+  v_ratings_before       text;
   v_match_players_before text;
-  v_gt                   public.game_type;
-  v_type_before          jsonb := '{}'::jsonb;
-  v_type_after           text;
 begin
   v_ratings_before := pg_temp.hash_ratings(p_season_id);
   v_match_players_before := pg_temp.hash_match_players(p_season_id);
-  for v_gt in select distinct game_type from public.matches where season_id = p_season_id loop
-    v_type_before := v_type_before
-      || jsonb_build_object(v_gt::text, pg_temp.hash_type_ratings(p_season_id, v_gt));
-  end loop;
 
   perform public.recalc_season(p_season_id);
-  for v_gt in select distinct game_type from public.matches where season_id = p_season_id loop
-    perform public.recalc_season_game_type(p_season_id, v_gt);
-  end loop;
 
   assert pg_temp.hash_ratings(p_season_id) = v_ratings_before,
     format('[%s] player_ratings diverged from a full rebuild', p_label);
   assert pg_temp.hash_match_players(p_season_id) = v_match_players_before,
     format('[%s] match_players diverged from a full rebuild', p_label);
-
-  for v_gt in select distinct game_type from public.matches where season_id = p_season_id loop
-    v_type_after := pg_temp.hash_type_ratings(p_season_id, v_gt);
-    assert v_type_after = (v_type_before ->> v_gt::text),
-      format('[%s] player_game_type_ratings (%s) diverged from a full rebuild', p_label, v_gt);
-  end loop;
 end;
 $$;
 

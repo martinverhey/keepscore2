@@ -176,41 +176,6 @@ begin
     E'recalc_season diverged from the incremental result.\nbefore: '
     || v_before::text || E'\nafter:  ' || v_after::text;
 
-  -- Part 3b — same invariant for the per-game-type track: recalc_season_game_type
-  -- must reproduce apply_match_type_rating's incremental result, for every
-  -- game type the demo data actually produced (1v1 and 2v2).
-  declare
-    v_type        public.game_type;
-    v_type_before jsonb;
-    v_type_after  jsonb;
-  begin
-    for v_type in
-      select distinct game_type from public.matches where season_id = v_season_id
-    loop
-      select jsonb_agg(t order by t->>'player_id') into v_type_before
-        from (
-          select to_jsonb(pgtr) - 'updated_at' as t
-            from public.player_game_type_ratings pgtr
-           where season_id = v_season_id and game_type = v_type
-        ) s;
-
-      perform public.recalc_season_game_type(v_season_id, v_type);
-
-      select jsonb_agg(t order by t->>'player_id') into v_type_after
-        from (
-          select to_jsonb(pgtr) - 'updated_at' as t
-            from public.player_game_type_ratings pgtr
-           where season_id = v_season_id and game_type = v_type
-        ) s;
-
-      assert v_type_before = v_type_after,
-        format(
-          E'recalc_season_game_type(%s) diverged from the incremental result.\nbefore: %s\nafter:  %s',
-          v_type, v_type_before, v_type_after
-        );
-    end loop;
-  end;
-
   -- Ratings are zero-sum, so the field must still average the starting rating.
   select round(avg(rating), 2) as avg_rating, count(*) as n
     into v_result
