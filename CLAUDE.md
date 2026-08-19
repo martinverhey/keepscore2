@@ -33,16 +33,14 @@ the leaderboard tab is `LeaderboardPage` (`features/leaderboard/presentation/wid
 join code + invite + `ProfileSection` + the actual ranked list, which is `LeaderboardList` in
 the same directory's `leaderboard_list.dart`), the matches tab is `MatchesPage`. The leaderboard
 tab always shows the
-current calendar window — which has no row until the first match lands in it —
-and carries a game-type filter (`GameTypeFilterDropdown`, next to the title in
-the scaffold's `trailing`) — combined (default) or one of
-`1v1`/`2v2`/`3v3`/`4v4`/`mixed`. It has no season picker: that moved to
+current calendar window — which has no row until the first match lands in it.
+It has no season picker: that moved to
 `/competition/:id/settings/history` (`HistoryPage`), which shows one
 finished season at a time — `SeasonSheet` picks among `HistoryState.seasons`
 (the lean, already-loaded season list — id/starts_at/ends_at only, no
 leaderboards — so the picker itself needs no separate fetch), and selecting one
-fetches just that season's leaderboard. Carries its own, independent
-`GameTypeFilterDropdown`, same placement.
+fetches just that season's leaderboard. Neither tab filters by game type —
+that's Matches-only, see below.
 
 `/competition/:id/match/new` builds the teams and submits; `/competition/:id/match/:matchId` shows
 the per-player before → after and lets the creator or the owner change the
@@ -62,8 +60,7 @@ pops.
 - **Draws allowed**, scored 0.5.
 - **No match confirmation** — a submitted result counts immediately.
 - **Edits/deletes replay the season from the affected match forward** via
-  `recalc_season_from`/`recalc_season_game_type_from`, not from scratch —
-  see the note under Testing.
+  `recalc_season_from`, not from scratch — see the note under Testing.
 - **Auth**: Apple, Google, email OTP code. No passwords.
 - **Guests** (Supabase anonymous) may join a competition and read it. They may
   not create competitions, add players, or create matches. Enforced in Postgres.
@@ -147,7 +144,7 @@ code; don't relitigate them.
   conditional. A call that's only sometimes needed (guarded on a nullable id,
   say) is a nullable `Future<T>?` local, awaited with `!` inside the same
   guard, rather than an `if (cond) ...` list entry — see
-  `ProfileOverviewCubit._loadForGameType`. Reach for actual `Future.wait` only
+  `ProfileOverviewCubit.load`. Reach for actual `Future.wait` only
   when the futures are `Future<void>` with nothing to unpack (e.g.
   `CompetitionContent._reload`).
 - **Widget structure:**
@@ -271,7 +268,7 @@ code; don't relitigate them.
       `actionFailure`, a genuine mutation-error field on `XReady`, ever
       renders). If the background op sets a `busy`-style flag first, still
       reset it back on failure so the spinner doesn't stick — see
-      `HistoryCubit.selectSeason`/`LeaderboardCubit._applyGameType`.
+      `HistoryCubit.selectSeason`/`MatchListCubit._applyGameType`.
     - **Multi-step wizard, steps carry different data** (`SignInState`:
       chooser/email/code; `JoinCompetitionState`: code/confirm): one
       subclass per step (`SignInChooser`/`SignInEmailStep`/`SignInCodeStep`,
@@ -465,10 +462,10 @@ code; don't relitigate them.
   consistent anyway — a single write's fan-out can still be many rows, even
   after `recalc_season_from`/no-op write guards (20260815170000,
   20260816110000) cut the `matches`/`match_players` side of it down to just
-  the affected match(es): `player_ratings`/`player_game_type_ratings` are
-  still fully deleted and rebuilt per season on every edit/delete (see the
-  comment on `recalc_season_from`), so every player in the season still gets
-  a fresh event on every write, back-dated or not.
+  the affected match(es): `player_ratings` is still fully deleted and
+  rebuilt per season on every edit/delete (see the comment on
+  `recalc_season_from`), so every player in the season still gets a fresh
+  event on every write, back-dated or not.
 - **A write blocked by an RLS policy is not an error.** `update … where`
   simply matches no rows, so repositories end those calls with
   `.select().maybeSingle()` and raise `PermissionFailure` on null. Getting
@@ -681,91 +678,40 @@ Kept here because the code cannot express them and they cost real debugging:
   players read (`players` embedding `competitions(starting_rating)`) so the
   page still shows everyone at the starting rating instead of an empty list.
   `Leaderboard.seasonId` is nullable for exactly this synthetic case.
-- **The per-game-type leaderboard is a second, parallel Elo track, not a
-  filter on the existing one.** Elo is order-dependent, so "1v1 ranking"
-  can't be derived by filtering `player_ratings` after the fact — it needs
-  its own replay built only from 1v1 matches. `player_game_type_ratings`
-  (`apply_match_type_rating` / `recalc_season_game_type`, driven alongside
-  the combined track by `create_match` / `update_match_score` /
-  `delete_match`) is that second track, keyed by `(season_id, game_type,
-  player_id)`. `player_ratings` / `leaderboard` are unchanged and remain
-  "combined" (every match, any type) — that's what "all game types
-  combined" already meant before this existed. Unlike `leaderboard`, the
-  `game_type_leaderboard` view is not backed by the full player list: a player
-  who hasn't played a given type this season doesn't appear in it, rather than
-  showing everyone tied at `starting_rating` for a type nobody's played.
-- **`game_type_season_history`** is the same trick one level up: `select
-  b.*, s.starts_at, s.ends_at, medal … from game_type_leaderboard_base b join
-  seasons s … where s.ends_at <= now()`, the same shape `season_history` is
-  built in from `leaderboard_base`. `HistoryPage` carries its own
-  `GameTypeFilterDropdown`/`selectGameTypeFilter`, independent of the
-  leaderboard tab's filter — they're different cubits with their own
-  `selectedGameType`. `game_type_player_medals` is the same trick again,
-  one level further: `player_medals` groups `season_history` by medal,
-  `game_type_player_medals` groups `game_type_season_history` by `(game_type,
-  medal)` instead. This is the general shape for anything derived from
-  match history — the `leaderboard`/`season_history`/`player_medals` combined
-  views and their `game_type_*` siblings are pairs, not one view with an
-  optional filter, because a per-type view can only be built by replaying
-  just that type's matches.
-  **`season_history`/`game_type_season_history` build on `leaderboard_base`/
-  `game_type_leaderboard_base` (20260816100000), not on `leaderboard`/
-  `game_type_leaderboard` directly** — the live views add `streak_type`/
-  `streak_count`/`today_delta` (function calls per row, meaningful only for
-  the current season), which `SeasonLeaderboard` never reads; building history
-  from the `*_base` views instead means those scans never run for a closed
-  season. Add a new column to `leaderboard`/`game_type_leaderboard` only when
-  it belongs on the *current* leaderboard specifically — extend the `*_base`
-  view instead if history should carry it too.
-- **The game-type filter is one global, shared value — `GameTypeFilterCubit`
-  is a `registerLazySingleton`, not scoped per screen.** Any repository
-  method that reads match-derived data (leaderboards, history, medals,
-  streaks, rating history, totals) takes `{GameType? gameType}` and picks
-  between the combined table/view and its `game_type_*` sibling, and any
-  cubit that surfaces such data re-fetches on every `GameTypeFilterCubit`
-  emission (see `LeaderboardCubit._applyGameType`,
-  `ProfileOverviewCubit._applyGameType`, and its `ProfileVersusCubit`/
-  `ProfileHistoryCubit` siblings, each with the same pattern).
-  New match-derived data follows the same two-part contract: a `game_type_*`
-  sibling read model, plus a repository method/cubit fetch that's parameterized
-  on `gameType` and re-runs when the shared filter changes — grep either
-  existing cubit for the pattern before adding a new one.
-  The trap this catches: `ProfileSheet` used to take `Medals? medals` as a
-  plain constructor argument, supplied by whichever screen opened it
-  (`LeaderboardRow`, `ProfileSection`) from *its own* already-loaded,
-  unfiltered `LeaderboardCubit.state.medals`. Because the filter is global,
-  changing it *inside* an already-open profile sheet updated every other
-  field in `ProfileState` (all owned by `ProfileCubit`, all reacting to
-  `GameTypeFilterCubit.stream`) except that one prop, which had been
-  snapshotted at the moment the sheet was built and never touched again. The
-  fix — and the rule going forward — is that a widget showing match-derived,
-  filter-sensitive data must read it from its own cubit's state, never take
-  it as a value handed down from a parent screen's (possibly differently
-  filtered, possibly stale) state. `ProfileOverviewCubit` now fetches medals
-  itself, the same way it already picks `mine` out of `leaderboards`: fetch
-  the competition-wide list for the selected `gameType`, find this `playerId`
-  in it.
+- **`GameTypeFilterCubit` is a `registerLazySingleton`, scoped to the
+  Matches list alone.** It's the one thing in the app that still cares about
+  `game_type` beyond storing it on the match row — `MatchListCubit` is its
+  only subscriber, re-fetching `MatchRepository.feed(gameType:)` on every
+  emission (`MatchListCubit._applyGameType`). Leaderboard, History, and
+  Profile read only the combined (all game types) track and take no
+  `gameType` parameter anywhere in their repositories — there used to be a
+  second, parallel per-game-type Elo track (`player_game_type_ratings`, the
+  `game_type_leaderboard`/`game_type_season_history`/`game_type_player_medals`
+  views, a `gameType` param threaded through every match-derived repository
+  method) feeding a shared game-type filter across all four screens; it was
+  removed as unnecessary scope, and `game_type` reverted to being purely a
+  per-match snapshot plus the Matches-list filter. Don't reintroduce a
+  `gameType` parameter on `LeaderboardRepository`/`ProfileRepository`
+  methods, or a second `game_type_*` sibling view, without deciding that
+  scope is coming back on purpose.
 - **`ProfileSheet` has three cubits, one per tab, not one `ProfileCubit`.**
   Overview, Versus, and History are never visible at once, so only
   Overview (the default tab) loads eagerly, the same way the old single
   cubit did. `ProfileVersusCubit`/`ProfileHistoryCubit` are built
   lazily by `ProfileSheet` itself via `getIt` — the first time a tab is
   actually opened, not when the sheet is — and closed by the sheet's
-  `dispose()` since nothing else owns them. All three still subscribe to the
-  shared `GameTypeFilterCubit` independently and follow the same
-  `state.status != ready` guard against acting on a filter change before
-  their first `load()`; a tab that's never opened never fetches anything and
-  never reacts to the filter either. `ProfileOverviewCubit.hasOpponent` is
-  computed once at `load()` time from `viewerPlayerId != playerId` — no
-  fetch needed to decide whether the Versus segment even appears.
+  `dispose()` since nothing else owns them; a tab that's never opened never
+  fetches anything. `ProfileOverviewCubit.hasOpponent` is computed once at
+  `load()` time from `viewerPlayerId != playerId` — no fetch needed to
+  decide whether the Versus segment even appears.
   `ProfileOverviewCubit.profileStats` bundles what used to be five separate
   round trips (`totalMatchesPlayed`/`bestStreaks`/`bestRating`/
   `currentStreak`/`recentPlayed`, all single-row results for the same
-  `(player, season, game_type)`) into one `player_profile_stats` RPC
-  (20260816130000); `leaderboards`/`recentForPlayer`/`medals`/`ratingHistory`
-  stay separate calls, since those are genuinely different, list-shaped
-  fetches. `ProfileRepository.profileStats` accepts a nullable `seasonId` —
-  the RPC treats "no season yet" as "no matches" (same as `player_streak`/
+  `(player, season)`) into one `player_profile_stats` RPC (20260816130000);
+  `leaderboards`/`recentForPlayer`/`medals`/`ratingHistory` stay separate
+  calls, since those are genuinely different, list-shaped fetches.
+  `ProfileRepository.profileStats` accepts a nullable `seasonId` — the RPC
+  treats "no season yet" as "no matches" (same as `player_streak`/
   `player_recent_played` already did), so the Dart side no longer needs to
   gate this specific call on `seasonId != null` the way `leaderboards`/
   `ratingHistory` still do.
@@ -863,42 +809,39 @@ from the project-root `.env`.
   than just asserting and exiting. Read what a script actually does before
   running it against the live project; don't assume "asserts an invariant"
   means "safe to re-run." (See `MISTAKES.md`.)
-- `supabase/tests/no_op_recalc_check.sql` proves `apply_match_ratings` /
-  `apply_match_type_rating`'s `IS DISTINCT FROM` guards actually skip
-  no-op writes — replaying an already-consistent season must rewrite zero
-  `matches`/`match_players` rows (checked via `xmin`), not just arrive at
-  the same final ratings. Self-contained (creates its own throwaway
-  competition), rolls back.
-- **`recalc_season`/`recalc_season_game_type` (full, from-scratch replay) are
-  no longer on any write path** — `create_match`/`update_match_score`/
-  `delete_match` call `recalc_season_from`/`recalc_season_game_type_from`
-  instead, which seed `player_ratings`/`player_game_type_ratings` from each
+- `supabase/tests/no_op_recalc_check.sql` proves `apply_match_ratings`'s
+  `IS DISTINCT FROM` guards actually skip no-op writes — replaying an
+  already-consistent season must rewrite zero `matches`/`match_players` rows
+  (checked via `xmin`), not just arrive at the same final ratings.
+  Self-contained (creates its own throwaway competition), rolls back.
+- **`recalc_season` (full, from-scratch replay) is no longer on any write
+  path** — `create_match`/`update_match_score`/`delete_match` call
+  `recalc_season_from` instead, which seeds `player_ratings` from each
   player's state as of the last match strictly before the boundary (their
-  `rating_after`/`type_rating_after` plus a `played`/`wins`/`losses`/`draws`
-  count over everything before it — the only historical record available,
-  since `player_ratings` itself only ever stores the current total) and then
-  replay only matches at/after it. The boundary is the earliest position the
+  `rating_after` plus a `played`/`wins`/`losses`/`draws` count over
+  everything before it — the only historical record available, since
+  `player_ratings` itself only ever stores the current total) and then
+  replays only matches at/after it. The boundary is the earliest position the
   write could possibly affect: the new match's own position for a create, the
   earlier of a match's old/new position for a score edit (same match id
   either side, so the tuple comparison reduces to comparing `played_at`), the
   deleted match's old position for a delete, and — if a score edit moves a
   match to a different season — both seasons replayed independently from
-  their own boundary. `player_ratings`/`player_game_type_ratings` themselves
-  are still fully deleted and rebuilt per season on every write (that part
-  wasn't worth the extra complexity to make incremental too); it's
-  `matches`/`match_players` that this actually shrinks, from every row in the
-  season down to just the affected match(es). The full versions stay
-  available as a genuine full-rebuild primitive — `supabase/seed.sql`'s
-  incremental-build-equals-replay invariant exercises them directly, and nothing
-  else calls them. `supabase/tests/incremental_recalc_check.sql` is the
-  correctness gate: after every write RPC's boundary-scoped replay, a
-  from-scratch `recalc_season`/`recalc_season_game_type` on the same season
-  must land on byte-identical `player_ratings`, `player_game_type_ratings`,
-  and `match_players` — checked at several boundary positions (an ordinary
-  create, a back-dated create, editing an early match, deleting a
-  non-final match, moving a match to a different season) plus once more
-  directly against the live seeded competition's real match history.
-  Self-contained, rolls back.
+  their own boundary. `player_ratings` itself is still fully deleted and
+  rebuilt per season on every write (that part wasn't worth the extra
+  complexity to make incremental too); it's `matches`/`match_players` that
+  this actually shrinks, from every row in the season down to just the
+  affected match(es). `recalc_season` stays available as a genuine
+  full-rebuild primitive — `supabase/seed.sql`'s incremental-build-equals-replay
+  invariant exercises it directly, and nothing else calls it.
+  `supabase/tests/incremental_recalc_check.sql` is the correctness gate:
+  after every write RPC's boundary-scoped replay, a from-scratch
+  `recalc_season` on the same season must land on byte-identical
+  `player_ratings` and `match_players` — checked at several boundary
+  positions (an ordinary create, a back-dated create, editing an early
+  match, deleting a non-final match, moving a match to a different season)
+  plus once more directly against the live seeded competition's real match
+  history. Self-contained, rolls back.
 - **The guest → account upgrade is the one flow still unverified server-side.**
   It cannot be checked the way the RPCs were: `verifyUpgradeCode` needs a token
   that only arrives by email. Seeding `auth.users.email_change_token_new` by
