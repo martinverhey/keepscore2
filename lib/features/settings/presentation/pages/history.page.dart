@@ -6,7 +6,6 @@ import '../../../../app/router/app_router.dart';
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/box_constraints.extension.dart';
 import '../../../../core/extensions/build_context.extension.dart';
-import '../../../../core/extensions/game_type.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/page_title.dart';
@@ -21,7 +20,6 @@ import '../../../competition/presentation/widgets/open_theme.dart';
 import '../../../competition/presentation/widgets/select_competition_section.dart';
 import '../../../competition/presentation/widgets/sidebar.dart';
 import '../../../leaderboard/domain/leaderboard.model.dart';
-import '../../../leaderboard/presentation/widgets/game_type_filter_dropdown.dart';
 import '../../../leaderboard/presentation/widgets/leaderboard_row.dart';
 import '../../../leaderboard/presentation/widgets/season_dropdown.dart';
 import '../cubit/history_cubit.dart';
@@ -61,11 +59,6 @@ class _HistoryPageState extends State<HistoryPage> {
     return BlocBuilder<HistoryCubit, HistoryState>(
       builder: (context, state) {
         final cubit = context.read<HistoryCubit>();
-        final selectedGameType = switch (state) {
-          HistoryLoading(:final selectedGameType) => selectedGameType,
-          HistoryFailed(:final selectedGameType) => selectedGameType,
-          HistoryReady(:final selectedGameType) => selectedGameType,
-        };
         setPageTitle(context, context.l10n.historyTitle);
 
         return Sidebar(
@@ -96,14 +89,6 @@ class _HistoryPageState extends State<HistoryPage> {
               context.read<AuthBloc>().add(const AuthSignOutRequested()),
           child: AdaptiveScaffold(
             title: context.l10n.historyTitle,
-            trailing: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerRight,
-              child: GameTypeFilterDropdown(
-                selected: selectedGameType,
-                onSelected: cubit.selectGameTypeFilter,
-              ),
-            ),
             hasScrollBody: true,
             body: switch (state) {
               HistoryLoading() => const AdaptiveLoader(),
@@ -183,13 +168,7 @@ class _HistoryPageState extends State<HistoryPage> {
     if (state.busy) return const Center(child: AdaptiveLoader());
 
     if (state.leaderboards.isEmpty) {
-      return EmptyState(
-        message: state.selectedGameType == null
-            ? context.l10n.historyEmpty
-            : context.l10n.historyFilterEmpty(
-                state.selectedGameType!.label(context),
-              ),
-      );
+      return EmptyState(message: context.l10n.historyEmpty);
     }
 
     return ListView(

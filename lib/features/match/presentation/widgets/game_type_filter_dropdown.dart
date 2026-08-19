@@ -5,7 +5,7 @@ import '../../../../core/extensions/game_type.extension.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/pill_dropdown.dart';
 import '../../../../core/widgets/sheet.dart';
-import '../../../match/domain/game_type.enum.dart';
+import '../../domain/game_type.enum.dart';
 
 enum GameTypeFilterOption {
   all,

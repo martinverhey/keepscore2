@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context.extension.dart';
-import '../../../../core/extensions/game_type.extension.dart';
 import '../../../../core/extensions/season.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
@@ -79,13 +78,7 @@ class LeaderboardList extends StatelessWidget {
     }
 
     if (state.leaderboards.isEmpty) {
-      return EmptyState(
-        message: state.selectedGameType == null
-            ? context.l10n.leaderboardNoPlayers
-            : context.l10n.leaderboardFilterEmpty(
-                state.selectedGameType!.label(context),
-              ),
-      );
+      return EmptyState(message: context.l10n.leaderboardNoPlayers);
     }
 
     return Column(

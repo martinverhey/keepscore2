@@ -415,16 +415,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String get leaderboardFilterAll => 'Alles';
 
   @override
-  String leaderboardFilterEmpty(String gameType) {
-    return 'Nog geen $gameType-wedstrijden dit seizoen.';
-  }
-
-  @override
-  String historyFilterEmpty(String gameType) {
-    return 'Nog geen afgeronde $gameType-seizoenen.';
-  }
-
-  @override
   String get gameTypeFilterPick => 'Filter op speltype';
 
   @override

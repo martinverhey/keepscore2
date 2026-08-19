@@ -3,29 +3,25 @@ import 'package:equatable/equatable.dart';
 import '../../../../core/error/failure.dart';
 import '../../../leaderboard/domain/season.model.dart';
 import '../../../leaderboard/domain/season_leaderboard.model.dart';
-import '../../../match/domain/game_type.enum.dart';
 
 sealed class HistoryState extends Equatable {
   const HistoryState();
 }
 
 class HistoryLoading extends HistoryState {
-  const HistoryLoading({this.selectedGameType});
-
-  final GameType? selectedGameType;
+  const HistoryLoading();
 
   @override
-  List<Object?> get props => [selectedGameType];
+  List<Object?> get props => [];
 }
 
 class HistoryFailed extends HistoryState {
-  const HistoryFailed(this.failure, {this.selectedGameType});
+  const HistoryFailed(this.failure);
 
   final Failure failure;
-  final GameType? selectedGameType;
 
   @override
-  List<Object?> get props => [failure, selectedGameType];
+  List<Object?> get props => [failure];
 }
 
 class HistoryReady extends HistoryState {
@@ -33,14 +29,12 @@ class HistoryReady extends HistoryState {
     this.seasons = const [],
     this.selectedSeasonId,
     this.leaderboards = const [],
-    this.selectedGameType,
     this.busy = false,
   });
 
   final List<Season> seasons;
   final String? selectedSeasonId;
   final List<SeasonLeaderboard> leaderboards;
-  final GameType? selectedGameType;
   final bool busy;
 
   Season? get selectedSeason {
@@ -57,27 +51,16 @@ class HistoryReady extends HistoryState {
     List<Season>? seasons,
     String? selectedSeasonId,
     List<SeasonLeaderboard>? leaderboards,
-    GameType? selectedGameType,
     bool? busy,
-    bool clearGameType = false,
   }) {
     return HistoryReady(
       seasons: seasons ?? this.seasons,
       selectedSeasonId: selectedSeasonId ?? this.selectedSeasonId,
       leaderboards: leaderboards ?? this.leaderboards,
-      selectedGameType: clearGameType
-          ? null
-          : (selectedGameType ?? this.selectedGameType),
       busy: busy ?? this.busy,
     );
   }
 
   @override
-  List<Object?> get props => [
-    seasons,
-    selectedSeasonId,
-    leaderboards,
-    selectedGameType,
-    busy,
-  ];
+  List<Object?> get props => [seasons, selectedSeasonId, leaderboards, busy];
 }

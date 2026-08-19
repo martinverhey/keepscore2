@@ -171,14 +171,6 @@
   "gameType4v4": "4v4",
   "gameTypeMixed": "Mixed",
   "leaderboardFilterAll": "All",
-  "leaderboardFilterEmpty": "No {gameType} matches yet this season.",
-  "@leaderboardFilterEmpty": {
-    "placeholders": { "gameType": { "type": "String" } }
-  },
-  "historyFilterEmpty": "No finished {gameType} seasons yet.",
-  "@historyFilterEmpty": {
-    "placeholders": { "gameType": { "type": "String" } }
-  },
   "gameTypeFilterPick": "Filter by game type",
 
   "matchesTitle": "Matches",

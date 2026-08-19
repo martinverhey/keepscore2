@@ -4,7 +4,6 @@ import 'package:keepscore2/core/error/failure.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
 import 'package:keepscore2/features/leaderboard/domain/season.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/season_leaderboard.model.dart';
-import 'package:keepscore2/features/match/domain/game_type.enum.dart';
 import 'package:keepscore2/features/settings/presentation/cubit/history_cubit.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -58,17 +57,9 @@ void main() {
     ).thenAnswer((_) async => seasons);
   }
 
-  void stubLeaderboards(
-    String seasonId,
-    List<SeasonLeaderboard> leaderboards, {
-    GameType? gameType,
-  }) {
+  void stubLeaderboards(String seasonId, List<SeasonLeaderboard> leaderboards) {
     when(
-      () => repository.history(
-        competitionId: 'c1',
-        seasonId: seasonId,
-        gameType: gameType,
-      ),
+      () => repository.history(competitionId: 'c1', seasonId: seasonId),
     ).thenAnswer((_) async => leaderboards);
   }
 
@@ -141,42 +132,6 @@ void main() {
   );
 
   blocTest<HistoryCubit, HistoryState>(
-    'a season with nothing played for the selected game type shows an empty '
-    'leaderboard — the season list itself does not change with the filter',
-    setUp: () {
-      stubSeasons([_season('s-july', _july), _season('s-june', _june)]);
-      stubLeaderboards('s-july', [
-        _leaderboard(
-          seasonId: 's-july',
-          startsAt: _july,
-          playerId: 'p2',
-          rank: 1,
-        ),
-      ]);
-      stubLeaderboards('s-june', [
-        _leaderboard(
-          seasonId: 's-june',
-          startsAt: _june,
-          playerId: 'p1',
-          rank: 1,
-        ),
-      ]);
-      stubLeaderboards('s-june', const [], gameType: GameType.oneVOne);
-    },
-    build: build,
-    act: (cubit) async {
-      await cubit.load();
-      await cubit.selectSeason('s-june');
-      await cubit.selectGameTypeFilter(GameType.oneVOne);
-    },
-    verify: (cubit) {
-      expect(_ready(cubit).seasons, hasLength(2));
-      expect(_ready(cubit).selectedSeasonId, 's-june');
-      expect(_ready(cubit).leaderboards, isEmpty);
-    },
-  );
-
-  blocTest<HistoryCubit, HistoryState>(
     'no closed seasons yet is ready with nothing to select',
     setUp: () => stubSeasons(const []),
     build: build,
@@ -197,72 +152,6 @@ void main() {
     act: (cubit) => cubit.load(),
     verify: (cubit) {
       expect((cubit.state as HistoryFailed).failure, isA<NetworkFailure>());
-    },
-  );
-
-  blocTest<HistoryCubit, HistoryState>(
-    'filtering by game type refetches the selected season\'s leaderboard for it',
-    setUp: () {
-      stubSeasons([_season('s-june', _june)]);
-      stubLeaderboards('s-june', [
-        _leaderboard(
-          seasonId: 's-june',
-          startsAt: _june,
-          playerId: 'p1',
-          rank: 1,
-        ),
-      ]);
-      stubLeaderboards('s-june', [
-        _leaderboard(
-          seasonId: 's-june',
-          startsAt: _june,
-          playerId: 'p2',
-          rank: 1,
-        ),
-      ], gameType: GameType.oneVOne);
-    },
-    build: build,
-    act: (cubit) async {
-      await cubit.load();
-      await cubit.selectGameTypeFilter(GameType.oneVOne);
-    },
-    verify: (cubit) {
-      expect(_ready(cubit).selectedGameType, GameType.oneVOne);
-      expect(_ready(cubit).busy, isFalse);
-      expect(_ready(cubit).leaderboards.single.playerId, 'p2');
-    },
-  );
-
-  blocTest<HistoryCubit, HistoryState>(
-    'clearing the game type filter goes back to combined history',
-    setUp: () {
-      stubSeasons([_season('s-june', _june)]);
-      stubLeaderboards('s-june', [
-        _leaderboard(
-          seasonId: 's-june',
-          startsAt: _june,
-          playerId: 'p1',
-          rank: 1,
-        ),
-      ]);
-      stubLeaderboards('s-june', [
-        _leaderboard(
-          seasonId: 's-june',
-          startsAt: _june,
-          playerId: 'p2',
-          rank: 1,
-        ),
-      ], gameType: GameType.oneVOne);
-    },
-    build: build,
-    act: (cubit) async {
-      await cubit.load();
-      await cubit.selectGameTypeFilter(GameType.oneVOne);
-      await cubit.selectGameTypeFilter(null);
-    },
-    verify: (cubit) {
-      expect(_ready(cubit).selectedGameType, isNull);
-      expect(_ready(cubit).leaderboards.single.playerId, 'p1');
     },
   );
 

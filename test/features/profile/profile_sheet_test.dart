@@ -8,10 +8,8 @@ import 'package:keepscore2/features/leaderboard/domain/leaderboard.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
 import 'package:keepscore2/features/leaderboard/domain/medals.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/season_window.model.dart';
-import 'package:keepscore2/features/match/domain/game_type.enum.dart';
 import 'package:keepscore2/features/match/domain/match_entry.model.dart';
 import 'package:keepscore2/features/match/domain/match_repository.dart';
-import 'package:keepscore2/features/match/presentation/cubit/game_type_filter_cubit.dart';
 import 'package:keepscore2/features/profile/domain/best_streaks.model.dart';
 import 'package:keepscore2/features/profile/domain/head_to_head_record.model.dart';
 import 'package:keepscore2/features/profile/domain/profile_repository.dart';
@@ -24,7 +22,6 @@ import 'package:keepscore2/features/profile/presentation/cubit/profile_versus_cu
 import 'package:keepscore2/features/profile/presentation/widgets/profile_sheet.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class MockLeaderboardRepository extends Mock implements LeaderboardRepository {}
 
@@ -87,44 +84,34 @@ void main() {
   late MockLeaderboardRepository leaderboardRepository;
   late MockProfileRepository profileRepository;
   late MockMatchRepository matchRepository;
-  late GameTypeFilterCubit gameTypeFilterCubit;
 
   setUp(() {
-    SharedPreferences.setMockInitialValues({});
     leaderboardRepository = MockLeaderboardRepository();
     profileRepository = MockProfileRepository();
     matchRepository = MockMatchRepository();
-    gameTypeFilterCubit = GameTypeFilterCubit();
 
     getIt.registerFactoryParam<ProfileVersusCubit, String, String>(
       (playerId, opponentId) => ProfileVersusCubit(
         profileRepository,
         matchRepository,
-        gameTypeFilterCubit,
         playerId,
         opponentId,
       ),
     );
     getIt.registerFactoryParam<ProfileHistoryCubit, String, String>(
-      (competitionId, playerId) => ProfileHistoryCubit(
-        leaderboardRepository,
-        gameTypeFilterCubit,
-        competitionId,
-        playerId,
-      ),
+      (competitionId, playerId) =>
+          ProfileHistoryCubit(leaderboardRepository, competitionId, playerId),
     );
   });
 
   tearDown(() async {
     await getIt.reset();
-    await gameTypeFilterCubit.close();
   });
 
   ProfileOverviewCubit buildOverviewCubit() => ProfileOverviewCubit(
     leaderboardRepository,
     profileRepository,
     matchRepository,
-    gameTypeFilterCubit,
     'c1',
     'p1',
   );
@@ -139,11 +126,8 @@ void main() {
       MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: MultiBlocProvider(
-          providers: [
-            BlocProvider.value(value: cubit),
-            BlocProvider<GameTypeFilterCubit>.value(value: gameTypeFilterCubit),
-          ],
+        home: BlocProvider.value(
+          value: cubit,
           child: ProfileSheet(
             displayName: displayName,
             seasonLength: SeasonLength.monthly,
@@ -156,86 +140,48 @@ void main() {
   }
 
   testWidgets(
-    'the whole overview respects the selected game type, top to bottom, '
-    'and never touches the versus or history repositories',
+    'the overview renders rank, record, games and recent matches, and '
+    'never touches the versus or history repositories',
     (tester) async {
-      void stubGameType(
-        GameType? type, {
-        required Leaderboard leaderboard,
-        required int totalPlayed,
-        List<MatchEntry> recentMatches = const [],
-        List<Medals> medals = const [],
-        double bestRating = 0,
-      }) {
-        when(
-          () => leaderboardRepository.leaderboards(
-            competitionId: 'c1',
-            seasonId: 's1',
-            gameType: type,
-          ),
-        ).thenAnswer((_) async => [leaderboard]);
-        when(
-          () => leaderboardRepository.medals('c1', gameType: type),
-        ).thenAnswer((_) async => medals);
-        when(
-          () => profileRepository.ratingHistory(
-            seasonId: 's1',
-            playerId: 'p1',
-            gameType: type,
-          ),
-        ).thenAnswer((_) async => const []);
-        when(
-          () => profileRepository.profileStats(
-            playerId: 'p1',
-            seasonId: any(named: 'seasonId'),
-            gameType: type,
-          ),
-        ).thenAnswer(
-          (_) async => ProfileStats(
-            totalPlayed: totalPlayed,
-            bestStreaks: const BestStreaks.zero(),
-            bestRating: bestRating,
-            streak: const Streak.none(),
-            recentPlayed: const RecentPlayed.zero(),
-          ),
-        );
-        when(
-          () => matchRepository.recentForPlayer(playerId: 'p1', gameType: type),
-        ).thenAnswer((_) async => recentMatches);
-      }
-
       when(() => leaderboardRepository.currentSeason('c1')).thenAnswer(
         (_) async =>
             SeasonWindow(id: 's1', startsAt: _august, endsAt: _september),
       );
-
-      stubGameType(
-        null,
-        leaderboard: _leaderboard(
-          rating: 1050,
-          played: 5,
-          wins: 3,
-          losses: 1,
-          draws: 1,
+      when(
+        () => leaderboardRepository.leaderboards(
+          competitionId: 'c1',
+          seasonId: 's1',
         ),
-        totalPlayed: 20,
-        recentMatches: [_matchAgainstTheo()],
-        medals: const [Medals(playerId: 'p1', gold: 1, silver: 0, bronze: 0)],
-        bestRating: 1050,
+      ).thenAnswer(
+        (_) async => [
+          _leaderboard(rating: 1050, played: 5, wins: 3, losses: 1, draws: 1),
+        ],
       );
-      stubGameType(
-        GameType.oneVOne,
-        leaderboard: _leaderboard(
-          rating: 1090,
-          played: 4,
-          wins: 3,
-          losses: 1,
-          draws: 0,
+      when(() => leaderboardRepository.medals('c1')).thenAnswer(
+        (_) async => const [
+          Medals(playerId: 'p1', gold: 1, silver: 0, bronze: 0),
+        ],
+      );
+      when(
+        () => profileRepository.ratingHistory(seasonId: 's1', playerId: 'p1'),
+      ).thenAnswer((_) async => const []);
+      when(
+        () => profileRepository.profileStats(
+          playerId: 'p1',
+          seasonId: any(named: 'seasonId'),
         ),
-        totalPlayed: 9,
-        medals: const [Medals(playerId: 'p1', gold: 0, silver: 3, bronze: 0)],
-        bestRating: 1090,
+      ).thenAnswer(
+        (_) async => const ProfileStats(
+          totalPlayed: 20,
+          bestStreaks: BestStreaks.zero(),
+          bestRating: 1050,
+          streak: Streak.none(),
+          recentPlayed: RecentPlayed.zero(),
+        ),
       );
+      when(
+        () => matchRepository.recentForPlayer(playerId: 'p1'),
+      ).thenAnswer((_) async => [_matchAgainstTheo()]);
 
       final cubit = buildOverviewCubit()..load();
       await cubit.stream.firstWhere((s) => s is ProfileOverviewReady);
@@ -244,9 +190,6 @@ void main() {
       final l10n = AppLocalizations.of(
         tester.element(find.byType(ProfileSheet)),
       );
-
-      expect(find.text(l10n.leaderboardFilterAll), findsOneWidget);
-      expect(find.text(l10n.gameType1v1), findsNothing);
 
       expect(find.text(l10n.profileWinsLabel), findsOneWidget);
       expect(find.text(l10n.profileLossesLabel), findsOneWidget);
@@ -268,21 +211,6 @@ void main() {
       expect(find.text('Theo'), findsOneWidget);
 
       expect(tester.widget<MedalChip>(find.byType(MedalChip)).count, 1);
-
-      await tester.tap(find.text(l10n.leaderboardFilterAll));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.text(l10n.gameType1v1));
-      await tester.pumpAndSettle();
-
-      expect(find.text(l10n.gameType1v1), findsOneWidget);
-      expect(find.text(l10n.leaderboardFilterAll), findsNothing);
-      expect(find.text('1090'), findsNWidgets(2));
-      expect(find.text('75%'), findsOneWidget);
-      expect(find.text('4'), findsOneWidget);
-      expect(find.text('9'), findsOneWidget);
-      expect(find.text(l10n.profileRecentMatchesTitle), findsNothing);
-      expect(tester.widget<MedalChip>(find.byType(MedalChip)).count, 3);
 
       verifyNever(
         () => profileRepository.headToHead(
@@ -352,21 +280,15 @@ void main() {
         () => leaderboardRepository.leaderboards(
           competitionId: 'c1',
           seasonId: 's1',
-          gameType: null,
         ),
       ).thenAnswer((_) async => [mine, ...filler]);
       when(
-        () => profileRepository.ratingHistory(
-          seasonId: 's1',
-          playerId: 'p1',
-          gameType: null,
-        ),
+        () => profileRepository.ratingHistory(seasonId: 's1', playerId: 'p1'),
       ).thenAnswer((_) async => const []);
       when(
         () => profileRepository.profileStats(
           playerId: 'p1',
           seasonId: any(named: 'seasonId'),
-          gameType: null,
         ),
       ).thenAnswer(
         (_) async => const ProfileStats(
@@ -378,9 +300,9 @@ void main() {
         ),
       );
       when(
-        () => matchRepository.recentForPlayer(playerId: 'p1', gameType: null),
+        () => matchRepository.recentForPlayer(playerId: 'p1'),
       ).thenAnswer((_) async => const []);
-      when(() => leaderboardRepository.medals('c1', gameType: null)).thenAnswer(
+      when(() => leaderboardRepository.medals('c1')).thenAnswer(
         (_) async => const [
           Medals(playerId: 'p1', gold: 12, silver: 34, bronze: 56),
         ],
@@ -431,21 +353,15 @@ void main() {
       () => leaderboardRepository.leaderboards(
         competitionId: 'c1',
         seasonId: 's1',
-        gameType: null,
       ),
     ).thenAnswer((_) async => [mine]);
     when(
-      () => profileRepository.ratingHistory(
-        seasonId: 's1',
-        playerId: 'p1',
-        gameType: null,
-      ),
+      () => profileRepository.ratingHistory(seasonId: 's1', playerId: 'p1'),
     ).thenAnswer((_) async => const []);
     when(
       () => profileRepository.profileStats(
         playerId: 'p1',
         seasonId: any(named: 'seasonId'),
-        gameType: null,
       ),
     ).thenAnswer(
       (_) async => const ProfileStats(
@@ -457,10 +373,10 @@ void main() {
       ),
     );
     when(
-      () => matchRepository.recentForPlayer(playerId: 'p1', gameType: null),
+      () => matchRepository.recentForPlayer(playerId: 'p1'),
     ).thenAnswer((_) async => const []);
     when(
-      () => leaderboardRepository.medals('c1', gameType: null),
+      () => leaderboardRepository.medals('c1'),
     ).thenAnswer((_) async => const []);
 
     final cubit = buildOverviewCubit()..load();
@@ -493,21 +409,15 @@ void main() {
         () => leaderboardRepository.leaderboards(
           competitionId: 'c1',
           seasonId: 's1',
-          gameType: null,
         ),
       ).thenAnswer((_) async => const []);
       when(
-        () => profileRepository.ratingHistory(
-          seasonId: 's1',
-          playerId: 'p1',
-          gameType: null,
-        ),
+        () => profileRepository.ratingHistory(seasonId: 's1', playerId: 'p1'),
       ).thenAnswer((_) async => const []);
       when(
         () => profileRepository.profileStats(
           playerId: 'p1',
           seasonId: any(named: 'seasonId'),
-          gameType: null,
         ),
       ).thenAnswer(
         (_) async => const ProfileStats(
@@ -519,35 +429,21 @@ void main() {
         ),
       );
       when(
-        () => matchRepository.recentForPlayer(playerId: 'p1', gameType: null),
+        () => matchRepository.recentForPlayer(playerId: 'p1'),
       ).thenAnswer((_) async => const []);
       when(
-        () => leaderboardRepository.medals('c1', gameType: null),
+        () => leaderboardRepository.medals('c1'),
       ).thenAnswer((_) async => const []);
       when(
         () =>
             profileRepository.headToHead(playerId: 'p1', opponentId: 'viewer'),
       ).thenAnswer(
-        (_) async => const [
-          HeadToHeadRecord(
-            gameType: GameType.oneVOne,
-            wins: 3,
-            losses: 1,
-            draws: 0,
-          ),
-          HeadToHeadRecord(
-            gameType: GameType.twoVTwo,
-            wins: 1,
-            losses: 0,
-            draws: 1,
-          ),
-        ],
+        (_) async => const HeadToHeadRecord(wins: 4, losses: 1, draws: 1),
       );
       when(
         () => matchRepository.recentBetweenPlayers(
           playerId: 'p1',
           opponentId: 'viewer',
-          gameType: null,
         ),
       ).thenAnswer((_) async => [_matchAgainstTheo()]);
 
@@ -578,8 +474,6 @@ void main() {
       expect(find.text('1'), findsNWidgets(2));
       expect(find.text('67%'), findsOneWidget);
       expect(find.text(l10n.profileHeadToHeadTitle('Nora')), findsNothing);
-      expect(find.text(l10n.gameType1v1), findsNothing);
-      expect(find.text(l10n.gameType2v2), findsNothing);
 
       expect(find.text(l10n.profileRecentMatchesTitle), findsOneWidget);
       expect(find.text('Theo'), findsOneWidget);
@@ -605,21 +499,15 @@ void main() {
       () => leaderboardRepository.leaderboards(
         competitionId: 'c1',
         seasonId: 's1',
-        gameType: null,
       ),
     ).thenAnswer((_) async => const []);
     when(
-      () => profileRepository.ratingHistory(
-        seasonId: 's1',
-        playerId: 'p1',
-        gameType: null,
-      ),
+      () => profileRepository.ratingHistory(seasonId: 's1', playerId: 'p1'),
     ).thenAnswer((_) async => const []);
     when(
       () => profileRepository.profileStats(
         playerId: 'p1',
         seasonId: any(named: 'seasonId'),
-        gameType: null,
       ),
     ).thenAnswer(
       (_) async => const ProfileStats(
@@ -631,17 +519,13 @@ void main() {
       ),
     );
     when(
-      () => matchRepository.recentForPlayer(playerId: 'p1', gameType: null),
+      () => matchRepository.recentForPlayer(playerId: 'p1'),
     ).thenAnswer((_) async => const []);
     when(
-      () => leaderboardRepository.medals('c1', gameType: null),
+      () => leaderboardRepository.medals('c1'),
     ).thenAnswer((_) async => const []);
     when(
-      () => leaderboardRepository.history(
-        competitionId: 'c1',
-        playerId: 'p1',
-        gameType: null,
-      ),
+      () => leaderboardRepository.history(competitionId: 'c1', playerId: 'p1'),
     ).thenAnswer((_) async => const []);
 
     final cubit = buildOverviewCubit()..load();
@@ -662,11 +546,7 @@ void main() {
 
     expect(find.text(l10n.profileHistoryEmpty), findsOneWidget);
     verify(
-      () => leaderboardRepository.history(
-        competitionId: 'c1',
-        playerId: 'p1',
-        gameType: null,
-      ),
+      () => leaderboardRepository.history(competitionId: 'c1', playerId: 'p1'),
     ).called(1);
     expect(tester.takeException(), isNull);
 

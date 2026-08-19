@@ -2,7 +2,6 @@ import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/failure.dart';
 import '../../../leaderboard/domain/season_leaderboard.model.dart';
-import '../../../match/domain/game_type.enum.dart';
 
 sealed class ProfileHistoryState extends Equatable {
   const ProfileHistoryState();
@@ -25,27 +24,10 @@ class ProfileHistoryFailed extends ProfileHistoryState {
 }
 
 class ProfileHistoryReady extends ProfileHistoryState {
-  const ProfileHistoryReady({
-    required this.selectedGameType,
-    this.leaderboards = const [],
-  });
+  const ProfileHistoryReady({this.leaderboards = const []});
 
-  final GameType? selectedGameType;
   final List<SeasonLeaderboard> leaderboards;
 
-  ProfileHistoryReady copyWith({
-    GameType? selectedGameType,
-    List<SeasonLeaderboard>? leaderboards,
-    bool clearGameType = false,
-  }) {
-    return ProfileHistoryReady(
-      selectedGameType: clearGameType
-          ? null
-          : (selectedGameType ?? this.selectedGameType),
-      leaderboards: leaderboards ?? this.leaderboards,
-    );
-  }
-
   @override
-  List<Object?> get props => [selectedGameType, leaderboards];
+  List<Object?> get props => [leaderboards];
 }

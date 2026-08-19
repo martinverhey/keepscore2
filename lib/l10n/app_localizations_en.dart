@@ -414,16 +414,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get leaderboardFilterAll => 'All';
 
   @override
-  String leaderboardFilterEmpty(String gameType) {
-    return 'No $gameType matches yet this season.';
-  }
-
-  @override
-  String historyFilterEmpty(String gameType) {
-    return 'No finished $gameType seasons yet.';
-  }
-
-  @override
   String get gameTypeFilterPick => 'Filter by game type';
 
   @override

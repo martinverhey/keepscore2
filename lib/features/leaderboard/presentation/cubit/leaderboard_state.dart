@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/failure.dart';
-import '../../../match/domain/game_type.enum.dart';
 import '../../domain/leaderboard.model.dart';
 import '../../domain/medals.model.dart';
 import '../../domain/season.model.dart';
@@ -29,31 +28,24 @@ class LeaderboardFailed extends LeaderboardState {
 class LeaderboardReady extends LeaderboardState {
   const LeaderboardReady({
     required this.season,
-    this.selectedGameType,
     this.leaderboards = const [],
     this.medals = const {},
     this.busy = false,
   });
 
   final Season season;
-  final GameType? selectedGameType;
   final List<Leaderboard> leaderboards;
   final Map<String, Medals> medals;
   final bool busy;
 
   LeaderboardReady copyWith({
     Season? season,
-    GameType? selectedGameType,
     List<Leaderboard>? leaderboards,
     Map<String, Medals>? medals,
     bool? busy,
-    bool clearGameType = false,
   }) {
     return LeaderboardReady(
       season: season ?? this.season,
-      selectedGameType: clearGameType
-          ? null
-          : (selectedGameType ?? this.selectedGameType),
       leaderboards: leaderboards ?? this.leaderboards,
       medals: medals ?? this.medals,
       busy: busy ?? this.busy,
@@ -61,11 +53,5 @@ class LeaderboardReady extends LeaderboardState {
   }
 
   @override
-  List<Object?> get props => [
-    season,
-    selectedGameType,
-    leaderboards,
-    medals,
-    busy,
-  ];
+  List<Object?> get props => [season, leaderboards, medals, busy];
 }

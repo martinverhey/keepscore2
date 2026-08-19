@@ -1,4 +1,3 @@
-import '../../match/domain/game_type.enum.dart';
 import 'leaderboard.model.dart';
 import 'medals.model.dart';
 import 'season.model.dart';
@@ -11,13 +10,11 @@ abstract interface class LeaderboardRepository {
   Future<List<Leaderboard>> leaderboards({
     required String competitionId,
     required String? seasonId,
-    GameType? gameType,
   });
 
   Stream<void> watchLeaderboards({
     required String competitionId,
     required String? seasonId,
-    GameType? gameType,
   });
 
   Future<List<Season>> finishedSeasons(String competitionId);
@@ -26,8 +23,7 @@ abstract interface class LeaderboardRepository {
     required String competitionId,
     String? seasonId,
     String? playerId,
-    GameType? gameType,
   });
 
-  Future<List<Medals>> medals(String competitionId, {GameType? gameType});
+  Future<List<Medals>> medals(String competitionId);
 }

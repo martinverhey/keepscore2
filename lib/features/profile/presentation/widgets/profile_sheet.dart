@@ -19,9 +19,7 @@ import '../../../competition/domain/competition.model.dart';
 import '../../../leaderboard/domain/leaderboard.model.dart';
 import '../../../leaderboard/domain/medals.model.dart';
 import '../../../leaderboard/domain/season_leaderboard.model.dart';
-import '../../../leaderboard/presentation/widgets/game_type_filter_dropdown.dart';
 import '../../../match/domain/match_entry.model.dart';
-import '../../../match/presentation/cubit/game_type_filter_cubit.dart';
 import '../../../match/presentation/widgets/match_tile.dart';
 import '../cubit/profile_history_cubit.dart';
 import '../cubit/profile_overview_cubit.dart';
@@ -92,12 +90,6 @@ class _ProfileSheetState extends State<ProfileSheet> {
               state is ProfileOverviewReady && state.leaderboard != null
               ? _rankSummary(context, state)
               : null,
-          headerTrailing: state is ProfileOverviewLoading
-              ? null
-              : GameTypeFilterDropdown(
-                  selected: context.watch<GameTypeFilterCubit>().state,
-                  onSelected: context.read<GameTypeFilterCubit>().select,
-                ),
           content: switch (state) {
             ProfileOverviewLoading() => const Padding(
               padding: EdgeInsets.all(AppSpacing.xl),
@@ -205,8 +197,8 @@ class _ProfileSheetState extends State<ProfileSheet> {
   }
 
   Widget _versus(BuildContext context, ProfileVersusReady state) {
-    final records = state.records;
-    if (records.isEmpty) {
+    final record = state.headToHead;
+    if (record.wins + record.losses + record.draws == 0) {
       return EmptyState(
         message: context.l10n.profileVersusEmpty(widget.displayName),
       );
@@ -217,9 +209,9 @@ class _ProfileSheetState extends State<ProfileSheet> {
       children: [
         _recordTable(
           context,
-          wins: records.fold(0, (sum, record) => sum + record.wins),
-          losses: records.fold(0, (sum, record) => sum + record.losses),
-          draws: records.fold(0, (sum, record) => sum + record.draws),
+          wins: record.wins,
+          losses: record.losses,
+          draws: record.draws,
         ),
         if (state.recentMatches.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.lg),

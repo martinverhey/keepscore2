@@ -2,7 +2,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/data/realtime.dart';
 import '../../../core/error/failure.dart';
-import '../../match/domain/game_type.enum.dart';
 import '../domain/leaderboard.model.dart';
 import '../domain/leaderboard_repository.dart';
 import '../domain/medals.model.dart';
@@ -35,20 +34,15 @@ class SupabaseLeaderboardRepository implements LeaderboardRepository {
   Future<List<Leaderboard>> leaderboards({
     required String competitionId,
     required String? seasonId,
-    GameType? gameType,
   }) => guard(() async {
-    if (seasonId == null) {
-      return gameType == null ? _leaderboards(competitionId) : <Leaderboard>[];
-    }
+    if (seasonId == null) return _leaderboards(competitionId);
 
-    var query = _client
-        .from(gameType == null ? 'leaderboard' : 'game_type_leaderboard')
+    final rows = await _client
+        .from('leaderboard')
         .select()
         .eq('competition_id', competitionId)
-        .eq('season_id', seasonId);
-    if (gameType != null) query = query.eq('game_type', gameType.wireValue);
-
-    final rows = await query.order('rank', ascending: true);
+        .eq('season_id', seasonId)
+        .order('rank', ascending: true);
 
     return rows.map((row) => Leaderboard.fromMap(row)).toList(growable: false);
   });
@@ -72,13 +66,11 @@ class SupabaseLeaderboardRepository implements LeaderboardRepository {
   Stream<void> watchLeaderboards({
     required String competitionId,
     required String? seasonId,
-    GameType? gameType,
   }) {
     return realtimeTicks(
       _client,
-      topic:
-          'leaderboard:$competitionId:${seasonId ?? 'pending'}:${gameType?.wireValue ?? 'combined'}',
-      table: gameType == null ? 'player_ratings' : 'player_game_type_ratings',
+      topic: 'leaderboard:$competitionId:${seasonId ?? 'pending'}',
+      table: 'player_ratings',
       column: seasonId == null ? null : 'season_id',
       value: seasonId,
     );
@@ -108,15 +100,13 @@ class SupabaseLeaderboardRepository implements LeaderboardRepository {
     required String competitionId,
     String? seasonId,
     String? playerId,
-    GameType? gameType,
   }) => guard(() async {
     var query = _client
-        .from(gameType == null ? 'season_history' : 'game_type_season_history')
+        .from('season_history')
         .select()
         .eq('competition_id', competitionId);
     if (seasonId != null) query = query.eq('season_id', seasonId);
     if (playerId != null) query = query.eq('player_id', playerId);
-    if (gameType != null) query = query.eq('game_type', gameType.wireValue);
 
     final rows = await query
         .order('starts_at', ascending: false)
@@ -128,19 +118,12 @@ class SupabaseLeaderboardRepository implements LeaderboardRepository {
   });
 
   @override
-  Future<List<Medals>> medals(String competitionId, {GameType? gameType}) =>
-      guard(() async {
-        var query = _client
-            .from(
-              gameType == null ? 'player_medals' : 'game_type_player_medals',
-            )
-            .select()
-            .eq('competition_id', competitionId);
-        if (gameType != null) {
-          query = query.eq('game_type', gameType.wireValue);
-        }
+  Future<List<Medals>> medals(String competitionId) => guard(() async {
+    final rows = await _client
+        .from('player_medals')
+        .select()
+        .eq('competition_id', competitionId);
 
-        final rows = await query;
-        return rows.map((row) => Medals.fromMap(row)).toList(growable: false);
-      });
+    return rows.map((row) => Medals.fromMap(row)).toList(growable: false);
+  });
 }

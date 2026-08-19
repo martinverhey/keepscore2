@@ -794,18 +794,6 @@ abstract class AppLocalizations {
   /// **'All'**
   String get leaderboardFilterAll;
 
-  /// No description provided for @leaderboardFilterEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'No {gameType} matches yet this season.'**
-  String leaderboardFilterEmpty(String gameType);
-
-  /// No description provided for @historyFilterEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'No finished {gameType} seasons yet.'**
-  String historyFilterEmpty(String gameType);
-
   /// No description provided for @gameTypeFilterPick.
   ///
   /// In en, this message translates to:

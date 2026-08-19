@@ -3,7 +3,6 @@ import 'package:equatable/equatable.dart';
 import '../../../../core/error/failure.dart';
 import '../../../leaderboard/domain/leaderboard.model.dart';
 import '../../../leaderboard/domain/medals.model.dart';
-import '../../../match/domain/game_type.enum.dart';
 import '../../../match/domain/match_entry.model.dart';
 import '../../domain/best_streaks.model.dart';
 import '../../domain/rating_point.model.dart';
@@ -32,7 +31,6 @@ class ProfileOverviewFailed extends ProfileOverviewState {
 
 class ProfileOverviewReady extends ProfileOverviewState {
   const ProfileOverviewReady({
-    required this.selectedGameType,
     this.leaderboard,
     this.medals,
     this.bestRating = 0,
@@ -46,7 +44,6 @@ class ProfileOverviewReady extends ProfileOverviewState {
     this.hasOpponent = false,
   });
 
-  final GameType? selectedGameType;
   final Leaderboard? leaderboard;
   final Medals? medals;
   final double bestRating;
@@ -61,7 +58,6 @@ class ProfileOverviewReady extends ProfileOverviewState {
 
   @override
   List<Object?> get props => [
-    selectedGameType,
     leaderboard,
     medals,
     bestRating,

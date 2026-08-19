@@ -83,11 +83,8 @@ Future<void> configureDependencies() async {
     )
     ..registerLazySingleton<GameTypeFilterCubit>(() => GameTypeFilterCubit())
     ..registerFactoryParam<LeaderboardCubit, String, void>(
-      (competitionId, _) => LeaderboardCubit(
-        getIt<LeaderboardRepository>(),
-        getIt<GameTypeFilterCubit>(),
-        competitionId,
-      ),
+      (competitionId, _) =>
+          LeaderboardCubit(getIt<LeaderboardRepository>(), competitionId),
     )
     ..registerFactoryParam<MatchListCubit, String, void>(
       (competitionId, _) => MatchListCubit(
@@ -121,7 +118,6 @@ Future<void> configureDependencies() async {
         getIt<LeaderboardRepository>(),
         getIt<ProfileRepository>(),
         getIt<MatchRepository>(),
-        getIt<GameTypeFilterCubit>(),
         competitionId,
         playerId,
       ),
@@ -130,7 +126,6 @@ Future<void> configureDependencies() async {
       (playerId, opponentId) => ProfileVersusCubit(
         getIt<ProfileRepository>(),
         getIt<MatchRepository>(),
-        getIt<GameTypeFilterCubit>(),
         playerId,
         opponentId,
       ),
@@ -138,7 +133,6 @@ Future<void> configureDependencies() async {
     ..registerFactoryParam<ProfileHistoryCubit, String, String>(
       (competitionId, playerId) => ProfileHistoryCubit(
         getIt<LeaderboardRepository>(),
-        getIt<GameTypeFilterCubit>(),
         competitionId,
         playerId,
       ),

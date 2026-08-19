@@ -48,18 +48,12 @@ class SupabaseMatchRepository implements MatchRepository {
   @override
   Future<List<MatchEntry>> recentForPlayer({
     required String playerId,
-    GameType? gameType,
     int limit = 3,
   }) => guard(() async {
-    var query = _client
+    final links = await _client
         .from('match_players')
         .select('match_id, matches!inner(played_at)')
-        .eq('player_id', playerId);
-    if (gameType != null) {
-      query = query.eq('matches.game_type', gameType.wireValue);
-    }
-
-    final links = await query
+        .eq('player_id', playerId)
         .order('played_at', referencedTable: 'matches', ascending: false)
         .limit(limit);
 
@@ -80,7 +74,6 @@ class SupabaseMatchRepository implements MatchRepository {
   Future<List<MatchEntry>> recentBetweenPlayers({
     required String playerId,
     required String opponentId,
-    GameType? gameType,
     int limit = 3,
   }) => guard(() async {
     final links = await _client.rpc<List<dynamic>>(
@@ -88,7 +81,6 @@ class SupabaseMatchRepository implements MatchRepository {
       params: {
         'p_player_id': playerId,
         'p_opponent_id': opponentId,
-        if (gameType != null) 'p_game_type': gameType.wireValue,
         'p_limit': limit,
       },
     );

@@ -231,10 +231,7 @@ void main() {
         ),
       ).thenAnswer((_) => const Stream.empty());
       when(
-        () => leaderboard.medals(
-          _competitionId,
-          gameType: any(named: 'gameType'),
-        ),
+        () => leaderboard.medals(_competitionId),
       ).thenAnswer((_) async => const []);
 
       final authBloc = AuthBloc(auth);
@@ -387,11 +384,7 @@ GoRouter _buildRouter(
                     MatchListCubit(matchRepository, gameTypeFilterCubit, id),
               ),
               BlocProvider(
-                create: (_) => LeaderboardCubit(
-                  leaderboardRepository,
-                  gameTypeFilterCubit,
-                  id,
-                ),
+                create: (_) => LeaderboardCubit(leaderboardRepository, id),
               ),
             ],
             child: CompetitionContent(competitionId: id),

@@ -13,14 +13,12 @@ abstract interface class MatchRepository {
 
   Future<List<MatchEntry>> recentForPlayer({
     required String playerId,
-    GameType? gameType,
     int limit = 3,
   });
 
   Future<List<MatchEntry>> recentBetweenPlayers({
     required String playerId,
     required String opponentId,
-    GameType? gameType,
     int limit = 3,
   });
 

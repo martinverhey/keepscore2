@@ -15,15 +15,22 @@ void main() {
 
   test('HeadToHeadRecord reads a head_to_head row', () {
     final record = HeadToHeadRecord.fromMap({
-      'game_type': '2v2',
       'wins': 3,
       'losses': 1,
       'draws': 2,
     });
 
-    expect(record.gameType, GameType.twoVTwo);
     expect(record.wins, 3);
+    expect(record.losses, 1);
     expect(record.draws, 2);
+  });
+
+  test('HeadToHeadRecord.zero is the zero value', () {
+    const record = HeadToHeadRecord.zero();
+
+    expect(record.wins, 0);
+    expect(record.losses, 0);
+    expect(record.draws, 0);
   });
 
   test('Streak reads a player_streak row', () {

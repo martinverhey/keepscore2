@@ -47,9 +47,9 @@ Future<GoRouter> _pumpHarness(
   final matches = MockMatchRepository();
   final leaderboard = MockLeaderboardRepository();
 
-  when(() => auth.currentUser).thenReturn(
-    const AuthUser(id: 'p-ada', displayName: 'Ada', isGuest: false),
-  );
+  when(
+    () => auth.currentUser,
+  ).thenReturn(const AuthUser(id: 'p-ada', displayName: 'Ada', isGuest: false));
   when(() => auth.watchUser()).thenAnswer((_) => const Stream.empty());
 
   when(() => competitions.overview(_competitionId)).thenAnswer(
@@ -90,10 +90,8 @@ Future<GoRouter> _pumpHarness(
         SeasonWindow(id: 's1', startsAt: seasonStart, endsAt: seasonEnd),
   );
   when(
-    () => leaderboard.leaderboards(
-      competitionId: _competitionId,
-      seasonId: 's1',
-    ),
+    () =>
+        leaderboard.leaderboards(competitionId: _competitionId, seasonId: 's1'),
   ).thenAnswer((_) async => []);
   when(
     () => leaderboard.watchLeaderboards(
@@ -101,12 +99,7 @@ Future<GoRouter> _pumpHarness(
       seasonId: 's1',
     ),
   ).thenAnswer((_) => const Stream.empty());
-  when(
-    () => leaderboard.medals(
-      _competitionId,
-      gameType: any(named: 'gameType'),
-    ),
-  ).thenAnswer((_) async => []);
+  when(() => leaderboard.medals(_competitionId)).thenAnswer((_) async => []);
 
   final authBloc = AuthBloc(auth);
   final gameTypeFilterCubit = GameTypeFilterCubit();
@@ -128,13 +121,9 @@ Future<GoRouter> _pumpHarness(
               ),
               BlocProvider(create: (_) => PlayersCubit(players, id)),
               BlocProvider(
-                create: (_) =>
-                    MatchListCubit(matches, gameTypeFilterCubit, id),
+                create: (_) => MatchListCubit(matches, gameTypeFilterCubit, id),
               ),
-              BlocProvider(
-                create: (_) =>
-                    LeaderboardCubit(leaderboard, gameTypeFilterCubit, id),
-              ),
+              BlocProvider(create: (_) => LeaderboardCubit(leaderboard, id)),
             ],
             child: CompetitionContent(competitionId: id),
           );
@@ -188,48 +177,45 @@ void main() {
     },
   );
 
-  testWidgets(
-    'picking Matches from the sidebar of a page pushed on top (e.g. '
-    'History) lands on Matches, not Leaderboard',
-    (tester) async {
-      AppPlatform.debugOverrideWideWeb = true;
-      tester.view.physicalSize = const Size(1440, 900);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
+  testWidgets('picking Matches from the sidebar of a page pushed on top (e.g. '
+      'History) lands on Matches, not Leaderboard', (tester) async {
+    AppPlatform.debugOverrideWideWeb = true;
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
 
-      await _pumpHarness(
-        tester,
-        extraRoutes: [
-          GoRoute(
-            path: 'settings/history',
-            builder: (context, state) => Scaffold(
-              body: TextButton(
-                onPressed: () => context.pop(CompetitionSection.matches),
-                child: const Text('pretend-history-select-matches'),
-              ),
+    await _pumpHarness(
+      tester,
+      extraRoutes: [
+        GoRoute(
+          path: 'settings/history',
+          builder: (context, state) => Scaffold(
+            body: TextButton(
+              onPressed: () => context.pop(CompetitionSection.matches),
+              child: const Text('pretend-history-select-matches'),
             ),
           ),
-        ],
-      );
+        ),
+      ],
+    );
 
-      final l10n = AppLocalizations.of(
-        tester.element(find.byType(CompetitionContent)),
-      );
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(CompetitionContent)),
+    );
 
-      expect(find.text(l10n.leaderboardTitle), findsWidgets);
+    expect(find.text(l10n.leaderboardTitle), findsWidgets);
 
-      await tester.tap(find.text(l10n.historyTitle));
-      await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.historyTitle));
+    await tester.pumpAndSettle();
 
-      await tester.tap(find.text('pretend-history-select-matches'));
-      await tester.pumpAndSettle();
+    await tester.tap(find.text('pretend-history-select-matches'));
+    await tester.pumpAndSettle();
 
-      expect(find.byType(CompetitionContent), findsOneWidget);
-      expect(find.text(l10n.matchesTitle), findsWidgets);
-      expect(tester.takeException(), isNull);
-    },
-  );
+    expect(find.byType(CompetitionContent), findsOneWidget);
+    expect(find.text(l10n.matchesTitle), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
 }
 
 class _CompetitionsStub extends StatelessWidget {

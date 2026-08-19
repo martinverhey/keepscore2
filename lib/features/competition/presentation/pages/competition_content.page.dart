@@ -15,10 +15,10 @@ import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../leaderboard/presentation/cubit/leaderboard_cubit.dart';
-import '../../../leaderboard/presentation/widgets/game_type_filter_dropdown.dart';
 import '../../../leaderboard/presentation/widgets/leaderboard.page.dart';
 import '../../../match/presentation/cubit/game_type_filter_cubit.dart';
 import '../../../match/presentation/cubit/match_list_cubit.dart';
+import '../../../match/presentation/widgets/game_type_filter_dropdown.dart';
 import '../../../match/presentation/widgets/matches.page.dart';
 import '../../../player/domain/player.model.dart';
 import '../../../player/presentation/cubit/players_cubit.dart';
@@ -255,10 +255,11 @@ class _CompetitionContentState extends State<CompetitionContent> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          GameTypeFilterDropdown(
-            selected: context.watch<GameTypeFilterCubit>().state,
-            onSelected: context.read<GameTypeFilterCubit>().select,
-          ),
+          if (_tab == CompetitionTab.matches)
+            GameTypeFilterDropdown(
+              selected: context.watch<GameTypeFilterCubit>().state,
+              onSelected: context.read<GameTypeFilterCubit>().select,
+            ),
           if (!AppPlatform.useWideWeb(context)) ...[
             const SizedBox(width: AppSpacing.xs),
             AdaptiveIconButton(

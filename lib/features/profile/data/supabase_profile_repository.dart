@@ -1,7 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/error/failure.dart';
-import '../../match/domain/game_type.enum.dart';
 import '../domain/head_to_head_record.model.dart';
 import '../domain/profile_repository.dart';
 import '../domain/profile_stats.model.dart';
@@ -16,23 +15,13 @@ class SupabaseProfileRepository implements ProfileRepository {
   Future<List<RatingPoint>> ratingHistory({
     required String seasonId,
     required String playerId,
-    GameType? gameType,
     int limit = 10,
   }) => guard(() async {
-    final columns = gameType == null
-        ? 'rating_after, rating_delta'
-        : 'rating_after:type_rating_after, rating_delta:type_rating_delta';
-
-    var query = _client
+    final rows = await _client
         .from('match_players')
-        .select('$columns, matches!inner(played_at)')
+        .select('rating_after, rating_delta, matches!inner(played_at)')
         .eq('player_id', playerId)
-        .eq('matches.season_id', seasonId);
-    if (gameType != null) {
-      query = query.eq('matches.game_type', gameType.wireValue);
-    }
-
-    final rows = await query
+        .eq('matches.season_id', seasonId)
         .order('played_at', referencedTable: 'matches', ascending: false)
         .limit(limit);
 
@@ -47,22 +36,17 @@ class SupabaseProfileRepository implements ProfileRepository {
   Future<ProfileStats> profileStats({
     required String playerId,
     String? seasonId,
-    GameType? gameType,
   }) => guard(() async {
     final rows = await _client.rpc<List<dynamic>>(
       'player_profile_stats',
-      params: {
-        'p_player_id': playerId,
-        'p_season_id': seasonId,
-        if (gameType != null) 'p_game_type': gameType.wireValue,
-      },
+      params: {'p_player_id': playerId, 'p_season_id': seasonId},
     );
     if (rows.isEmpty) return ProfileStats.fromMap(const {});
     return ProfileStats.fromMap(rows.first as Map<String, dynamic>);
   });
 
   @override
-  Future<List<HeadToHeadRecord>> headToHead({
+  Future<HeadToHeadRecord> headToHead({
     required String playerId,
     required String opponentId,
   }) => guard(() async {
@@ -70,8 +54,7 @@ class SupabaseProfileRepository implements ProfileRepository {
       'head_to_head',
       params: {'p_player_id': playerId, 'p_opponent_id': opponentId},
     );
-    return rows
-        .map((row) => HeadToHeadRecord.fromMap(row as Map<String, dynamic>))
-        .toList(growable: false);
+    if (rows.isEmpty) return const HeadToHeadRecord.zero();
+    return HeadToHeadRecord.fromMap(rows.first as Map<String, dynamic>);
   });
 }

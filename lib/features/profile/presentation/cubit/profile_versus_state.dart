@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/failure.dart';
-import '../../../match/domain/game_type.enum.dart';
 import '../../../match/domain/match_entry.model.dart';
 import '../../domain/head_to_head_record.model.dart';
 
@@ -27,36 +26,13 @@ class ProfileVersusFailed extends ProfileVersusState {
 
 class ProfileVersusReady extends ProfileVersusState {
   const ProfileVersusReady({
-    required this.selectedGameType,
-    this.headToHead = const [],
+    this.headToHead = const HeadToHeadRecord.zero(),
     this.recentMatches = const [],
   });
 
-  final GameType? selectedGameType;
-  final List<HeadToHeadRecord> headToHead;
+  final HeadToHeadRecord headToHead;
   final List<MatchEntry> recentMatches;
 
-  List<HeadToHeadRecord> get records => selectedGameType == null
-      ? headToHead
-      : headToHead
-            .where((record) => record.gameType == selectedGameType)
-            .toList(growable: false);
-
-  ProfileVersusReady copyWith({
-    GameType? selectedGameType,
-    List<HeadToHeadRecord>? headToHead,
-    List<MatchEntry>? recentMatches,
-    bool clearGameType = false,
-  }) {
-    return ProfileVersusReady(
-      selectedGameType: clearGameType
-          ? null
-          : (selectedGameType ?? this.selectedGameType),
-      headToHead: headToHead ?? this.headToHead,
-      recentMatches: recentMatches ?? this.recentMatches,
-    );
-  }
-
   @override
-  List<Object?> get props => [selectedGameType, headToHead, recentMatches];
+  List<Object?> get props => [headToHead, recentMatches];
 }
