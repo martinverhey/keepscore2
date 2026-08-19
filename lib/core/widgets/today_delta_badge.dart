@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import '../extensions/build_context.extension.dart';
 import '../theme/app_tokens.dart';
-import 'adaptive/adaptive.dart';
+import 'triangle_icon.dart';
 
 class TodayDeltaBadge extends StatelessWidget {
   const TodayDeltaBadge({super.key, required this.delta});
@@ -23,11 +23,7 @@ class TodayDeltaBadge extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            AdaptiveIcon(
-              isGain ? AdaptiveGlyph.triangleUp : AdaptiveGlyph.triangleDown,
-              color: color,
-              size: 13,
-            ),
+            TriangleIcon(pointsUp: isGain, color: color, size: 10),
             const SizedBox(width: 2),
             Text(
               amount,

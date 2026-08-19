@@ -30,8 +30,6 @@ class AdaptiveIcon extends StatelessWidget {
     AdaptiveGlyph.medal => CupertinoIcons.rosette,
     AdaptiveGlyph.fire => CupertinoIcons.flame_fill,
     AdaptiveGlyph.ice => CupertinoIcons.snow,
-    AdaptiveGlyph.triangleUp => CupertinoIcons.arrowtriangle_up_fill,
-    AdaptiveGlyph.triangleDown => CupertinoIcons.arrowtriangle_down_fill,
     AdaptiveGlyph.signOut => CupertinoIcons.arrow_right_square,
   };
 
@@ -52,8 +50,6 @@ class AdaptiveIcon extends StatelessWidget {
     AdaptiveGlyph.medal => Icons.military_tech,
     AdaptiveGlyph.fire => Icons.local_fire_department,
     AdaptiveGlyph.ice => Icons.ac_unit,
-    AdaptiveGlyph.triangleUp => Icons.arrow_drop_up,
-    AdaptiveGlyph.triangleDown => Icons.arrow_drop_down,
     AdaptiveGlyph.signOut => Icons.logout,
   };
 
