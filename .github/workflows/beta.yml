@@ -1,0 +1,72 @@
+name: Beta release
+
+on:
+  workflow_dispatch: {}
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  ios:
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: ios
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.44.9"
+          channel: stable
+      - run: flutter pub get
+        working-directory: .
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+          working-directory: ios
+      - name: Build and upload to TestFlight
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_CONTENT: ${{ secrets.ASC_KEY_CONTENT }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: bundle exec fastlane ios beta
+
+  android:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: android
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.44.9"
+          channel: stable
+      - run: flutter pub get
+        working-directory: .
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: "17"
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+          working-directory: android
+      - name: Write keystore and Play credentials
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > upload-keystore.jks
+          cat > key.properties <<EOF
+          storeFile=../upload-keystore.jks
+          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
+          EOF
+          echo "${{ secrets.PLAY_STORE_JSON_KEY }}" > play-store-key.json
+      - name: Build and upload to Play internal testing
+        env:
+          PLAY_STORE_JSON_KEY_PATH: play-store-key.json
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: bundle exec fastlane android beta

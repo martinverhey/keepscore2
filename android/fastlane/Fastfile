@@ -1,0 +1,18 @@
+default_platform(:android)
+
+platform :android do
+  lane :beta do
+    build_number = ENV["BUILD_NUMBER"] || Time.now.strftime("%Y%m%d%H%M")
+    sh(
+      "flutter", "build", "appbundle",
+      "--release",
+      "--build-number=#{build_number}",
+    )
+
+    upload_to_play_store(
+      track: "internal",
+      aab: "../build/app/outputs/bundle/release/app-release.aab",
+      release_status: "completed",
+    )
+  end
+end
