@@ -54,3 +54,7 @@ flutter:
   generate: true
   assets:
     - assets/.env
+  fonts:
+    - family: Permanent Marker
+      fonts:
+        - asset: assets/fonts/PermanentMarker-Regular.ttf

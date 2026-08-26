@@ -67,6 +67,8 @@ abstract final class AppTypography {
     FontFeature.tabularFigures(),
   ];
 
+  static const String brandFontFamily = 'Permanent Marker';
+
   static const double displaySize = 40;
   static const double headlineLargeSize = 28;
   static const double headlineMediumSize = 24;

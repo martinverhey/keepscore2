@@ -171,6 +171,7 @@ class Sidebar extends StatelessWidget {
             Text(
               context.l10n.appTitle,
               style: AppTypography.bodyMedium.copyWith(
+                fontFamily: AppTypography.brandFontFamily,
                 fontWeight: FontWeight.w800,
               ),
             ),

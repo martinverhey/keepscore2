@@ -67,7 +67,7 @@ class AdaptiveScaffold extends StatelessWidget {
       slivers: [
         if (title case final title?)
           CupertinoSliverNavigationBar(
-            largeTitle: Text(title),
+            largeTitle: Text(title, style: _titleStyle),
             leading: leading,
             automaticallyImplyLeading: !suppressBack,
             trailing: trailing,
@@ -112,19 +112,23 @@ class AdaptiveScaffold extends StatelessWidget {
         pinned: true,
         centerTitle: true,
         toolbarHeight: kToolbarHeight + AppSpacing.md,
-        title: Text(title),
+        title: Text(title, style: _titleStyle),
         leading: leading,
         automaticallyImplyLeading: !suppressBack,
         actions: _actions(),
       ),
       final title => SliverAppBar.large(
-        title: Text(title),
+        title: Text(title, style: _titleStyle),
         leading: leading,
         automaticallyImplyLeading: !suppressBack,
         actions: _actions(),
       ),
     };
   }
+
+  static const TextStyle _titleStyle = TextStyle(
+    fontFamily: AppTypography.brandFontFamily,
+  );
 
   Widget _sliverBody() {
     return SliverSafeArea(
