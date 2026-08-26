@@ -1,17 +1,26 @@
 default_platform(:android)
 
+REPO_ROOT = File.expand_path("../..", Dir.pwd)
+
+def required_env(name, hint)
+  ENV.fetch(name) { UI.user_error!("#{name} is not set — #{hint}") }
+end
+
 platform :android do
   lane :beta do
-    build_number = ENV["BUILD_NUMBER"] || Time.now.strftime("%Y%m%d%H%M")
-    sh(
-      "flutter", "build", "appbundle",
+    build_args = [
+      "build", "appbundle",
       "--release",
-      "--build-number=#{build_number}",
-    )
+      "--build-number=#{required_env('BUILD_NUMBER', 'CI sets it from github.run_number')}",
+    ]
+    build_name = ENV["BUILD_NAME"].to_s
+    build_args << "--build-name=#{build_name}" unless build_name.empty?
+
+    Dir.chdir(REPO_ROOT) { sh("flutter", *build_args) }
 
     upload_to_play_store(
       track: "internal",
-      aab: "../build/app/outputs/bundle/release/app-release.aab",
+      aab: File.join(REPO_ROOT, "build", "app", "outputs", "bundle", "release", "app-release.aab"),
       release_status: "completed",
     )
   end
