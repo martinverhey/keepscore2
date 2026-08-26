@@ -1,2 +1,2 @@
 json_key_file(ENV["PLAY_STORE_JSON_KEY_PATH"])
-package_name("nl.martinverhey.keepscore2")
+package_name("nl.martini.keepscore2")

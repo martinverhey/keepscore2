@@ -10,8 +10,8 @@
 	<string>manual</string>
 	<key>provisioningProfiles</key>
 	<dict>
-		<key>nl.martinverhey.keepscore2</key>
-		<string>match AppStore nl.martinverhey.keepscore2</string>
+		<key>nl.martini.keepscore2</key>
+		<string>match AppStore nl.martini.keepscore2</string>
 	</dict>
 </dict>
 </plist>
