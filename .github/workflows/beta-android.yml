@@ -1,4 +1,4 @@
-name: Beta release
+name: Beta release (Android)
 
 on:
   workflow_dispatch: {}
@@ -7,33 +7,6 @@ on:
       - "v*.*.*"
 
 jobs:
-  ios:
-    runs-on: macos-15
-    defaults:
-      run:
-        working-directory: ios
-    steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: "3.44.9"
-          channel: stable
-      - run: flutter pub get
-        working-directory: .
-      - uses: ruby/setup-ruby@v1
-        with:
-          bundler-cache: true
-          working-directory: ios
-      - name: Build and upload to TestFlight
-        env:
-          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
-          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
-          ASC_KEY_CONTENT: ${{ secrets.ASC_KEY_CONTENT }}
-          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
-          BUILD_NUMBER: ${{ github.run_number }}
-        run: bundle exec fastlane ios beta
-
   android:
     runs-on: ubuntu-latest
     defaults:
@@ -55,6 +28,9 @@ jobs:
         with:
           bundler-cache: true
           working-directory: android
+      - name: Resolve version name from tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: echo "BUILD_NAME=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
       - name: Write keystore and Play credentials
         run: |
           echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > upload-keystore.jks
@@ -67,6 +43,6 @@ jobs:
           echo "${{ secrets.PLAY_STORE_JSON_KEY }}" > play-store-key.json
       - name: Build and upload to Play internal testing
         env:
-          PLAY_STORE_JSON_KEY_PATH: play-store-key.json
+          PLAY_STORE_JSON_KEY_PATH: ${{ github.workspace }}/android/play-store-key.json
           BUILD_NUMBER: ${{ github.run_number }}
         run: bundle exec fastlane android beta
