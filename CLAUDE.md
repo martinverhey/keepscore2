@@ -4,7 +4,9 @@ Flutter (iOS / Android / Web) + Supabase app for running competition ladders:
 log 1v1–NvM matches, get an Elo leaderboard per season.
 
 **Design reference (Elo formula, schema, architecture rationale):**
-`.claude/plans/build-plan.md`
+`.claude/plans/build-plan.md` — a local working note, gitignored, not part
+of the checked-in repo. If it's missing on your machine, this file (`CLAUDE.md`)
+is the up-to-date source of truth regardless.
 
 ## Status
 
