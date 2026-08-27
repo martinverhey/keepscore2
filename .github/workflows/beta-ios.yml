@@ -1,4 +1,4 @@
-name: Beta release (iOS)
+name: Beta (iOS)
 
 on:
   workflow_dispatch: {}
