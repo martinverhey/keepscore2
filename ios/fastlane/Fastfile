@@ -51,7 +51,6 @@ platform :ios do
       api_key: api_key,
       ipa: ipa,
       skip_waiting_for_build_processing: true,
-      groups: ["Internal"],
     )
   end
 end
