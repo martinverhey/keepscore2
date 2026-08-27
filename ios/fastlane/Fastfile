@@ -19,6 +19,20 @@ platform :ios do
 
     match(readonly: is_ci, api_key: api_key)
 
+    app_identifier = "nl.martini.keepscore2"
+    update_code_signing_settings(
+      path: File.join(REPO_ROOT, "ios", "Runner.xcodeproj"),
+      targets: ["Runner"],
+      use_automatic_signing: false,
+      team_id: "V339R4EKUM",
+      code_sign_identity: "Apple Distribution",
+      bundle_identifier: app_identifier,
+      profile_name: required_env(
+        "sigh_#{app_identifier}_appstore_profile-name",
+        "match should have exported it",
+      ),
+    )
+
     build_args = [
       "build", "ipa",
       "--release",
