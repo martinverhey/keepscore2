@@ -22,6 +22,7 @@ jobs:
         working-directory: .
       - uses: ruby/setup-ruby@v1
         with:
+          ruby-version: "4.0.6"
           bundler-cache: true
           working-directory: ios
       - name: Resolve version name from tag
