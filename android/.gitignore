@@ -12,3 +12,6 @@ GeneratedPluginRegistrant.java
 key.properties
 **/*.keystore
 **/*.jks
+
+# Written by CI from the PLAY_STORE_JSON_KEY secret; never commit a real one.
+play-store-key.json
