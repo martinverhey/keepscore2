@@ -15,6 +15,8 @@ platform :ios do
       is_key_content_base64: true,
     )
 
+    setup_ci if is_ci
+
     match(readonly: is_ci, api_key: api_key)
 
     build_args = [
