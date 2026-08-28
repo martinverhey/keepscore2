@@ -15,14 +15,16 @@ double contrast(Color a, Color b) {
 
 Future<List<Color>> resolvedUnder(WidgetTester tester, Brightness b) async {
   late List<Color> colors;
-  final probe = Builder(builder: (context) {
-    colors = [
-      AdaptiveColors.accent(context),
-      AdaptiveColors.teamA(context),
-      AdaptiveColors.teamB(context),
-    ];
-    return const SizedBox();
-  });
+  final probe = Builder(
+    builder: (context) {
+      colors = [
+        AdaptiveColors.accent(context),
+        AdaptiveColors.teamA(context),
+        AdaptiveColors.teamB(context),
+      ];
+      return const SizedBox();
+    },
+  );
 
   final key = ValueKey('$b-${AppPlatform.useCupertino}');
   await tester.pumpWidget(
@@ -36,22 +38,23 @@ Future<List<Color>> resolvedUnder(WidgetTester tester, Brightness b) async {
 void main() {
   tearDown(() => AppPlatform.debugOverrideCupertino = null);
 
-  testWidgets('the accent swaps for a dark surface on either platform',
-      (tester) async {
+  testWidgets('the accent swaps for a dark surface on either platform', (
+    tester,
+  ) async {
     for (final cupertino in [false, true]) {
       AppPlatform.debugOverrideCupertino = cupertino;
 
-      expect(await resolvedUnder(tester, Brightness.light), [
-        AppColors.seed,
-        AppColors.teamA,
-        AppColors.teamB,
-      ], reason: 'useCupertino=$cupertino');
+      expect(
+        await resolvedUnder(tester, Brightness.light),
+        [AppColors.seed, AppColors.teamA, AppColors.teamB],
+        reason: 'useCupertino=$cupertino',
+      );
 
-      expect(await resolvedUnder(tester, Brightness.dark), [
-        AppColors.seedOnDark,
-        AppColors.teamAOnDark,
-        AppColors.teamBOnDark,
-      ], reason: 'useCupertino=$cupertino');
+      expect(
+        await resolvedUnder(tester, Brightness.dark),
+        [AppColors.seedOnDark, AppColors.teamAOnDark, AppColors.teamBOnDark],
+        reason: 'useCupertino=$cupertino',
+      );
     }
   });
 

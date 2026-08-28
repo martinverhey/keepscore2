@@ -27,8 +27,9 @@ void main() {
   });
 
   group('AdaptiveScaffold', () {
-    testWidgets('renders a Material Scaffold when not on Cupertino',
-        (tester) async {
+    testWidgets('renders a Material Scaffold when not on Cupertino', (
+      tester,
+    ) async {
       AppPlatform.debugOverrideCupertino = false;
       await pumpAdaptive(
         tester,

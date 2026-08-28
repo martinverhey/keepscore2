@@ -9,10 +9,8 @@ GoRouter buildRouter() {
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) => const AdaptiveScaffold(
-          title: 'Matches',
-          body: Text('shell'),
-        ),
+        builder: (context, state) =>
+            const AdaptiveScaffold(title: 'Matches', body: Text('shell')),
         routes: [
           GoRoute(
             path: 'modal',

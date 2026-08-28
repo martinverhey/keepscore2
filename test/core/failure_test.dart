@@ -8,7 +8,8 @@ void main() {
       await expectLater(
         guard<void>(
           () async => throw AuthRetryableFetchException(
-            message: 'HandshakeException: Connection terminated during '
+            message:
+                'HandshakeException: Connection terminated during '
                 'handshake',
           ),
         ),

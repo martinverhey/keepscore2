@@ -66,11 +66,7 @@ void main() {
       await tester.pumpWidget(
         Directionality(
           textDirection: TextDirection.ltr,
-          child: MatchTile(
-            match: match,
-            myPlayerId: myPlayerId,
-            onTap: () {},
-          ),
+          child: MatchTile(match: match, myPlayerId: myPlayerId, onTap: () {}),
         ),
       );
       final container = tester.widget<Container>(find.byType(Container).first);

@@ -78,8 +78,7 @@ void main() {
       ),
     );
     when(() => players.currentPlayers('c1')).thenAnswer(
-      (_) async =>
-          playerList ?? [_player('p1', 'Ada'), _player('p2', 'Grace')],
+      (_) async => playerList ?? [_player('p1', 'Ada'), _player('p2', 'Grace')],
     );
     when(() => leaderboard.currentSeason('c1')).thenAnswer(
       (_) async => SeasonWindow(

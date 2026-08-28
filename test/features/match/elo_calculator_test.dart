@@ -75,5 +75,4 @@ void main() {
       expect(() => EloCalculator.teamRating([]), throwsArgumentError);
     });
   });
-
 }
