@@ -1,9 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../../app/router/app_router.dart';
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
@@ -15,13 +13,9 @@ import '../../../../core/widgets/settings_switch_row.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../competition/domain/competition.model.dart';
-import '../../../competition/presentation/cubit/competition_cubit.dart';
-import '../../../competition/presentation/widgets/competition_section.enum.dart';
 import '../../../competition/presentation/widgets/home_sidebar_competition.dart';
-import '../../../competition/presentation/widgets/open_home.dart';
-import '../../../competition/presentation/widgets/open_language.dart';
-import '../../../competition/presentation/widgets/select_competition_section.dart';
 import '../../../competition/presentation/widgets/sidebar.dart';
+import '../../../competition/presentation/widgets/sidebar_section.enum.dart';
 import '../cubit/configuration_cubit.dart';
 
 class ConfigurationPage extends StatefulWidget {
@@ -62,13 +56,6 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
     }
   }
 
-  void _selectSection(CompetitionSection section) => selectCompetitionSection(
-    context,
-    competitionId: context.read<ConfigurationCubit>().competitionId,
-    current: CompetitionSection.configuration,
-    target: section,
-  );
-
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<ConfigurationCubit, ConfigurationState>(
@@ -85,43 +72,11 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
   Widget _sidebar(BuildContext context, ConfigurationState state) {
     final cubit = context.read<ConfigurationCubit>();
     final session = context.watch<AuthBloc>().state;
-    final competitionDetail = context
-        .watch<CompetitionCubit>()
-        .state
-        .competition;
     setPageTitle(context, context.l10n.configurationTitle);
 
-    final isOwner =
-        session.canWrite &&
-        session.user?.id != null &&
-        session.user?.id == competitionDetail?.ownerId;
-
     return Sidebar(
-      competitionName: competitionDetail?.name,
-      current: CompetitionSection.configuration,
-      canManageSettings: isOwner,
-      isRegistered: session.canWrite,
-      onSelectSection: _selectSection,
-      onNewMatch: () =>
-          context.push<Object?>(Routes.newMatch(cubit.competitionId)),
-      onOpenHome: () => openHome(
-        context,
-        replace: true,
-        competitionId: cubit.competitionId,
-        competitionName: competitionDetail?.name,
-        canManageSettings: isOwner,
-      ),
-      onOpenLanguage: () => openLanguage(
-        context,
-        replace: true,
-        sidebarCompetition: HomeSidebarCompetition(
-          competitionId: cubit.competitionId,
-          competitionName: competitionDetail?.name,
-          canManageSettings: isOwner,
-        ),
-      ),
-      onSignOut: () =>
-          context.read<AuthBloc>().add(const AuthSignOutRequested()),
+      competition: HomeSidebarCompetition.of(context, cubit.competitionId),
+      current: SidebarSection.configuration,
       child: AdaptiveScaffold(
         title: context.l10n.configurationTitle,
         body: _body(context, state, cubit: cubit, session: session),

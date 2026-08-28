@@ -1,8 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../../app/router/app_router.dart';
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/box_constraints.extension.dart';
 import '../../../../core/extensions/build_context.extension.dart';
@@ -10,15 +8,11 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/state_views.dart';
-import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../competition/domain/competition.model.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
-import '../../../competition/presentation/widgets/competition_section.enum.dart';
 import '../../../competition/presentation/widgets/home_sidebar_competition.dart';
-import '../../../competition/presentation/widgets/open_home.dart';
-import '../../../competition/presentation/widgets/open_language.dart';
-import '../../../competition/presentation/widgets/select_competition_section.dart';
 import '../../../competition/presentation/widgets/sidebar.dart';
+import '../../../competition/presentation/widgets/sidebar_section.enum.dart';
 import '../../../leaderboard/domain/leaderboard.model.dart';
 import '../../../leaderboard/presentation/widgets/leaderboard_row.dart';
 import '../../../leaderboard/presentation/widgets/season_dropdown.dart';
@@ -38,23 +32,11 @@ class _HistoryPageState extends State<HistoryPage> {
     context.read<HistoryCubit>().load();
   }
 
-  void _selectSection(CompetitionSection section) => selectCompetitionSection(
-    context,
-    competitionId: context.read<HistoryCubit>().competitionId,
-    current: CompetitionSection.history,
-    target: section,
-  );
-
   @override
   Widget build(BuildContext context) {
-    final session = context.watch<AuthBloc>().state;
     final competition = context.watch<CompetitionCubit>().state.competition;
     final myPlayerId = context.watch<CompetitionCubit>().state.myPlayerId;
     final seasonLength = competition?.seasonLength;
-    final isOwner =
-        session.canWrite &&
-        session.user?.id != null &&
-        session.user?.id == competition?.ownerId;
 
     return BlocBuilder<HistoryCubit, HistoryState>(
       builder: (context, state) {
@@ -62,31 +44,8 @@ class _HistoryPageState extends State<HistoryPage> {
         setPageTitle(context, context.l10n.historyTitle);
 
         return Sidebar(
-          competitionName: competition?.name,
-          current: CompetitionSection.history,
-          canManageSettings: isOwner,
-          isRegistered: session.canWrite,
-          onSelectSection: _selectSection,
-          onNewMatch: () =>
-              context.push<Object?>(Routes.newMatch(cubit.competitionId)),
-          onOpenHome: () => openHome(
-            context,
-            replace: true,
-            competitionId: cubit.competitionId,
-            competitionName: competition?.name,
-            canManageSettings: isOwner,
-          ),
-          onOpenLanguage: () => openLanguage(
-            context,
-            replace: true,
-            sidebarCompetition: HomeSidebarCompetition(
-              competitionId: cubit.competitionId,
-              competitionName: competition?.name,
-              canManageSettings: isOwner,
-            ),
-          ),
-          onSignOut: () =>
-              context.read<AuthBloc>().add(const AuthSignOutRequested()),
+          competition: HomeSidebarCompetition.of(context, cubit.competitionId),
+          current: SidebarSection.history,
           child: AdaptiveScaffold(
             title: context.l10n.historyTitle,
             hasScrollBody: true,

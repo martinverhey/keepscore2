@@ -16,12 +16,10 @@ import '../../domain/competition.model.dart';
 import '../cubit/competition_list_cubit.dart';
 import '../widgets/competition_action.enum.dart';
 import '../widgets/competition_action_sheet.dart';
-import '../widgets/competition_section.enum.dart';
 import '../widgets/competition_tile.dart';
 import '../widgets/home_sidebar_competition.dart';
-import '../widgets/open_language.dart';
-import '../widgets/select_competition_section.dart';
 import '../widgets/sidebar.dart';
+import '../widgets/sidebar_section.enum.dart';
 
 class CompetitionsPage extends StatefulWidget {
   const CompetitionsPage({super.key, this.sidebarCompetition});
@@ -39,6 +37,12 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
     context.read<CompetitionListCubit>().load();
   }
 
+  void _selectRootSection(SidebarSection section) {
+    if (section == SidebarSection.language) {
+      context.push<SidebarSection>(Routes.language);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final session = context.watch<AuthBloc>().state;
@@ -46,32 +50,9 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
     setPageTitle(context, context.l10n.competitionsTitle);
 
     return Sidebar(
-      competitionName: sidebarCompetition?.competitionName,
-      current: CompetitionSection.competitions,
-      hasCompetition: sidebarCompetition != null,
-      canManageSettings: sidebarCompetition?.canManageSettings ?? false,
-      isRegistered: session.canWrite,
-      onSelectSection: sidebarCompetition == null
-          ? (_) {}
-          : (section) => selectCompetitionSection(
-              context,
-              competitionId: sidebarCompetition.competitionId,
-              current: CompetitionSection.competitions,
-              target: section,
-            ),
-      onNewMatch: sidebarCompetition == null
-          ? () {}
-          : () => context.push<Object?>(
-              Routes.newMatch(sidebarCompetition.competitionId),
-            ),
-      onOpenHome: () {},
-      onOpenLanguage: () => openLanguage(
-        context,
-        replace: false,
-        sidebarCompetition: sidebarCompetition,
-      ),
-      onSignOut: () =>
-          context.read<AuthBloc>().add(const AuthSignOutRequested()),
+      competition: sidebarCompetition,
+      current: SidebarSection.competitions,
+      onSelectSection: sidebarCompetition == null ? _selectRootSection : null,
       child: AdaptiveScaffold(
         title: context.l10n.competitionsTitle,
         trailing: !AppPlatform.useWideWeb(context) && !context.canPop()

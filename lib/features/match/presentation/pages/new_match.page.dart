@@ -11,14 +11,9 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/state_views.dart';
-import '../../../auth/presentation/cubit/auth_bloc.dart';
-import '../../../competition/presentation/cubit/competition_cubit.dart';
-import '../../../competition/presentation/widgets/competition_section.enum.dart';
 import '../../../competition/presentation/widgets/home_sidebar_competition.dart';
-import '../../../competition/presentation/widgets/open_home.dart';
-import '../../../competition/presentation/widgets/open_language.dart';
-import '../../../competition/presentation/widgets/select_competition_section.dart';
 import '../../../competition/presentation/widgets/sidebar.dart';
+import '../../../competition/presentation/widgets/sidebar_section.enum.dart';
 import '../../../player/domain/player.model.dart';
 import '../../domain/match_entry.model.dart';
 import '../cubit/match_form_cubit.dart';
@@ -64,48 +59,14 @@ class _NewMatchPageState extends State<NewMatchPage> {
     if (id != null && mounted) context.pop(true);
   }
 
-  void _selectSection(CompetitionSection section) => selectCompetitionSection(
-    context,
-    competitionId: context.read<MatchFormCubit>().competitionId,
-    target: section,
-  );
-
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<MatchFormCubit>();
-    final session = context.watch<AuthBloc>().state;
-    final competition = context.watch<CompetitionCubit>().state.competition;
-    final isOwner =
-        session.canWrite &&
-        session.user?.id != null &&
-        session.user?.id == competition?.ownerId;
     setPageTitle(context, context.l10n.matchNewTitle);
 
     return Sidebar(
-      competitionName: competition?.name,
-      current: null,
-      canManageSettings: isOwner,
-      isRegistered: session.canWrite,
-      onSelectSection: _selectSection,
-      onNewMatch: () {},
-      onOpenHome: () => openHome(
-        context,
-        replace: false,
-        competitionId: cubit.competitionId,
-        competitionName: competition?.name,
-        canManageSettings: isOwner,
-      ),
-      onOpenLanguage: () => openLanguage(
-        context,
-        replace: false,
-        sidebarCompetition: HomeSidebarCompetition(
-          competitionId: cubit.competitionId,
-          competitionName: competition?.name,
-          canManageSettings: isOwner,
-        ),
-      ),
-      onSignOut: () =>
-          context.read<AuthBloc>().add(const AuthSignOutRequested()),
+      competition: HomeSidebarCompetition.of(context, cubit.competitionId),
+      current: SidebarSection.newMatch,
       child: AdaptiveScaffold(
         title: context.l10n.matchNewTitle,
         body: BlocBuilder<MatchFormCubit, MatchFormState>(

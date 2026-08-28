@@ -24,11 +24,9 @@ import '../../../player/domain/player.model.dart';
 import '../../../player/presentation/cubit/players_cubit.dart';
 import '../../domain/competition.model.dart';
 import '../cubit/competition_cubit.dart';
-import '../widgets/competition_section.enum.dart';
 import '../widgets/home_sidebar_competition.dart';
-import '../widgets/open_home.dart';
-import '../widgets/open_language.dart';
 import '../widgets/sidebar.dart';
+import '../widgets/sidebar_section.enum.dart';
 
 enum CompetitionTab { leaderboard, matches }
 
@@ -66,19 +64,32 @@ class _CompetitionContentState extends State<CompetitionContent> {
     context.read<LeaderboardCubit>().refresh(),
   ]);
 
-  Future<void> _openAndReload(String route) async {
-    final section = await context.push<CompetitionSection>(route);
-    if (!mounted) return;
-    _applySection(section);
-    await _reload();
+  void _selectSection(SidebarSection section) {
+    switch (section) {
+      case SidebarSection.leaderboard:
+        setState(() => _tab = CompetitionTab.leaderboard);
+      case SidebarSection.matches:
+        setState(() => _tab = CompetitionTab.matches);
+      case SidebarSection.newMatch:
+        _openNewMatch();
+      case SidebarSection.players:
+        _openAndReload(Routes.players(widget.competitionId));
+      case SidebarSection.history:
+        _openAndReload(Routes.history(widget.competitionId));
+      case SidebarSection.configuration:
+        _openAndReload(Routes.configuration(widget.competitionId));
+      case SidebarSection.competitions:
+        _openAndReload(Routes.home, extra: _sidebarCompetition());
+      case SidebarSection.language:
+        _openAndReload(Routes.language, extra: _sidebarCompetition());
+    }
   }
 
-  void _applySection(CompetitionSection? section) {
-    if (section == CompetitionSection.leaderboard) {
-      setState(() => _tab = CompetitionTab.leaderboard);
-    } else if (section == CompetitionSection.matches) {
-      setState(() => _tab = CompetitionTab.matches);
-    }
+  Future<void> _openAndReload(String route, {Object? extra}) async {
+    final section = await context.push<SidebarSection>(route, extra: extra);
+    if (!mounted) return;
+    if (section != null) _selectSection(section);
+    await _refresh();
   }
 
   Future<void> _openNewMatch() async {
@@ -88,53 +99,17 @@ class _CompetitionContentState extends State<CompetitionContent> {
     if (!mounted) return;
     if (result == true) {
       setState(() => _tab = CompetitionTab.matches);
-    } else if (result is CompetitionSection) {
-      _applySection(result);
+    } else if (result is SidebarSection) {
+      _selectSection(result);
     }
-    await _reload();
+    await _refresh();
   }
 
-  Future<void> _reload() => Future.wait([
-    context.read<CompetitionCubit>().refresh(),
-    context.read<PlayersCubit>().refresh(),
-    context.read<MatchListCubit>().refresh(),
-    context.read<LeaderboardCubit>().refresh(),
-  ]);
+  HomeSidebarCompetition _sidebarCompetition() =>
+      HomeSidebarCompetition.of(context, widget.competitionId, listen: false);
 
   Future<void> _openSettings() =>
       _openAndReload(Routes.settings(widget.competitionId));
-
-  Future<void> _openLanguage({
-    required String? competitionName,
-    required bool canManageSettings,
-  }) async {
-    final section = await openLanguage(
-      context,
-      replace: false,
-      sidebarCompetition: HomeSidebarCompetition(
-        competitionId: widget.competitionId,
-        competitionName: competitionName,
-        canManageSettings: canManageSettings,
-      ),
-    );
-    if (!mounted) return;
-    _applySection(section);
-  }
-
-  Future<void> _openHome({
-    required String? competitionName,
-    required bool canManageSettings,
-  }) async {
-    final section = await openHome(
-      context,
-      replace: false,
-      competitionId: widget.competitionId,
-      competitionName: competitionName,
-      canManageSettings: canManageSettings,
-    );
-    if (!mounted) return;
-    _applySection(section);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -168,24 +143,11 @@ class _CompetitionContentState extends State<CompetitionContent> {
         );
 
         return Sidebar(
-          competitionName: competition?.name,
+          competition: HomeSidebarCompetition.of(context, widget.competitionId),
           current: _tab == CompetitionTab.leaderboard
-              ? CompetitionSection.leaderboard
-              : CompetitionSection.matches,
-          canManageSettings: session.canWrite && isOwner,
-          isRegistered: isRegistered,
+              ? SidebarSection.leaderboard
+              : SidebarSection.matches,
           onSelectSection: _selectSection,
-          onNewMatch: _openNewMatch,
-          onOpenHome: () => _openHome(
-            competitionName: competition?.name,
-            canManageSettings: session.canWrite && isOwner,
-          ),
-          onOpenLanguage: () => _openLanguage(
-            competitionName: competition?.name,
-            canManageSettings: session.canWrite && isOwner,
-          ),
-          onSignOut: () =>
-              context.read<AuthBloc>().add(const AuthSignOutRequested()),
           child: AdaptiveScaffold(
             title: _tab.title(context),
             onRefresh: _refresh,
@@ -218,34 +180,6 @@ class _CompetitionContentState extends State<CompetitionContent> {
         );
       },
     );
-  }
-
-  void _selectSection(CompetitionSection section) {
-    switch (section) {
-      case CompetitionSection.leaderboard:
-        setState(() => _tab = CompetitionTab.leaderboard);
-      case CompetitionSection.matches:
-        setState(() => _tab = CompetitionTab.matches);
-      case CompetitionSection.players:
-        _openAndReload(Routes.players(widget.competitionId));
-      case CompetitionSection.history:
-        _openAndReload(Routes.history(widget.competitionId));
-      case CompetitionSection.configuration:
-        _openAndReload(Routes.configuration(widget.competitionId));
-      case CompetitionSection.competitions:
-        {
-          final competition = context
-              .read<CompetitionCubit>()
-              .state
-              .competition;
-          final session = context.read<AuthBloc>().state;
-          _openHome(
-            competitionName: competition?.name,
-            canManageSettings:
-                session.canWrite && competition.isOwnedBySession(session),
-          );
-        }
-    }
   }
 
   Widget _trailingRow(BuildContext context) {
@@ -333,12 +267,9 @@ class _CompetitionContentState extends State<CompetitionContent> {
                 isOwner: isOwner,
                 myPlayerId: myPlayerId,
                 myDisplayName: myDisplayName,
-                onManagePlayers: () =>
-                    _openAndReload(Routes.players(widget.competitionId)),
-                onOpenCompetitions: () => _openHome(
-                  competitionName: competition.name,
-                  canManageSettings: isRegistered && isOwner,
-                ),
+                onManagePlayers: () => _selectSection(SidebarSection.players),
+                onOpenCompetitions: () =>
+                    _selectSection(SidebarSection.competitions),
               ),
               CompetitionTab.matches => MatchesPage(
                 isRegistered: isRegistered,

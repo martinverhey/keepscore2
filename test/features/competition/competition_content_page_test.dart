@@ -10,7 +10,7 @@ import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/pages/competition_content.page.dart';
-import 'package:keepscore2/features/competition/presentation/widgets/competition_section.enum.dart';
+import 'package:keepscore2/features/competition/presentation/widgets/sidebar_section.enum.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
 import 'package:keepscore2/features/leaderboard/domain/season_window.model.dart';
 import 'package:keepscore2/features/leaderboard/presentation/cubit/leaderboard_cubit.dart';
@@ -194,7 +194,7 @@ void main() {
           path: 'settings/history',
           builder: (context, state) => Scaffold(
             body: TextButton(
-              onPressed: () => context.pop(CompetitionSection.matches),
+              onPressed: () => context.pop(SidebarSection.matches),
               child: const Text('pretend-history-select-matches'),
             ),
           ),
