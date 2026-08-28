@@ -24,10 +24,7 @@ import '../../../player/domain/player.model.dart';
 import '../../../player/presentation/cubit/players_cubit.dart';
 import '../../domain/competition.model.dart';
 import '../cubit/competition_cubit.dart';
-import '../widgets/sidebar.dart';
-import '../widgets/sidebar_section.enum.dart';
-
-enum CompetitionTab { leaderboard, matches }
+import '../cubit/competition_tab_cubit.dart';
 
 extension CompetitionTabTitle on CompetitionTab {
   String title(BuildContext context) => switch (this) {
@@ -45,8 +42,6 @@ class CompetitionContent extends StatefulWidget {
 }
 
 class _CompetitionContentState extends State<CompetitionContent> {
-  CompetitionTab _tab = CompetitionTab.leaderboard;
-
   @override
   void initState() {
     super.initState();
@@ -63,54 +58,13 @@ class _CompetitionContentState extends State<CompetitionContent> {
     context.read<LeaderboardCubit>().refresh(),
   ]);
 
-  void _selectSection(SidebarSection section) {
-    switch (section) {
-      case SidebarSection.leaderboard:
-        setState(() => _tab = CompetitionTab.leaderboard);
-      case SidebarSection.matches:
-        setState(() => _tab = CompetitionTab.matches);
-      case SidebarSection.newMatch:
-        _openNewMatch();
-      case SidebarSection.players:
-        _openAndReload(Routes.players(widget.competitionId));
-      case SidebarSection.history:
-        _openAndReload(Routes.history(widget.competitionId));
-      case SidebarSection.configuration:
-        _openAndReload(Routes.configuration(widget.competitionId));
-      case SidebarSection.competitions:
-        _openAndReload(Routes.home);
-      case SidebarSection.language:
-        _openAndReload(Routes.language);
-    }
-  }
-
-  Future<void> _openAndReload(String route) async {
-    final section = await context.push<SidebarSection>(route);
-    if (!mounted) return;
-    if (section != null) _selectSection(section);
-    await _refresh();
-  }
-
-  Future<void> _openNewMatch() async {
-    final result = await context.push<Object?>(
-      Routes.newMatch(widget.competitionId),
-    );
-    if (!mounted) return;
-    if (result == true) {
-      setState(() => _tab = CompetitionTab.matches);
-    } else if (result is SidebarSection) {
-      _selectSection(result);
-    }
-    await _refresh();
-  }
-
-  Future<void> _openSettings() =>
-      _openAndReload(Routes.settings(widget.competitionId));
+  void _open(String route) => context.push<Object?>(route);
 
   @override
   Widget build(BuildContext context) {
     final session = context.watch<AuthBloc>().state;
     final playersState = context.watch<PlayersCubit>().state;
+    final tab = context.watch<CompetitionTabCubit>().state;
 
     return BlocConsumer<CompetitionCubit, CompetitionState>(
       listener: (context, state) {
@@ -134,57 +88,52 @@ class _CompetitionContentState extends State<CompetitionContent> {
         setPageTitle(
           context,
           competition == null
-              ? _tab.title(context)
-              : '${competition.name} · ${_tab.title(context)}',
+              ? tab.title(context)
+              : '${competition.name} · ${tab.title(context)}',
         );
 
-        return Sidebar(
-          current: _tab == CompetitionTab.leaderboard
-              ? SidebarSection.leaderboard
-              : SidebarSection.matches,
-          onSelectSection: _selectSection,
-          child: AdaptiveScaffold(
-            title: _tab.title(context),
-            onRefresh: _refresh,
-            hasScrollBody: true,
-            trailing: _trailingRow(context),
-            bottomBar: AppPlatform.useWideWeb(context)
-                ? null
-                : _bottomTabBar(context, isRegistered: isRegistered),
-            body: switch (state) {
-              CompetitionLoading() => const AdaptiveLoader(),
-              CompetitionMissing() => EmptyState(
-                message: context.l10n.competitionNotFound,
-              ),
-              CompetitionFailed(:final failure) => ErrorRetry(
-                message: failure.localized(context.l10n),
-                retryLabel: context.l10n.commonRetry,
-                onRetry: context.read<CompetitionCubit>().load,
-              ),
-              CompetitionReady(:final competition) => _body(
-                context,
-                competition,
-                isRegistered: isRegistered,
-                isOwner: isOwner,
-                hasPlayers: hasPlayers,
-                myPlayerId: myPlayerId,
-                myDisplayName: players.displayNameFor(myPlayerId),
-              ),
-            },
-          ),
+        return AdaptiveScaffold(
+          title: tab.title(context),
+          onRefresh: _refresh,
+          hasScrollBody: true,
+          trailing: _trailingRow(context, tab),
+          bottomBar: AppPlatform.useWideWeb(context)
+              ? null
+              : _bottomTabBar(context, tab, isRegistered: isRegistered),
+          body: switch (state) {
+            CompetitionLoading() => const AdaptiveLoader(),
+            CompetitionMissing() => EmptyState(
+              message: context.l10n.competitionNotFound,
+            ),
+            CompetitionFailed(:final failure) => ErrorRetry(
+              message: failure.localized(context.l10n),
+              retryLabel: context.l10n.commonRetry,
+              onRetry: context.read<CompetitionCubit>().load,
+            ),
+            CompetitionReady(:final competition) => _body(
+              context,
+              competition,
+              tab,
+              isRegistered: isRegistered,
+              isOwner: isOwner,
+              hasPlayers: hasPlayers,
+              myPlayerId: myPlayerId,
+              myDisplayName: players.displayNameFor(myPlayerId),
+            ),
+          },
         );
       },
     );
   }
 
-  Widget _trailingRow(BuildContext context) {
+  Widget _trailingRow(BuildContext context, CompetitionTab tab) {
     return FittedBox(
       fit: BoxFit.scaleDown,
       alignment: Alignment.centerRight,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (_tab == CompetitionTab.matches)
+          if (tab == CompetitionTab.matches)
             GameTypeFilterDropdown(
               selected: context.watch<GameTypeFilterCubit>().state,
               onSelected: context.read<GameTypeFilterCubit>().select,
@@ -193,7 +142,7 @@ class _CompetitionContentState extends State<CompetitionContent> {
             const SizedBox(width: AppSpacing.xs),
             AdaptiveIconButton(
               glyph: AdaptiveGlyph.settings,
-              onPressed: _openSettings,
+              onPressed: () => _open(Routes.settings(widget.competitionId)),
             ),
           ],
         ],
@@ -201,7 +150,11 @@ class _CompetitionContentState extends State<CompetitionContent> {
     );
   }
 
-  Widget _bottomTabBar(BuildContext context, {required bool isRegistered}) {
+  Widget _bottomTabBar(
+    BuildContext context,
+    CompetitionTab tab, {
+    required bool isRegistered,
+  }) {
     return AdaptiveBottomTabBar(
       items: [
         AdaptiveTabBarItem(
@@ -218,18 +171,16 @@ class _CompetitionContentState extends State<CompetitionContent> {
           label: context.l10n.matchesTitle,
         ),
       ],
-      selectedIndex: _tab == CompetitionTab.leaderboard
+      selectedIndex: tab == CompetitionTab.leaderboard
           ? 0
           : (isRegistered ? 2 : 1),
       onTap: (index) {
         if (isRegistered && index == 1) {
-          _openNewMatch();
+          _open(Routes.newMatch(widget.competitionId));
           return;
         }
-        setState(
-          () => _tab = index == 0
-              ? CompetitionTab.leaderboard
-              : CompetitionTab.matches,
+        context.read<CompetitionTabCubit>().select(
+          index == 0 ? CompetitionTab.leaderboard : CompetitionTab.matches,
         );
       },
     );
@@ -237,7 +188,8 @@ class _CompetitionContentState extends State<CompetitionContent> {
 
   Widget _body(
     BuildContext context,
-    Competition competition, {
+    Competition competition,
+    CompetitionTab tab, {
     required bool isRegistered,
     required bool isOwner,
     required bool hasPlayers,
@@ -255,16 +207,16 @@ class _CompetitionContentState extends State<CompetitionContent> {
               constraints.contentHorizontalInset,
               AppSpacing.xl,
             ),
-            child: switch (_tab) {
+            child: switch (tab) {
               CompetitionTab.leaderboard => LeaderboardPage(
                 competitionId: widget.competitionId,
                 competition: competition,
                 isOwner: isOwner,
                 myPlayerId: myPlayerId,
                 myDisplayName: myDisplayName,
-                onManagePlayers: () => _selectSection(SidebarSection.players),
-                onOpenCompetitions: () =>
-                    _selectSection(SidebarSection.competitions),
+                onManagePlayers: () =>
+                    _open(Routes.players(widget.competitionId)),
+                onOpenCompetitions: () => _open(Routes.home),
               ),
               CompetitionTab.matches => MatchesPage(
                 isRegistered: isRegistered,
@@ -272,8 +224,9 @@ class _CompetitionContentState extends State<CompetitionContent> {
                 isOwner: isOwner,
                 myPlayerId: myPlayerId,
                 onOpenMatch: (matchId) =>
-                    _openAndReload(Routes.match(widget.competitionId, matchId)),
-                onCreateMatch: _openNewMatch,
+                    _open(Routes.match(widget.competitionId, matchId)),
+                onCreateMatch: () =>
+                    _open(Routes.newMatch(widget.competitionId)),
               ),
             },
           ),

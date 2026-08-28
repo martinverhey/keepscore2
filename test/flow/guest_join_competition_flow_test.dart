@@ -16,6 +16,7 @@ import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/domain/join_preview.model.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
+import 'package:keepscore2/features/competition/presentation/cubit/competition_tab_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/join_competition_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/pages/competition_content.page.dart';
 import 'package:keepscore2/features/competition/presentation/pages/join_competition.page.dart';
@@ -387,6 +388,7 @@ GoRouter _buildRouter(
               BlocProvider(
                 create: (_) => LeaderboardCubit(leaderboardRepository, id),
               ),
+              BlocProvider(create: (_) => CompetitionTabCubit()),
             ],
             child: CompetitionContent(competitionId: id),
           );

@@ -13,8 +13,6 @@ import '../../../../core/widgets/settings_switch_row.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../competition/domain/competition.model.dart';
-import '../../../competition/presentation/widgets/sidebar.dart';
-import '../../../competition/presentation/widgets/sidebar_section.enum.dart';
 import '../cubit/configuration_cubit.dart';
 
 class ConfigurationPage extends StatefulWidget {
@@ -73,12 +71,9 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
     final session = context.watch<AuthBloc>().state;
     setPageTitle(context, context.l10n.configurationTitle);
 
-    return Sidebar(
-      current: SidebarSection.configuration,
-      child: AdaptiveScaffold(
-        title: context.l10n.configurationTitle,
-        body: _body(context, state, cubit: cubit, session: session),
-      ),
+    return AdaptiveScaffold(
+      title: context.l10n.configurationTitle,
+      body: _body(context, state, cubit: cubit, session: session),
     );
   }
 

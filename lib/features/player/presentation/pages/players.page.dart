@@ -8,8 +8,6 @@ import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/page_title.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
-import '../../../competition/presentation/widgets/sidebar.dart';
-import '../../../competition/presentation/widgets/sidebar_section.enum.dart';
 import '../cubit/players_cubit.dart';
 import '../widgets/players.dart';
 
@@ -34,24 +32,21 @@ class _PlayersPageState extends State<PlayersPage> {
     final isOwner = session.canWrite && competition.isOwnedBySession(session);
     setPageTitle(context, context.l10n.playersTitle);
 
-    return Sidebar(
-      current: SidebarSection.players,
-      child: AdaptiveScaffold(
-        title: context.l10n.playersTitle,
-        trailing: isOwner
-            ? AdaptiveIconButton(
-                glyph: AdaptiveGlyph.add,
-                semanticLabel: context.l10n.playersAddDummy,
-                onPressed: () => addPlaceholderPlayer(context),
-              )
-            : null,
-        body: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Players(
-            ownerUserId: competition?.ownerId,
-            myUserId: session.user?.id,
-            isRegistered: session.canWrite,
-          ),
+    return AdaptiveScaffold(
+      title: context.l10n.playersTitle,
+      trailing: isOwner
+          ? AdaptiveIconButton(
+              glyph: AdaptiveGlyph.add,
+              semanticLabel: context.l10n.playersAddDummy,
+              onPressed: () => addPlaceholderPlayer(context),
+            )
+          : null,
+      body: Padding(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: Players(
+          ownerUserId: competition?.ownerId,
+          myUserId: session.user?.id,
+          isRegistered: session.canWrite,
         ),
       ),
     );

@@ -18,8 +18,6 @@ import '../cubit/competition_list_cubit.dart';
 import '../widgets/competition_action.enum.dart';
 import '../widgets/competition_action_sheet.dart';
 import '../widgets/competition_tile.dart';
-import '../widgets/sidebar.dart';
-import '../widgets/sidebar_section.enum.dart';
 
 class CompetitionsPage extends StatefulWidget {
   const CompetitionsPage({super.key});
@@ -35,31 +33,19 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
     context.read<CompetitionListCubit>().load();
   }
 
-  void _selectRootSection(SidebarSection section) {
-    if (section == SidebarSection.language) {
-      context.push<SidebarSection>(Routes.language);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final session = context.watch<AuthBloc>().state;
-    final hasCompetition =
-        context.watch<CompetitionCubit>().state.competition != null;
     setPageTitle(context, context.l10n.competitionsTitle);
 
-    return Sidebar(
-      current: SidebarSection.competitions,
-      onSelectSection: hasCompetition ? null : _selectRootSection,
-      child: AdaptiveScaffold(
-        title: context.l10n.competitionsTitle,
-        trailing: !AppPlatform.useWideWeb(context) && !context.canPop()
-            ? _signOutButton(context)
-            : null,
-        onRefresh: context.read<CompetitionListCubit>().refresh,
-        body: BlocBuilder<CompetitionListCubit, CompetitionListState>(
-          builder: (context, state) => _body(context, state, session),
-        ),
+    return AdaptiveScaffold(
+      title: context.l10n.competitionsTitle,
+      trailing: !AppPlatform.useWideWeb(context) && !context.canPop()
+          ? _signOutButton(context)
+          : null,
+      onRefresh: context.read<CompetitionListCubit>().refresh,
+      body: BlocBuilder<CompetitionListCubit, CompetitionListState>(
+        builder: (context, state) => _body(context, state, session),
       ),
     );
   }

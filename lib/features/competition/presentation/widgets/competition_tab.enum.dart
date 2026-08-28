@@ -1,0 +1,1 @@
+enum CompetitionTab { leaderboard, matches }

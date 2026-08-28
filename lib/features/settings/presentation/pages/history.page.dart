@@ -10,8 +10,6 @@ import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../competition/domain/competition.model.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
-import '../../../competition/presentation/widgets/sidebar.dart';
-import '../../../competition/presentation/widgets/sidebar_section.enum.dart';
 import '../../../leaderboard/domain/leaderboard.model.dart';
 import '../../../leaderboard/presentation/widgets/leaderboard_row.dart';
 import '../../../leaderboard/presentation/widgets/season_dropdown.dart';
@@ -42,30 +40,26 @@ class _HistoryPageState extends State<HistoryPage> {
         final cubit = context.read<HistoryCubit>();
         setPageTitle(context, context.l10n.historyTitle);
 
-        return Sidebar(
-          current: SidebarSection.history,
-          child: AdaptiveScaffold(
-            title: context.l10n.historyTitle,
-            hasScrollBody: true,
-            body: switch (state) {
-              HistoryLoading() => const AdaptiveLoader(),
-              HistoryFailed(:final failure) => ErrorRetry(
-                message: failure.localized(context.l10n),
-                retryLabel: context.l10n.commonRetry,
-                onRetry: cubit.load,
-              ),
-              HistoryReady() when seasonLength == null =>
-                const AdaptiveLoader(),
-              HistoryReady() => _ready(
-                context,
-                state,
-                cubit,
-                cubit.competitionId,
-                myPlayerId,
-                seasonLength!,
-              ),
-            },
-          ),
+        return AdaptiveScaffold(
+          title: context.l10n.historyTitle,
+          hasScrollBody: true,
+          body: switch (state) {
+            HistoryLoading() => const AdaptiveLoader(),
+            HistoryFailed(:final failure) => ErrorRetry(
+              message: failure.localized(context.l10n),
+              retryLabel: context.l10n.commonRetry,
+              onRetry: cubit.load,
+            ),
+            HistoryReady() when seasonLength == null => const AdaptiveLoader(),
+            HistoryReady() => _ready(
+              context,
+              state,
+              cubit,
+              cubit.competitionId,
+              myPlayerId,
+              seasonLength!,
+            ),
+          },
         );
       },
     );

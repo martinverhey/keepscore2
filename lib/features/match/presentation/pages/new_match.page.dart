@@ -11,10 +11,9 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/state_views.dart';
-import '../../../competition/presentation/widgets/sidebar.dart';
-import '../../../competition/presentation/widgets/sidebar_section.enum.dart';
 import '../../../player/domain/player.model.dart';
 import '../../domain/match_entry.model.dart';
+import '../../../competition/presentation/cubit/competition_tab_cubit.dart';
 import '../cubit/match_form_cubit.dart';
 import '../widgets/team_picker_sheet.dart';
 import 'new_match_keys.enum.dart';
@@ -55,7 +54,10 @@ class _NewMatchPageState extends State<NewMatchPage> {
       scoreA: scoreA,
       scoreB: scoreB,
     );
-    if (id != null && mounted) context.pop(true);
+    if (id == null || !mounted) return;
+
+    context.read<CompetitionTabCubit>().select(CompetitionTab.matches);
+    context.pop();
   }
 
   @override
@@ -63,13 +65,10 @@ class _NewMatchPageState extends State<NewMatchPage> {
     final cubit = context.read<MatchFormCubit>();
     setPageTitle(context, context.l10n.matchNewTitle);
 
-    return Sidebar(
-      current: SidebarSection.newMatch,
-      child: AdaptiveScaffold(
-        title: context.l10n.matchNewTitle,
-        body: BlocBuilder<MatchFormCubit, MatchFormState>(
-          builder: (context, state) => _body(context, state, cubit),
-        ),
+    return AdaptiveScaffold(
+      title: context.l10n.matchNewTitle,
+      body: BlocBuilder<MatchFormCubit, MatchFormState>(
+        builder: (context, state) => _body(context, state, cubit),
       ),
     );
   }

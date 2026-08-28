@@ -9,7 +9,9 @@ import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
+import 'package:keepscore2/features/competition/presentation/cubit/competition_tab_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/sidebar.dart';
+import 'package:keepscore2/features/competition/presentation/widgets/sidebar_shell.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/sidebar_section.enum.dart';
 import 'package:keepscore2/features/settings/presentation/cubit/theme_cubit.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
@@ -46,6 +48,7 @@ void main() {
   late MockAuthRepository auth;
   late AuthBloc authBloc;
   late MockCompetitionRepository competitions;
+  late CompetitionTabCubit tabCubit;
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
@@ -64,6 +67,9 @@ void main() {
     when(
       () => competitions.overview('c1'),
     ).thenAnswer((_) async => _overview());
+
+    tabCubit = CompetitionTabCubit();
+    addTearDown(tabCubit.close);
   });
 
   tearDown(() {
@@ -94,6 +100,7 @@ void main() {
           BlocProvider<CompetitionCubit>.value(
             value: competitionCubit(selected: selected),
           ),
+          BlocProvider<CompetitionTabCubit>.value(value: tabCubit),
         ],
         child: child,
       );
@@ -288,34 +295,33 @@ void main() {
   );
 
   testWidgets(
-    'a pushed page pops its picked section back to the page underneath, '
+    'the shell keeps one sidebar across pages and navigates without popping, '
     'however deep the user went',
     (tester) async {
       useWideWebViewport(tester);
 
-      SidebarSection? received;
-
-      Widget sidebarPage(SidebarSection current, String body) => Sidebar(
-        current: current,
-        child: AdaptiveScaffold(title: body, body: Text(body)),
-      );
-
       final router = GoRouter(
+        initialLocation: '/competition/c1/settings/history',
         routes: [
-          GoRoute(
-            path: '/',
-            builder: (context, state) => Center(
-              child: TextButton(
-                onPressed: () async =>
-                    received = await context.push<SidebarSection>('/history'),
-                child: const Text('open history'),
-              ),
-            ),
+          ShellRoute(
+            builder: (context, state, child) =>
+                SidebarShell(location: state.uri.path, child: child),
             routes: [
               GoRoute(
-                path: 'history',
-                builder: (context, state) =>
-                    sidebarPage(SidebarSection.history, 'history body'),
+                path: '/competition/:id',
+                builder: (context, state) => const AdaptiveScaffold(
+                  title: 'leaderboard',
+                  body: Text('leaderboard body'),
+                ),
+                routes: [
+                  GoRoute(
+                    path: 'settings/history',
+                    builder: (context, state) => const AdaptiveScaffold(
+                      title: 'history',
+                      body: Text('history body'),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -333,19 +339,80 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('open history'));
-      await tester.pumpAndSettle();
-      expect(find.text('history body'), findsWidgets);
+      expect(find.text('history body'), findsOneWidget);
 
       final l10n = AppLocalizations.of(
-        tester.element(find.text('history body').first),
+        tester.element(find.text('history body')),
       );
+
+      expect(find.text(l10n.historyTitle), findsOneWidget);
 
       await tester.tap(find.text(l10n.leaderboardTitle));
       await tester.pumpAndSettle();
 
-      expect(received, SidebarSection.leaderboard);
-      expect(find.text('open history'), findsOneWidget);
+      expect(find.text('leaderboard body'), findsOneWidget);
+      expect(find.text('history body'), findsNothing);
+      expect(find.text(l10n.leaderboardTitle), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'picking Matches from a sub-page lands on the competition with that tab',
+    (tester) async {
+      useWideWebViewport(tester);
+
+      final router = GoRouter(
+        initialLocation: '/competition/c1/settings/players',
+        routes: [
+          ShellRoute(
+            builder: (context, state, child) =>
+                SidebarShell(location: state.uri.path, child: child),
+            routes: [
+              GoRoute(
+                path: '/competition/:id',
+                builder: (context, state) => const AdaptiveScaffold(
+                  title: 'competition',
+                  body: Text('competition body'),
+                ),
+                routes: [
+                  GoRoute(
+                    path: 'settings/players',
+                    builder: (context, state) => const AdaptiveScaffold(
+                      title: 'players',
+                      body: Text('players body'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        withProviders(
+          MaterialApp.router(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            routerConfig: router,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('players body'), findsOneWidget);
+
+      final l10n = AppLocalizations.of(
+        tester.element(find.text('players body')),
+      );
+
+      await tester.tap(find.text(l10n.matchesTitle));
+      await tester.pumpAndSettle();
+
+      expect(find.text('competition body'), findsOneWidget);
+      expect(find.text('players body'), findsNothing);
+      expect(tabCubit.state, CompetitionTab.matches);
       expect(tester.takeException(), isNull);
     },
   );
@@ -365,6 +432,7 @@ void main() {
               path: 'pushed',
               builder: (context, state) => Sidebar(
                 current: SidebarSection.history,
+                onSelectSection: (_) {},
                 child: const AdaptiveScaffold(
                   title: 'History',
                   body: Text('history body'),
@@ -411,6 +479,7 @@ void main() {
           BlocProvider<CompetitionCubit>.value(
             value: competitionCubit(selected: true),
           ),
+          BlocProvider<CompetitionTabCubit>.value(value: tabCubit),
         ],
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,

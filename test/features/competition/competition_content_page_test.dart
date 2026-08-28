@@ -9,8 +9,8 @@ import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
+import 'package:keepscore2/features/competition/presentation/cubit/competition_tab_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/pages/competition_content.page.dart';
-import 'package:keepscore2/features/competition/presentation/widgets/sidebar_section.enum.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
 import 'package:keepscore2/features/leaderboard/domain/season_window.model.dart';
 import 'package:keepscore2/features/leaderboard/presentation/cubit/leaderboard_cubit.dart';
@@ -141,6 +141,7 @@ Future<GoRouter> _pumpHarness(
         BlocProvider<AuthBloc>.value(value: authBloc),
         BlocProvider<GameTypeFilterCubit>.value(value: gameTypeFilterCubit),
         BlocProvider<ThemeCubit>(create: (_) => ThemeCubit()),
+        BlocProvider<CompetitionTabCubit>(create: (_) => CompetitionTabCubit()),
       ],
       child: MaterialApp.router(
         routerConfig: router,
@@ -155,10 +156,7 @@ Future<GoRouter> _pumpHarness(
 }
 
 void main() {
-  tearDown(() {
-    AppPlatform.debugOverrideCupertino = null;
-    AppPlatform.debugOverrideWideWeb = null;
-  });
+  tearDown(() => AppPlatform.debugOverrideCupertino = null);
 
   testWidgets(
     'tapping the competition name goes to the competitions list, not settings',
@@ -179,46 +177,6 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
-
-  testWidgets('picking Matches from the sidebar of a page pushed on top (e.g. '
-      'History) lands on Matches, not Leaderboard', (tester) async {
-    AppPlatform.debugOverrideWideWeb = true;
-    tester.view.physicalSize = const Size(1440, 900);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-
-    await _pumpHarness(
-      tester,
-      extraRoutes: [
-        GoRoute(
-          path: 'settings/history',
-          builder: (context, state) => Scaffold(
-            body: TextButton(
-              onPressed: () => context.pop(SidebarSection.matches),
-              child: const Text('pretend-history-select-matches'),
-            ),
-          ),
-        ),
-      ],
-    );
-
-    final l10n = AppLocalizations.of(
-      tester.element(find.byType(CompetitionContent)),
-    );
-
-    expect(find.text(l10n.leaderboardTitle), findsWidgets);
-
-    await tester.tap(find.text(l10n.historyTitle));
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text('pretend-history-select-matches'));
-    await tester.pumpAndSettle();
-
-    expect(find.byType(CompetitionContent), findsOneWidget);
-    expect(find.text(l10n.matchesTitle), findsWidgets);
-    expect(tester.takeException(), isNull);
-  });
 }
 
 class _CompetitionsStub extends StatelessWidget {

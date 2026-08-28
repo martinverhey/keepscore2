@@ -1,8 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../../app/router/app_router.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/extensions/competition.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
@@ -19,12 +17,12 @@ class Sidebar extends StatelessWidget {
   const Sidebar({
     super.key,
     required this.current,
-    this.onSelectSection,
+    required this.onSelectSection,
     required this.child,
   });
 
   final SidebarSection? current;
-  final ValueChanged<SidebarSection>? onSelectSection;
+  final ValueChanged<SidebarSection> onSelectSection;
   final Widget child;
 
   static const _width = 232.0;
@@ -70,7 +68,7 @@ class Sidebar extends StatelessWidget {
             AdaptiveButton(
               label: context.l10n.matchNew,
               icon: const AdaptiveIcon(AdaptiveGlyph.newMatch, size: 18),
-              onPressed: () => _select(context, SidebarSection.newMatch),
+              onPressed: () => _select(SidebarSection.newMatch),
             ),
             const SizedBox(height: AppSpacing.lg),
           ],
@@ -87,7 +85,7 @@ class Sidebar extends StatelessWidget {
             context,
             label: context.l10n.settingsLanguageTitle,
             selected: current == SidebarSection.language,
-            onTap: () => _select(context, SidebarSection.language),
+            onTap: () => _select(SidebarSection.language),
           ),
           _actionItem(
             context,
@@ -102,7 +100,7 @@ class Sidebar extends StatelessWidget {
 
   Widget _brand(BuildContext context, String? competitionName) {
     return AdaptiveTappable(
-      onTap: () => _select(context, SidebarSection.competitions),
+      onTap: () => _select(SidebarSection.competitions),
       borderRadius: AppRadius.card,
       child: Padding(
         padding: const EdgeInsets.symmetric(
@@ -163,7 +161,7 @@ class Sidebar extends StatelessWidget {
             glyph: AdaptiveGlyph.competitions,
             label: context.l10n.competitionsTitle,
             selected: current == SidebarSection.competitions,
-            onTap: () => _select(context, SidebarSection.competitions),
+            onTap: () => _select(SidebarSection.competitions),
           ),
         ],
       ),
@@ -181,14 +179,14 @@ class Sidebar extends StatelessWidget {
         glyph: AdaptiveGlyph.leaderboard,
         label: context.l10n.leaderboardTitle,
         selected: current == SidebarSection.leaderboard,
-        onTap: () => _select(context, SidebarSection.leaderboard),
+        onTap: () => _select(SidebarSection.leaderboard),
       ),
       _navItem(
         context,
         glyph: AdaptiveGlyph.matches,
         label: context.l10n.matchesTitle,
         selected: current == SidebarSection.matches,
-        onTap: () => _select(context, SidebarSection.matches),
+        onTap: () => _select(SidebarSection.matches),
       ),
       const SizedBox(height: AppSpacing.lg),
       const HorizontalDivider(),
@@ -199,14 +197,14 @@ class Sidebar extends StatelessWidget {
           glyph: AdaptiveGlyph.settings,
           label: context.l10n.configurationTitle,
           selected: current == SidebarSection.configuration,
-          onTap: () => _select(context, SidebarSection.configuration),
+          onTap: () => _select(SidebarSection.configuration),
         ),
       _navItem(
         context,
         glyph: AdaptiveGlyph.history,
         label: context.l10n.historyTitle,
         selected: current == SidebarSection.history,
-        onTap: () => _select(context, SidebarSection.history),
+        onTap: () => _select(SidebarSection.history),
       ),
       if (isRegistered)
         _navItem(
@@ -214,7 +212,7 @@ class Sidebar extends StatelessWidget {
           glyph: AdaptiveGlyph.players,
           label: context.l10n.playersManageTitle,
           selected: current == SidebarSection.players,
-          onTap: () => _select(context, SidebarSection.players),
+          onTap: () => _select(SidebarSection.players),
         ),
       const SizedBox(height: AppSpacing.md),
     ];
@@ -328,19 +326,8 @@ class Sidebar extends StatelessWidget {
     );
   }
 
-  void _select(BuildContext context, SidebarSection section) {
+  void _select(SidebarSection section) {
     if (section == current) return;
-
-    final onSelectSection = this.onSelectSection;
-    if (onSelectSection != null) {
-      onSelectSection(section);
-      return;
-    }
-
-    if (context.canPop()) {
-      context.pop(section);
-    } else {
-      context.go(Routes.home);
-    }
+    onSelectSection(section);
   }
 }
