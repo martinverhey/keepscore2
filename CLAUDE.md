@@ -42,13 +42,14 @@ tap the stored value wins forever. Both surfaces render the same
 the **current** theme — sun while light, moon while dark — with the whole row as
 the tap target calling `ThemeCubit.toggle()`; neither call site passes a
 callback down, which is why `Sidebar` reads `ThemeCubit` from context itself
-rather than taking an `onToggleTheme` prop the way it takes `onOpenLanguage`
-(every one of its eight call sites would have passed the identical closure).
-The cost of that is that **every widget test mounting a `Sidebar`, or a page
-composed with one, now needs a `ThemeCubit` in scope** — in the app it comes
-from `KeepScoreApp`'s root `MultiBlocProvider`, but `sidebar_test.dart`,
-`settings_page_test.dart` and `competition_content_page_test.dart` each provide
-their own.
+rather than taking an `onToggleTheme` prop (every one of its call sites would
+have passed the identical closure — the same reasoning that later moved
+`AuthBloc` and every navigation callback inside it too, see the sidebar
+section below). The cost of that is that **every widget test mounting a
+`Sidebar`, or a page composed with one, now needs a `ThemeCubit` and an
+`AuthBloc` in scope** — in the app both come from `KeepScoreApp`'s root
+`MultiBlocProvider`, but `sidebar_test.dart`, `settings_page_test.dart` and
+`competition_content_page_test.dart` each provide their own.
 
 `/upgrade` turns a guest into a real account in place: same `SignInCubit`, built
 with `SignInMode.upgrade`, which routes the two email steps to
@@ -398,7 +399,7 @@ code; don't relitigate them.
   individual extension block inside it is still named `<Type><Concept>`
   (e.g. `BuildContextL10n` and `BuildContextLocale.languageTag` both live in
   `build_context.extension.dart`; `ThemePreferenceMode` and
-  `ThemePreferenceBrightnessOverride` both live in
+  `ThemePreferenceBrightness` both live in
   `theme_preference.extension.dart`; `StreakTypeTier` on `StreakType` is
   currently alone in `streak_type.extension.dart` but a second extension on
   `StreakType` would join it there rather than get its own file).
@@ -607,41 +608,58 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   composed by every page reached from within a competition
   (`CompetitionContent`, `PlayersPage`, `HistoryPage`,
   `ConfigurationPage`, `NewMatchPage`) around their existing
-  `AdaptiveScaffold`, each supplying its own `CompetitionSection`
-  (`competition_section.enum.dart`: leaderboard, matches, players, history,
-  configuration, competitions) as `current` for highlighting — `null` for a page
-  with no matching nav row (`NewMatchPage`). `CompetitionsPage` (the
-  top-level competitions list, outside any competition) composes it too,
-  always with `current: CompetitionSection.competitions`. Whether it also
-  shows the per-competition group (New match button,
-  leaderboard/matches/settings/history/players, "Competition" section label)
-  depends on `hasCompetition`, which is `true` whenever a
+  `AdaptiveScaffold`. **It takes data, not callbacks: `competition`,
+  `current`, an optional `onSelectSection`, and `child` — nothing else.**
+  It reads `AuthBloc` and `ThemeCubit` off the context itself and owns its
+  own navigation and sign-out, because every call site was otherwise passing
+  back the identical closure. Getting there needed three things:
+  `SidebarSection` (`sidebar_section.enum.dart`) enumerating **every**
+  destination the sidebar can reach — leaderboard, matches, newMatch,
+  players, history, configuration, competitions, language — not just the
+  competition-scoped ones (it is named for the sidebar, not the competition,
+  because `competitions`/`language`/`newMatch` are not competition sections);
+  `current` covering all of them, so "you are already here" is a
+  `section == current` early return rather than the `onOpenLanguage: () {}` /
+  `onNewMatch: () {}` null-object callbacks each page used to pass; and
   `HomeSidebarCompetition` (`widgets/home_sidebar_competition.dart` —
-  competition id/name/`canManageSettings`, nothing that needs its own fetch)
-  was carried over: every page's Sidebar routes its "Competitions" row and
-  brand tap through `openHome` (`widgets/open_home.dart`) instead of a bare
-  `context.push`/`pushReplacement(Routes.home)`, which attaches one as
-  go_router `extra` from data that page already has loaded — so the sidebar
-  the user leaves behind is exactly the one they land on, with nothing in the
-  per-competition group highlighted and "Competitions" highlighted instead,
-  letting them jump straight back in without a second trip through the list.
-  Landing on `/` any other way (app launch, sign-in redirect) leaves `extra`
-  null, so `hasCompetition` is `false` and the group is hidden — there's
-  nothing to carry over. It is
+  competition id/name/`canManageSettings`) replacing the three flattened
+  props it used to be splatted into, with a `HomeSidebarCompetition.of(
+  context, competitionId)` factory doing the `CompetitionCubit` +
+  `AuthBloc` read once instead of in each page. `hasCompetition` is gone —
+  it was always `competition != null`.
+  `CompetitionsPage` (the top-level competitions list, outside any
+  competition) composes it too, always with
+  `current: SidebarSection.competitions`. Whether it also shows the
+  per-competition group (New match button,
+  leaderboard/matches/settings/history/players, "Competition" section label)
+  depends on whether a `HomeSidebarCompetition` was carried over as go_router
+  `extra` — so the sidebar the user leaves behind is exactly the one they
+  land on, with nothing in the per-competition group highlighted and
+  "Competitions" highlighted instead, letting them jump straight back in
+  without a second trip through the list. Landing on `/` any other way (app
+  launch, sign-in redirect) leaves `extra` null, so the group is hidden —
+  there's nothing to carry over. It is
   *not* a go_router `ShellRoute` — each page keeps its own route, cubits, and
   `AdaptiveScaffold` untouched; the sidebar is purely a visual wrapper
-  re-composed per page. Navigating between pages that all sit "underneath"
-  `CompetitionContent` (History/Players/Settings/NewMatch) goes through the
-  shared `selectCompetitionSection` helper
-  (`widgets/select_competition_section.dart`): `context.pop()` back to
-  `CompetitionContent` for leaderboard/matches (it owns those as local
-  `_tab` state, not routes), `context.pushReplacement` to swap among the other
-  three without growing the stack. `CompetitionContent` itself keeps a
-  custom `_selectSection` (flips `_tab` locally for leaderboard/matches, a
-  plain `context.push` + reload for players/history/settings) since it's the
-  base of that stack, not one of the pages sitting on top of it — reusing the
-  shared helper's `pop`-for-leaderboard/matches case there would pop the
-  competition itself. The sidebar's own account section (competition
+  re-composed per page.
+  **`CompetitionContent` is the single navigation hub, and every other page
+  just pops.** `Sidebar._select`'s default is `context.pop(section)` (falling
+  back to `context.go(Routes.home)` when there is nothing to pop, i.e. a
+  deep-linked `/language`); `CompetitionContent._selectSection` is the only
+  real `onSelectSection` override, flipping `_tab` locally for
+  leaderboard/matches (it owns those as local `_tab` state, not routes) and
+  pushing every other section itself, re-applying whatever section comes back
+  from that push. `CompetitionsPage` passes a second, much smaller override
+  only when it is the root with no competition below it. This replaced a
+  `selectCompetitionSection` helper that used `pushReplacement` to swap among
+  sibling pages: `pushReplacement` completes the *replaced* route's popped
+  future with `null`, so the section a user picked two pages deep never
+  reached the `CompetitionContent` that was awaiting it, and going
+  competition → competitions list → language → "Leaderboard" popped to the
+  competitions list instead. Because every hop now returns to the hub, the
+  stack is never deeper than `CompetitionContent` → one page, and the pick
+  always lands. `sidebar_test.dart` covers this directly.
+  The sidebar's own account section (competition
   settings, the theme toggle, language, sign out) replaced the old gear-icon popover entirely, so
   `AdaptiveMenuButton` was deleted rather than left unused. A page pushed
   underneath the sidebar (History, Players, Settings, NewMatch — reached via
@@ -659,9 +677,10 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   `fullscreenDialog` page (used by `match/new`), but on wide web it defers to
   `adaptivePage` instead, so New Match reads as an in-place page inside the
   sidebar rather than a modal takeover of the whole viewport.
-  **Every value a page hands `Sidebar` (`competitionName`, `canManageSettings`)
-  must come from the already-loaded `CompetitionCubit`, never from that
-  page's own cubit** — `ConfigurationCubit`/`HistoryCubit`/etc. all
+  **The `HomeSidebarCompetition` a page hands `Sidebar` must come from the
+  already-loaded `CompetitionCubit`, never from that page's own cubit** —
+  which is what `HomeSidebarCompetition.of` enforces by reading
+  `CompetitionCubit` itself. `ConfigurationCubit`/`HistoryCubit`/etc. all
   start out `loading` with their own `competition` field `null` even though
   `CompetitionCubit` already has the answer (it loaded when
   `CompetitionContent` first mounted and the ShellRoute keeps it alive).
@@ -752,7 +771,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 206 tests at time of writing
+flutter test                    # 208 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 python3 scripts/generate_icon.py   # redraw assets/icon/*.png
