@@ -8,7 +8,6 @@ import '../../../../core/extensions/competition.extension.dart';
 import '../../../../core/extensions/player_list.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
-import '../../../../core/widgets/content_scroll_view.dart';
 import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/tag.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
@@ -67,7 +66,6 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
     return AdaptiveScaffold(
       title: context.l10n.leaderboardTitle,
       onRefresh: _refresh,
-      hasScrollBody: true,
       trailing: AppPlatform.useWideWeb(context)
           ? null
           : CompetitionSettingsButton(competitionId: competitionId),
@@ -80,7 +78,13 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
             ),
       body: competition == null
           ? const AdaptiveLoader()
-          : ContentScrollView(
+          : Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.md,
+                AppSpacing.sm,
+                AppSpacing.md,
+                AppSpacing.xl,
+              ),
               child: _content(
                 context,
                 competition,

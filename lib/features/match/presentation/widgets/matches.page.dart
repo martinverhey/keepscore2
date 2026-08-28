@@ -9,7 +9,6 @@ import '../../../../core/extensions/competition.extension.dart';
 import '../../../../core/extensions/game_type.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
-import '../../../../core/widgets/content_scroll_view.dart';
 import '../../../../core/widgets/hint_card.dart';
 import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/state_views.dart';
@@ -71,7 +70,6 @@ class _MatchesPageState extends State<MatchesPage> {
     return AdaptiveScaffold(
       title: context.l10n.matchesTitle,
       onRefresh: _refresh,
-      hasScrollBody: true,
       trailing: _trailing(context, competitionId),
       bottomBar: AppPlatform.useWideWeb(context)
           ? null
@@ -80,7 +78,13 @@ class _MatchesPageState extends State<MatchesPage> {
               current: CompetitionTab.matches,
               isRegistered: isRegistered,
             ),
-      body: ContentScrollView(
+      body: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          AppSpacing.sm,
+          AppSpacing.md,
+          AppSpacing.xl,
+        ),
         child: BlocBuilder<MatchListCubit, MatchListState>(
           builder: (context, state) => _body(
             context,
