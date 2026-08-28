@@ -143,6 +143,55 @@ reachable from the same menu: `PlayersCubit` is also read directly by
 `CompetitionContent` for player data, not just by the management screen,
 so it's a real cross-feature dependency rather than a settings-only concern.
 
+### The current competition is app-wide
+
+`CompetitionCubit` is a `registerLazySingleton`, provided in `KeepScoreApp`'s
+root `MultiBlocProvider` next to `AuthBloc`/`ThemeCubit`/`LanguageCubit`/
+`GameTypeFilterCubit`. It is the single answer to "which competition is the
+user in", available to every page and to the sidebar whether or not the
+current route is competition-scoped. Before this it was a
+`registerFactoryParam` created by the `/competition/:id` `ShellRoute`, which
+meant the two routes outside that subtree (`/` and `/settings/language`)
+could not see it — so the sidebar's competition was flattened into a
+`HomeSidebarCompetition` and smuggled to them as go_router `extra`. The
+concept existed three times over (`RecentCompetitionStore`, the route-scoped
+cubit, and that `extra` copy); hoisting collapsed it to one and deleted the
+`extra` threading, `HomeSidebarCompetition`, and `CompetitionsPage`/
+`LanguagePage`'s `sidebarCompetition` constructor params.
+
+**The route drives the cubit, never the reverse.** `CompetitionScope`
+(`features/competition/presentation/widgets/competition_scope.dart`) is the
+only caller of `select(id)` — the `ShellRoute` wraps the competition subtree
+in it, and it calls `select` from `initState`/`didUpdateWidget` so the URL
+always wins over whatever the cubit happens to be holding.
+
+Route scoping used to make staleness structurally impossible: a different id
+was a different subtree (`KeyedSubtree(key: ValueKey(id))`), so a stale
+competition could not survive. A singleton trades that guarantee for
+discipline, and these three rules are what replace it — all four covered in
+`competition_cubit_test.dart`:
+
+- `select(id)` with a **different** id resets to `CompetitionLoading` before
+  fetching, so competition A's name is never painted over competition B's
+  data. With the **same** id it is a silent `refresh()` instead, which is
+  also what reloads a competition on re-entry.
+- Every `await` in `load()` is followed by a `competitionId != _competitionId`
+  guard, so a slow response for a competition the user has already navigated
+  away from is dropped rather than emitted.
+- The cubit subscribes to `AuthBloc` in its constructor and clears itself
+  when the session stops being authenticated. Without that, signing out and
+  back in as someone else leaves the previous user's competition in the
+  sidebar — the router's recent-competition redirect catches the *routing*
+  side of that, but not the in-memory copy. `CompetitionsPage` calls
+  `clearIfSelected(id)` after a successful leave/delete for the same reason.
+
+"No competition selected" is deliberately **not** a fifth state: it is never
+rendered. Only pages inside the competition subtree switch on
+`CompetitionState`, and `CompetitionScope` has always called `select` before
+they build, so `CompetitionLoading` is the honest initial (and post-`clear`)
+value. The sidebar reads `state.competition` opportunistically and treats
+`null` as "hide the competition group".
+
 ## Coding conventions — read this before writing `lib/**`
 
 These are the conventions the codebase already follows. Match them in new
@@ -484,7 +533,9 @@ code; don't relitigate them.
 - Blocs that hold form state are `registerFactory`; session-wide ones are
   `registerLazySingleton`; ones scoped to a single competition are
   `registerFactoryParam<T, String, void>` and take the id as a constructor
-  argument (`getIt<PlayersCubit>(param1: id)`). See
+  argument (`getIt<PlayersCubit>(param1: id)`). `CompetitionCubit` is the
+  exception — it is session-wide, see "The current competition is app-wide".
+  See
   `lib/app/dependency_injection/injector.dart`. `MatchDetailCubit` uses both
   slots (`param1` match id, `param2` competition id) because it needs the
   owner to decide who may delete.
@@ -608,11 +659,11 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   composed by every page reached from within a competition
   (`CompetitionContent`, `PlayersPage`, `HistoryPage`,
   `ConfigurationPage`, `NewMatchPage`) around their existing
-  `AdaptiveScaffold`. **It takes data, not callbacks: `competition`,
-  `current`, an optional `onSelectSection`, and `child` — nothing else.**
-  It reads `AuthBloc` and `ThemeCubit` off the context itself and owns its
-  own navigation and sign-out, because every call site was otherwise passing
-  back the identical closure. Getting there needed three things:
+  `AdaptiveScaffold`. **It takes `current`, an optional `onSelectSection`,
+  and `child` — nothing else.** It reads `AuthBloc`, `ThemeCubit` and
+  `CompetitionCubit` off the context itself and owns its own navigation and
+  sign-out, because every call site was otherwise passing back the identical
+  closure or the identical data. Getting there needed three things:
   `SidebarSection` (`sidebar_section.enum.dart`) enumerating **every**
   destination the sidebar can reach — leaderboard, matches, newMatch,
   players, history, configuration, competitions, language — not just the
@@ -620,25 +671,25 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   because `competitions`/`language`/`newMatch` are not competition sections);
   `current` covering all of them, so "you are already here" is a
   `section == current` early return rather than the `onOpenLanguage: () {}` /
-  `onNewMatch: () {}` null-object callbacks each page used to pass; and
-  `HomeSidebarCompetition` (`widgets/home_sidebar_competition.dart` —
-  competition id/name/`canManageSettings`) replacing the three flattened
-  props it used to be splatted into, with a `HomeSidebarCompetition.of(
-  context, competitionId)` factory doing the `CompetitionCubit` +
-  `AuthBloc` read once instead of in each page. `hasCompetition` is gone —
-  it was always `competition != null`.
+  `onNewMatch: () {}` null-object callbacks each page used to pass; and an
+  app-wide `CompetitionCubit` (see "The current competition is app-wide"
+  below) the sidebar reads directly, replacing the three flattened props
+  (`competitionId`/`competitionName`/`canManageSettings`) it used to be
+  splatted into and the `HomeSidebarCompetition` value object that later
+  bundled them.
   `CompetitionsPage` (the top-level competitions list, outside any
   competition) composes it too, always with
   `current: SidebarSection.competitions`. Whether it also shows the
   per-competition group (New match button,
   leaderboard/matches/settings/history/players, "Competition" section label)
-  depends on whether a `HomeSidebarCompetition` was carried over as go_router
-  `extra` — so the sidebar the user leaves behind is exactly the one they
-  land on, with nothing in the per-competition group highlighted and
-  "Competitions" highlighted instead, letting them jump straight back in
-  without a second trip through the list. Landing on `/` any other way (app
-  launch, sign-in redirect) leaves `extra` null, so the group is hidden —
-  there's nothing to carry over. It is
+  is simply whether `CompetitionCubit` currently holds one — so the sidebar
+  the user leaves behind is exactly the one they land on, with nothing in the
+  per-competition group highlighted and "Competitions" highlighted instead,
+  letting them jump straight back in without a second trip through the list.
+  Landing on `/` on a fresh launch, or after signing out, leaves the cubit
+  empty, so the group is hidden — there's nothing to carry over. This used to
+  be threaded from page to page as go_router `extra`; hoisting the cubit
+  deleted that plumbing along with `HomeSidebarCompetition` itself. It is
   *not* a go_router `ShellRoute` — each page keeps its own route, cubits, and
   `AdaptiveScaffold` untouched; the sidebar is purely a visual wrapper
   re-composed per page.
@@ -677,17 +728,15 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   `fullscreenDialog` page (used by `match/new`), but on wide web it defers to
   `adaptivePage` instead, so New Match reads as an in-place page inside the
   sidebar rather than a modal takeover of the whole viewport.
-  **The `HomeSidebarCompetition` a page hands `Sidebar` must come from the
-  already-loaded `CompetitionCubit`, never from that page's own cubit** —
-  which is what `HomeSidebarCompetition.of` enforces by reading
-  `CompetitionCubit` itself. `ConfigurationCubit`/`HistoryCubit`/etc. all
-  start out `loading` with their own `competition` field `null` even though
-  `CompetitionCubit` already has the answer (it loaded when
-  `CompetitionContent` first mounted and the ShellRoute keeps it alive).
-  Sourcing `canManageSettings` from the page's own cubit instead of
-  `CompetitionCubit` briefly evaluates to `false` while that cubit's
-  own fetch is in flight, so an owner-only nav row (e.g. "Competition
-  settings") visibly disappears and reappears a moment later.
+  **The competition the sidebar renders must come from `CompetitionCubit`,
+  never from the page's own cubit** — which is now structural, since the
+  sidebar reads that cubit itself and takes no competition prop at all.
+  `ConfigurationCubit`/`HistoryCubit`/etc. all start out `loading` with their
+  own `competition` field `null` even though `CompetitionCubit` already has
+  the answer. Sourcing `canManageSettings` from the page's own cubit instead
+  briefly evaluates to `false` while that cubit's own fetch is in flight, so
+  an owner-only nav row (e.g. "Competition settings") visibly disappears and
+  reappears a moment later.
   **No existing test exercises this at all** — `kIsWeb` is always `false`
   under `flutter test`, so `useWideWeb` never trips regardless of the pumped
   viewport size, which is exactly why `AppPlatform.debugOverrideWideWeb`
@@ -771,7 +820,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 208 tests at time of writing
+flutter test                    # 213 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 python3 scripts/generate_icon.py   # redraw assets/icon/*.png
