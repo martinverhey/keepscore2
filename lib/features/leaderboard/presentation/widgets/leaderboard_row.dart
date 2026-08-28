@@ -118,10 +118,7 @@ class LeaderboardRow extends StatelessWidget {
             ),
             if (leaderboard.isOwner) ...[
               const SizedBox(width: AppSpacing.xs),
-              if (isMe)
-                Tag.icon(AdaptiveGlyph.star, color: AppColors.gold)
-              else
-                Tag(context.l10n.playersOwner, color: AppColors.gold),
+              Tag(context.l10n.playersOwner, color: AppColors.gold),
             ],
             if (isMe) ...[
               const SizedBox(width: AppSpacing.xs),
