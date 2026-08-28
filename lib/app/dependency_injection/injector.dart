@@ -9,7 +9,6 @@ import '../../features/competition/data/supabase_competition_repository.dart';
 import '../../features/competition/domain/competition_repository.dart';
 import '../../features/competition/presentation/cubit/competition_cubit.dart';
 import '../../features/competition/presentation/cubit/competition_list_cubit.dart';
-import '../../features/competition/presentation/cubit/competition_tab_cubit.dart';
 import '../../features/competition/presentation/cubit/create_competition_cubit.dart';
 import '../../features/competition/presentation/cubit/join_competition_cubit.dart';
 import '../../features/leaderboard/data/supabase_leaderboard_repository.dart';
@@ -64,7 +63,6 @@ Future<void> configureDependencies() async {
     ..registerLazySingleton<CompetitionCubit>(
       () => CompetitionCubit(getIt<CompetitionRepository>(), getIt<AuthBloc>()),
     )
-    ..registerLazySingleton<CompetitionTabCubit>(() => CompetitionTabCubit())
     ..registerFactoryParam<ConfigurationCubit, String, void>(
       (competitionId, _) =>
           ConfigurationCubit(getIt<CompetitionRepository>(), competitionId),

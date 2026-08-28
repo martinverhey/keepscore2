@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/app_router.dart';
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/extensions/double.extension.dart';
@@ -13,7 +14,6 @@ import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../player/domain/player.model.dart';
 import '../../domain/match_entry.model.dart';
-import '../../../competition/presentation/cubit/competition_tab_cubit.dart';
 import '../cubit/match_form_cubit.dart';
 import '../widgets/team_picker_sheet.dart';
 import 'new_match_keys.enum.dart';
@@ -50,14 +50,11 @@ class _NewMatchPageState extends State<NewMatchPage> {
     final scoreB = _scoreBValue;
     if (scoreA == null || scoreB == null) return;
 
-    final id = await context.read<MatchFormCubit>().submit(
-      scoreA: scoreA,
-      scoreB: scoreB,
-    );
+    final cubit = context.read<MatchFormCubit>();
+    final id = await cubit.submit(scoreA: scoreA, scoreB: scoreB);
     if (id == null || !mounted) return;
 
-    context.read<CompetitionTabCubit>().select(CompetitionTab.matches);
-    context.pop();
+    context.go(Routes.matches(cubit.competitionId));
   }
 
   @override

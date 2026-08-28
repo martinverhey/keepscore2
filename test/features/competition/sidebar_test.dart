@@ -9,7 +9,6 @@ import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
-import 'package:keepscore2/features/competition/presentation/cubit/competition_tab_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/sidebar.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/sidebar_shell.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/sidebar_section.enum.dart';
@@ -48,7 +47,6 @@ void main() {
   late MockAuthRepository auth;
   late AuthBloc authBloc;
   late MockCompetitionRepository competitions;
-  late CompetitionTabCubit tabCubit;
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
@@ -67,9 +65,6 @@ void main() {
     when(
       () => competitions.overview('c1'),
     ).thenAnswer((_) async => _overview());
-
-    tabCubit = CompetitionTabCubit();
-    addTearDown(tabCubit.close);
   });
 
   tearDown(() {
@@ -100,7 +95,6 @@ void main() {
           BlocProvider<CompetitionCubit>.value(
             value: competitionCubit(selected: selected),
           ),
-          BlocProvider<CompetitionTabCubit>.value(value: tabCubit),
         ],
         child: child,
       );
@@ -309,11 +303,18 @@ void main() {
             routes: [
               GoRoute(
                 path: '/competition/:id',
-                builder: (context, state) => const AdaptiveScaffold(
-                  title: 'leaderboard',
-                  body: Text('leaderboard body'),
-                ),
+                redirect: (context, state) =>
+                    state.matchedLocation == state.uri.path
+                    ? '${state.matchedLocation}/leaderboard'
+                    : null,
                 routes: [
+                  GoRoute(
+                    path: 'leaderboard',
+                    builder: (context, state) => const AdaptiveScaffold(
+                      title: 'leaderboard',
+                      body: Text('leaderboard body'),
+                    ),
+                  ),
                   GoRoute(
                     path: 'settings/history',
                     builder: (context, state) => const AdaptiveScaffold(
@@ -371,11 +372,18 @@ void main() {
             routes: [
               GoRoute(
                 path: '/competition/:id',
-                builder: (context, state) => const AdaptiveScaffold(
-                  title: 'competition',
-                  body: Text('competition body'),
-                ),
+                redirect: (context, state) =>
+                    state.matchedLocation == state.uri.path
+                    ? '${state.matchedLocation}/leaderboard'
+                    : null,
                 routes: [
+                  GoRoute(
+                    path: 'matches',
+                    builder: (context, state) => const AdaptiveScaffold(
+                      title: 'matches',
+                      body: Text('matches body'),
+                    ),
+                  ),
                   GoRoute(
                     path: 'settings/players',
                     builder: (context, state) => const AdaptiveScaffold(
@@ -410,9 +418,8 @@ void main() {
       await tester.tap(find.text(l10n.matchesTitle));
       await tester.pumpAndSettle();
 
-      expect(find.text('competition body'), findsOneWidget);
+      expect(find.text('matches body'), findsOneWidget);
       expect(find.text('players body'), findsNothing);
-      expect(tabCubit.state, CompetitionTab.matches);
       expect(tester.takeException(), isNull);
     },
   );
@@ -479,7 +486,6 @@ void main() {
           BlocProvider<CompetitionCubit>.value(
             value: competitionCubit(selected: true),
           ),
-          BlocProvider<CompetitionTabCubit>.value(value: tabCubit),
         ],
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,

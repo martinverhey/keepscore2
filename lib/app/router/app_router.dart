@@ -13,18 +13,20 @@ import '../../features/competition/domain/competition_repository.dart';
 import '../../features/competition/presentation/cubit/competition_list_cubit.dart';
 import '../../features/competition/presentation/cubit/create_competition_cubit.dart';
 import '../../features/competition/presentation/cubit/join_competition_cubit.dart';
-import '../../features/competition/presentation/pages/competition_content.page.dart';
+import '../../features/competition/presentation/pages/competition_shell.dart';
 import '../../features/competition/presentation/pages/competitions.page.dart';
 import '../../features/competition/presentation/pages/create_competition.page.dart';
 import '../../features/competition/presentation/pages/join_competition.page.dart';
 import '../../features/competition/presentation/widgets/competition_scope.dart';
 import '../../features/competition/presentation/widgets/sidebar_shell.dart';
 import '../../features/leaderboard/presentation/cubit/leaderboard_cubit.dart';
+import '../../features/leaderboard/presentation/widgets/leaderboard.page.dart';
 import '../../features/match/presentation/cubit/match_detail_cubit.dart';
 import '../../features/match/presentation/cubit/match_form_cubit.dart';
 import '../../features/match/presentation/cubit/match_list_cubit.dart';
 import '../../features/match/presentation/pages/match_detail.page.dart';
 import '../../features/match/presentation/pages/new_match.page.dart';
+import '../../features/match/presentation/widgets/matches.page.dart';
 import '../../features/player/presentation/cubit/players_cubit.dart';
 import '../../features/player/presentation/pages/players.page.dart';
 import '../../features/settings/presentation/cubit/configuration_cubit.dart';
@@ -47,6 +49,8 @@ abstract final class Routes {
   static const language = '/settings/language';
 
   static String competition(String id) => '/competition/$id';
+  static String leaderboard(String id) => '/competition/$id/leaderboard';
+  static String matches(String id) => '/competition/$id/matches';
   static String settings(String id) => '/competition/$id/settings';
   static String configuration(String id) =>
       '/competition/$id/settings/configuration';
@@ -183,12 +187,6 @@ GoRouter createRouter(AuthBloc authBloc) {
                       BlocProvider(
                         create: (_) => getIt<PlayersCubit>(param1: id),
                       ),
-                      BlocProvider(
-                        create: (_) => getIt<MatchListCubit>(param1: id),
-                      ),
-                      BlocProvider(
-                        create: (_) => getIt<LeaderboardCubit>(param1: id),
-                      ),
                     ],
                     child: child,
                   ),
@@ -198,10 +196,46 @@ GoRouter createRouter(AuthBloc authBloc) {
             routes: [
               GoRoute(
                 path: '/competition/:id',
-                builder: (context, state) => CompetitionContent(
-                  competitionId: state.pathParameters['id']!,
-                ),
+                redirect: (context, state) =>
+                    state.matchedLocation == state.uri.path
+                    ? '${state.matchedLocation}/leaderboard'
+                    : null,
                 routes: [
+                  StatefulShellRoute.indexedStack(
+                    builder: (context, state, navigationShell) =>
+                        CompetitionShell(
+                          competitionId: state.pathParameters['id']!,
+                          child: navigationShell,
+                        ),
+                    branches: [
+                      StatefulShellBranch(
+                        routes: [
+                          GoRoute(
+                            path: 'leaderboard',
+                            builder: (context, state) => BlocProvider(
+                              create: (_) => getIt<LeaderboardCubit>(
+                                param1: state.pathParameters['id']!,
+                              ),
+                              child: const LeaderboardPage(),
+                            ),
+                          ),
+                        ],
+                      ),
+                      StatefulShellBranch(
+                        routes: [
+                          GoRoute(
+                            path: 'matches',
+                            builder: (context, state) => BlocProvider(
+                              create: (_) => getIt<MatchListCubit>(
+                                param1: state.pathParameters['id']!,
+                              ),
+                              child: const MatchesPage(),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                   GoRoute(
                     path: 'settings',
                     pageBuilder: (context, state) => adaptivePage(

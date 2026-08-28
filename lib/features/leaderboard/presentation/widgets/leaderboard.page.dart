@@ -1,39 +1,106 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/app_router.dart';
 import '../../../../core/extensions/build_context.extension.dart';
+import '../../../../core/extensions/competition.extension.dart';
+import '../../../../core/extensions/player_list.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
+import '../../../../core/widgets/content_scroll_view.dart';
+import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/tag.dart';
+import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../competition/domain/competition.model.dart';
+import '../../../competition/presentation/cubit/competition_cubit.dart';
+import '../../../competition/presentation/widgets/competition_settings_button.dart';
+import '../../../competition/presentation/widgets/competition_tab.enum.dart';
+import '../../../competition/presentation/widgets/competition_tab_bar.dart';
 import '../../../competition/presentation/widgets/invite_sheet.dart';
+import '../../../player/presentation/cubit/players_cubit.dart';
 import '../../../profile/presentation/widgets/profile_section.dart';
 import '../../domain/leaderboard.model.dart';
 import '../cubit/leaderboard_cubit.dart';
 import 'leaderboard_list.dart';
 
-class LeaderboardPage extends StatelessWidget {
-  const LeaderboardPage({
-    super.key,
-    required this.competitionId,
-    required this.competition,
-    required this.isOwner,
-    required this.myPlayerId,
-    required this.myDisplayName,
-    required this.onManagePlayers,
-    required this.onOpenCompetitions,
-  });
+class LeaderboardPage extends StatefulWidget {
+  const LeaderboardPage({super.key});
 
-  final String competitionId;
-  final Competition competition;
-  final bool isOwner;
-  final String? myPlayerId;
-  final String? myDisplayName;
-  final VoidCallback onManagePlayers;
-  final VoidCallback onOpenCompetitions;
+  @override
+  State<LeaderboardPage> createState() => _LeaderboardPageState();
+}
+
+class _LeaderboardPageState extends State<LeaderboardPage> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<LeaderboardCubit>().load();
+  }
+
+  Future<void> _refresh() => Future.wait([
+    context.read<CompetitionCubit>().refresh(),
+    context.read<PlayersCubit>().refresh(),
+    context.read<LeaderboardCubit>().refresh(),
+  ]);
 
   @override
   Widget build(BuildContext context) {
+    final competitionCubit = context.watch<CompetitionCubit>();
+    final competitionState = competitionCubit.state;
+    final competition = competitionState.competition;
+    final competitionId = competitionCubit.competitionId!;
+    final session = context.watch<AuthBloc>().state;
+    final playersState = context.watch<PlayersCubit>().state;
+    final myPlayerId = competitionState.myPlayerId;
+    final myDisplayName = playersState is PlayersReady
+        ? playersState.players.displayNameFor(myPlayerId)
+        : null;
+
+    setPageTitle(
+      context,
+      competition == null
+          ? context.l10n.leaderboardTitle
+          : '${competition.name} · ${context.l10n.leaderboardTitle}',
+    );
+
+    return AdaptiveScaffold(
+      title: context.l10n.leaderboardTitle,
+      onRefresh: _refresh,
+      hasScrollBody: true,
+      trailing: AppPlatform.useWideWeb(context)
+          ? null
+          : CompetitionSettingsButton(competitionId: competitionId),
+      bottomBar: AppPlatform.useWideWeb(context)
+          ? null
+          : CompetitionTabBar(
+              competitionId: competitionId,
+              current: CompetitionTab.leaderboard,
+              isRegistered: session.canWrite,
+            ),
+      body: competition == null
+          ? const AdaptiveLoader()
+          : ContentScrollView(
+              child: _content(
+                context,
+                competition,
+                competitionId: competitionId,
+                isOwner: competition.isOwnedBySession(session),
+                myPlayerId: myPlayerId,
+                myDisplayName: myDisplayName,
+              ),
+            ),
+    );
+  }
+
+  Widget _content(
+    BuildContext context,
+    Competition competition, {
+    required String competitionId,
+    required bool isOwner,
+    required String? myPlayerId,
+    required String? myDisplayName,
+  }) {
     final leaderboardState = context.watch<LeaderboardCubit>().state;
     final leaderboards = leaderboardState is LeaderboardReady
         ? leaderboardState.leaderboards
@@ -57,8 +124,8 @@ class LeaderboardPage extends StatelessWidget {
         if (myPlayerId != null && myDisplayName != null)
           ProfileSection(
             competitionId: competitionId,
-            playerId: myPlayerId!,
-            displayName: myDisplayName!,
+            playerId: myPlayerId,
+            displayName: myDisplayName,
             seasonLength: competition.seasonLength,
             leaderboard: myLeaderboard,
             medals: myMedals,
@@ -70,7 +137,8 @@ class LeaderboardPage extends StatelessWidget {
           seasonLength: competition.seasonLength,
           myPlayerId: myPlayerId,
           isOwner: isOwner,
-          onManagePlayers: onManagePlayers,
+          onManagePlayers: () =>
+              context.push<Object?>(Routes.players(competitionId)),
         ),
       ],
     );
@@ -95,7 +163,7 @@ class LeaderboardPage extends StatelessWidget {
   Widget _competitionButton(BuildContext context, Competition competition) {
     return Expanded(
       child: AdaptiveTappable(
-        onTap: onOpenCompetitions,
+        onTap: () => context.push<Object?>(Routes.home),
         child: Row(
           children: [
             Flexible(

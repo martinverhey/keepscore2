@@ -11,7 +11,6 @@ import '../core/theme/app_theme.dart';
 import '../core/widgets/adaptive/app_platform.dart';
 import '../features/auth/presentation/cubit/auth_bloc.dart';
 import '../features/competition/presentation/cubit/competition_cubit.dart';
-import '../features/competition/presentation/cubit/competition_tab_cubit.dart';
 import '../features/match/presentation/cubit/game_type_filter_cubit.dart';
 import '../features/settings/domain/theme_preference.enum.dart';
 import '../features/settings/presentation/cubit/language_cubit.dart';
@@ -34,8 +33,6 @@ class _KeepScoreAppState extends State<KeepScoreApp> {
   late final GameTypeFilterCubit _gameTypeFilterCubit =
       getIt<GameTypeFilterCubit>();
   late final CompetitionCubit _competitionCubit = getIt<CompetitionCubit>();
-  late final CompetitionTabCubit _competitionTabCubit =
-      getIt<CompetitionTabCubit>();
   late final GoRouter _router = createRouter(_authBloc);
 
   static const _localizationsDelegates = <LocalizationsDelegate<Object?>>[
@@ -54,7 +51,6 @@ class _KeepScoreAppState extends State<KeepScoreApp> {
         BlocProvider<LanguageCubit>.value(value: _languageCubit),
         BlocProvider<GameTypeFilterCubit>.value(value: _gameTypeFilterCubit),
         BlocProvider<CompetitionCubit>.value(value: _competitionCubit),
-        BlocProvider<CompetitionTabCubit>.value(value: _competitionTabCubit),
       ],
       child: BlocBuilder<ThemeCubit, ThemeState>(
         builder: (context, themeState) =>

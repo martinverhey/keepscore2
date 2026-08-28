@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/app_router.dart';
 import '../cubit/competition_cubit.dart';
-import '../cubit/competition_tab_cubit.dart';
 import 'sidebar.dart';
 import 'sidebar_section.enum.dart';
 
@@ -34,29 +33,19 @@ class SidebarShell extends StatelessWidget {
     if (location.endsWith('/match/new')) return SidebarSection.newMatch;
     if (location.endsWith('/settings')) return null;
     if (location.contains('/match/')) return SidebarSection.matches;
+    if (location.endsWith('/matches')) return SidebarSection.matches;
+    if (location.endsWith('/leaderboard')) return SidebarSection.leaderboard;
 
-    return switch (context.watch<CompetitionTabCubit>().state) {
-      CompetitionTab.leaderboard => SidebarSection.leaderboard,
-      CompetitionTab.matches => SidebarSection.matches,
-    };
+    return null;
   }
 
   void _select(BuildContext context, SidebarSection section) {
-    final tab = _tabFor(section);
-    if (tab != null) context.read<CompetitionTabCubit>().select(tab);
-
     final route = _routeFor(context, section);
     if (route == null) return;
 
     context.read<CompetitionCubit>().refresh();
     context.go(route);
   }
-
-  CompetitionTab? _tabFor(SidebarSection section) => switch (section) {
-    SidebarSection.leaderboard => CompetitionTab.leaderboard,
-    SidebarSection.matches => CompetitionTab.matches,
-    _ => null,
-  };
 
   String? _routeFor(BuildContext context, SidebarSection section) {
     if (section == SidebarSection.competitions) return Routes.home;
@@ -66,8 +55,8 @@ class SidebarShell extends StatelessWidget {
     if (competitionId == null) return null;
 
     return switch (section) {
-      SidebarSection.leaderboard ||
-      SidebarSection.matches => Routes.competition(competitionId),
+      SidebarSection.leaderboard => Routes.leaderboard(competitionId),
+      SidebarSection.matches => Routes.matches(competitionId),
       SidebarSection.newMatch => Routes.newMatch(competitionId),
       SidebarSection.players => Routes.players(competitionId),
       SidebarSection.history => Routes.history(competitionId),

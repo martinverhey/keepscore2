@@ -49,7 +49,9 @@ section below). The cost of that is that **every widget test mounting a
 `Sidebar`, or a page composed with one, now needs a `ThemeCubit` and an
 `AuthBloc` in scope** — in the app both come from `KeepScoreApp`'s root
 `MultiBlocProvider`, but `sidebar_test.dart`, `settings_page_test.dart` and
-`competition_content_page_test.dart` each provide their own.
+`competition_content_page_test.dart` each provide their own (the test file kept
+its old name across the rename below — it now pumps a `StatefulShellRoute` and
+asserts against `LeaderboardPage`).
 
 `/upgrade` turns a guest into a real account in place: same `SignInCubit`, built
 with `SignInMode.upgrade`, which routes the two email steps to
@@ -58,13 +60,17 @@ with `SignInMode.upgrade`, which routes the two email steps to
 renders `GuestNotice`, which carries the refusal *and* the way out; the page pops
 itself when `AuthBloc` reports the user is no longer anonymous.
 
-`/competition/:id` is the tab shell (`features/competition/.../competition_content.page.dart`,
-`CompetitionContent`): Leaderboard (default), Matches, Players. `CompetitionContent` owns the
-sidebar/tab-bar chrome and the two tab-scoped cubits; it doesn't render tab content itself —
-the leaderboard tab is `LeaderboardPage` (`features/leaderboard/presentation/widgets/leaderboard.page.dart`,
+`/competition/:id` redirects to `/competition/:id/leaderboard` — Leaderboard and Matches are
+each a real route, not a tab switch inside one page: a `StatefulShellRoute.indexedStack` with
+one branch per route (`features/competition/.../competition_shell.dart`'s `CompetitionShell`
+wraps the `navigationShell`; see "Leaderboard and Matches are routes, not tabs" below for why
+and how). `LeaderboardPage` (`features/leaderboard/presentation/widgets/leaderboard.page.dart`,
 join code + invite + `ProfileSection` + the actual ranked list, which is `LeaderboardList` in
-the same directory's `leaderboard_list.dart`), the matches tab is `MatchesPage`. The leaderboard
-tab always shows the
+the same directory's `leaderboard_list.dart`) and `MatchesPage`
+(`features/match/presentation/widgets/matches.page.dart`) are each a full routed page — own
+`AdaptiveScaffold`, own `LeaderboardCubit`/`MatchListCubit` loaded in their own `initState`.
+Players has its own settings route, not a third branch — see "Leaderboard and Matches are
+routes, not tabs" for why. The leaderboard tab always shows the
 current calendar window — which has no row until the first match lands in it.
 It has no season picker: that moved to
 `/competition/:id/settings/history` (`HistoryPage`), which shows one
@@ -109,7 +115,7 @@ or moved:
 - **Add/manage players, owner settings** — `players.page.dart` →
   `widgets/players.dart`, `isRegistered: session.canWrite`.
 - **Create a match** — the "new match" bottom tab item is omitted entirely for
-  guests in `competition_content.page.dart`; `matches.page.dart` shows
+  guests in `competition_tab_bar.dart`; `matches.page.dart` shows
   `GuestNotice` instead of the log affordance.
 - **Edit/delete a match** — `match_detail.page.dart`,
   `session.canWrite && state.isManageableBy(session.user?.id)` (creator or
@@ -140,8 +146,9 @@ the presentation for the competition-admin menu — `SettingsPage`,
 moved here because they're conceptually "settings" screens, not because they
 own any data. Player management stayed in `features/player/` despite being
 reachable from the same menu: `PlayersCubit` is also read directly by
-`CompetitionContent` for player data, not just by the management screen,
-so it's a real cross-feature dependency rather than a settings-only concern.
+`LeaderboardPage`/`MatchesPage` for player data, not just by the management
+screen, so it's a real cross-feature dependency rather than a settings-only
+concern.
 
 ### The current competition is app-wide
 
@@ -227,7 +234,7 @@ code; don't relitigate them.
   guard, rather than an `if (cond) ...` list entry — see
   `ProfileOverviewCubit.load`. Reach for actual `Future.wait` only
   when the futures are `Future<void>` with nothing to unpack (e.g.
-  `CompetitionContent._reload`).
+  `LeaderboardPage._refresh`/`MatchesPage._refresh`).
 - **Widget structure:**
   - Nested `Row`/`Column`/`Wrap`/`Stack` with multiple children or a
     conditional gets extracted into a small private method named for what it
@@ -407,10 +414,13 @@ code; don't relitigate them.
     handled this before the split.
   - **An enum used from more than one file gets its own file** (e.g.
     `adaptive_button_kind.enum.dart`, `adaptive_glyph.enum.dart`,
-    `sign_in_mode.enum.dart`). **An enum referenced only within the single
-    file that declares it may stay there** — a tab enum like `CompetitionTab`
-    in `competition_content.page.dart` or `ProfileTab` in `profile_sheet.dart`
-    doesn't earn its own file just for being an enum. Either way, **name it
+    `sign_in_mode.enum.dart`, `competition_tab.enum.dart` — `CompetitionTab`
+    moved out of `competition_content.page.dart` into its own file once
+    `CompetitionTabBar` and both routed tab pages needed it, not just the one
+    page that used to render both tabs inline). **An enum referenced only
+    within the single file that declares it may stay there** — a tab enum
+    like `ProfileTab` in `profile_sheet.dart` doesn't earn its own file just
+    for being an enum. Either way, **name it
     `Enum`, never `_Enum`** — Dart privacy is per-file, so a leading
     underscore would block the file-splitting `export` pattern above the
     moment a second file needs it; starting public avoids a rename later.
@@ -433,10 +443,12 @@ code; don't relitigate them.
     `<name>.enum.dart` (e.g. `game_type.enum.dart`, `medal.enum.dart`,
     `streak_type.enum.dart`) — this applies everywhere a dedicated enum file
     exists, not just under `domain/`. A widget that is the root of a routed
-    page, or that fills an entire tab the way `LeaderboardPage` and
-    `MatchesPage` do inside the competition content shell, is `<name>.page.dart`
-    (e.g. `competition_content.page.dart`, `leaderboard.page.dart`,
-    `matches.page.dart`). Repository interfaces, calculators/services, and
+    page, or that fills an entire tab-as-route the way `LeaderboardPage` and
+    `MatchesPage` do, is `<name>.page.dart` (e.g. `leaderboard.page.dart`,
+    `matches.page.dart`). `competition_shell.dart` stays unsuffixed despite
+    living next to these — it's the `StatefulShellRoute`'s `builder`, not
+    itself a routed destination, see "Leaderboard and Matches are routes, not
+    tabs". Repository interfaces, calculators/services, and
     widgets that are neither a page nor a tab stay unsuffixed
     (`leaderboard_repository.dart`, `elo_calculator.dart`,
     `leaderboard_row.dart`).
@@ -587,11 +599,14 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   web engine uses under the hood to set `document.title` (it also sets
   Android's task-switcher label, harmlessly). Every routed page calls it once
   per relevant build, formatting `'$label · ${l10n.appTitle}'`.
-  `CompetitionContent` is the one exception to the format: it puts the
-  competition name *ahead of* the tab name
-  (`'${competition.name} · $tabTitle'`) because that's the field that
-  disambiguates several same-shaped tabs open at once, and browsers truncate
-  a long tab title from the end, not the front.
+  `LeaderboardPage`/`MatchesPage` are the one exception to the format: each
+  puts the competition name *ahead of* its own tab name
+  (`'${competition.name} · ${context.l10n.leaderboardTitle}'`, respectively
+  `matchesTitle`) because that's the field that disambiguates several
+  same-shaped tabs open at once, and browsers truncate a long tab title from
+  the end, not the front. Being separate routed pages rather than one shell
+  switching on a tab enum, each computes and sets its own title independently
+  — there's no longer a single call site that could do this once for both.
 - **`showAdaptiveSheet` grew a third, wide-web-only branch that swaps the
   bottom sheet for a centered dialog** (`showDialog` + `Dialog`, capped at
   480px) instead of `showModalBottomSheet` — a panel sliding up from the
@@ -629,12 +644,18 @@ the treatment below. Mirrors `debugOverrideCupertino` with
     scrollable down to the centered column's render box — and a
     `Scrollable`'s hit-test region is exactly its own render box, so a mouse
     wheel over the pane's side margins would stop reaching it. Callers that
-    pass `hasScrollBody: true` (`competition_content.page.dart`'s `_body`,
+    pass `hasScrollBody: true` (`LeaderboardPage`/`MatchesPage`,
     `history.page.dart`'s `_ready`) center their content themselves instead,
     via `BoxConstraints.contentHorizontalInset`
     (`core/extensions/box_constraints_content_inset.dart`) applied as
     *padding inside* their own scrollable rather than a wrapper around it —
     padding is still part of the scrollable's render box, so scrolling
+    anywhere across the pane keeps working. `ContentScrollView`
+    (`core/widgets/content_scroll_view.dart`) is that exact
+    `LayoutBuilder` + `SingleChildScrollView` + `ConstrainedBox(minHeight:)` +
+    inset-padding wrapper, promoted to `core/widgets/` once both pages needed
+    the identical block that used to live only in
+    `competition_content.page.dart`'s `_body`.
     anywhere across the pane keeps working.
 - **Web gets one deliberate page-transition, not whatever the host OS
   happens to use.** `ThemeData.pageTransitionsTheme`'s default is keyed by
@@ -723,9 +744,10 @@ a sidebar-shaped app was the odd one out.
 **`SidebarShell` owns navigation; `Sidebar` no longer navigates at all.**
 `Sidebar._select` is `if (section == current) return; onSelectSection(section)`
 and nothing else — `onSelectSection` is required, and the shell is its only
-caller. The shell derives `current` from `state.uri.path` (plus
-`CompetitionTabCubit` for the leaderboard/matches pair, which share one
-route) and navigates with **`context.go`, never `push`/`pop`**: with a
+caller. The shell derives `current` purely from `state.uri.path` — a
+`location.endsWith('/leaderboard')`/`'/matches'` check, now that each tab is
+its own route (see "Leaderboard and Matches are routes, not tabs" below) —
+and navigates with **`context.go`, never `push`/`pop`**: with a
 sidebar that is always on screen, a section is a destination, not something
 stacked on top of what came before, so `go` sets the whole stack
 deterministically and the browser's back button walks it. This deleted the
@@ -744,31 +766,86 @@ Two things had to move for `go` to be safe here:
   in the stack underneath Players/History/Configuration — and had it call
   `setPageTitle` on the way past. The paths are unchanged
   (`path: 'settings/players'` under `/competition/:id`); only the nesting is.
-- **`PlayersCubit`/`MatchListCubit`/`LeaderboardCubit` moved up to the
-  competition `ShellRoute`**, so `CompetitionContent` and the sub-pages share
-  one instance each rather than building their own. `go` keeps
-  `CompetitionContent` mounted underneath the page it navigates to, so
-  without this its `PlayersCubit` would still be holding the player list from
-  before you opened the Players page (unlike `MatchListCubit`/
-  `LeaderboardCubit`, `PlayersCubit` has no realtime subscription to save
-  it). Sharing removes the staleness at the source, which is why there is no
-  refresh-on-return machinery: `CompetitionContent` no longer refreshes after
-  a navigation at all, only on pull-to-refresh. The one thing outside those
-  three is the competition itself (a rename in Configuration), so
+- **`PlayersCubit` moved up to the competition `ShellRoute`**, so every
+  sub-page shares one instance rather than building its own. `go` keeps that
+  `ShellRoute` mounted underneath whatever page it navigates to, so without
+  this `PlayersCubit` would still be holding the player list from before you
+  opened the Players page — it has no realtime subscription to save it,
+  unlike `MatchListCubit`/`LeaderboardCubit` (which didn't need the same
+  hoist; see "Leaderboard and Matches are routes, not tabs" for why). Sharing
+  removes the staleness at the source, which is why there is no
+  refresh-on-return machinery for it: nothing refetches `PlayersCubit` after
+  a navigation, only pull-to-refresh does. The one thing outside that shared
+  instance is the competition itself (a rename in Configuration), so
   `SidebarShell._select` calls `CompetitionCubit.refresh()` on every hop.
 
 Native and narrow web are untouched by all of this: `Sidebar` still returns
 `child` unchanged below the breakpoint, so the bottom tab bar, `SettingsPage`
 menu and every `context.push` still behave exactly as they did.
 
-`CompetitionTabCubit` (`presentation/cubit/competition_tab_cubit.dart`) is
-where `CompetitionContent._tab` went, because a shell above the page cannot
-read the page's `setState`. It is a `registerLazySingleton` provided at the
-root, and it is `Cubit<CompetitionTab>` **with no state class at all** — a
-third case of the flat-state exception below `ThemeState`/`LanguageState`,
-and the most extreme one: the state is a bare enum with no phases, no
-failure, and nothing to wrap. `CompetitionScope` resets it when entering a
-competition, so a new competition always opens on its leaderboard.
+### Leaderboard and Matches are routes, not tabs
+
+`/competition/:id/leaderboard` and `/competition/:id/matches` are each a real
+`GoRoute`, branches of one `StatefulShellRoute.indexedStack` — not, as they
+used to be, one `CompetitionContent` page switching on a `CompetitionTabCubit`
+enum. `CompetitionTabCubit` is gone entirely: a shell above the page used to
+need somewhere to put "which tab" state a page's own `setState` couldn't
+reach, but a route *is* that state now, and `StatefulShellRoute` already
+tracks which branch was last active without a cubit. Opening a different
+competition still always lands on the leaderboard, but that's now just where
+the bare `/competition/:id` URL redirects to, not a cubit `CompetitionScope`
+resets on entry.
+
+The trigger was the sidebar itself: a route it could highlight and deep-link
+to, matching how Players/History/Configuration already worked, rather than a
+shared page with an internal tab enum the sidebar had to reach into.
+`LeaderboardCubit`/`MatchListCubit` each moved into their own branch's leaf
+`GoRoute` rather than the shared competition `ShellRoute` `PlayersCubit`
+sits in — each branch already keeps its own state alive across a tab switch
+(that's what `StatefulShellRoute.indexedStack` is *for*), so there's no
+staleness to guard against there the way there was for `PlayersCubit` under
+a plain `push`/`pop`-style sub-page.
+
+Two non-obvious things this needed, both load-bearing and covered by nothing
+else in the suite:
+
+- **The bare `/competition/:id` `GoRoute`'s `redirect` must check
+  `state.matchedLocation == state.uri.path` before firing, not redirect
+  unconditionally.** go_router calls a route's `redirect` for *every* route in
+  the matched chain, not just the terminal one — an unconditional
+  `redirect: (_, state) => '${state.matchedLocation}/leaderboard'` bounces
+  every navigation under `/competition/:id` (settings, `match/new`, even the
+  branches themselves) straight back to `/leaderboard`, since that ancestor
+  route is still part of the chain on every one of those. Comparing
+  `matchedLocation` (this route's own matched segment) against `uri.path`
+  (the full requested location) is what limits the redirect to the bare path.
+- **Switching *competitions*, not tabs, still needs the branches — and their
+  `LeaderboardCubit`/`MatchListCubit` — torn down, and that happens for
+  free.** The competition `ShellRoute`'s `KeyedSubtree(key: ValueKey(id))`
+  (there originally so `PlayersCubit` gets a fresh instance per competition)
+  wraps the entire nested Navigator, `StatefulShellRoute` included — so an id
+  change unmounts and rebuilds the whole branch structure, GlobalKeys and
+  all, rather than leaving a branch's Navigator (and whatever cubit its leaf
+  route is holding) alive underneath the new competition until it's
+  revisited. This was verified directly rather than assumed, since nothing
+  else in the app nests a `StatefulShellRoute` inside a re-keyed ancestor —
+  a merely-*updated* (not rebuilt) branch would otherwise silently keep
+  showing the previous competition's matches until the user switched tabs.
+
+`CompetitionShell` (`features/competition/presentation/pages/competition_shell.dart`)
+is what the `StatefulShellRoute`'s `builder` returns, wrapping
+`navigationShell` — it replaced `CompetitionContent` and shrank to just
+`RecentCompetitionStore.set`/`PlayersCubit.load()` in `initState` (no
+`didUpdateWidget` needed — the id-change reset above already remounts it
+fresh) and a `BlocListener` bouncing to `Routes.home` on `CompetitionMissing`.
+`CompetitionTabBar` (`features/competition/presentation/widgets/competition_tab_bar.dart`)
+is the bottom tab bar both pages render: it takes only primitives
+(`competitionId`, `current`, `isRegistered`) and navigates itself via
+`context.go`/`push` rather than `onSelectTab`/`onNewMatch` callbacks — every
+call site would have passed the identical closure, the same reasoning that
+has `Sidebar` read `ThemeCubit` from context instead of a callback prop.
+`CompetitionSettingsButton` is the same move for the settings icon both
+pages show in their (non-wide-web) app bar trailing slot.
 
   **The competition the sidebar renders must come from `CompetitionCubit`,
   never from the page's own cubit** — which is now structural, since the

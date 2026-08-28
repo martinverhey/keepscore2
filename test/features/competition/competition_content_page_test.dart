@@ -9,14 +9,16 @@ import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
-import 'package:keepscore2/features/competition/presentation/cubit/competition_tab_cubit.dart';
-import 'package:keepscore2/features/competition/presentation/pages/competition_content.page.dart';
+import 'package:keepscore2/features/competition/presentation/pages/competition_shell.dart';
+import 'package:keepscore2/features/competition/presentation/widgets/competition_scope.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
 import 'package:keepscore2/features/leaderboard/domain/season_window.model.dart';
 import 'package:keepscore2/features/leaderboard/presentation/cubit/leaderboard_cubit.dart';
+import 'package:keepscore2/features/leaderboard/presentation/widgets/leaderboard.page.dart';
 import 'package:keepscore2/features/match/domain/match_repository.dart';
 import 'package:keepscore2/features/match/presentation/cubit/game_type_filter_cubit.dart';
 import 'package:keepscore2/features/match/presentation/cubit/match_list_cubit.dart';
+import 'package:keepscore2/features/match/presentation/widgets/matches.page.dart';
 import 'package:keepscore2/features/player/domain/player_repository.dart';
 import 'package:keepscore2/features/player/presentation/cubit/players_cubit.dart';
 import 'package:keepscore2/features/settings/presentation/cubit/theme_cubit.dart';
@@ -38,7 +40,7 @@ const _competitionId = 'c1';
 
 Future<GoRouter> _pumpHarness(
   WidgetTester tester, {
-  List<RouteBase> extraRoutes = const [],
+  String initialLocation = '/competition/$_competitionId/leaderboard',
 }) async {
   SharedPreferences.setMockInitialValues({});
 
@@ -108,29 +110,73 @@ Future<GoRouter> _pumpHarness(
   addTearDown(gameTypeFilterCubit.close);
 
   final router = GoRouter(
-    initialLocation: '/competition/$_competitionId',
+    initialLocation: initialLocation,
     routes: [
       GoRoute(path: '/', builder: (_, _) => const _CompetitionsStub()),
-      GoRoute(
-        path: '/competition/:id',
-        builder: (context, state) {
+      ShellRoute(
+        builder: (context, state, child) {
           final id = state.pathParameters['id']!;
-          return MultiBlocProvider(
-            providers: [
-              BlocProvider(
-                create: (_) =>
-                    CompetitionCubit(competitions, authBloc)..select(id),
+          return CompetitionScope(
+            competitionId: id,
+            child: KeyedSubtree(
+              key: ValueKey(id),
+              child: MultiBlocProvider(
+                providers: [
+                  BlocProvider(create: (_) => PlayersCubit(players, id)),
+                ],
+                child: child,
               ),
-              BlocProvider(create: (_) => PlayersCubit(players, id)),
-              BlocProvider(
-                create: (_) => MatchListCubit(matches, gameTypeFilterCubit, id),
-              ),
-              BlocProvider(create: (_) => LeaderboardCubit(leaderboard, id)),
-            ],
-            child: CompetitionContent(competitionId: id),
+            ),
           );
         },
-        routes: extraRoutes,
+        routes: [
+          GoRoute(
+            path: '/competition/:id',
+            redirect: (context, state) =>
+                state.matchedLocation == state.uri.path
+                ? '${state.matchedLocation}/leaderboard'
+                : null,
+            routes: [
+              StatefulShellRoute.indexedStack(
+                builder: (context, state, navigationShell) => CompetitionShell(
+                  competitionId: state.pathParameters['id']!,
+                  child: navigationShell,
+                ),
+                branches: [
+                  StatefulShellBranch(
+                    routes: [
+                      GoRoute(
+                        path: 'leaderboard',
+                        builder: (context, state) => BlocProvider(
+                          create: (_) => LeaderboardCubit(
+                            leaderboard,
+                            state.pathParameters['id']!,
+                          ),
+                          child: const LeaderboardPage(),
+                        ),
+                      ),
+                    ],
+                  ),
+                  StatefulShellBranch(
+                    routes: [
+                      GoRoute(
+                        path: 'matches',
+                        builder: (context, state) => BlocProvider(
+                          create: (_) => MatchListCubit(
+                            matches,
+                            gameTypeFilterCubit,
+                            state.pathParameters['id']!,
+                          ),
+                          child: const MatchesPage(),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
       ),
     ],
   );
@@ -141,7 +187,7 @@ Future<GoRouter> _pumpHarness(
         BlocProvider<AuthBloc>.value(value: authBloc),
         BlocProvider<GameTypeFilterCubit>.value(value: gameTypeFilterCubit),
         BlocProvider<ThemeCubit>(create: (_) => ThemeCubit()),
-        BlocProvider<CompetitionTabCubit>(create: (_) => CompetitionTabCubit()),
+        BlocProvider(create: (_) => CompetitionCubit(competitions, authBloc)),
       ],
       child: MaterialApp.router(
         routerConfig: router,
@@ -165,7 +211,7 @@ void main() {
       await _pumpHarness(tester);
 
       final l10n = AppLocalizations.of(
-        tester.element(find.byType(CompetitionContent)),
+        tester.element(find.byType(LeaderboardPage)),
       );
       expect(find.text(l10n.competitionSettings), findsNothing);
 
