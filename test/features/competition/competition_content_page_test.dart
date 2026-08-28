@@ -19,6 +19,7 @@ import 'package:keepscore2/features/match/presentation/cubit/game_type_filter_cu
 import 'package:keepscore2/features/match/presentation/cubit/match_list_cubit.dart';
 import 'package:keepscore2/features/player/domain/player_repository.dart';
 import 'package:keepscore2/features/player/presentation/cubit/players_cubit.dart';
+import 'package:keepscore2/features/settings/presentation/cubit/theme_cubit.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -138,6 +139,7 @@ Future<GoRouter> _pumpHarness(
       providers: [
         BlocProvider<AuthBloc>.value(value: authBloc),
         BlocProvider<GameTypeFilterCubit>.value(value: gameTypeFilterCubit),
+        BlocProvider<ThemeCubit>(create: (_) => ThemeCubit()),
       ],
       child: MaterialApp.router(
         routerConfig: router,

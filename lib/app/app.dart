@@ -68,12 +68,9 @@ class _KeepScoreAppState extends State<KeepScoreApp> {
     Locale? locale,
   ) {
     if (AppPlatform.useCupertino) {
-      final brightness =
-          preference.brightnessOverride ??
-          MediaQuery.platformBrightnessOf(context);
       return CupertinoApp.router(
         onGenerateTitle: (context) => context.l10n.appTitle,
-        theme: AppTheme.cupertino(brightness),
+        theme: AppTheme.cupertino(preference.brightness),
         routerConfig: _router,
         locale: locale,
         localizationsDelegates: _localizationsDelegates,

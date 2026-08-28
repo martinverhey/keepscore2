@@ -21,11 +21,34 @@ is the up-to-date source of truth regardless.
 | 7. Leaderboard + seasons + realtime | Done |
 | 8. Polish, Dutch copy pass, app icons | Done |
 
-The `/settings/theme` and `/settings/language` pages are app-wide, competition-independent
-preferences reached from the settings page's System section (and from the wide-web
-sidebar's account section). Both persist to `SharedPreferences` and are read back
-in `main()` before `runApp`; `LanguagePreference.locale` feeds `MaterialApp`/
-`CupertinoApp`'s `locale`, with `system` meaning "no override, follow the device".
+Theme and language are app-wide, competition-independent preferences, both
+persisted to `SharedPreferences` and read back in `main()` before `runApp`.
+`LanguagePreference.locale` feeds `MaterialApp`/`CupertinoApp`'s `locale`, with
+`system` meaning "no override, follow the device", and `/settings/language` is a
+real page reached from the settings page's System section (and from the wide-web
+sidebar's account section).
+
+**Theme is deliberately *not* a page** — it's a sun/moon toggle rendered inline
+in both of those places (settings page System section, sidebar account section),
+so `ThemePreference` is `{light, dark}` with no `system` value and there is no
+`Routes.theme`. Losing `system` means there is nothing left for the device to
+follow at runtime, so the device's brightness is instead read *once*, as the
+seed for the very first launch: `ThemeCubit`'s initial state and its `load()`
+fallback both come from `WidgetsBinding.instance.platformDispatcher.platformBrightness`
+(seeding the initial state too, not just `load()`, is what stops a dark-mode
+device flashing light for one frame before the store answers). After that first
+tap the stored value wins forever. Both surfaces render the same
+`ThemeGlyph` (`features/settings/presentation/widgets/theme_glyph.dart`) showing
+the **current** theme — sun while light, moon while dark — with the whole row as
+the tap target calling `ThemeCubit.toggle()`; neither call site passes a
+callback down, which is why `Sidebar` reads `ThemeCubit` from context itself
+rather than taking an `onToggleTheme` prop the way it takes `onOpenLanguage`
+(every one of its eight call sites would have passed the identical closure).
+The cost of that is that **every widget test mounting a `Sidebar`, or a page
+composed with one, now needs a `ThemeCubit` in scope** — in the app it comes
+from `KeepScoreApp`'s root `MultiBlocProvider`, but `sidebar_test.dart`,
+`settings_page_test.dart` and `competition_content_page_test.dart` each provide
+their own.
 
 `/upgrade` turns a guest into a real account in place: same `SignInCubit`, built
 with `SignInMode.upgrade`, which routes the two email steps to
@@ -317,7 +340,8 @@ code; don't relitigate them.
 
     **`ThemeState` and `LanguageState` are the deliberate exceptions, left
     flat.** Neither is ever anything but a fully-formed, synchronously-available
-    value — `ThemeCubit`/`LanguageCubit`'s `load()`/`select()` both `emit` a
+    value — `ThemeCubit`'s `load()`/`toggle()` and `LanguageCubit`'s
+    `load()`/`select()` all `emit` a
     complete state directly, with no failure path and no "not ready yet" moment
     worth modeling. There's no `!`/`?? fallback` a sealed split would remove, and
     a sealed hierarchy with exactly one variant isn't the pattern — reach
@@ -618,7 +642,7 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   base of that stack, not one of the pages sitting on top of it — reusing the
   shared helper's `pop`-for-leaderboard/matches case there would pop the
   competition itself. The sidebar's own account section (competition
-  settings, theme, language, sign out) replaced the old gear-icon popover entirely, so
+  settings, the theme toggle, language, sign out) replaced the old gear-icon popover entirely, so
   `AdaptiveMenuButton` was deleted rather than left unused. A page pushed
   underneath the sidebar (History, Players, Settings, NewMatch — reached via
   `context.push`) would otherwise still get an auto-implied back button from
@@ -728,7 +752,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 219 tests at time of writing
+flutter test                    # 206 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 python3 scripts/generate_icon.py   # redraw assets/icon/*.png

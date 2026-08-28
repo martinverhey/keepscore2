@@ -1,10 +1,13 @@
 import 'package:flutter/widgets.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/horizontal_divider.dart';
 import '../../../../core/widgets/section_label.dart';
+import '../../../settings/presentation/cubit/theme_cubit.dart';
+import '../../../settings/presentation/widgets/theme_glyph.dart';
 import 'competition_section.enum.dart';
 
 class Sidebar extends StatelessWidget {
@@ -18,7 +21,6 @@ class Sidebar extends StatelessWidget {
     required this.onSelectSection,
     required this.onNewMatch,
     required this.onOpenHome,
-    required this.onOpenTheme,
     required this.onOpenLanguage,
     required this.onSignOut,
     required this.child,
@@ -32,7 +34,6 @@ class Sidebar extends StatelessWidget {
   final ValueChanged<CompetitionSection> onSelectSection;
   final VoidCallback onNewMatch;
   final VoidCallback onOpenHome;
-  final VoidCallback onOpenTheme;
   final VoidCallback onOpenLanguage;
   final VoidCallback onSignOut;
   final Widget child;
@@ -77,11 +78,7 @@ class Sidebar extends StatelessWidget {
             const SizedBox(height: AppSpacing.lg),
           ],
           Expanded(child: _navList(context)),
-          _actionItem(
-            context,
-            label: context.l10n.settingsThemeTitle,
-            onTap: onOpenTheme,
-          ),
+          _themeItem(context),
           _actionItem(
             context,
             label: context.l10n.settingsLanguageTitle,
@@ -249,10 +246,22 @@ class Sidebar extends StatelessWidget {
     );
   }
 
+  Widget _themeItem(BuildContext context) {
+    return BlocBuilder<ThemeCubit, ThemeState>(
+      builder: (context, state) => _actionItem(
+        context,
+        label: context.l10n.settingsThemeTitle,
+        onTap: context.read<ThemeCubit>().toggle,
+        trailing: ThemeGlyph(preference: state.preference, size: 18),
+      ),
+    );
+  }
+
   Widget _actionItem(
     BuildContext context, {
     required String label,
     required VoidCallback onTap,
+    Widget? trailing,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.xs),
@@ -264,12 +273,20 @@ class Sidebar extends StatelessWidget {
             horizontal: AppSpacing.sm,
             vertical: AppSpacing.sm,
           ),
-          child: Text(
-            label,
-            style: AppTypography.bodySmall.copyWith(
-              fontWeight: FontWeight.w400,
-              color: AppColors.neutral,
-            ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  label,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.bodySmall.copyWith(
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.neutral,
+                  ),
+                ),
+              ),
+              ?trailing,
+            ],
           ),
         ),
       ),

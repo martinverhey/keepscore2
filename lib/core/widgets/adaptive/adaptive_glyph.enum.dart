@@ -16,4 +16,6 @@ enum AdaptiveGlyph {
   fire,
   ice,
   signOut,
+  light,
+  dark,
 }

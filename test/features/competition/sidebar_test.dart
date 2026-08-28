@@ -1,20 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/competition_section.enum.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/sidebar.dart';
+import 'package:keepscore2/features/settings/presentation/cubit/theme_cubit.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  tearDown(() {
-    AppPlatform.debugOverrideWideWeb = null;
+  final binding = TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+    binding.platformDispatcher.platformBrightnessTestValue = Brightness.light;
   });
 
-  Widget wrap(Widget child) => MaterialApp(
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
-    supportedLocales: AppLocalizations.supportedLocales,
-    home: child,
+  tearDown(() {
+    AppPlatform.debugOverrideWideWeb = null;
+    binding.platformDispatcher.clearPlatformBrightnessTestValue();
+  });
+
+  Widget wrap(Widget child) => withTheme(
+    MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: child,
+    ),
   );
 
   testWidgets(
@@ -41,7 +54,6 @@ void main() {
             onSelectSection: (section) => selected = section,
             onNewMatch: () => newMatchTapped = true,
             onOpenHome: () => homeTapped = true,
-            onOpenTheme: () {},
             onOpenLanguage: () {},
             onSignOut: () => signedOut = true,
             child: const Center(child: Text('body content')),
@@ -113,7 +125,6 @@ void main() {
             onSelectSection: (_) {},
             onNewMatch: () {},
             onOpenHome: () {},
-            onOpenTheme: () {},
             onOpenLanguage: () {},
             onSignOut: () {},
             child: const Center(child: Text('body content')),
@@ -160,7 +171,6 @@ void main() {
             onSelectSection: (section) => selected = section,
             onNewMatch: () {},
             onOpenHome: () {},
-            onOpenTheme: () {},
             onOpenLanguage: () {},
             onSignOut: () {},
             child: const Center(child: Text('body content')),
@@ -197,7 +207,6 @@ void main() {
           onSelectSection: (_) {},
           onNewMatch: () {},
           onOpenHome: () {},
-          onOpenTheme: () {},
           onOpenLanguage: () {},
           onSignOut: () {},
           child: const Center(child: Text('body content')),
@@ -236,7 +245,6 @@ void main() {
                 onSelectSection: (_) {},
                 onNewMatch: () {},
                 onOpenHome: () {},
-                onOpenTheme: () {},
                 onOpenLanguage: () {},
                 onSignOut: () {},
                 child: const AdaptiveScaffold(
@@ -251,10 +259,12 @@ void main() {
     );
 
     await tester.pumpWidget(
-      MaterialApp.router(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        routerConfig: router,
+      withTheme(
+        MaterialApp.router(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          routerConfig: router,
+        ),
       ),
     );
     router.push('/pushed');
@@ -266,4 +276,47 @@ void main() {
 
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('the sidebar theme row toggles between light and dark', (
+    tester,
+  ) async {
+    AppPlatform.debugOverrideWideWeb = true;
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      wrap(
+        Sidebar(
+          competitionName: 'Office Table Tennis',
+          current: CompetitionSection.leaderboard,
+          canManageSettings: true,
+          isRegistered: true,
+          onSelectSection: (_) {},
+          onNewMatch: () {},
+          onOpenHome: () {},
+          onOpenLanguage: () {},
+          onSignOut: () {},
+          child: const Center(child: Text('body content')),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final l10n = AppLocalizations.of(tester.element(find.text('body content')));
+
+    expect(find.byIcon(Icons.light_mode), findsOneWidget);
+    expect(find.byIcon(Icons.dark_mode), findsNothing);
+
+    await tester.tap(find.text(l10n.settingsThemeTitle));
+    await tester.pumpAndSettle();
+
+    expect(find.byIcon(Icons.dark_mode), findsOneWidget);
+    expect(find.byIcon(Icons.light_mode), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
 }
+
+Widget withTheme(Widget child) =>
+    BlocProvider<ThemeCubit>(create: (_) => ThemeCubit(), child: child);

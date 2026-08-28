@@ -16,7 +16,6 @@ import '../../../competition/presentation/cubit/competition_cubit.dart';
 import '../../../competition/presentation/widgets/competition_section.enum.dart';
 import '../../../competition/presentation/widgets/home_sidebar_competition.dart';
 import '../../../competition/presentation/widgets/open_home.dart';
-import '../../../competition/presentation/widgets/open_theme.dart';
 import '../../../competition/presentation/widgets/open_language.dart';
 import '../../../competition/presentation/widgets/select_competition_section.dart';
 import '../../../competition/presentation/widgets/sidebar.dart';
@@ -76,15 +75,6 @@ class _HistoryPageState extends State<HistoryPage> {
             competitionId: cubit.competitionId,
             competitionName: competition?.name,
             canManageSettings: isOwner,
-          ),
-          onOpenTheme: () => openTheme(
-            context,
-            replace: true,
-            sidebarCompetition: HomeSidebarCompetition(
-              competitionId: cubit.competitionId,
-              competitionName: competition?.name,
-              canManageSettings: isOwner,
-            ),
           ),
           onOpenLanguage: () => openLanguage(
             context,

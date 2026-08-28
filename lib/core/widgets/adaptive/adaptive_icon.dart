@@ -31,6 +31,8 @@ class AdaptiveIcon extends StatelessWidget {
     AdaptiveGlyph.fire => CupertinoIcons.flame_fill,
     AdaptiveGlyph.ice => CupertinoIcons.snow,
     AdaptiveGlyph.signOut => CupertinoIcons.arrow_right_square,
+    AdaptiveGlyph.light => CupertinoIcons.sun_max_fill,
+    AdaptiveGlyph.dark => CupertinoIcons.moon_fill,
   };
 
   IconData get _material => switch (glyph) {
@@ -51,6 +53,8 @@ class AdaptiveIcon extends StatelessWidget {
     AdaptiveGlyph.fire => Icons.local_fire_department,
     AdaptiveGlyph.ice => Icons.ac_unit,
     AdaptiveGlyph.signOut => Icons.logout,
+    AdaptiveGlyph.light => Icons.light_mode,
+    AdaptiveGlyph.dark => Icons.dark_mode,
   };
 
   @override

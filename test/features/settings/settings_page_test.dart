@@ -7,6 +7,7 @@ import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
+import 'package:keepscore2/features/settings/presentation/cubit/theme_cubit.dart';
 import 'package:keepscore2/features/settings/presentation/pages/settings.page.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
@@ -61,6 +62,7 @@ void main() {
           providers: [
             BlocProvider.value(value: competitionDetailCubit),
             BlocProvider.value(value: authBloc),
+            BlocProvider<ThemeCubit>(create: (_) => ThemeCubit()),
           ],
           child: MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -117,6 +119,7 @@ void main() {
           providers: [
             BlocProvider.value(value: competitionDetailCubit),
             BlocProvider.value(value: authBloc),
+            BlocProvider<ThemeCubit>(create: (_) => ThemeCubit()),
           ],
           child: MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,

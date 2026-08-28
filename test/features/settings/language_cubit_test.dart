@@ -15,8 +15,9 @@ void main() {
 
   blocTest<LanguageCubit, LanguageState>(
     'loads a previously stored preference',
-    setUp: () =>
-        SharedPreferences.setMockInitialValues({'language_preference': 'dutch'}),
+    setUp: () => SharedPreferences.setMockInitialValues({
+      'language_preference': 'dutch',
+    }),
     build: LanguageCubit.new,
     act: (cubit) => cubit.load(),
     expect: () => [const LanguageState(preference: LanguagePreference.dutch)],

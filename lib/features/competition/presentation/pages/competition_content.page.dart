@@ -27,7 +27,6 @@ import '../cubit/competition_cubit.dart';
 import '../widgets/competition_section.enum.dart';
 import '../widgets/home_sidebar_competition.dart';
 import '../widgets/open_home.dart';
-import '../widgets/open_theme.dart';
 import '../widgets/open_language.dart';
 import '../widgets/sidebar.dart';
 
@@ -105,23 +104,6 @@ class _CompetitionContentState extends State<CompetitionContent> {
   Future<void> _openSettings() =>
       _openAndReload(Routes.settings(widget.competitionId));
 
-  Future<void> _openTheme({
-    required String? competitionName,
-    required bool canManageSettings,
-  }) async {
-    final section = await openTheme(
-      context,
-      replace: false,
-      sidebarCompetition: HomeSidebarCompetition(
-        competitionId: widget.competitionId,
-        competitionName: competitionName,
-        canManageSettings: canManageSettings,
-      ),
-    );
-    if (!mounted) return;
-    _applySection(section);
-  }
-
   Future<void> _openLanguage({
     required String? competitionName,
     required bool canManageSettings,
@@ -195,10 +177,6 @@ class _CompetitionContentState extends State<CompetitionContent> {
           onSelectSection: _selectSection,
           onNewMatch: _openNewMatch,
           onOpenHome: () => _openHome(
-            competitionName: competition?.name,
-            canManageSettings: session.canWrite && isOwner,
-          ),
-          onOpenTheme: () => _openTheme(
             competitionName: competition?.name,
             canManageSettings: session.canWrite && isOwner,
           ),

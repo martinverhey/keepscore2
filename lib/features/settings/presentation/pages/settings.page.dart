@@ -17,6 +17,8 @@ import '../../../competition/domain/competition.model.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
 import '../../../competition/presentation/widgets/join_code_card.dart';
 import '../../../competition/presentation/widgets/join_qr_card.dart';
+import '../cubit/theme_cubit.dart';
+import '../widgets/theme_glyph.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key, required this.competitionId});
@@ -107,10 +109,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           const SizedBox(height: AppSpacing.md),
           SectionLabel(context.l10n.competitionSettingsSectionSystem),
-          NavRow(
-            label: context.l10n.settingsThemeTitle,
-            onTap: () => context.push(Routes.theme),
-          ),
+          _themeRow(context),
           NavRow(
             label: context.l10n.settingsLanguageTitle,
             onTap: () => context.push(Routes.language),
@@ -123,6 +122,16 @@ class _SettingsPageState extends State<SettingsPage> {
                 context.read<AuthBloc>().add(const AuthSignOutRequested()),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _themeRow(BuildContext context) {
+    return BlocBuilder<ThemeCubit, ThemeState>(
+      builder: (context, state) => NavRow(
+        label: context.l10n.settingsThemeTitle,
+        onTap: context.read<ThemeCubit>().toggle,
+        trailing: ThemeGlyph(preference: state.preference),
       ),
     );
   }

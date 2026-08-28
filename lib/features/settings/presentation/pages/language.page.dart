@@ -10,7 +10,6 @@ import '../../../../core/widgets/page_title.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../competition/presentation/widgets/home_sidebar_competition.dart';
 import '../../../competition/presentation/widgets/open_home.dart';
-import '../../../competition/presentation/widgets/open_theme.dart';
 import '../../../competition/presentation/widgets/select_competition_section.dart';
 import '../../../competition/presentation/widgets/sidebar.dart';
 import '../../domain/language_preference.enum.dart';
@@ -58,11 +57,6 @@ class LanguagePage extends StatelessWidget {
                   competitionName: sidebarCompetition.competitionName,
                   canManageSettings: sidebarCompetition.canManageSettings,
                 ),
-          onOpenTheme: () => openTheme(
-            context,
-            replace: true,
-            sidebarCompetition: sidebarCompetition,
-          ),
           onOpenLanguage: () {},
           onSignOut: () =>
               context.read<AuthBloc>().add(const AuthSignOutRequested()),

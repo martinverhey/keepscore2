@@ -717,9 +717,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String get settingsThemeTitle => 'Thema';
 
   @override
-  String get themeOptionSystem => 'Systeem';
-
-  @override
   String get themeOptionLight => 'Licht';
 
   @override
