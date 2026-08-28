@@ -655,15 +655,14 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   destinations. `Sidebar`
   (`features/competition/presentation/widgets/sidebar.dart`) is a
   thin wrapper — `if (!AppPlatform.useWideWeb(context)) return child;`,
-  otherwise a fixed-width sidebar `Row`-ed next to `Expanded(child: child)` —
-  composed by every page reached from within a competition
-  (`CompetitionContent`, `PlayersPage`, `HistoryPage`,
-  `ConfigurationPage`, `NewMatchPage`) around their existing
-  `AdaptiveScaffold`. **It takes `current`, an optional `onSelectSection`,
-  and `child` — nothing else.** It reads `AuthBloc`, `ThemeCubit` and
-  `CompetitionCubit` off the context itself and owns its own navigation and
-  sign-out, because every call site was otherwise passing back the identical
-  closure or the identical data. Getting there needed three things:
+  otherwise a fixed-width sidebar `Row`-ed next to `Expanded(child: child)`.
+  **It takes `current`, `onSelectSection` and `child` — nothing else**, and
+  renders exactly once, from a `ShellRoute` above every page that has one
+  (see "The sidebar is a shell, not a per-page wrapper" below); no page
+  composes it. It reads `AuthBloc`, `ThemeCubit` and `CompetitionCubit` off
+  the context itself and owns its own sign-out, because every call site was
+  otherwise passing back the identical closure or the identical data.
+  Getting there needed three things:
   `SidebarSection` (`sidebar_section.enum.dart`) enumerating **every**
   destination the sidebar can reach — leaderboard, matches, newMatch,
   players, history, configuration, competitions, language — not just the
@@ -689,27 +688,7 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   Landing on `/` on a fresh launch, or after signing out, leaves the cubit
   empty, so the group is hidden — there's nothing to carry over. This used to
   be threaded from page to page as go_router `extra`; hoisting the cubit
-  deleted that plumbing along with `HomeSidebarCompetition` itself. It is
-  *not* a go_router `ShellRoute` — each page keeps its own route, cubits, and
-  `AdaptiveScaffold` untouched; the sidebar is purely a visual wrapper
-  re-composed per page.
-  **`CompetitionContent` is the single navigation hub, and every other page
-  just pops.** `Sidebar._select`'s default is `context.pop(section)` (falling
-  back to `context.go(Routes.home)` when there is nothing to pop, i.e. a
-  deep-linked `/language`); `CompetitionContent._selectSection` is the only
-  real `onSelectSection` override, flipping `_tab` locally for
-  leaderboard/matches (it owns those as local `_tab` state, not routes) and
-  pushing every other section itself, re-applying whatever section comes back
-  from that push. `CompetitionsPage` passes a second, much smaller override
-  only when it is the root with no competition below it. This replaced a
-  `selectCompetitionSection` helper that used `pushReplacement` to swap among
-  sibling pages: `pushReplacement` completes the *replaced* route's popped
-  future with `null`, so the section a user picked two pages deep never
-  reached the `CompetitionContent` that was awaiting it, and going
-  competition → competitions list → language → "Leaderboard" popped to the
-  competitions list instead. Because every hop now returns to the hub, the
-  stack is never deeper than `CompetitionContent` → one page, and the pick
-  always lands. `sidebar_test.dart` covers this directly.
+  deleted that plumbing along with `HomeSidebarCompetition` itself.
   The sidebar's own account section (competition
   settings, the theme toggle, language, sign out) replaced the old gear-icon popover entirely, so
   `AdaptiveMenuButton` was deleted rather than left unused. A page pushed
@@ -728,6 +707,69 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   `fullscreenDialog` page (used by `match/new`), but on wide web it defers to
   `adaptivePage` instead, so New Match reads as an in-place page inside the
   sidebar rather than a modal takeover of the whole viewport.
+### The sidebar is a shell, not a per-page wrapper
+
+`Sidebar` is rendered once, by `SidebarShell`
+(`features/competition/presentation/widgets/sidebar_shell.dart`) from a
+go_router `ShellRoute` that wraps `/`, `/settings/language`, and the whole
+`/competition/:id` subtree. `/splash`, `/sign-in`, `/upgrade`, `/create` and
+`/join` stay outside it and have no sidebar, as before. Pages therefore
+compose only their own `AdaptiveScaffold`; none of them mention `Sidebar`.
+`SettingsPage` and `MatchDetailPage` gain a sidebar on wide web as a
+side effect of living in that subtree — `SettingsPage` is unreachable there
+anyway (its rows are sidebar items), and a full-viewport match detail next to
+a sidebar-shaped app was the odd one out.
+
+**`SidebarShell` owns navigation; `Sidebar` no longer navigates at all.**
+`Sidebar._select` is `if (section == current) return; onSelectSection(section)`
+and nothing else — `onSelectSection` is required, and the shell is its only
+caller. The shell derives `current` from `state.uri.path` (plus
+`CompetitionTabCubit` for the leaderboard/matches pair, which share one
+route) and navigates with **`context.go`, never `push`/`pop`**: with a
+sidebar that is always on screen, a section is a destination, not something
+stacked on top of what came before, so `go` sets the whole stack
+deterministically and the browser's back button walks it. This deleted the
+previous hub-and-spoke arrangement wholesale — `Sidebar` popping a
+`SidebarSection` back to a `CompetitionContent` that was awaiting it,
+`_openAndReload` re-applying whatever came back, and the null-object
+`onSelectSection` overrides — along with the class of bug that produced (a
+`pushReplacement` completing the replaced route's popped future with `null`,
+so a section picked two pages deep never arrived).
+
+Two things had to move for `go` to be safe here:
+
+- **The `settings/*` routes are declared as siblings, not children of
+  `settings`.** `go` builds a page for every route in the matched chain, so
+  nesting them under `/competition/:id/settings` would have put `SettingsPage`
+  in the stack underneath Players/History/Configuration — and had it call
+  `setPageTitle` on the way past. The paths are unchanged
+  (`path: 'settings/players'` under `/competition/:id`); only the nesting is.
+- **`PlayersCubit`/`MatchListCubit`/`LeaderboardCubit` moved up to the
+  competition `ShellRoute`**, so `CompetitionContent` and the sub-pages share
+  one instance each rather than building their own. `go` keeps
+  `CompetitionContent` mounted underneath the page it navigates to, so
+  without this its `PlayersCubit` would still be holding the player list from
+  before you opened the Players page (unlike `MatchListCubit`/
+  `LeaderboardCubit`, `PlayersCubit` has no realtime subscription to save
+  it). Sharing removes the staleness at the source, which is why there is no
+  refresh-on-return machinery: `CompetitionContent` no longer refreshes after
+  a navigation at all, only on pull-to-refresh. The one thing outside those
+  three is the competition itself (a rename in Configuration), so
+  `SidebarShell._select` calls `CompetitionCubit.refresh()` on every hop.
+
+Native and narrow web are untouched by all of this: `Sidebar` still returns
+`child` unchanged below the breakpoint, so the bottom tab bar, `SettingsPage`
+menu and every `context.push` still behave exactly as they did.
+
+`CompetitionTabCubit` (`presentation/cubit/competition_tab_cubit.dart`) is
+where `CompetitionContent._tab` went, because a shell above the page cannot
+read the page's `setState`. It is a `registerLazySingleton` provided at the
+root, and it is `Cubit<CompetitionTab>` **with no state class at all** — a
+third case of the flat-state exception below `ThemeState`/`LanguageState`,
+and the most extreme one: the state is a bare enum with no phases, no
+failure, and nothing to wrap. `CompetitionScope` resets it when entering a
+competition, so a new competition always opens on its leaderboard.
+
   **The competition the sidebar renders must come from `CompetitionCubit`,
   never from the page's own cubit** — which is now structural, since the
   sidebar reads that cubit itself and takes no competition prop at all.
@@ -737,14 +779,16 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   briefly evaluates to `false` while that cubit's own fetch is in flight, so
   an owner-only nav row (e.g. "Competition settings") visibly disappears and
   reappears a moment later.
-  **No existing test exercises this at all** — `kIsWeb` is always `false`
+  **Almost no test exercises this** — `kIsWeb` is always `false`
   under `flutter test`, so `useWideWeb` never trips regardless of the pumped
   viewport size, which is exactly why `AppPlatform.debugOverrideWideWeb`
-  exists: `sidebar_test.dart` is the one file in the suite that
-  sets it, and it caught a real `RenderFlex` overflow (a nav-item label
-  missing its `Expanded`) on the first run — a reminder that this whole
-  surface is otherwise invisible to `flutter test` and worth exercising
-  explicitly whenever it changes. The sidebar's own background/border colours
+  exists: `sidebar_test.dart` is the one file in the suite that sets it, and
+  it caught a real `RenderFlex` overflow (a nav-item label missing its
+  `Expanded`) on the first run — a reminder that this whole surface is otherwise invisible to
+  `flutter test` and worth exercising explicitly whenever it changes. Two of
+  its tests pump a real `GoRouter` around `SidebarShell` rather than `Sidebar`
+  alone, since the shell's location-to-`current` mapping and its `go` calls
+  are the parts with nothing else watching them. The sidebar's own background/border colours
   come from `AdaptiveColors.surfaceTint`/`divider` (`colorScheme.surfaceContainerLow`/
   `outlineVariant`), not a translucent tint over nothing — the sidebar sits
   outside `AdaptiveScaffold`'s own themed background, so a low-alpha neutral
