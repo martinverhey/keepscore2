@@ -376,7 +376,8 @@ GoRouter _buildRouter(
             providers: [
               BlocProvider(
                 create: (_) =>
-                    CompetitionCubit(competitionRepository, id)..load(),
+                    CompetitionCubit(competitionRepository, authBloc)
+                      ..select(id),
               ),
               BlocProvider(create: (_) => PlayersCubit(playerRepository, id)),
               BlocProvider(

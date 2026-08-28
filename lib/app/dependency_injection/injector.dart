@@ -60,9 +60,8 @@ Future<void> configureDependencies() async {
     ..registerLazySingleton<PlayerRepository>(
       () => SupabasePlayerRepository(getIt<SupabaseClient>()),
     )
-    ..registerFactoryParam<CompetitionCubit, String, void>(
-      (competitionId, _) =>
-          CompetitionCubit(getIt<CompetitionRepository>(), competitionId),
+    ..registerLazySingleton<CompetitionCubit>(
+      () => CompetitionCubit(getIt<CompetitionRepository>(), getIt<AuthBloc>()),
     )
     ..registerFactoryParam<ConfigurationCubit, String, void>(
       (competitionId, _) =>

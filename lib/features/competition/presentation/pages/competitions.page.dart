@@ -13,18 +13,16 @@ import '../../../../core/widgets/text_entry_sheet.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../auth/presentation/widgets/guest_notice.dart';
 import '../../domain/competition.model.dart';
+import '../cubit/competition_cubit.dart';
 import '../cubit/competition_list_cubit.dart';
 import '../widgets/competition_action.enum.dart';
 import '../widgets/competition_action_sheet.dart';
 import '../widgets/competition_tile.dart';
-import '../widgets/home_sidebar_competition.dart';
 import '../widgets/sidebar.dart';
 import '../widgets/sidebar_section.enum.dart';
 
 class CompetitionsPage extends StatefulWidget {
-  const CompetitionsPage({super.key, this.sidebarCompetition});
-
-  final HomeSidebarCompetition? sidebarCompetition;
+  const CompetitionsPage({super.key});
 
   @override
   State<CompetitionsPage> createState() => _CompetitionsPageState();
@@ -46,13 +44,13 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
   @override
   Widget build(BuildContext context) {
     final session = context.watch<AuthBloc>().state;
-    final sidebarCompetition = widget.sidebarCompetition;
+    final hasCompetition =
+        context.watch<CompetitionCubit>().state.competition != null;
     setPageTitle(context, context.l10n.competitionsTitle);
 
     return Sidebar(
-      competition: sidebarCompetition,
       current: SidebarSection.competitions,
-      onSelectSection: sidebarCompetition == null ? _selectRootSection : null,
+      onSelectSection: hasCompetition ? null : _selectRootSection,
       child: AdaptiveScaffold(
         title: context.l10n.competitionsTitle,
         trailing: !AppPlatform.useWideWeb(context) && !context.canPop()
@@ -158,6 +156,7 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
     required String? myUserId,
   }) async {
     final cubit = context.read<CompetitionListCubit>();
+    final competitionCubit = context.read<CompetitionCubit>();
     final isOwner = overview.competition.isOwnedBy(myUserId);
 
     final action = await showAdaptiveSheet<CompetitionAction>(
@@ -195,7 +194,9 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
           cancelLabel: context.l10n.commonCancel,
           destructive: true,
         );
-        if (confirmed) await cubit.leave(overview.id);
+        if (confirmed && await cubit.leave(overview.id)) {
+          competitionCubit.clearIfSelected(overview.id);
+        }
 
       case CompetitionAction.delete:
         if (!context.mounted) return;
@@ -209,7 +210,9 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
           cancelLabel: context.l10n.commonCancel,
           destructive: true,
         );
-        if (confirmed) await cubit.delete(overview.id);
+        if (confirmed && await cubit.delete(overview.id)) {
+          competitionCubit.clearIfSelected(overview.id);
+        }
     }
   }
 }

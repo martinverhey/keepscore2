@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/app_router.dart';
 import '../../../../core/extensions/build_context.extension.dart';
+import '../../../../core/extensions/competition.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/horizontal_divider.dart';
@@ -11,19 +12,17 @@ import '../../../../core/widgets/section_label.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../settings/presentation/cubit/theme_cubit.dart';
 import '../../../settings/presentation/widgets/theme_glyph.dart';
-import 'home_sidebar_competition.dart';
+import '../cubit/competition_cubit.dart';
 import 'sidebar_section.enum.dart';
 
 class Sidebar extends StatelessWidget {
   const Sidebar({
     super.key,
-    required this.competition,
     required this.current,
     this.onSelectSection,
     required this.child,
   });
 
-  final HomeSidebarCompetition? competition;
   final SidebarSection? current;
   final ValueChanged<SidebarSection>? onSelectSection;
   final Widget child;
@@ -44,7 +43,11 @@ class Sidebar extends StatelessWidget {
   }
 
   Widget _content(BuildContext context) {
-    final isRegistered = context.watch<AuthBloc>().state.canWrite;
+    final session = context.watch<AuthBloc>().state;
+    final competition = context.watch<CompetitionCubit>().state.competition;
+    final isRegistered = session.canWrite;
+    final canManageSettings =
+        isRegistered && competition.isOwnedBySession(session);
 
     return Container(
       width: _width,
@@ -61,7 +64,7 @@ class Sidebar extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _brand(context),
+          _brand(context, competition?.name),
           const SizedBox(height: AppSpacing.lg),
           if (competition != null && isRegistered) ...[
             AdaptiveButton(
@@ -71,7 +74,14 @@ class Sidebar extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.lg),
           ],
-          Expanded(child: _navList(context, isRegistered: isRegistered)),
+          Expanded(
+            child: _navList(
+              context,
+              hasCompetition: competition != null,
+              isRegistered: isRegistered,
+              canManageSettings: canManageSettings,
+            ),
+          ),
           _themeItem(context),
           _actionItem(
             context,
@@ -90,7 +100,7 @@ class Sidebar extends StatelessWidget {
     );
   }
 
-  Widget _brand(BuildContext context) {
+  Widget _brand(BuildContext context, String? competitionName) {
     return AdaptiveTappable(
       onTap: () => _select(context, SidebarSection.competitions),
       borderRadius: AppRadius.card,
@@ -110,15 +120,14 @@ class Sidebar extends StatelessWidget {
                 fontWeight: FontWeight.w800,
               ),
             ),
-            ?_brandCompetitionName(),
+            ?_brandCompetitionName(competitionName),
           ],
         ),
       ),
     );
   }
 
-  Widget? _brandCompetitionName() {
-    final competitionName = competition?.competitionName;
+  Widget? _brandCompetitionName(String? competitionName) {
     if (competitionName == null) return null;
 
     return Padding(
@@ -132,13 +141,22 @@ class Sidebar extends StatelessWidget {
     );
   }
 
-  Widget _navList(BuildContext context, {required bool isRegistered}) {
+  Widget _navList(
+    BuildContext context, {
+    required bool hasCompetition,
+    required bool isRegistered,
+    required bool canManageSettings,
+  }) {
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (competition != null)
-            ..._competitionNavItems(context, isRegistered: isRegistered),
+          if (hasCompetition)
+            ..._competitionNavItems(
+              context,
+              isRegistered: isRegistered,
+              canManageSettings: canManageSettings,
+            ),
           SectionLabel(context.l10n.competitionSettingsSectionUser),
           _navItem(
             context,
@@ -155,6 +173,7 @@ class Sidebar extends StatelessWidget {
   List<Widget> _competitionNavItems(
     BuildContext context, {
     required bool isRegistered,
+    required bool canManageSettings,
   }) {
     return [
       _navItem(
@@ -174,7 +193,7 @@ class Sidebar extends StatelessWidget {
       const SizedBox(height: AppSpacing.lg),
       const HorizontalDivider(),
       SectionLabel(context.l10n.competitionSettingsSectionCompetition),
-      if (competition!.canManageSettings)
+      if (canManageSettings)
         _navItem(
           context,
           glyph: AdaptiveGlyph.settings,

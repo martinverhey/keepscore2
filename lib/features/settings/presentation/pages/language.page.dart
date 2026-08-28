@@ -5,16 +5,13 @@ import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/page_title.dart';
-import '../../../competition/presentation/widgets/home_sidebar_competition.dart';
 import '../../../competition/presentation/widgets/sidebar.dart';
 import '../../../competition/presentation/widgets/sidebar_section.enum.dart';
 import '../../domain/language_preference.enum.dart';
 import '../cubit/language_cubit.dart';
 
 class LanguagePage extends StatelessWidget {
-  const LanguagePage({super.key, this.sidebarCompetition});
-
-  final HomeSidebarCompetition? sidebarCompetition;
+  const LanguagePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +22,6 @@ class LanguagePage extends StatelessWidget {
         setPageTitle(context, context.l10n.settingsLanguageTitle);
 
         return Sidebar(
-          competition: sidebarCompetition,
           current: SidebarSection.language,
           child: AdaptiveScaffold(
             title: context.l10n.settingsLanguageTitle,

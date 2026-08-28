@@ -8,7 +8,6 @@ import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/page_title.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
-import '../../../competition/presentation/widgets/home_sidebar_competition.dart';
 import '../../../competition/presentation/widgets/sidebar.dart';
 import '../../../competition/presentation/widgets/sidebar_section.enum.dart';
 import '../cubit/players_cubit.dart';
@@ -33,11 +32,9 @@ class _PlayersPageState extends State<PlayersPage> {
     final session = context.watch<AuthBloc>().state;
     final competition = context.watch<CompetitionCubit>().state.competition;
     final isOwner = session.canWrite && competition.isOwnedBySession(session);
-    final competitionId = context.read<PlayersCubit>().competitionId;
     setPageTitle(context, context.l10n.playersTitle);
 
     return Sidebar(
-      competition: HomeSidebarCompetition.of(context, competitionId),
       current: SidebarSection.players,
       child: AdaptiveScaffold(
         title: context.l10n.playersTitle,

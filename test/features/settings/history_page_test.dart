@@ -132,10 +132,10 @@ void main() {
         ],
       );
 
-      final competitionDetailCubit = CompetitionCubit(competitions, 'c1')
-        ..load();
-      final historyCubit = HistoryCubit(leaderboard, 'c1');
       final authBloc = AuthBloc(auth);
+      final competitionDetailCubit = CompetitionCubit(competitions, authBloc)
+        ..select('c1');
+      final historyCubit = HistoryCubit(leaderboard, 'c1');
       addTearDown(competitionDetailCubit.close);
       addTearDown(historyCubit.close);
       addTearDown(authBloc.close);

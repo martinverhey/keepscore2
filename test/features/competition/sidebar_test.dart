@@ -6,7 +6,9 @@ import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 import 'package:keepscore2/features/auth/domain/auth_repository.dart';
 import 'package:keepscore2/features/auth/domain/auth_user.model.dart';
 import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
-import 'package:keepscore2/features/competition/presentation/widgets/home_sidebar_competition.dart';
+import 'package:keepscore2/features/competition/domain/competition.model.dart';
+import 'package:keepscore2/features/competition/domain/competition_repository.dart';
+import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/sidebar.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/sidebar_section.enum.dart';
 import 'package:keepscore2/features/settings/presentation/cubit/theme_cubit.dart';
@@ -16,10 +18,26 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
-const _competition = HomeSidebarCompetition(
-  competitionId: 'c1',
-  competitionName: 'Office Table Tennis',
-  canManageSettings: true,
+class MockCompetitionRepository extends Mock implements CompetitionRepository {}
+
+CompetitionOverview _overview() => CompetitionOverview(
+  competition: Competition(
+    id: 'c1',
+    joinCode: 'HDHS39',
+    name: 'Office Table Tennis',
+    ownerId: 'user-1',
+    seasonLength: SeasonLength.monthly,
+    timezone: 'Europe/Amsterdam',
+    startingRating: 1000,
+    kFactor: 32,
+    movEnabled: true,
+    movCap: 2.5,
+    allowDraws: true,
+    createdAt: DateTime.utc(2026, 8, 9),
+  ),
+  playerCount: 5,
+  matchCount: 11,
+  myPlayerId: 'p1',
 );
 
 void main() {
@@ -27,6 +45,7 @@ void main() {
 
   late MockAuthRepository auth;
   late AuthBloc authBloc;
+  late MockCompetitionRepository competitions;
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
@@ -40,6 +59,11 @@ void main() {
     when(() => auth.signOut()).thenAnswer((_) async {});
     authBloc = AuthBloc(auth);
     addTearDown(authBloc.close);
+
+    competitions = MockCompetitionRepository();
+    when(
+      () => competitions.overview('c1'),
+    ).thenAnswer((_) async => _overview());
   });
 
   tearDown(() {
@@ -55,20 +79,32 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
   }
 
-  Widget withProviders(Widget child) => MultiBlocProvider(
-    providers: [
-      BlocProvider<ThemeCubit>(create: (_) => ThemeCubit()),
-      BlocProvider<AuthBloc>.value(value: authBloc),
-    ],
-    child: child,
-  );
+  CompetitionCubit competitionCubit({required bool selected}) {
+    final cubit = CompetitionCubit(competitions, authBloc);
+    addTearDown(cubit.close);
+    if (selected) cubit.select('c1');
+    return cubit;
+  }
 
-  Widget wrap(Widget child) => withProviders(
+  Widget withProviders(Widget child, {bool selected = true}) =>
+      MultiBlocProvider(
+        providers: [
+          BlocProvider<ThemeCubit>(create: (_) => ThemeCubit()),
+          BlocProvider<AuthBloc>.value(value: authBloc),
+          BlocProvider<CompetitionCubit>.value(
+            value: competitionCubit(selected: selected),
+          ),
+        ],
+        child: child,
+      );
+
+  Widget wrap(Widget child, {bool selected = true}) => withProviders(
     MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: child,
     ),
+    selected: selected,
   );
 
   testWidgets(
@@ -81,7 +117,6 @@ void main() {
       await tester.pumpWidget(
         wrap(
           Sidebar(
-            competition: _competition,
             current: SidebarSection.leaderboard,
             onSelectSection: (section) => selected = section,
             child: const Center(child: Text('body content')),
@@ -143,7 +178,6 @@ void main() {
     await tester.pumpWidget(
       wrap(
         Sidebar(
-          competition: _competition,
           current: SidebarSection.leaderboard,
           onSelectSection: (_) {},
           child: const Center(child: Text('body content')),
@@ -165,7 +199,6 @@ void main() {
     await tester.pumpWidget(
       wrap(
         Sidebar(
-          competition: _competition,
           current: SidebarSection.leaderboard,
           onSelectSection: (_) => selections++,
           child: const Center(child: Text('body content')),
@@ -194,11 +227,11 @@ void main() {
       await tester.pumpWidget(
         wrap(
           Sidebar(
-            competition: null,
             current: SidebarSection.competitions,
             onSelectSection: (_) {},
             child: const Center(child: Text('body content')),
           ),
+          selected: false,
         ),
       );
       await tester.pumpAndSettle();
@@ -231,7 +264,6 @@ void main() {
       await tester.pumpWidget(
         wrap(
           Sidebar(
-            competition: _competition,
             current: SidebarSection.competitions,
             onSelectSection: (section) => selected = section,
             child: const Center(child: Text('body content')),
@@ -264,7 +296,6 @@ void main() {
       SidebarSection? received;
 
       Widget sidebarPage(SidebarSection current, String body) => Sidebar(
-        competition: _competition,
         current: current,
         child: AdaptiveScaffold(title: body, body: Text(body)),
       );
@@ -333,7 +364,6 @@ void main() {
             GoRoute(
               path: 'pushed',
               builder: (context, state) => Sidebar(
-                competition: _competition,
                 current: SidebarSection.history,
                 child: const AdaptiveScaffold(
                   title: 'History',
@@ -378,12 +408,14 @@ void main() {
         providers: [
           BlocProvider<ThemeCubit>.value(value: themeCubit),
           BlocProvider<AuthBloc>.value(value: authBloc),
+          BlocProvider<CompetitionCubit>.value(
+            value: competitionCubit(selected: true),
+          ),
         ],
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Sidebar(
-            competition: _competition,
             current: SidebarSection.leaderboard,
             onSelectSection: (_) {},
             child: const Center(child: Text('body content')),

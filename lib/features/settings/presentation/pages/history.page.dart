@@ -10,7 +10,6 @@ import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../competition/domain/competition.model.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
-import '../../../competition/presentation/widgets/home_sidebar_competition.dart';
 import '../../../competition/presentation/widgets/sidebar.dart';
 import '../../../competition/presentation/widgets/sidebar_section.enum.dart';
 import '../../../leaderboard/domain/leaderboard.model.dart';
@@ -44,7 +43,6 @@ class _HistoryPageState extends State<HistoryPage> {
         setPageTitle(context, context.l10n.historyTitle);
 
         return Sidebar(
-          competition: HomeSidebarCompetition.of(context, cubit.competitionId),
           current: SidebarSection.history,
           child: AdaptiveScaffold(
             title: context.l10n.historyTitle,

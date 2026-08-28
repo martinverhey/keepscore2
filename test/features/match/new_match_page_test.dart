@@ -94,8 +94,8 @@ void main() {
         'c1',
       );
       final authBloc = AuthBloc(auth);
-      final competitionDetailCubit = CompetitionCubit(competitions, 'c1')
-        ..load();
+      final competitionDetailCubit = CompetitionCubit(competitions, authBloc)
+        ..select('c1');
       addTearDown(cubit.close);
       addTearDown(authBloc.close);
       addTearDown(competitionDetailCubit.close);

@@ -24,7 +24,6 @@ import '../../../player/domain/player.model.dart';
 import '../../../player/presentation/cubit/players_cubit.dart';
 import '../../domain/competition.model.dart';
 import '../cubit/competition_cubit.dart';
-import '../widgets/home_sidebar_competition.dart';
 import '../widgets/sidebar.dart';
 import '../widgets/sidebar_section.enum.dart';
 
@@ -79,14 +78,14 @@ class _CompetitionContentState extends State<CompetitionContent> {
       case SidebarSection.configuration:
         _openAndReload(Routes.configuration(widget.competitionId));
       case SidebarSection.competitions:
-        _openAndReload(Routes.home, extra: _sidebarCompetition());
+        _openAndReload(Routes.home);
       case SidebarSection.language:
-        _openAndReload(Routes.language, extra: _sidebarCompetition());
+        _openAndReload(Routes.language);
     }
   }
 
-  Future<void> _openAndReload(String route, {Object? extra}) async {
-    final section = await context.push<SidebarSection>(route, extra: extra);
+  Future<void> _openAndReload(String route) async {
+    final section = await context.push<SidebarSection>(route);
     if (!mounted) return;
     if (section != null) _selectSection(section);
     await _refresh();
@@ -104,9 +103,6 @@ class _CompetitionContentState extends State<CompetitionContent> {
     }
     await _refresh();
   }
-
-  HomeSidebarCompetition _sidebarCompetition() =>
-      HomeSidebarCompetition.of(context, widget.competitionId, listen: false);
 
   Future<void> _openSettings() =>
       _openAndReload(Routes.settings(widget.competitionId));
@@ -143,7 +139,6 @@ class _CompetitionContentState extends State<CompetitionContent> {
         );
 
         return Sidebar(
-          competition: HomeSidebarCompetition.of(context, widget.competitionId),
           current: _tab == CompetitionTab.leaderboard
               ? SidebarSection.leaderboard
               : SidebarSection.matches,

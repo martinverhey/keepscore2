@@ -6,6 +6,7 @@ import 'package:keepscore2/features/auth/domain/auth_repository.dart';
 import 'package:keepscore2/features/auth/domain/auth_user.model.dart';
 import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
+import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_list_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/pages/competitions.page.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
@@ -20,6 +21,7 @@ void main() {
   late MockAuthRepository auth;
   late CompetitionListCubit competitionListCubit;
   late AuthBloc authBloc;
+  late CompetitionCubit competitionCubit;
 
   setUp(() {
     competitions = MockCompetitionRepository();
@@ -34,10 +36,12 @@ void main() {
 
     competitionListCubit = CompetitionListCubit(competitions);
     authBloc = AuthBloc(auth);
+    competitionCubit = CompetitionCubit(competitions, authBloc);
   });
 
   tearDown(() {
     competitionListCubit.close();
+    competitionCubit.close();
     authBloc.close();
   });
 
@@ -45,6 +49,7 @@ void main() {
     providers: [
       BlocProvider.value(value: competitionListCubit),
       BlocProvider.value(value: authBloc),
+      BlocProvider.value(value: competitionCubit),
     ],
     child: MaterialApp.router(
       localizationsDelegates: AppLocalizations.localizationsDelegates,

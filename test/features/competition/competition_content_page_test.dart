@@ -118,7 +118,8 @@ Future<GoRouter> _pumpHarness(
           return MultiBlocProvider(
             providers: [
               BlocProvider(
-                create: (_) => CompetitionCubit(competitions, id)..load(),
+                create: (_) =>
+                    CompetitionCubit(competitions, authBloc)..select(id),
               ),
               BlocProvider(create: (_) => PlayersCubit(players, id)),
               BlocProvider(

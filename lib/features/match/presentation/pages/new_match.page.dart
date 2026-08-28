@@ -11,7 +11,6 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/state_views.dart';
-import '../../../competition/presentation/widgets/home_sidebar_competition.dart';
 import '../../../competition/presentation/widgets/sidebar.dart';
 import '../../../competition/presentation/widgets/sidebar_section.enum.dart';
 import '../../../player/domain/player.model.dart';
@@ -65,7 +64,6 @@ class _NewMatchPageState extends State<NewMatchPage> {
     setPageTitle(context, context.l10n.matchNewTitle);
 
     return Sidebar(
-      competition: HomeSidebarCompetition.of(context, cubit.competitionId),
       current: SidebarSection.newMatch,
       child: AdaptiveScaffold(
         title: context.l10n.matchNewTitle,

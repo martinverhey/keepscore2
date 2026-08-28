@@ -51,9 +51,9 @@ void main() {
       when(() => auth.watchUser()).thenAnswer((_) => const Stream.empty());
       when(() => auth.signOut()).thenAnswer((_) async {});
 
-      final competitionDetailCubit = CompetitionCubit(competitions, 'c1')
-        ..load();
       final authBloc = AuthBloc(auth);
+      final competitionDetailCubit = CompetitionCubit(competitions, authBloc)
+        ..select('c1');
       addTearDown(competitionDetailCubit.close);
       addTearDown(authBloc.close);
 
@@ -108,9 +108,9 @@ void main() {
       );
       when(() => auth.watchUser()).thenAnswer((_) => const Stream.empty());
 
-      final competitionDetailCubit = CompetitionCubit(competitions, 'c1')
-        ..load();
       final authBloc = AuthBloc(auth);
+      final competitionDetailCubit = CompetitionCubit(competitions, authBloc)
+        ..select('c1');
       addTearDown(competitionDetailCubit.close);
       addTearDown(authBloc.close);
 

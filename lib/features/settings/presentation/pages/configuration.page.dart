@@ -13,7 +13,6 @@ import '../../../../core/widgets/settings_switch_row.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../competition/domain/competition.model.dart';
-import '../../../competition/presentation/widgets/home_sidebar_competition.dart';
 import '../../../competition/presentation/widgets/sidebar.dart';
 import '../../../competition/presentation/widgets/sidebar_section.enum.dart';
 import '../cubit/configuration_cubit.dart';
@@ -75,7 +74,6 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
     setPageTitle(context, context.l10n.configurationTitle);
 
     return Sidebar(
-      competition: HomeSidebarCompetition.of(context, cubit.competitionId),
       current: SidebarSection.configuration,
       child: AdaptiveScaffold(
         title: context.l10n.configurationTitle,

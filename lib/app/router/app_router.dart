@@ -10,7 +10,6 @@ import '../../features/auth/presentation/cubit/sign_in_cubit.dart';
 import '../../features/auth/presentation/pages/sign_in.page.dart';
 import '../../features/auth/presentation/pages/upgrade_account.page.dart';
 import '../../features/competition/domain/competition_repository.dart';
-import '../../features/competition/presentation/cubit/competition_cubit.dart';
 import '../../features/competition/presentation/cubit/competition_list_cubit.dart';
 import '../../features/competition/presentation/cubit/create_competition_cubit.dart';
 import '../../features/competition/presentation/cubit/join_competition_cubit.dart';
@@ -18,7 +17,7 @@ import '../../features/competition/presentation/pages/competition_content.page.d
 import '../../features/competition/presentation/pages/competitions.page.dart';
 import '../../features/competition/presentation/pages/create_competition.page.dart';
 import '../../features/competition/presentation/pages/join_competition.page.dart';
-import '../../features/competition/presentation/widgets/home_sidebar_competition.dart';
+import '../../features/competition/presentation/widgets/competition_scope.dart';
 import '../../features/leaderboard/presentation/cubit/leaderboard_cubit.dart';
 import '../../features/match/presentation/cubit/match_detail_cubit.dart';
 import '../../features/match/presentation/cubit/match_form_cubit.dart';
@@ -144,12 +143,7 @@ GoRouter createRouter(AuthBloc authBloc) {
           context,
           child: BlocProvider(
             create: (_) => getIt<CompetitionListCubit>(),
-            child: CompetitionsPage(
-              sidebarCompetition: switch (state.extra) {
-                final HomeSidebarCompetition extra => extra,
-                _ => null,
-              },
-            ),
+            child: const CompetitionsPage(),
           ),
         ),
       ),
@@ -169,27 +163,14 @@ GoRouter createRouter(AuthBloc authBloc) {
       ),
       GoRoute(
         path: Routes.language,
-        pageBuilder: (context, state) => adaptivePage(
-          context,
-          child: LanguagePage(
-            sidebarCompetition: switch (state.extra) {
-              final HomeSidebarCompetition extra => extra,
-              _ => null,
-            },
-          ),
-        ),
+        pageBuilder: (context, state) =>
+            adaptivePage(context, child: const LanguagePage()),
       ),
       ShellRoute(
-        builder: (context, state, child) {
-          final id = state.pathParameters['id']!;
-          return KeyedSubtree(
-            key: ValueKey(id),
-            child: BlocProvider(
-              create: (_) => getIt<CompetitionCubit>(param1: id)..load(),
-              child: child,
-            ),
-          );
-        },
+        builder: (context, state, child) => CompetitionScope(
+          competitionId: state.pathParameters['id']!,
+          child: child,
+        ),
         routes: [
           GoRoute(
             path: '/competition/:id',
