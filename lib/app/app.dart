@@ -5,12 +5,14 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/extensions/build_context.extension.dart';
+import '../core/extensions/language_preference.extension.dart';
 import '../core/extensions/theme_preference.extension.dart';
 import '../core/theme/app_theme.dart';
 import '../core/widgets/adaptive/app_platform.dart';
 import '../features/auth/presentation/cubit/auth_bloc.dart';
 import '../features/match/presentation/cubit/game_type_filter_cubit.dart';
 import '../features/settings/domain/theme_preference.enum.dart';
+import '../features/settings/presentation/cubit/language_cubit.dart';
 import '../features/settings/presentation/cubit/theme_cubit.dart';
 import '../l10n/app_localizations.dart';
 import 'dependency_injection/injector.dart';
@@ -26,6 +28,7 @@ class KeepScoreApp extends StatefulWidget {
 class _KeepScoreAppState extends State<KeepScoreApp> {
   late final AuthBloc _authBloc = getIt<AuthBloc>();
   late final ThemeCubit _themeCubit = getIt<ThemeCubit>();
+  late final LanguageCubit _languageCubit = getIt<LanguageCubit>();
   late final GameTypeFilterCubit _gameTypeFilterCubit =
       getIt<GameTypeFilterCubit>();
   late final GoRouter _router = createRouter(_authBloc);
@@ -43,16 +46,27 @@ class _KeepScoreAppState extends State<KeepScoreApp> {
       providers: [
         BlocProvider<AuthBloc>.value(value: _authBloc),
         BlocProvider<ThemeCubit>.value(value: _themeCubit),
+        BlocProvider<LanguageCubit>.value(value: _languageCubit),
         BlocProvider<GameTypeFilterCubit>.value(value: _gameTypeFilterCubit),
       ],
       child: BlocBuilder<ThemeCubit, ThemeState>(
         builder: (context, themeState) =>
-            _buildApp(context, themeState.preference),
+            BlocBuilder<LanguageCubit, LanguageState>(
+              builder: (context, languageState) => _buildApp(
+                context,
+                themeState.preference,
+                languageState.preference.locale,
+              ),
+            ),
       ),
     );
   }
 
-  Widget _buildApp(BuildContext context, ThemePreference preference) {
+  Widget _buildApp(
+    BuildContext context,
+    ThemePreference preference,
+    Locale? locale,
+  ) {
     if (AppPlatform.useCupertino) {
       final brightness =
           preference.brightnessOverride ??
@@ -61,6 +75,7 @@ class _KeepScoreAppState extends State<KeepScoreApp> {
         onGenerateTitle: (context) => context.l10n.appTitle,
         theme: AppTheme.cupertino(brightness),
         routerConfig: _router,
+        locale: locale,
         localizationsDelegates: _localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         debugShowCheckedModeBanner: false,
@@ -77,6 +92,7 @@ class _KeepScoreAppState extends State<KeepScoreApp> {
       darkTheme: AppTheme.material(Brightness.dark),
       themeMode: preference.mode,
       routerConfig: _router,
+      locale: locale,
       localizationsDelegates: _localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       debugShowCheckedModeBanner: false,

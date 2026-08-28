@@ -724,4 +724,16 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get themeOptionDark => 'Donker';
+
+  @override
+  String get settingsLanguageTitle => 'Taal';
+
+  @override
+  String get languageOptionSystem => 'Systeem';
+
+  @override
+  String get languageOptionEnglish => 'English';
+
+  @override
+  String get languageOptionDutch => 'Nederlands';
 }

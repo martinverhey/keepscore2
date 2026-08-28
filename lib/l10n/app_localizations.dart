@@ -1321,6 +1321,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dark'**
   String get themeOptionDark;
+
+  /// No description provided for @settingsLanguageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get settingsLanguageTitle;
+
+  /// No description provided for @languageOptionSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get languageOptionSystem;
+
+  /// No description provided for @languageOptionEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get languageOptionEnglish;
+
+  /// No description provided for @languageOptionDutch.
+  ///
+  /// In en, this message translates to:
+  /// **'Nederlands'**
+  String get languageOptionDutch;
 }
 
 class _AppLocalizationsDelegate

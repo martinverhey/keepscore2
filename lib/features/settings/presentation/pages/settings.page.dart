@@ -111,6 +111,10 @@ class _SettingsPageState extends State<SettingsPage> {
             label: context.l10n.settingsThemeTitle,
             onTap: () => context.push(Routes.theme),
           ),
+          NavRow(
+            label: context.l10n.settingsLanguageTitle,
+            onTap: () => context.push(Routes.language),
+          ),
           const SizedBox(height: AppSpacing.xl),
           AdaptiveButton(
             label: context.l10n.authSignOut,

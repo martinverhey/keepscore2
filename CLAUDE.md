@@ -21,6 +21,12 @@ is the up-to-date source of truth regardless.
 | 7. Leaderboard + seasons + realtime | Done |
 | 8. Polish, Dutch copy pass, app icons | Done |
 
+The `/settings/theme` and `/settings/language` pages are app-wide, competition-independent
+preferences reached from the settings page's System section (and from the wide-web
+sidebar's account section). Both persist to `SharedPreferences` and are read back
+in `main()` before `runApp`; `LanguagePreference.locale` feeds `MaterialApp`/
+`CupertinoApp`'s `locale`, with `system` meaning "no override, follow the device".
+
 `/upgrade` turns a guest into a real account in place: same `SignInCubit`, built
 with `SignInMode.upgrade`, which routes the two email steps to
 `upgradeGuestWithEmail` / `verifyUpgradeCode` (Supabase `updateUser` + an
@@ -309,11 +315,11 @@ code; don't relitigate them.
     `setTeam` while `submit` is in flight) isn't clobbered by a stale copy —
     see `MatchFormCubit._ready`.
 
-    **`ThemeState` is the one deliberate exception, left flat.** It's
-    never anything but a fully-formed, synchronously-available value —
-    `ThemeCubit.load()`/`select()` both `emit` a complete `ThemeState`
-    directly, with no failure path and no "not ready yet" moment worth
-    modeling. There's no `!`/`?? fallback` a sealed split would remove, and
+    **`ThemeState` and `LanguageState` are the deliberate exceptions, left
+    flat.** Neither is ever anything but a fully-formed, synchronously-available
+    value — `ThemeCubit`/`LanguageCubit`'s `load()`/`select()` both `emit` a
+    complete state directly, with no failure path and no "not ready yet" moment
+    worth modeling. There's no `!`/`?? fallback` a sealed split would remove, and
     a sealed hierarchy with exactly one variant isn't the pattern — reach
     for this exception only when a cubit's state genuinely has no phases at
     all, not merely "usually loads fast."
@@ -612,7 +618,7 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   base of that stack, not one of the pages sitting on top of it — reusing the
   shared helper's `pop`-for-leaderboard/matches case there would pop the
   competition itself. The sidebar's own account section (competition
-  settings, theme, sign out) replaced the old gear-icon popover entirely, so
+  settings, theme, language, sign out) replaced the old gear-icon popover entirely, so
   `AdaptiveMenuButton` was deleted rather than left unused. A page pushed
   underneath the sidebar (History, Players, Settings, NewMatch — reached via
   `context.push`) would otherwise still get an auto-implied back button from

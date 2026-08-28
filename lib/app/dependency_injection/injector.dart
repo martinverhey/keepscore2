@@ -30,6 +30,7 @@ import '../../features/profile/presentation/cubit/profile_overview_cubit.dart';
 import '../../features/profile/presentation/cubit/profile_versus_cubit.dart';
 import '../../features/settings/presentation/cubit/configuration_cubit.dart';
 import '../../features/settings/presentation/cubit/history_cubit.dart';
+import '../../features/settings/presentation/cubit/language_cubit.dart';
 import '../../features/settings/presentation/cubit/theme_cubit.dart';
 
 final getIt = GetIt.instance;
@@ -137,5 +138,6 @@ Future<void> configureDependencies() async {
         playerId,
       ),
     )
-    ..registerLazySingleton<ThemeCubit>(() => ThemeCubit());
+    ..registerLazySingleton<ThemeCubit>(() => ThemeCubit())
+    ..registerLazySingleton<LanguageCubit>(() => LanguageCubit());
 }

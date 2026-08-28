@@ -19,6 +19,7 @@ class Sidebar extends StatelessWidget {
     required this.onNewMatch,
     required this.onOpenHome,
     required this.onOpenTheme,
+    required this.onOpenLanguage,
     required this.onSignOut,
     required this.child,
   });
@@ -32,6 +33,7 @@ class Sidebar extends StatelessWidget {
   final VoidCallback onNewMatch;
   final VoidCallback onOpenHome;
   final VoidCallback onOpenTheme;
+  final VoidCallback onOpenLanguage;
   final VoidCallback onSignOut;
   final Widget child;
 
@@ -79,6 +81,11 @@ class Sidebar extends StatelessWidget {
             context,
             label: context.l10n.settingsThemeTitle,
             onTap: onOpenTheme,
+          ),
+          _actionItem(
+            context,
+            label: context.l10n.settingsLanguageTitle,
+            onTap: onOpenLanguage,
           ),
           _actionItem(
             context,

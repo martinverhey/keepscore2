@@ -20,6 +20,7 @@ import '../widgets/competition_section.enum.dart';
 import '../widgets/competition_tile.dart';
 import '../widgets/home_sidebar_competition.dart';
 import '../widgets/open_theme.dart';
+import '../widgets/open_language.dart';
 import '../widgets/select_competition_section.dart';
 import '../widgets/sidebar.dart';
 
@@ -66,6 +67,11 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
             ),
       onOpenHome: () {},
       onOpenTheme: () => openTheme(
+        context,
+        replace: false,
+        sidebarCompetition: sidebarCompetition,
+      ),
+      onOpenLanguage: () => openLanguage(
         context,
         replace: false,
         sidebarCompetition: sidebarCompetition,

@@ -28,6 +28,7 @@ import '../widgets/competition_section.enum.dart';
 import '../widgets/home_sidebar_competition.dart';
 import '../widgets/open_home.dart';
 import '../widgets/open_theme.dart';
+import '../widgets/open_language.dart';
 import '../widgets/sidebar.dart';
 
 enum CompetitionTab { leaderboard, matches }
@@ -121,6 +122,23 @@ class _CompetitionContentState extends State<CompetitionContent> {
     _applySection(section);
   }
 
+  Future<void> _openLanguage({
+    required String? competitionName,
+    required bool canManageSettings,
+  }) async {
+    final section = await openLanguage(
+      context,
+      replace: false,
+      sidebarCompetition: HomeSidebarCompetition(
+        competitionId: widget.competitionId,
+        competitionName: competitionName,
+        canManageSettings: canManageSettings,
+      ),
+    );
+    if (!mounted) return;
+    _applySection(section);
+  }
+
   Future<void> _openHome({
     required String? competitionName,
     required bool canManageSettings,
@@ -181,6 +199,10 @@ class _CompetitionContentState extends State<CompetitionContent> {
             canManageSettings: session.canWrite && isOwner,
           ),
           onOpenTheme: () => _openTheme(
+            competitionName: competition?.name,
+            canManageSettings: session.canWrite && isOwner,
+          ),
+          onOpenLanguage: () => _openLanguage(
             competitionName: competition?.name,
             canManageSettings: session.canWrite && isOwner,
           ),

@@ -295,5 +295,10 @@
   "settingsThemeTitle": "Thema",
   "themeOptionSystem": "Systeem",
   "themeOptionLight": "Licht",
-  "themeOptionDark": "Donker"
+  "themeOptionDark": "Donker",
+
+  "settingsLanguageTitle": "Taal",
+  "languageOptionSystem": "Systeem",
+  "languageOptionEnglish": "English",
+  "languageOptionDutch": "Nederlands"
 }

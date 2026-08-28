@@ -295,5 +295,10 @@
   "settingsThemeTitle": "Theme",
   "themeOptionSystem": "System",
   "themeOptionLight": "Light",
-  "themeOptionDark": "Dark"
+  "themeOptionDark": "Dark",
+
+  "settingsLanguageTitle": "Language",
+  "languageOptionSystem": "System",
+  "languageOptionEnglish": "English",
+  "languageOptionDutch": "Nederlands"
 }

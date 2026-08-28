@@ -10,26 +10,26 @@ import '../../../../core/widgets/page_title.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../competition/presentation/widgets/home_sidebar_competition.dart';
 import '../../../competition/presentation/widgets/open_home.dart';
-import '../../../competition/presentation/widgets/open_language.dart';
+import '../../../competition/presentation/widgets/open_theme.dart';
 import '../../../competition/presentation/widgets/select_competition_section.dart';
 import '../../../competition/presentation/widgets/sidebar.dart';
-import '../../domain/theme_preference.enum.dart';
-import '../cubit/theme_cubit.dart';
+import '../../domain/language_preference.enum.dart';
+import '../cubit/language_cubit.dart';
 
-class ThemePage extends StatelessWidget {
-  const ThemePage({super.key, this.sidebarCompetition});
+class LanguagePage extends StatelessWidget {
+  const LanguagePage({super.key, this.sidebarCompetition});
 
   final HomeSidebarCompetition? sidebarCompetition;
 
   @override
   Widget build(BuildContext context) {
-    final cubit = context.read<ThemeCubit>();
+    final cubit = context.read<LanguageCubit>();
     final session = context.watch<AuthBloc>().state;
     final sidebarCompetition = this.sidebarCompetition;
 
-    return BlocBuilder<ThemeCubit, ThemeState>(
+    return BlocBuilder<LanguageCubit, LanguageState>(
       builder: (context, state) {
-        setPageTitle(context, context.l10n.settingsThemeTitle);
+        setPageTitle(context, context.l10n.settingsLanguageTitle);
 
         return Sidebar(
           competitionName: sidebarCompetition?.competitionName,
@@ -58,25 +58,26 @@ class ThemePage extends StatelessWidget {
                   competitionName: sidebarCompetition.competitionName,
                   canManageSettings: sidebarCompetition.canManageSettings,
                 ),
-          onOpenTheme: () {},
-          onOpenLanguage: () => openLanguage(
+          onOpenTheme: () => openTheme(
             context,
             replace: true,
             sidebarCompetition: sidebarCompetition,
           ),
+          onOpenLanguage: () {},
           onSignOut: () =>
               context.read<AuthBloc>().add(const AuthSignOutRequested()),
           child: AdaptiveScaffold(
-            title: context.l10n.settingsThemeTitle,
+            title: context.l10n.settingsLanguageTitle,
             body: Padding(
               padding: const EdgeInsets.all(AppSpacing.lg),
-              child: AdaptiveSegmented<ThemePreference>(
+              child: AdaptiveSegmented<LanguagePreference>(
                 value: state.preference,
                 onChanged: cubit.select,
                 segments: {
-                  ThemePreference.system: context.l10n.themeOptionSystem,
-                  ThemePreference.light: context.l10n.themeOptionLight,
-                  ThemePreference.dark: context.l10n.themeOptionDark,
+                  LanguagePreference.system: context.l10n.languageOptionSystem,
+                  LanguagePreference.english:
+                      context.l10n.languageOptionEnglish,
+                  LanguagePreference.dutch: context.l10n.languageOptionDutch,
                 },
               ),
             ),

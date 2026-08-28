@@ -32,6 +32,7 @@ import '../../features/settings/presentation/cubit/history_cubit.dart';
 import '../../features/settings/presentation/pages/settings.page.dart';
 import '../../features/settings/presentation/pages/configuration.page.dart';
 import '../../features/settings/presentation/pages/history.page.dart';
+import '../../features/settings/presentation/pages/language.page.dart';
 import '../../features/settings/presentation/pages/theme.page.dart';
 import '../dependency_injection/injector.dart';
 import '../splash.page.dart';
@@ -45,6 +46,7 @@ abstract final class Routes {
   static const createCompetition = '/create';
   static const joinCompetition = '/join';
   static const theme = '/settings/theme';
+  static const language = '/settings/language';
 
   static String competition(String id) => '/competition/$id';
   static String settings(String id) => '/competition/$id/settings';
@@ -172,6 +174,18 @@ GoRouter createRouter(AuthBloc authBloc) {
         pageBuilder: (context, state) => adaptivePage(
           context,
           child: ThemePage(
+            sidebarCompetition: switch (state.extra) {
+              final HomeSidebarCompetition extra => extra,
+              _ => null,
+            },
+          ),
+        ),
+      ),
+      GoRoute(
+        path: Routes.language,
+        pageBuilder: (context, state) => adaptivePage(
+          context,
+          child: LanguagePage(
             sidebarCompetition: switch (state.extra) {
               final HomeSidebarCompetition extra => extra,
               _ => null,
