@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../theme/app_tokens.dart';
 import '../scroll_dismissible_sheet.dart';
+import 'adaptive_colors.dart';
 import 'app_platform.dart';
 
 Future<bool> showAdaptiveConfirm(
@@ -105,7 +106,7 @@ Future<T?> showAdaptiveSheet<T>(
     builder: (sheetContext) => ScrollDismissibleSheet(
       child: Container(
         decoration: BoxDecoration(
-          color: Theme.of(sheetContext).colorScheme.surfaceContainerLow,
+          color: AdaptiveColors.modalSurface(sheetContext),
           borderRadius: AppRadius.sheet,
         ),
         child: builder(sheetContext),

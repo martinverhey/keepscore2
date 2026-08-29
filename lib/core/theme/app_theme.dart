@@ -19,6 +19,9 @@ abstract final class AppTheme {
       brightness: brightness,
       dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
     );
+    final modalSurface = brightness == Brightness.dark
+        ? AppColors.modalSurfaceOnDark
+        : AppColors.modalSurface;
     return ThemeData(
       colorScheme: scheme,
       useMaterial3: true,
@@ -38,7 +41,7 @@ abstract final class AppTheme {
         margin: EdgeInsets.zero,
       ),
       dialogTheme: DialogThemeData(
-        backgroundColor: scheme.surfaceContainerLow,
+        backgroundColor: modalSurface,
         surfaceTintColor: Colors.transparent,
       ),
       inputDecorationTheme: const InputDecorationTheme(

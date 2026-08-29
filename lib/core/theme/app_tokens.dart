@@ -53,6 +53,9 @@ abstract final class AppColors {
   static const Color fireCore = Color(0xFFFF6D00);
   static const Color iceCore = Color(0xFF29B6F6);
 
+  static const Color modalSurface = Color(0xFFFAFAFA);
+  static const Color modalSurfaceOnDark = Color(0xFF1F2023);
+
   static const Color white = Color(0xFFFFFFFF);
   static const Color black = Color(0xFF000000);
   static const Color transparent = Color(0x00000000);
