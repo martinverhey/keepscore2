@@ -538,7 +538,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get playersTitle => 'Spelers beheren';
 
   @override
-  String get playersAddDummy => 'Dummy toevoegen';
+  String get playersAddDummy => 'Speler toevoegen';
 
   @override
   String get playersDisplayNameLabel => 'Naam';
@@ -553,17 +553,17 @@ class AppLocalizationsNl extends AppLocalizations {
   String get playersOwner => 'Beheerder';
 
   @override
-  String get playersDummy => 'Dummy';
+  String get playersDummy => 'Niet geclaimd';
 
   @override
   String get playersEdit => 'Bewerken';
 
   @override
-  String get playersAddTitle => 'Dummy toevoegen';
+  String get playersAddTitle => 'Speler toevoegen';
 
   @override
   String get playersAddSubtitle =>
-      'Maak zoveel dummies aan als je wilt. Je kunt ze gebruiken om wedstrijden vast te leggen. Of ze dienen als plaatshouder voor spelers die later meedoen. Een andere speler kan een dummy claimen nadat die zich bij je competitie heeft aangesloten.';
+      'Maak zoveel spelers aan als je wilt. Je kunt ze gebruiken om wedstrijden vast te leggen. Of ze dienen als plaatshouder voor spelers die later meedoen. Een andere speler kan een speler claimen nadat die zich bij je competitie heeft aangesloten.';
 
   @override
   String get playersNameTooShort => 'Vul een naam van minstens 2 tekens in.';

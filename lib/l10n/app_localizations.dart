@@ -1025,7 +1025,7 @@ abstract class AppLocalizations {
   /// No description provided for @playersAddDummy.
   ///
   /// In en, this message translates to:
-  /// **'Add a dummy'**
+  /// **'Add a player'**
   String get playersAddDummy;
 
   /// No description provided for @playersDisplayNameLabel.
@@ -1055,7 +1055,7 @@ abstract class AppLocalizations {
   /// No description provided for @playersDummy.
   ///
   /// In en, this message translates to:
-  /// **'Dummy'**
+  /// **'Unclaimed'**
   String get playersDummy;
 
   /// No description provided for @playersEdit.
@@ -1067,13 +1067,13 @@ abstract class AppLocalizations {
   /// No description provided for @playersAddTitle.
   ///
   /// In en, this message translates to:
-  /// **'Add a dummy'**
+  /// **'Add a player'**
   String get playersAddTitle;
 
   /// No description provided for @playersAddSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Create as many dummies as you want. You can use them to create matches. Or they can be used as placeholders for players who might join later. Another player can claim a dummy after joining your competition.'**
+  /// **'Create as many players as you want. You can use them to create matches. Or they can be used as placeholders for players who might join later. Another player can claim a player after joining your competition.'**
   String get playersAddSubtitle;
 
   /// No description provided for @playersNameTooShort.

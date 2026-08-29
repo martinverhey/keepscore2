@@ -536,7 +536,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playersTitle => 'Manage Players';
 
   @override
-  String get playersAddDummy => 'Add a dummy';
+  String get playersAddDummy => 'Add a player';
 
   @override
   String get playersDisplayNameLabel => 'Name';
@@ -551,17 +551,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playersOwner => 'Owner';
 
   @override
-  String get playersDummy => 'Dummy';
+  String get playersDummy => 'Unclaimed';
 
   @override
   String get playersEdit => 'Edit';
 
   @override
-  String get playersAddTitle => 'Add a dummy';
+  String get playersAddTitle => 'Add a player';
 
   @override
   String get playersAddSubtitle =>
-      'Create as many dummies as you want. You can use them to create matches. Or they can be used as placeholders for players who might join later. Another player can claim a dummy after joining your competition.';
+      'Create as many players as you want. You can use them to create matches. Or they can be used as placeholders for players who might join later. Another player can claim a player after joining your competition.';
 
   @override
   String get playersNameTooShort => 'Enter a name of at least 2 characters.';
