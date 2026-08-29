@@ -215,6 +215,11 @@
   "matchEditScoreHelp": "The season is recalculated from this match onwards.",
   "matchDraw": "Draw",
   "matchWinChanceTitle": "Win chance",
+  "matchAddedBy": "{name} on {date}",
+  "@matchAddedBy": {
+    "placeholders": { "name": { "type": "String" }, "date": { "type": "String" } }
+  },
+  "matchAddedByUnknown": "Someone",
   "matchLoadMore": "Load more",
 
   "playersTitle": "Manage Players",

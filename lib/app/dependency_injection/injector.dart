@@ -109,6 +109,7 @@ Future<void> configureDependencies() async {
       (matchId, competitionId) => MatchDetailCubit(
         getIt<MatchRepository>(),
         getIt<CompetitionRepository>(),
+        getIt<PlayerRepository>(),
         matchId,
         competitionId,
       ),

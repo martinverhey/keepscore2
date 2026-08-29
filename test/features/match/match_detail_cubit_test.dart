@@ -6,11 +6,15 @@ import 'package:keepscore2/features/competition/domain/competition_repository.da
 import 'package:keepscore2/features/match/domain/match_entry.model.dart';
 import 'package:keepscore2/features/match/domain/match_repository.dart';
 import 'package:keepscore2/features/match/presentation/cubit/match_detail_cubit.dart';
+import 'package:keepscore2/features/player/domain/player.model.dart';
+import 'package:keepscore2/features/player/domain/player_repository.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockMatchRepository extends Mock implements MatchRepository {}
 
 class MockCompetitionRepository extends Mock implements CompetitionRepository {}
+
+class MockPlayerRepository extends Mock implements PlayerRepository {}
 
 MatchEntry _match({int scoreA = 11, int scoreB = 7}) => MatchEntry(
   id: 'm1',
@@ -59,19 +63,40 @@ CompetitionOverview _overview() => CompetitionOverview(
   matchCount: 1,
 );
 
+List<Player> _players() => const [
+  Player(
+    id: 'p1',
+    competitionId: 'c1',
+    displayName: 'Ada',
+    isActive: true,
+    userId: 'u2',
+  ),
+  Player(
+    id: 'p2',
+    competitionId: 'c1',
+    displayName: 'Grace',
+    isActive: true,
+  ),
+];
+
 void main() {
   late MockMatchRepository matches;
   late MockCompetitionRepository competitions;
+  late MockPlayerRepository players;
 
   MatchDetailCubit build() =>
-      MatchDetailCubit(matches, competitions, 'm1', 'c1');
+      MatchDetailCubit(matches, competitions, players, 'm1', 'c1');
 
   setUp(() {
     matches = MockMatchRepository();
     competitions = MockCompetitionRepository();
+    players = MockPlayerRepository();
     when(
       () => competitions.overview('c1'),
     ).thenAnswer((_) async => _overview());
+    when(
+      () => players.currentPlayers('c1'),
+    ).thenAnswer((_) async => _players());
   });
 
   blocTest<MatchDetailCubit, MatchDetailState>(
@@ -83,6 +108,7 @@ void main() {
     verify: (cubit) {
       final state = cubit.state as MatchDetailReady;
       expect(state.match.teamAScore, 11);
+      expect(state.createdByName, 'Ada');
       expect(state.isManageableBy('u2'), isTrue);
       expect(state.isManageableBy('u1'), isTrue);
       expect(state.isManageableBy('u3'), isFalse);

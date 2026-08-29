@@ -533,6 +533,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get matchWinChanceTitle => 'Win chance';
 
   @override
+  String matchAddedBy(String name, String date) {
+    return '$name on $date';
+  }
+
+  @override
+  String get matchAddedByUnknown => 'Someone';
+
+  @override
   String get matchLoadMore => 'Load more';
 
   @override

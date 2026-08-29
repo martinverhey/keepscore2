@@ -51,7 +51,8 @@ class MatchDetailSheet extends StatelessWidget {
         return Sheet(
           title: context.l10n.matchDetailTitle,
           subtitle: switch (state) {
-            MatchDetailReady(:final match) => _playedAtLabel(context, match),
+            MatchDetailReady(:final match) when match.isDraw =>
+              context.l10n.matchDraw,
             _ => null,
           },
           content: _content(context, state),
@@ -94,6 +95,8 @@ class MatchDetailSheet extends StatelessWidget {
         _teamAreas(context, state.match),
         const SizedBox(height: AppSpacing.md),
         _winChanceCard(context, state.match),
+        const SizedBox(height: AppSpacing.md),
+        _addedByText(context, state),
         if (state.actionFailure != null) _actionFailureText(context, state),
       ],
     );
@@ -119,46 +122,50 @@ class MatchDetailSheet extends StatelessWidget {
   }
 
   Widget _winChanceCard(BuildContext context, MatchEntry match) {
-    return TitledCard(
-      title: context.l10n.matchWinChanceTitle,
-      child: _sides(
-        teamA: _winChanceColumn(context, match, MatchTeam.a),
-        teamB: _winChanceColumn(context, match, MatchTeam.b),
-      ),
-    );
+    return TitledCard(child: _winChanceThirds(context, match));
   }
 
-  Widget _winChanceColumn(
-    BuildContext context,
-    MatchEntry match,
-    MatchTeam team,
-  ) {
-    return Column(
-      crossAxisAlignment: team == MatchTeam.a
-          ? CrossAxisAlignment.start
-          : CrossAxisAlignment.end,
-      mainAxisSize: MainAxisSize.min,
+  Widget _winChanceThirds(BuildContext context, MatchEntry match) {
+    return Row(
       children: [
-        _teamLabel(context, team),
-        const SizedBox(height: AppSpacing.xs),
-        Text(
-          _percentLabel(context, _winChanceOf(match, team)),
-          style: AppTypography.headlineMedium.copyWith(
-            fontFeatures: AppTypography.tabularFigures,
-            color: _teamColor(context, team),
-          ),
-        ),
+        Expanded(child: _winChanceValue(context, match, MatchTeam.a)),
+        Expanded(child: _winChanceTitle(context)),
+        Expanded(child: _winChanceValue(context, match, MatchTeam.b)),
       ],
     );
   }
 
-  Widget _teamLabel(BuildContext context, MatchTeam team) {
+  Widget _winChanceValue(
+    BuildContext context,
+    MatchEntry match,
+    MatchTeam team,
+  ) {
     return Text(
-      team == MatchTeam.a ? context.l10n.matchTeamA : context.l10n.matchTeamB,
-      textAlign: team == MatchTeam.a ? TextAlign.start : TextAlign.end,
-      style: AppTypography.labelLarge.copyWith(
+      _percentLabel(context, _winChanceOf(match, team)),
+      textAlign: TextAlign.center,
+      style: AppTypography.headlineMedium.copyWith(
+        fontFeatures: AppTypography.tabularFigures,
         color: _teamColor(context, team),
       ),
+    );
+  }
+
+  Widget _winChanceTitle(BuildContext context) {
+    return Text(
+      context.l10n.matchWinChanceTitle,
+      textAlign: TextAlign.center,
+      style: AppTypography.titleSmall,
+    );
+  }
+
+  Widget _addedByText(BuildContext context, MatchDetailReady state) {
+    return Text(
+      context.l10n.matchAddedBy(
+        state.createdByName ?? context.l10n.matchAddedByUnknown,
+        _playedAtLabel(context, state.match),
+      ),
+      textAlign: TextAlign.center,
+      style: AppTypography.caption,
     );
   }
 
@@ -244,12 +251,8 @@ MatchDetailReady? _manageableBy(
   _ => null,
 };
 
-String _playedAtLabel(BuildContext context, MatchEntry match) {
-  final playedAt = DateFormat.yMMMd(
-    context.languageTag,
-  ).add_Hm().format(match.playedAt);
-  return match.isDraw ? '$playedAt · ${context.l10n.matchDraw}' : playedAt;
-}
+String _playedAtLabel(BuildContext context, MatchEntry match) =>
+    DateFormat.yMMMd(context.languageTag).add_Hm().format(match.playedAt);
 
 List<TeamAreaMember> _members(MatchEntry match, MatchTeam team) => match
     .players(team)

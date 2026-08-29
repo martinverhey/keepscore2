@@ -1016,6 +1016,18 @@ abstract class AppLocalizations {
   /// **'Win chance'**
   String get matchWinChanceTitle;
 
+  /// No description provided for @matchAddedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} on {date}'**
+  String matchAddedBy(String name, String date);
+
+  /// No description provided for @matchAddedByUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Someone'**
+  String get matchAddedByUnknown;
+
   /// No description provided for @matchLoadMore.
   ///
   /// In en, this message translates to:

@@ -2,6 +2,8 @@ import 'package:bloc/bloc.dart';
 
 import '../../../../core/error/failure.dart';
 import '../../../competition/domain/competition_repository.dart';
+import '../../../player/domain/player.model.dart';
+import '../../../player/domain/player_repository.dart';
 import '../../domain/match_repository.dart';
 import 'match_detail_state.dart';
 
@@ -11,12 +13,14 @@ class MatchDetailCubit extends Cubit<MatchDetailState> {
   MatchDetailCubit(
     this._matches,
     this._competitions,
+    this._players,
     this.matchId,
     this.competitionId,
   ) : super(const MatchDetailLoading());
 
   final MatchRepository _matches;
   final CompetitionRepository _competitions;
+  final PlayerRepository _players;
   final String matchId;
   final String competitionId;
 
@@ -30,9 +34,11 @@ class MatchDetailCubit extends Cubit<MatchDetailState> {
     try {
       final matchFuture = _matches.byId(matchId);
       final overviewFuture = _competitions.overview(competitionId);
+      final playersFuture = _players.currentPlayers(competitionId);
 
       final match = await matchFuture;
       final overview = await overviewFuture;
+      final players = await playersFuture;
       if (isClosed) return;
 
       emit(
@@ -41,6 +47,7 @@ class MatchDetailCubit extends Cubit<MatchDetailState> {
             : MatchDetailReady(
                 match: match,
                 competition: overview?.competition,
+                createdByName: _displayNameOf(players, match.createdBy),
               ),
       );
     } on Failure catch (failure) {
@@ -94,4 +101,12 @@ class MatchDetailCubit extends Cubit<MatchDetailState> {
       return false;
     }
   }
+}
+
+String? _displayNameOf(List<Player> players, String? userId) {
+  if (userId == null) return null;
+  for (final player in players) {
+    if (player.userId == userId) return player.displayName;
+  }
+  return null;
 }

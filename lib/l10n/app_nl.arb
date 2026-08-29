@@ -215,6 +215,11 @@
   "matchEditScoreHelp": "Het seizoen wordt vanaf deze wedstrijd opnieuw berekend.",
   "matchDraw": "Gelijkspel",
   "matchWinChanceTitle": "Winkans",
+  "matchAddedBy": "{name} op {date}",
+  "@matchAddedBy": {
+    "placeholders": { "name": { "type": "String" }, "date": { "type": "String" } }
+  },
+  "matchAddedByUnknown": "Iemand",
   "matchLoadMore": "Meer laden",
 
   "playersTitle": "Spelers beheren",

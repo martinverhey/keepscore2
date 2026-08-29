@@ -535,6 +535,14 @@ class AppLocalizationsNl extends AppLocalizations {
   String get matchWinChanceTitle => 'Winkans';
 
   @override
+  String matchAddedBy(String name, String date) {
+    return '$name op $date';
+  }
+
+  @override
+  String get matchAddedByUnknown => 'Iemand';
+
+  @override
   String get matchLoadMore => 'Meer laden';
 
   @override

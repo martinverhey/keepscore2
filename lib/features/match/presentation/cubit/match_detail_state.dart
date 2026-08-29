@@ -35,12 +35,14 @@ class MatchDetailReady extends MatchDetailState {
   const MatchDetailReady({
     required this.match,
     this.competition,
+    this.createdByName,
     this.busy = false,
     this.actionFailure,
   });
 
   final MatchEntry match;
   final Competition? competition;
+  final String? createdByName;
   final bool busy;
   final Failure? actionFailure;
 
@@ -53,6 +55,7 @@ class MatchDetailReady extends MatchDetailState {
   MatchDetailReady copyWith({
     MatchEntry? match,
     Competition? competition,
+    String? createdByName,
     bool? busy,
     Failure? actionFailure,
     bool clearActionFailure = false,
@@ -60,6 +63,7 @@ class MatchDetailReady extends MatchDetailState {
     return MatchDetailReady(
       match: match ?? this.match,
       competition: competition ?? this.competition,
+      createdByName: createdByName ?? this.createdByName,
       busy: busy ?? this.busy,
       actionFailure: clearActionFailure
           ? null
@@ -68,5 +72,11 @@ class MatchDetailReady extends MatchDetailState {
   }
 
   @override
-  List<Object?> get props => [match, competition, busy, actionFailure];
+  List<Object?> get props => [
+    match,
+    competition,
+    createdByName,
+    busy,
+    actionFailure,
+  ];
 }

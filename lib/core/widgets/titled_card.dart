@@ -3,9 +3,9 @@ import 'package:flutter/widgets.dart';
 import '../theme/app_tokens.dart';
 
 class TitledCard extends StatelessWidget {
-  const TitledCard({super.key, required this.title, required this.child});
+  const TitledCard({super.key, this.title, required this.child});
 
-  final String title;
+  final String? title;
   final Widget child;
 
   @override
@@ -20,8 +20,14 @@ class TitledCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(title, style: AppTypography.titleSmall),
-          const SizedBox(height: AppSpacing.md),
+          if (title case final title?) ...[
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: AppTypography.titleSmall,
+            ),
+            const SizedBox(height: AppSpacing.md),
+          ],
           child,
         ],
       ),
