@@ -109,6 +109,11 @@ abstract final class AppTypography {
     fontSize: titleLargeSize,
     fontWeight: FontWeight.w700,
   );
+  static const TextStyle sheetTitle = TextStyle(
+    fontFamily: brandFontFamily,
+    fontSize: headlineLargeSize,
+    fontWeight: FontWeight.w400,
+  );
   static const TextStyle titleMedium = TextStyle(
     fontSize: titleMediumSize,
     fontWeight: FontWeight.w700,

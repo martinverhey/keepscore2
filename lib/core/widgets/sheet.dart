@@ -8,32 +8,24 @@ import 'scroll_dismiss_scope.dart';
 class Sheet extends StatelessWidget {
   const Sheet({
     super.key,
+    this.header,
     this.title,
     this.titleColor,
     this.subtitle,
-    this.subtitleWidget,
-    this.avatar,
-    this.headerTrailing,
     required this.content,
     this.primaryButton,
     this.secondaryButton,
   });
 
+  final Widget? header;
   final String? title;
   final Color? titleColor;
   final String? subtitle;
-  final Widget? subtitleWidget;
-  final Widget? avatar;
-  final Widget? headerTrailing;
   final Widget content;
   final AdaptiveButton? primaryButton;
   final AdaptiveButton? secondaryButton;
 
-  bool get _hasHeader =>
-      title != null ||
-      subtitle != null ||
-      subtitleWidget != null ||
-      avatar != null;
+  bool get _hasHeader => header != null || title != null || subtitle != null;
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +42,7 @@ class Sheet extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               if (_hasHeader) ...[
-                _header(context),
+                _header(),
                 const SizedBox(height: AppSpacing.lg),
               ],
               Flexible(
@@ -74,41 +66,17 @@ class Sheet extends StatelessWidget {
     );
   }
 
-  Widget _header(BuildContext context) {
-    if (avatar == null) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ?_titleWidget(),
-          if (_resolvedSubtitle() case final subtitle?) ...[
-            const SizedBox(height: AppSpacing.xs),
-            subtitle,
-          ],
-        ],
-      );
-    }
+  Widget _header() {
+    if (header case final header?) return header;
 
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        avatar!,
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ?_titleWidget(),
-              if (_resolvedSubtitle() case final subtitle?) ...[
-                const SizedBox(height: 2),
-                subtitle,
-              ],
-            ],
-          ),
-        ),
-        if (headerTrailing != null) ...[
-          const SizedBox(width: AppSpacing.md),
-          headerTrailing!,
+        ?_titleWidget(),
+        if (subtitle case final subtitle?) ...[
+          const SizedBox(height: AppSpacing.xs),
+          HelpText(subtitle),
         ],
       ],
     );
@@ -118,15 +86,8 @@ class Sheet extends StatelessWidget {
     if (title == null) return null;
     return Text(
       title!,
-      style: AppTypography.titleLarge.copyWith(
-        fontFamily: AppTypography.brandFontFamily,
-        fontWeight: FontWeight.w400,
-        color: titleColor,
-      ),
+      style: AppTypography.sheetTitle.copyWith(color: titleColor),
       overflow: TextOverflow.ellipsis,
     );
   }
-
-  Widget? _resolvedSubtitle() =>
-      subtitleWidget ?? (subtitle == null ? null : HelpText(subtitle!));
 }

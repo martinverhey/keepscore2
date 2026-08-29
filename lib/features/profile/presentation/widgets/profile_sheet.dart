@@ -84,11 +84,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
     return BlocBuilder<ProfileOverviewCubit, ProfileOverviewState>(
       builder: (context, state) {
         return Sheet(
-          title: widget.displayName,
-          avatar: InitialsCircle(displayName: widget.displayName, size: 48),
-          subtitleWidget: state is ProfileOverviewReady
-              ? _medalSummary(state)
-              : null,
+          header: _header(state),
           content: switch (state) {
             ProfileOverviewLoading() => const Padding(
               padding: EdgeInsets.all(AppSpacing.xl),
@@ -104,6 +100,41 @@ class _ProfileSheetState extends State<ProfileSheet> {
         );
       },
     );
+  }
+
+  Widget _header(ProfileOverviewState state) {
+    return Row(
+      children: [
+        InitialsCircle(displayName: widget.displayName, size: 48),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                widget.displayName,
+                style: AppTypography.titleSmall,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (_medalSummary(state) case final medals?) ...[
+                const SizedBox(height: 2),
+                medals,
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget? _medalSummary(ProfileOverviewState state) {
+    if (state is! ProfileOverviewReady) return null;
+    final tally = state.medals;
+    if (tally == null || !tally.hasAny) return null;
+
+    return _medalRow(tally);
   }
 
   Widget _ready(BuildContext context, ProfileOverviewReady state) {
@@ -218,13 +249,6 @@ class _ProfileSheetState extends State<ProfileSheet> {
         ],
       ],
     );
-  }
-
-  Widget? _medalSummary(ProfileOverviewReady state) {
-    final tally = state.medals;
-    if (tally == null || !tally.hasAny) return null;
-
-    return _medalRow(tally);
   }
 
   Widget _medalRow(Medals medals) {
