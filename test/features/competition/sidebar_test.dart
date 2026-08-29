@@ -141,8 +141,9 @@ void main() {
       expect(find.text(l10n.historyTitle), findsOneWidget);
       expect(find.text(l10n.playersManageTitle), findsOneWidget);
       expect(find.text(l10n.competitionSettingsSectionUser), findsOneWidget);
+      expect(find.text(l10n.matchNew), findsOneWidget);
       expect(find.text(l10n.competitionsTitle), findsOneWidget);
-      expect(find.text(l10n.settingsThemeTitle), findsOneWidget);
+      expect(find.text(l10n.settingsDarkModeTitle), findsOneWidget);
       expect(find.text(l10n.settingsLanguageTitle), findsOneWidget);
       expect(find.text(l10n.authSignOut), findsOneWidget);
       expect(find.text('body content'), findsOneWidget);
@@ -155,9 +156,6 @@ void main() {
 
       await tester.tap(find.text(l10n.configurationTitle));
       expect(selected, SidebarSection.configuration);
-
-      await tester.tap(find.text(l10n.matchNew));
-      expect(selected, SidebarSection.newMatch);
 
       await tester.tap(find.text(l10n.competitionsTitle));
       expect(selected, SidebarSection.competitions);
@@ -503,7 +501,7 @@ void main() {
     final l10n = AppLocalizations.of(tester.element(find.text('body content')));
 
     final before = themeCubit.state.preference;
-    await tester.tap(find.text(l10n.settingsThemeTitle));
+    await tester.tap(find.text(l10n.settingsDarkModeTitle));
     await tester.pumpAndSettle();
 
     expect(themeCubit.state.preference, isNot(before));

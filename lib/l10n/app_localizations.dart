@@ -1298,11 +1298,11 @@ abstract class AppLocalizations {
   /// **'No past seasons yet.'**
   String get profileHistoryEmpty;
 
-  /// No description provided for @settingsThemeTitle.
+  /// No description provided for @settingsDarkModeTitle.
   ///
   /// In en, this message translates to:
-  /// **'Theme'**
-  String get settingsThemeTitle;
+  /// **'Dark mode'**
+  String get settingsDarkModeTitle;
 
   /// No description provided for @themeOptionLight.
   ///

@@ -28,7 +28,7 @@ persisted to `SharedPreferences` and read back in `main()` before `runApp`.
 real page reached from the settings page's System section (and from the wide-web
 sidebar's account section).
 
-**Theme is deliberately *not* a page** — it's a sun/moon toggle rendered inline
+**Theme is deliberately *not* a page** — it's a toggle rendered inline
 in both of those places (settings page System section, sidebar account section),
 so `ThemePreference` is `{light, dark}` with no `system` value and there is no
 `Routes.theme`. Losing `system` means there is nothing left for the device to
@@ -37,10 +37,11 @@ seed for the very first launch: `ThemeCubit`'s initial state and its `load()`
 fallback both come from `WidgetsBinding.instance.platformDispatcher.platformBrightness`
 (seeding the initial state too, not just `load()`, is what stops a dark-mode
 device flashing light for one frame before the store answers). After that first
-tap the stored value wins forever. Both surfaces render the same
-`ThemeGlyph` (`features/settings/presentation/widgets/theme_glyph.dart`) showing
-the **current** theme — sun while light, moon while dark — with the whole row as
-the tap target calling `ThemeCubit.toggle()`; neither call site passes a
+tap the stored value wins forever. Both surfaces render an `AdaptiveSwitch`
+(`core/widgets/adaptive/adaptive_switch.dart`) — on for dark, off for light —
+with both the switch's own `onChanged` and the whole row's `onTap` calling
+`ThemeCubit.toggle()`, the same double-wired pattern Flutter's own
+`SwitchListTile` uses; neither call site passes a
 callback down, which is why `Sidebar` reads `ThemeCubit` from context itself
 rather than taking an `onToggleTheme` prop (every one of its call sites would
 have passed the identical closure — the same reasoning that later moved

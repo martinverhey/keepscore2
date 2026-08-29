@@ -714,7 +714,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get profileHistoryEmpty => 'Nog geen eerdere seizoenen.';
 
   @override
-  String get settingsThemeTitle => 'Thema';
+  String get settingsDarkModeTitle => 'Donkere modus';
 
   @override
   String get themeOptionLight => 'Licht';

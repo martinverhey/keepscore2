@@ -78,7 +78,7 @@ void main() {
       );
 
       expect(find.text(l10n.competitionSettingsSectionSystem), findsOneWidget);
-      expect(find.text(l10n.settingsThemeTitle), findsOneWidget);
+      expect(find.text(l10n.settingsDarkModeTitle), findsOneWidget);
       expect(find.text(l10n.settingsLanguageTitle), findsOneWidget);
 
       final signOutButton = find.text(l10n.authSignOut);

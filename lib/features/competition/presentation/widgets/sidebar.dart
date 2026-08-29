@@ -8,8 +8,8 @@ import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/horizontal_divider.dart';
 import '../../../../core/widgets/section_label.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
+import '../../../settings/domain/theme_preference.enum.dart';
 import '../../../settings/presentation/cubit/theme_cubit.dart';
-import '../../../settings/presentation/widgets/theme_glyph.dart';
 import '../cubit/competition_cubit.dart';
 import 'sidebar_section.enum.dart';
 
@@ -222,9 +222,12 @@ class Sidebar extends StatelessWidget {
     return BlocBuilder<ThemeCubit, ThemeState>(
       builder: (context, state) => _actionItem(
         context,
-        label: context.l10n.settingsThemeTitle,
+        label: context.l10n.settingsDarkModeTitle,
         onTap: context.read<ThemeCubit>().toggle,
-        trailing: ThemeGlyph(preference: state.preference, size: 18),
+        trailing: AdaptiveSwitch(
+          value: state.preference == ThemePreference.dark,
+          onChanged: (_) => context.read<ThemeCubit>().toggle(),
+        ),
       ),
     );
   }

@@ -17,8 +17,8 @@ import '../../../competition/domain/competition.model.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
 import '../../../competition/presentation/widgets/join_code_card.dart';
 import '../../../competition/presentation/widgets/join_qr_card.dart';
+import '../../domain/theme_preference.enum.dart';
 import '../cubit/theme_cubit.dart';
-import '../widgets/theme_glyph.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key, required this.competitionId});
@@ -129,9 +129,12 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _themeRow(BuildContext context) {
     return BlocBuilder<ThemeCubit, ThemeState>(
       builder: (context, state) => NavRow(
-        label: context.l10n.settingsThemeTitle,
+        label: context.l10n.settingsDarkModeTitle,
         onTap: context.read<ThemeCubit>().toggle,
-        trailing: ThemeGlyph(preference: state.preference),
+        trailing: AdaptiveSwitch(
+          value: state.preference == ThemePreference.dark,
+          onChanged: (_) => context.read<ThemeCubit>().toggle(),
+        ),
       ),
     );
   }
