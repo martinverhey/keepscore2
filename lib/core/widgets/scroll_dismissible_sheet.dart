@@ -27,17 +27,13 @@ class _ScrollDismissibleSheetState extends State<ScrollDismissibleSheet> {
         duration: _dragging ? Duration.zero : _settleDuration,
         curve: Curves.easeOut,
         offset: Offset(0, _dragExtent / screenHeight),
-        child: AnimatedOpacity(
-          duration: _dragging ? Duration.zero : _settleDuration,
-          opacity: 1 - (_dragExtent / (screenHeight * 0.5)).clamp(0.0, 1.0),
-          child: GestureDetector(
-            onVerticalDragUpdate: _handleDragUpdate,
-            onVerticalDragEnd: _handleDragEnd,
-            onVerticalDragCancel: _settle,
-            child: ScrollDismissScope(
-              isDragging: () => _dragExtent > 0,
-              child: widget.child,
-            ),
+        child: GestureDetector(
+          onVerticalDragUpdate: _handleDragUpdate,
+          onVerticalDragEnd: _handleDragEnd,
+          onVerticalDragCancel: _settle,
+          child: ScrollDismissScope(
+            isDragging: () => _dragExtent > 0,
+            child: widget.child,
           ),
         ),
       ),
