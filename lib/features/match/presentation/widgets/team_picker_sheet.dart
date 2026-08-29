@@ -7,7 +7,6 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/selectable_row.dart';
 import '../../../../core/widgets/sheet.dart';
-import '../../../../core/widgets/tag.dart';
 import '../../../player/domain/player.model.dart';
 
 List<Player> _sortedByName(List<Player> players) {
@@ -72,11 +71,8 @@ class _TeamPickerSheetState extends State<TeamPickerSheet> {
                   color: widget.color,
                   selected: _selected.contains(player.id),
                   onTap: () => _toggle(player.id),
-                  trailing: player.id == widget.myPlayerId
-                      ? Tag(
-                          context.l10n.playersYou,
-                          color: AdaptiveColors.accent(context),
-                        )
+                  labelColor: player.id == widget.myPlayerId
+                      ? AdaptiveColors.accent(context)
                       : null,
                 ),
               ),

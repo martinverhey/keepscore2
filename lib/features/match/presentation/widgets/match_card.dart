@@ -17,17 +17,6 @@ class MatchCard extends StatelessWidget {
   final VoidCallback? onTap;
   final String? myPlayerId;
 
-  MatchTeam? get _myTeam {
-    if (myPlayerId == null) return null;
-    if (match.teamA.any((entry) => entry.playerId == myPlayerId)) {
-      return MatchTeam.a;
-    }
-    if (match.teamB.any((entry) => entry.playerId == myPlayerId)) {
-      return MatchTeam.b;
-    }
-    return null;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -43,8 +32,6 @@ class MatchCard extends StatelessWidget {
   }
 
   Widget _content(BuildContext context) {
-    final rail = BorderSide(color: AdaptiveColors.accent(context), width: 1);
-
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
@@ -53,32 +40,26 @@ class MatchCard extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: AppRadius.card,
         color: AppColors.neutralSurface,
-        border: switch (_myTeam) {
-          MatchTeam.a => Border(left: rail),
-          MatchTeam.b => Border(right: rail),
-          null => null,
-        },
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        children: [_teams(), const SizedBox(height: 2), _deltas()],
+        children: [_teams(context), const SizedBox(height: 2), _deltas()],
       ),
     );
   }
 
-  Widget _teams() {
+  Widget _teams(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Expanded(child: _side(team: MatchTeam.a)),
+        Expanded(child: _side(context, team: MatchTeam.a)),
         _score(),
-        Expanded(child: _side(team: MatchTeam.b)),
+        Expanded(child: _side(context, team: MatchTeam.b)),
       ],
     );
   }
 
-  Widget _side({required MatchTeam team}) {
-    final won = match.winner == team;
+  Widget _side(BuildContext context, {required MatchTeam team}) {
     final alignEnd = team == MatchTeam.b;
 
     return Column(
@@ -94,8 +75,10 @@ class MatchCard extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: AppTypography.bodyMedium.copyWith(
-              fontWeight: won ? FontWeight.w700 : FontWeight.w500,
-              color: won ? null : AppColors.neutral,
+              fontWeight: FontWeight.w500,
+              color: entry.playerId == myPlayerId
+                  ? AdaptiveColors.accent(context)
+                  : AppColors.neutral,
             ),
           ),
       ],

@@ -112,20 +112,15 @@ class LeaderboardRow extends StatelessWidget {
             Flexible(
               child: Text(
                 leaderboard.displayName,
-                style: AppTypography.bodyLarge,
+                style: AppTypography.bodyLarge.copyWith(
+                  color: isMe ? AdaptiveColors.accent(context) : null,
+                ),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
             if (leaderboard.isOwner) ...[
               const SizedBox(width: AppSpacing.xs),
               Tag(context.l10n.playersOwner, color: AppColors.gold),
-            ],
-            if (isMe) ...[
-              const SizedBox(width: AppSpacing.xs),
-              Tag(
-                context.l10n.playersYou,
-                color: AdaptiveColors.accent(context),
-              ),
             ],
           ],
         ),

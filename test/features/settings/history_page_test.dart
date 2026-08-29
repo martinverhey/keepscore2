@@ -167,7 +167,7 @@ void main() {
 
       expect(find.byType(LeaderboardRow), findsOneWidget);
       expect(find.text('Bram'), findsOneWidget);
-      expect(find.text(l10n.playersYou), findsNothing);
+      expect(tester.widget<Text>(find.text('Bram')).style!.color, isNull);
       expect(
         find.descendant(
           of: find.byType(LeaderboardRow),
@@ -192,7 +192,11 @@ void main() {
       expect(find.byType(LeaderboardRow), findsNWidgets(2));
       expect(find.text('Ada'), findsOneWidget);
       expect(find.text('Bram'), findsOneWidget);
-      expect(find.text(l10n.playersYou), findsOneWidget);
+      expect(
+        tester.widget<Text>(find.text('Ada')).style!.color,
+        AdaptiveColors.accent(tester.element(find.byType(HistoryPage))),
+      );
+      expect(tester.widget<Text>(find.text('Bram')).style!.color, isNull);
       expect(tester.takeException(), isNull);
     },
   );

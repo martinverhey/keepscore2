@@ -1,10 +1,8 @@
 import 'package:flutter/widgets.dart';
 
-import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/extensions/double.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
-import '../../../../core/widgets/tag.dart';
 import 'team_area_member.model.dart';
 
 export 'team_area_member.model.dart';
@@ -103,11 +101,21 @@ class TeamArea extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: AppSpacing.xs),
       child: Row(
         children: [
-          Expanded(child: _memberName(context, member)),
+          Expanded(
+            child: Text(
+              member.displayName,
+              style: AppTypography.bodyMedium.copyWith(
+                fontWeight: _isMe(member) ? FontWeight.w600 : FontWeight.normal,
+                color: _memberColor(context, member),
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
           Text(
             member.rating.ratingLabel,
             style: AppTypography.captionSmall.copyWith(
               fontFeatures: AppTypography.tabularFigures,
+              color: _memberColor(context, member),
             ),
           ),
         ],
@@ -115,23 +123,12 @@ class TeamArea extends StatelessWidget {
     );
   }
 
-  Widget _memberName(BuildContext context, TeamAreaMember member) {
-    return Row(
-      children: [
-        Flexible(
-          child: Text(
-            member.displayName,
-            style: AppTypography.bodyMedium,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-        if (member.id == myPlayerId) ...[
-          const SizedBox(width: AppSpacing.xs),
-          Tag(context.l10n.playersYou, color: AdaptiveColors.accent(context)),
-        ],
-      ],
-    );
+  Color? _memberColor(BuildContext context, TeamAreaMember member) {
+    if (!_isMe(member)) return null;
+    return AdaptiveColors.accent(context);
   }
+
+  bool _isMe(TeamAreaMember member) => member.id == myPlayerId;
 }
 
 List<TeamAreaMember> _sortedByName(List<TeamAreaMember> members) {

@@ -1,5 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keepscore2/core/theme/app_tokens.dart';
+import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 import 'package:keepscore2/features/match/domain/match_entry.model.dart';
 import 'package:keepscore2/features/match/presentation/widgets/match_card.dart';
 
@@ -46,7 +48,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('draws an accent rail on the side the player is on', (
+  testWidgets('the viewer\'s own name is accented, everyone else is neutral', (
     tester,
   ) async {
     final match = MatchEntry(
@@ -62,27 +64,28 @@ void main() {
       teamB: [_participant('Theo')],
     );
 
-    Future<Border?> pumpAndFindBorder(String? myPlayerId) async {
-      await tester.pumpWidget(
-        Directionality(
-          textDirection: TextDirection.ltr,
-          child: MatchCard(match: match, myPlayerId: myPlayerId, onTap: () {}),
+    late BuildContext cardContext;
+
+    await tester.pumpWidget(
+      Directionality(
+        textDirection: TextDirection.ltr,
+        child: Builder(
+          builder: (context) {
+            cardContext = context;
+            return MatchCard(match: match, myPlayerId: 'Zoe');
+          },
         ),
-      );
-      final container = tester.widget<Container>(find.byType(Container).first);
-      return (container.decoration! as BoxDecoration).border as Border?;
-    }
+      ),
+    );
 
-    expect(await pumpAndFindBorder(null), isNull);
-
-    final zoesBorder = await pumpAndFindBorder('Zoe');
-    expect(zoesBorder!.left.width, 1);
-    expect(zoesBorder.right, BorderSide.none);
-
-    final theosBorder = await pumpAndFindBorder('Theo');
-    expect(theosBorder!.right.width, 1);
-    expect(theosBorder.left, BorderSide.none);
-
+    expect(
+      tester.widget<Text>(find.text('Zoe')).style!.color,
+      AdaptiveColors.accent(cardContext),
+    );
+    expect(
+      tester.widget<Text>(find.text('Theo')).style!.color,
+      AppColors.neutral,
+    );
     expect(tester.takeException(), isNull);
   });
 }

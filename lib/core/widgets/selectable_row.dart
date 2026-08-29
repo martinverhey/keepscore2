@@ -11,14 +11,14 @@ class SelectableRow extends StatelessWidget {
     required this.selected,
     required this.onTap,
     this.color,
-    this.trailing,
+    this.labelColor,
   });
 
   final String label;
   final bool selected;
   final VoidCallback onTap;
   final Color? color;
-  final Widget? trailing;
+  final Color? labelColor;
 
   @override
   Widget build(BuildContext context) {
@@ -41,29 +41,17 @@ class SelectableRow extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Expanded(child: _label()),
+            Expanded(
+              child: Text(
+                label,
+                style: AppTypography.bodyLarge.copyWith(color: labelColor),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
             CheckMark(selected: selected, color: accent),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _label() {
-    return Row(
-      children: [
-        Flexible(
-          child: Text(
-            label,
-            style: AppTypography.bodyLarge,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-        if (trailing case final trailing?) ...[
-          const SizedBox(width: AppSpacing.xs),
-          trailing,
-        ],
-      ],
     );
   }
 }

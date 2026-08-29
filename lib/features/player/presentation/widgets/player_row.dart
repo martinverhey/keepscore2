@@ -54,9 +54,7 @@ class PlayerRow extends StatelessWidget {
         Flexible(
           child: Text(
             player.displayName,
-            style: AppTypography.bodyLarge.copyWith(
-              color: player.isActive ? null : AppColors.neutral,
-            ),
+            style: AppTypography.bodyLarge.copyWith(color: _nameColor(context)),
             overflow: TextOverflow.ellipsis,
           ),
         ),
@@ -64,16 +62,18 @@ class PlayerRow extends StatelessWidget {
           const SizedBox(width: AppSpacing.xs),
           Tag(context.l10n.playersOwner, color: AppColors.gold),
         ],
-        if (isMe) ...[
-          const SizedBox(width: AppSpacing.xs),
-          Tag(context.l10n.playersYou, color: AdaptiveColors.accent(context)),
-        ],
         if (player.isPlaceholder) ...[
           const SizedBox(width: AppSpacing.xs),
           Tag(context.l10n.playersDummy, color: AppColors.neutral),
         ],
       ],
     );
+  }
+
+  Color? _nameColor(BuildContext context) {
+    if (!player.isActive) return AppColors.neutral;
+    if (isMe) return AdaptiveColors.accent(context);
+    return null;
   }
 
   Widget _editButton(BuildContext context) {
