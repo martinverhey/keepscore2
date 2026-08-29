@@ -530,12 +530,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get matchDraw => 'Draw';
 
   @override
-  String get matchPlayerRankTitle => 'Player rank';
-
-  @override
-  String get matchTeamAverage => 'Average';
-
-  @override
   String get matchWinChanceTitle => 'Win chance';
 
   @override

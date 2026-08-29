@@ -5,10 +5,8 @@ import 'package:intl/intl.dart';
 import '../../../../app/dependency_injection/injector.dart';
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context.extension.dart';
-import '../../../../core/extensions/double.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
-import '../../../../core/widgets/horizontal_divider.dart';
 import '../../../../core/widgets/sheet.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../../core/widgets/titled_card.dart';
@@ -18,6 +16,7 @@ import '../../domain/match_entry.model.dart';
 import '../cubit/match_detail_cubit.dart';
 import 'match_card.dart';
 import 'match_score_sheet.dart';
+import 'team_area.dart';
 
 Future<void> showMatchDetailSheet(
   BuildContext context, {
@@ -92,7 +91,7 @@ class MatchDetailSheet extends StatelessWidget {
       children: [
         MatchCard(match: state.match, myPlayerId: myPlayerId),
         const SizedBox(height: AppSpacing.sm),
-        _playerRankCard(context, state.match),
+        _teamAreas(context, state.match),
         const SizedBox(height: AppSpacing.md),
         _winChanceCard(context, state.match),
         if (state.actionFailure != null) _actionFailureText(context, state),
@@ -100,68 +99,22 @@ class MatchDetailSheet extends StatelessWidget {
     );
   }
 
-  Widget _playerRankCard(BuildContext context, MatchEntry match) {
-    return TitledCard(
-      title: context.l10n.matchPlayerRankTitle,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _sides(
-            teamA: _teamColumn(context, match, MatchTeam.a),
-            teamB: _teamColumn(context, match, MatchTeam.b),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          const HorizontalDivider(),
-          _sides(
-            teamA: _averageRow(context, match.teamARating, MatchTeam.a),
-            teamB: _averageRow(context, match.teamBRating, MatchTeam.b),
-          ),
-        ],
-      ),
+  Widget _teamAreas(BuildContext context, MatchEntry match) {
+    return _sides(
+      teamA: _teamArea(context, match, MatchTeam.a),
+      teamB: _teamArea(context, match, MatchTeam.b),
     );
   }
 
-  Widget _teamColumn(BuildContext context, MatchEntry match, MatchTeam team) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _teamLabel(context, team),
-        const SizedBox(height: AppSpacing.sm),
-        for (final participant in match.players(team))
-          _participantRow(participant, team),
-      ],
-    );
-  }
-
-  Widget _participantRow(MatchParticipant participant, MatchTeam team) {
-    return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.xs),
-      child: _mirroredRow(
-        team: team,
-        label: _sideLabel(
-          participant.displayName,
-          team,
-          AppTypography.bodyMedium,
-        ),
-        value: _sideValue(
-          participant.ratingBefore.ratingLabel,
-          AppTypography.bodyMedium,
-        ),
-      ),
-    );
-  }
-
-  Widget _averageRow(BuildContext context, double rating, MatchTeam team) {
-    return _mirroredRow(
-      team: team,
-      label: _sideLabel(
-        context.l10n.matchTeamAverage,
-        team,
-        AppTypography.caption,
-      ),
-      value: _sideValue(rating.ratingLabel, AppTypography.bodyLarge),
+  Widget _teamArea(BuildContext context, MatchEntry match, MatchTeam team) {
+    return TeamArea(
+      title: team == MatchTeam.a
+          ? context.l10n.matchTeamA
+          : context.l10n.matchTeamB,
+      color: _teamColor(context, team),
+      members: _members(match, team),
+      rating: team == MatchTeam.a ? match.teamARating : match.teamBRating,
+      myPlayerId: myPlayerId,
     );
   }
 
@@ -217,43 +170,6 @@ class MatchDetailSheet extends StatelessWidget {
         const SizedBox(width: AppSpacing.md),
         Expanded(child: teamB),
       ],
-    );
-  }
-
-  Widget _mirroredRow({
-    required MatchTeam team,
-    required Widget label,
-    required Widget value,
-  }) {
-    return Row(
-      children: team == MatchTeam.a
-          ? [
-              Expanded(child: label),
-              const SizedBox(width: AppSpacing.sm),
-              value,
-            ]
-          : [
-              value,
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(child: label),
-            ],
-    );
-  }
-
-  Widget _sideLabel(String text, MatchTeam team, TextStyle style) {
-    return Text(
-      text,
-      textAlign: team == MatchTeam.a ? TextAlign.start : TextAlign.end,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: style,
-    );
-  }
-
-  Widget _sideValue(String text, TextStyle style) {
-    return Text(
-      text,
-      style: style.copyWith(fontFeatures: AppTypography.tabularFigures),
     );
   }
 
@@ -334,6 +250,17 @@ String _playedAtLabel(BuildContext context, MatchEntry match) {
   ).add_Hm().format(match.playedAt);
   return match.isDraw ? '$playedAt · ${context.l10n.matchDraw}' : playedAt;
 }
+
+List<TeamAreaMember> _members(MatchEntry match, MatchTeam team) => match
+    .players(team)
+    .map(
+      (participant) => TeamAreaMember(
+        id: participant.playerId,
+        displayName: participant.displayName,
+        rating: participant.ratingBefore,
+      ),
+    )
+    .toList(growable: false);
 
 double _winChanceOf(MatchEntry match, MatchTeam team) =>
     EloCalculator.winChance(

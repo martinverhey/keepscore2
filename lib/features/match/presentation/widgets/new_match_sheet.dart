@@ -5,18 +5,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../app/dependency_injection/injector.dart';
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context.extension.dart';
-import '../../../../core/extensions/double.extension.dart';
 import '../../../../core/extensions/text_editing_controller.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/sheet.dart';
 import '../../../../core/widgets/state_views.dart';
-import '../../../../core/widgets/tag.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
-import '../../../player/domain/player.model.dart';
 import '../../domain/match_entry.model.dart';
 import '../cubit/match_form_cubit.dart';
 import 'new_match_keys.enum.dart';
+import 'team_area.dart';
 import 'team_picker_sheet.dart';
 
 Future<void> showNewMatchSheet(
@@ -175,14 +173,12 @@ class _NewMatchSheetState extends State<NewMatchSheet> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
-          child: _teamArea(
-            context,
+          child: TeamArea(
             key: const ValueKey(NewMatchKey.teamAreaA),
             title: context.l10n.matchTeamA,
             color: AdaptiveColors.teamA(context),
-            members: state.teamA,
+            members: _members(state, MatchTeam.a),
             rating: state.teamRating(MatchTeam.a),
-            ratingOf: state.ratingOf,
             placeholder: context.l10n.matchTapToSelectPlayers,
             myPlayerId: myPlayerId,
             onTap: () => _pickTeam(context, state, MatchTeam.a, myPlayerId),
@@ -190,14 +186,12 @@ class _NewMatchSheetState extends State<NewMatchSheet> {
         ),
         const SizedBox(width: AppSpacing.sm),
         Expanded(
-          child: _teamArea(
-            context,
+          child: TeamArea(
             key: const ValueKey(NewMatchKey.teamAreaB),
             title: context.l10n.matchTeamB,
             color: AdaptiveColors.teamB(context),
-            members: state.teamB,
+            members: _members(state, MatchTeam.b),
             rating: state.teamRating(MatchTeam.b),
-            ratingOf: state.ratingOf,
             placeholder: context.l10n.matchTapToSelectPlayers,
             myPlayerId: myPlayerId,
             onTap: () => _pickTeam(context, state, MatchTeam.b, myPlayerId),
@@ -205,6 +199,19 @@ class _NewMatchSheetState extends State<NewMatchSheet> {
         ),
       ],
     );
+  }
+
+  List<TeamAreaMember> _members(MatchFormReady state, MatchTeam team) {
+    return state
+        .team(team)
+        .map(
+          (player) => TeamAreaMember(
+            id: player.id,
+            displayName: player.displayName,
+            rating: state.ratingOf(player.id),
+          ),
+        )
+        .toList(growable: false);
   }
 
   Widget _scoreFields(BuildContext context) {
@@ -309,137 +316,4 @@ class _NewMatchSheetState extends State<NewMatchSheet> {
     await cubit.refreshPlayers();
     if (selected != null) cubit.setTeam(side, selected);
   }
-
-  Widget _teamArea(
-    BuildContext context, {
-    Key? key,
-    required String title,
-    required Color color,
-    required List<Player> members,
-    required double rating,
-    required double Function(String playerId) ratingOf,
-    required String placeholder,
-    required String? myPlayerId,
-    required VoidCallback onTap,
-  }) {
-    return AdaptiveTappable(
-      key: key,
-      onTap: onTap,
-      borderRadius: AppRadius.card,
-      child: Container(
-        width: double.infinity,
-        constraints: const BoxConstraints(minHeight: 88),
-        padding: const EdgeInsets.all(AppSpacing.md),
-        decoration: BoxDecoration(
-          borderRadius: AppRadius.card,
-          color: color.withValues(alpha: AppOpacity.accentFill),
-          border: Border.all(
-            color: color.withValues(alpha: AppOpacity.fieldBorder),
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _teamAreaHeader(
-              title: title,
-              color: color,
-              members: members,
-              rating: rating,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            if (members.isEmpty)
-              Text(placeholder, style: AppTypography.caption)
-            else
-              for (final player in _sortedByName(members))
-                _teamMemberRow(context, player, ratingOf, myPlayerId),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _teamAreaHeader({
-    required String title,
-    required Color color,
-    required List<Player> members,
-    required double rating,
-  }) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Transform.translate(
-            offset: const Offset(0, 4),
-            child: Text(
-              title.toUpperCase(),
-              style: AppTypography.eyebrow.copyWith(color: color),
-            ),
-          ),
-        ),
-        if (members.isNotEmpty)
-          TweenAnimationBuilder<double>(
-            tween: Tween<double>(end: rating),
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeOutCubic,
-            builder: (_, value, _) => Text(
-              value.ratingLabel,
-              style: AppTypography.headlineMedium.copyWith(
-                fontWeight: FontWeight.w800,
-                color: color,
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _teamMemberRow(
-    BuildContext context,
-    Player player,
-    double Function(String playerId) ratingOf,
-    String? myPlayerId,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-      child: Row(
-        children: [
-          Expanded(
-            child: Row(
-              children: [
-                Flexible(
-                  child: Text(
-                    player.displayName,
-                    style: AppTypography.bodyMedium,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                if (player.id == myPlayerId) ...[
-                  const SizedBox(width: AppSpacing.xs),
-                  Tag(
-                    context.l10n.playersYou,
-                    color: AdaptiveColors.accent(context),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          Text(
-            ratingOf(player.id).ratingLabel,
-            style: AppTypography.captionSmall.copyWith(
-              fontFeatures: AppTypography.tabularFigures,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-List<Player> _sortedByName(List<Player> players) {
-  final sorted = List<Player>.of(players);
-  sorted.sort(
-    (a, b) =>
-        a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase()),
-  );
-  return sorted;
 }

@@ -532,12 +532,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String get matchDraw => 'Gelijkspel';
 
   @override
-  String get matchPlayerRankTitle => 'Spelersranking';
-
-  @override
-  String get matchTeamAverage => 'Gemiddelde';
-
-  @override
   String get matchWinChanceTitle => 'Winkans';
 
   @override
