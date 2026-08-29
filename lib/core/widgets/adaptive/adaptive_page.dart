@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -22,4 +23,11 @@ Page<T> adaptivePage<T>(
     transitionsBuilder: (context, animation, secondaryAnimation, child) =>
         FadeTransition(opacity: animation, child: child),
   );
+}
+
+Page<T> adaptivePageNoWebTransition<T>({required Widget child, LocalKey? key}) {
+  if (kIsWeb) return NoTransitionPage<T>(key: key, child: child);
+  return AppPlatform.useCupertino
+      ? CupertinoPage<T>(key: key, child: child)
+      : MaterialPage<T>(key: key, child: child);
 }

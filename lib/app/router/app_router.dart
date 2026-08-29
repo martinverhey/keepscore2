@@ -161,9 +161,9 @@ GoRouter createRouter(AuthBloc authBloc) {
                 adaptivePage(context, child: const LanguagePage()),
           ),
           ShellRoute(
-            builder: (context, state, child) {
+            pageBuilder: (context, state, child) {
               final id = state.pathParameters['id']!;
-              return CompetitionScope(
+              final content = CompetitionScope(
                 competitionId: id,
                 child: KeyedSubtree(
                   key: ValueKey(id),
@@ -177,6 +177,7 @@ GoRouter createRouter(AuthBloc authBloc) {
                   ),
                 ),
               );
+              return adaptivePageNoWebTransition<void>(child: content);
             },
             routes: [
               GoRoute(
