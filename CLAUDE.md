@@ -646,9 +646,20 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   title needs each page to set it directly. `setPageTitle(context, label)`
   (`core/widgets/page_title.dart`) calls
   `SystemChrome.setApplicationSwitcherDescription`, which is what the Flutter
-  web engine uses under the hood to set `document.title` (it also sets
-  Android's task-switcher label, harmlessly). Every routed page calls it once
-  per relevant build, formatting `'$label · ${l10n.appTitle}'`.
+  web engine uses under the hood to set `document.title`. **It is guarded by
+  `if (!kIsWeb) return;`, and that guard is load-bearing on Android** — the
+  framework always sends `primaryColor` on the platform channel, `null` when
+  `ApplicationSwitcherDescription` wasn't given one, and the Android
+  embedding's handler reads it back with `JSONObject.getInt("primaryColor")`,
+  which throws on a JSON null. Unguarded, every routed page's title call
+  raised `PlatformException(error, Value null at primaryColor ... cannot be
+  converted to int)` from an unawaited future — logged by the Dart VM, fatal
+  to nothing, and therefore invisible outside `adb logcat`. Setting a
+  per-page label in the Android recents list was never wanted anyway, and iOS
+  ignores the call entirely, so the guard costs no behaviour. Passing a real
+  `primaryColor` would also silence it, at the price of tinting the recents
+  entry. Every routed page calls it once per relevant build, formatting
+  `'$label · ${l10n.appTitle}'`.
   `LeaderboardPage`/`MatchesPage` are the one exception to the format: each
   puts the competition name *ahead of* its own tab name
   (`'${competition.name} · ${context.l10n.leaderboardTitle}'`, respectively
