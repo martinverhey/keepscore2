@@ -40,7 +40,7 @@ class PlayerRow extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Expanded(child: _details(context)),
+            Expanded(child: _nameRow(context)),
             if (canEdit) _editButton(context),
           ],
         ),
@@ -48,21 +48,8 @@ class PlayerRow extends StatelessWidget {
     );
   }
 
-  Widget _details(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _playerName(context),
-        const SizedBox(height: AppSpacing.xs),
-        _tag(context),
-      ],
-    );
-  }
-
-  Widget _playerName(BuildContext context) {
+  Widget _nameRow(BuildContext context) {
     return Row(
-      mainAxisSize: MainAxisSize.min,
       children: [
         Flexible(
           child: Text(
@@ -73,20 +60,18 @@ class PlayerRow extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
         ),
-      ],
-    );
-  }
-
-  Widget _tag(BuildContext context) {
-    return Wrap(
-      spacing: AppSpacing.xs,
-      runSpacing: AppSpacing.xs,
-      children: [
-        if (isOwnerRow) Tag(context.l10n.playersOwner, color: AppColors.gold),
-        if (isMe)
+        if (isOwnerRow) ...[
+          const SizedBox(width: AppSpacing.xs),
+          Tag(context.l10n.playersOwner, color: AppColors.gold),
+        ],
+        if (isMe) ...[
+          const SizedBox(width: AppSpacing.xs),
           Tag(context.l10n.playersYou, color: AdaptiveColors.accent(context)),
-        if (player.isPlaceholder)
+        ],
+        if (player.isPlaceholder) ...[
+          const SizedBox(width: AppSpacing.xs),
           Tag(context.l10n.playersDummy, color: AppColors.neutral),
+        ],
       ],
     );
   }

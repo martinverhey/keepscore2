@@ -150,8 +150,12 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
   Widget _competitionHeader(BuildContext context, Competition competition) {
     return Row(
       children: [
-        _competitionButton(context, competition),
-        const SizedBox(width: AppSpacing.sm),
+        Expanded(
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: _competitionButton(context, competition),
+          ),
+        ),
         _inviteButton(context, competition.joinCode),
         const SizedBox(width: AppSpacing.xs),
         Tag(
@@ -164,28 +168,25 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
   }
 
   Widget _competitionButton(BuildContext context, Competition competition) {
-    return Expanded(
-      child: AdaptiveTappable(
-        onTap: () => context.push<Object?>(Routes.home),
-        child: Row(
-          children: [
-            Flexible(
-              child: Text(
-                competition.name,
-                style: AppTypography.bodyLarge.copyWith(
-                  color: AppColors.neutral,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
+    return AdaptiveTappable(
+      onTap: () => context.push<Object?>(Routes.home),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Flexible(
+            child: Text(
+              competition.name,
+              style: AppTypography.bodyLarge.copyWith(color: AppColors.neutral),
+              overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(width: AppSpacing.xs),
-            const AdaptiveIcon(
-              AdaptiveGlyph.chevronRight,
-              color: AppColors.neutral,
-              size: 16,
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(width: AppSpacing.xs),
+          const AdaptiveIcon(
+            AdaptiveGlyph.chevronRight,
+            color: AppColors.neutral,
+            size: 16,
+          ),
+        ],
       ),
     );
   }

@@ -101,28 +101,24 @@ class Sidebar extends StatelessWidget {
   }
 
   Widget _brand(BuildContext context, String? competitionName) {
-    return AdaptiveTappable(
-      onTap: () => _select(SidebarSection.competitions),
-      borderRadius: AppRadius.card,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm,
-          vertical: AppSpacing.xs,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              context.l10n.appTitle,
-              style: AppTypography.bodyMedium.copyWith(
-                fontFamily: AppTypography.brandFontFamily,
-                fontWeight: FontWeight.w800,
-              ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            context.l10n.appTitle,
+            style: AppTypography.bodyMedium.copyWith(
+              fontFamily: AppTypography.brandFontFamily,
+              fontWeight: FontWeight.w800,
             ),
-            ?_brandCompetitionName(competitionName),
-          ],
-        ),
+          ),
+          ?_brandCompetitionName(competitionName),
+        ],
       ),
     );
   }

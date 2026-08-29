@@ -24,6 +24,7 @@ abstract final class AppOpacity {
   static const double cardFillFaint = 0.06;
   static const double surfaceFill = 0.08;
   static const double accentFill = 0.10;
+  static const double neutralSurfaceFill = 0.12;
   static const double selectedFill = 0.14;
   static const double tintedButtonFill = 0.15;
   static const double badgeFill = 0.16;
@@ -39,6 +40,7 @@ abstract final class AppColors {
   static const Color positive = Color(0xFF12855F);
   static const Color negative = Color(0xFFC0392B);
   static const Color neutral = Color(0xFF6B7280);
+  static const Color neutralSoft = Color(0xFF8E97A6);
   static const Color teamA = seed;
   static const Color teamAOnDark = seedOnDark;
   static const Color teamB = Color(0xFF3566D8);
@@ -54,8 +56,8 @@ abstract final class AppColors {
   static const Color white = Color(0xFFFFFFFF);
   static const Color transparent = Color(0x00000000);
 
-  static final Color neutralSurface = neutral.withValues(
-    alpha: AppOpacity.surfaceFill,
+  static final Color neutralSurface = neutralSoft.withValues(
+    alpha: AppOpacity.neutralSurfaceFill,
   );
   static final Color fireBadgeFill = fireCore.withValues(
     alpha: AppOpacity.badgeFill,
