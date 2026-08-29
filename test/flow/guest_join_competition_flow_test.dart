@@ -30,6 +30,7 @@ import 'package:keepscore2/features/match/domain/match_entry.model.dart';
 import 'package:keepscore2/features/match/domain/match_repository.dart';
 import 'package:keepscore2/features/match/presentation/cubit/game_type_filter_cubit.dart';
 import 'package:keepscore2/features/match/presentation/cubit/match_list_cubit.dart';
+import 'package:keepscore2/features/match/presentation/widgets/match_card.dart';
 import 'package:keepscore2/features/match/presentation/widgets/matches.page.dart';
 import 'package:keepscore2/features/player/domain/player.model.dart';
 import 'package:keepscore2/features/player/domain/player_repository.dart';
@@ -340,7 +341,14 @@ Future<void> _expectMatchesTabIsPopulated(
   );
   await tester.pumpAndSettle();
 
-  expect(find.text('3 – 1'), findsOneWidget);
+  expect(
+    find.descendant(of: find.byType(MatchCard), matching: find.text('3')),
+    findsOneWidget,
+  );
+  expect(
+    find.descendant(of: find.byType(MatchCard), matching: find.text('1')),
+    findsOneWidget,
+  );
 }
 
 GoRouter _buildRouter(

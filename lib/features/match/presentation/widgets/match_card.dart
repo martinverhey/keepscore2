@@ -86,13 +86,30 @@ class MatchCard extends StatelessWidget {
   }
 
   Widget _score() {
+    final scoreStyle = AppTypography.headlineMedium.copyWith(
+      fontFeatures: AppTypography.tabularFigures,
+    );
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text('${match.teamAScore}', style: scoreStyle),
+          _separator(),
+          Text('${match.teamBScore}', style: scoreStyle),
+        ],
+      ),
+    );
+  }
+
+  Widget _separator() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
       child: Text(
-        '${match.teamAScore} – ${match.teamBScore}',
-        style: AppTypography.headlineMedium.copyWith(
-          fontFeatures: AppTypography.tabularFigures,
-        ),
+        '–',
+        style: AppTypography.bodySmall.copyWith(color: AppColors.neutralSoft),
       ),
     );
   }

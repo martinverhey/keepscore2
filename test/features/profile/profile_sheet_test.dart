@@ -59,7 +59,7 @@ MatchEntry _matchAgainstTheo() => MatchEntry(
   seasonId: 's1',
   playedAt: _august,
   teamAScore: 3,
-  teamBScore: 1,
+  teamBScore: 2,
   teamARating: 1050,
   teamBRating: 950,
   teamA: const [
