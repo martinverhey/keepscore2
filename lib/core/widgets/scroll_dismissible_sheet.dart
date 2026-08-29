@@ -58,11 +58,15 @@ class _ScrollDismissibleSheetState extends State<ScrollDismissibleSheet> {
     _settle();
   }
 
-  void _settle() {
+  Future<void> _settle() async {
     _dragging = false;
-    if (_dragExtent > _dismissThreshold) {
-      Navigator.of(context).maybePop();
-    } else {
+    if (_dragExtent <= _dismissThreshold) {
+      setState(() => _dragExtent = 0);
+      return;
+    }
+    final route = ModalRoute.of(context);
+    await Navigator.of(context).maybePop();
+    if (mounted && (route?.isActive ?? false)) {
       setState(() => _dragExtent = 0);
     }
   }

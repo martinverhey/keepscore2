@@ -25,6 +25,31 @@ Future<void> _openSheet(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+Future<void> _openGuardedSheet(WidgetTester tester) async {
+  await tester.pumpWidget(
+    MaterialApp(
+      home: Scaffold(
+        body: Builder(
+          builder: (context) => ElevatedButton(
+            onPressed: () => showAdaptiveSheet<void>(
+              context,
+              confirmsDismissal: true,
+              builder: (_) => const PopScope(
+                canPop: false,
+                child: Sheet(title: 'Sheet', content: SizedBox(height: 2000)),
+              ),
+            ),
+            child: const Text('open'),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  await tester.tap(find.text('open'));
+  await tester.pumpAndSettle();
+}
+
 void main() {
   tearDown(() {
     AppPlatform.debugOverrideCupertino = null;
@@ -137,6 +162,23 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(Sheet), findsNothing);
+    });
+
+    testWidgets('a refused dismissal springs the sheet back to rest', (
+      tester,
+    ) async {
+      AppPlatform.debugOverrideCupertino = false;
+      AppPlatform.debugOverrideWideWeb = false;
+      await _openGuardedSheet(tester);
+
+      await tester.drag(find.text('Sheet'), const Offset(0, 400));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(Sheet), findsOneWidget);
+      expect(
+        tester.widget<AnimatedSlide>(find.byType(AnimatedSlide)).offset,
+        Offset.zero,
+      );
     });
 
     testWidgets(
