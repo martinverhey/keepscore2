@@ -30,9 +30,14 @@ class _ScrollDismissibleSheetState extends State<ScrollDismissibleSheet> {
         child: AnimatedOpacity(
           duration: _dragging ? Duration.zero : _settleDuration,
           opacity: 1 - (_dragExtent / (screenHeight * 0.5)).clamp(0.0, 1.0),
-          child: ScrollDismissScope(
-            isDragging: () => _dragExtent > 0,
-            child: widget.child,
+          child: GestureDetector(
+            onVerticalDragUpdate: _handleDragUpdate,
+            onVerticalDragEnd: _handleDragEnd,
+            onVerticalDragCancel: _settle,
+            child: ScrollDismissScope(
+              isDragging: () => _dragExtent > 0,
+              child: widget.child,
+            ),
           ),
         ),
       ),
@@ -44,14 +49,26 @@ class _ScrollDismissibleSheetState extends State<ScrollDismissibleSheet> {
         notification.metrics.pixels <= notification.metrics.minScrollExtent) {
       _updateDragExtent(_dragExtent - notification.overscroll);
     } else if (notification is ScrollEndNotification && _dragExtent > 0) {
-      _dragging = false;
-      if (_dragExtent > _dismissThreshold) {
-        Navigator.of(context).maybePop();
-      } else {
-        setState(() => _dragExtent = 0);
-      }
+      _settle();
     }
     return false;
+  }
+
+  void _handleDragUpdate(DragUpdateDetails details) {
+    _updateDragExtent(_dragExtent + details.delta.dy);
+  }
+
+  void _handleDragEnd(DragEndDetails details) {
+    _settle();
+  }
+
+  void _settle() {
+    _dragging = false;
+    if (_dragExtent > _dismissThreshold) {
+      Navigator.of(context).maybePop();
+    } else {
+      setState(() => _dragExtent = 0);
+    }
   }
 
   void _updateDragExtent(double extent) {

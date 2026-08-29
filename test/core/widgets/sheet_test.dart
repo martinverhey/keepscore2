@@ -66,6 +66,45 @@ void main() {
       expect(find.byType(Sheet), findsOneWidget);
     });
 
+    testWidgets('dragging the title down past the threshold closes it', (
+      tester,
+    ) async {
+      AppPlatform.debugOverrideCupertino = false;
+      AppPlatform.debugOverrideWideWeb = false;
+      await _openSheet(tester);
+
+      await tester.drag(find.text('Sheet'), const Offset(0, 400));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(Sheet), findsNothing);
+    });
+
+    testWidgets('dragging the title down under the threshold snaps back', (
+      tester,
+    ) async {
+      AppPlatform.debugOverrideCupertino = false;
+      AppPlatform.debugOverrideWideWeb = false;
+      await _openSheet(tester);
+
+      await tester.drag(find.text('Sheet'), const Offset(0, 40));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(Sheet), findsOneWidget);
+    });
+
+    testWidgets('closes from the title in the cupertino presentation too', (
+      tester,
+    ) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideWideWeb = false;
+      await _openSheet(tester);
+
+      await tester.drag(find.text('Sheet'), const Offset(0, 400));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(Sheet), findsNothing);
+    });
+
     testWidgets('is not enabled for the wide-web dialog presentation', (
       tester,
     ) async {
