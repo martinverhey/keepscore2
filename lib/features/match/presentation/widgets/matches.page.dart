@@ -170,7 +170,7 @@ class _MatchesPageState extends State<MatchesPage> {
       children: [
         if (!isRegistered)
           GuestNotice(message: context.l10n.matchGuestCannotLog),
-        if (isRegistered && hasPlayers) _needsPlayersHint(context),
+        if (isRegistered && !hasPlayers) _needsPlayersHint(context),
         const SizedBox(height: AppSpacing.lg),
         _matchesSection(
           context,
