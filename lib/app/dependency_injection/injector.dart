@@ -48,8 +48,11 @@ Future<void> configureDependencies() async {
     ..registerLazySingleton<CompetitionRepository>(
       () => SupabaseCompetitionRepository(getIt<SupabaseClient>()),
     )
-    ..registerFactory<CompetitionListCubit>(
-      () => CompetitionListCubit(getIt<CompetitionRepository>()),
+    ..registerLazySingleton<CompetitionListCubit>(
+      () => CompetitionListCubit(
+        getIt<CompetitionRepository>(),
+        getIt<AuthBloc>(),
+      ),
     )
     ..registerFactory<CreateCompetitionCubit>(
       () => CreateCompetitionCubit(getIt<CompetitionRepository>()),

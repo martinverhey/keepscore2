@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 
 import '../../../../core/error/failure.dart';
+import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../domain/competition.model.dart';
 import '../../domain/competition_repository.dart';
 import 'competition_list_state.dart';
@@ -8,15 +11,29 @@ import 'competition_list_state.dart';
 export 'competition_list_state.dart';
 
 class CompetitionListCubit extends Cubit<CompetitionListState> {
-  CompetitionListCubit(this._repository)
-    : super(const CompetitionListLoading());
+  CompetitionListCubit(this._repository, this._authBloc)
+    : super(const CompetitionListLoading()) {
+    _authSubscription = _authBloc.stream.listen(_onSession);
+  }
 
   final CompetitionRepository _repository;
+  final AuthBloc _authBloc;
+
+  late final StreamSubscription<AuthSessionState> _authSubscription;
+
+  Future<void>? _inFlight;
 
   CompetitionListReady? get _ready => switch (state) {
     CompetitionListReady ready => ready,
     _ => null,
   };
+
+  Future<void> ensureLoaded() {
+    if (_ready != null) return Future.value();
+    return _inFlight ??= load().whenComplete(() => _inFlight = null);
+  }
+
+  bool isMember(String competitionId) => _find(competitionId) != null;
 
   Future<void> load({bool silent = false}) async {
     final ready = _ready;
@@ -83,5 +100,17 @@ class CompetitionListCubit extends Cubit<CompetitionListState> {
       }
       return false;
     }
+  }
+
+  void _onSession(AuthSessionState session) {
+    if (session.isAuthenticated) return;
+    _inFlight = null;
+    emit(const CompetitionListLoading());
+  }
+
+  @override
+  Future<void> close() {
+    _authSubscription.cancel();
+    return super.close();
   }
 }

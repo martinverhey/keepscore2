@@ -30,7 +30,7 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
   @override
   void initState() {
     super.initState();
-    context.read<CompetitionListCubit>().load();
+    context.read<CompetitionListCubit>().ensureLoaded();
   }
 
   @override

@@ -10,6 +10,7 @@ import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/selectable_row.dart';
 import '../../../player/presentation/widgets/player_name_sheet.dart';
 import '../../domain/join_preview.model.dart';
+import '../cubit/competition_list_cubit.dart';
 import '../cubit/join_competition_cubit.dart';
 import '../widgets/join_code_step.dart';
 
@@ -23,6 +24,7 @@ class JoinCompetitionPage extends StatelessWidget {
           current is JoinConfirm && current.joined != null,
       listener: (context, state) {
         final competitionId = (state as JoinConfirm).preview.competitionId;
+        context.read<CompetitionListCubit>().refresh();
         context.pop();
         context.push('/competition/$competitionId');
       },

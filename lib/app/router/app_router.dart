@@ -3,13 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/data/recent_competition_store.dart';
-import '../../core/error/failure.dart';
 import '../../core/widgets/adaptive/adaptive.dart';
 import '../../features/auth/presentation/cubit/auth_bloc.dart';
 import '../../features/auth/presentation/cubit/sign_in_cubit.dart';
 import '../../features/auth/presentation/pages/sign_in.page.dart';
 import '../../features/auth/presentation/pages/upgrade_account.page.dart';
-import '../../features/competition/domain/competition_repository.dart';
 import '../../features/competition/presentation/cubit/competition_list_cubit.dart';
 import '../../features/competition/presentation/cubit/create_competition_cubit.dart';
 import '../../features/competition/presentation/cubit/join_competition_cubit.dart';
@@ -71,18 +69,13 @@ GoRouter createRouter(AuthBloc authBloc) {
       final recentId = await RecentCompetitionStore.get();
       if (recentId == null) return null;
 
-      try {
-        final overview = await getIt<CompetitionRepository>().overview(
-          recentId,
-        );
-        if (overview == null) {
-          await RecentCompetitionStore.clear();
-          return null;
-        }
-        return Routes.competition(recentId);
-      } on Failure {
-        return null;
-      }
+      final competitions = getIt<CompetitionListCubit>();
+      await competitions.ensureLoaded();
+      if (competitions.state is! CompetitionListReady) return null;
+      if (competitions.isMember(recentId)) return Routes.competition(recentId);
+
+      await RecentCompetitionStore.clear();
+      return null;
     }();
     future.whenComplete(() {
       pendingRecentCompetitionTarget = null;
@@ -159,13 +152,8 @@ GoRouter createRouter(AuthBloc authBloc) {
         routes: [
           GoRoute(
             path: Routes.home,
-            pageBuilder: (context, state) => adaptivePage(
-              context,
-              child: BlocProvider(
-                create: (_) => getIt<CompetitionListCubit>(),
-                child: const CompetitionsPage(),
-              ),
-            ),
+            pageBuilder: (context, state) =>
+                adaptivePage(context, child: const CompetitionsPage()),
           ),
           GoRoute(
             path: Routes.language,

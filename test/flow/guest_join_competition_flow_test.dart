@@ -16,6 +16,7 @@ import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/domain/join_preview.model.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
+import 'package:keepscore2/features/competition/presentation/cubit/competition_list_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/join_competition_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/pages/competition_shell.dart';
 import 'package:keepscore2/features/competition/presentation/pages/join_competition.page.dart';
@@ -71,6 +72,7 @@ void main() {
       final gameTypeFilterCubit = GameTypeFilterCubit();
       addTearDown(gameTypeFilterCubit.close);
 
+      when(() => competitions.myCompetitions()).thenAnswer((_) async => []);
       when(() => auth.currentUser).thenReturn(null);
       when(() => auth.watchUser()).thenAnswer((_) => authEvents.stream);
       when(
@@ -257,6 +259,9 @@ void main() {
             BlocProvider<GameTypeFilterCubit>.value(value: gameTypeFilterCubit),
             BlocProvider(
               create: (_) => CompetitionCubit(competitions, authBloc),
+            ),
+            BlocProvider(
+              create: (_) => CompetitionListCubit(competitions, authBloc),
             ),
           ],
           child: MaterialApp.router(

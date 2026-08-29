@@ -9,6 +9,7 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/page_title.dart';
 import '../../domain/competition.model.dart';
+import '../cubit/competition_list_cubit.dart';
 import '../cubit/create_competition_cubit.dart';
 
 class CreateCompetitionPage extends StatefulWidget {
@@ -33,6 +34,7 @@ class _CreateCompetitionPageState extends State<CreateCompetitionPage> {
       listenWhen: (previous, current) => current is CreateCompetitionCreated,
       listener: (context, state) {
         final created = state as CreateCompetitionCreated;
+        context.read<CompetitionListCubit>().refresh();
         context.pop();
         context.push('/competition/${created.competition.id}');
       },

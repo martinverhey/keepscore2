@@ -34,8 +34,8 @@ void main() {
     when(() => auth.watchUser()).thenAnswer((_) => const Stream.empty());
     when(() => auth.signOut()).thenAnswer((_) async {});
 
-    competitionListCubit = CompetitionListCubit(competitions);
     authBloc = AuthBloc(auth);
+    competitionListCubit = CompetitionListCubit(competitions, authBloc);
     competitionCubit = CompetitionCubit(competitions, authBloc);
   });
 

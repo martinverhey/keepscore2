@@ -200,6 +200,53 @@ they build, so `CompetitionLoading` is the honest initial (and post-`clear`)
 value. The sidebar reads `state.competition` opportunistically and treats
 `null` as "hide the competition group".
 
+### The competition list is a cache, not a fetch-on-open
+
+`CompetitionListCubit` is a `registerLazySingleton`, provided from
+`KeepScoreApp`'s root `MultiBlocProvider` alongside `CompetitionCubit`. It
+used to be a `registerFactory` built by the `/` route's own `BlocProvider`,
+which meant every visit to the competitions list threw the previous list
+away, dropped to `CompetitionListLoading`, and painted a full-page spinner
+over a fetch that measures ~85 ms end to end (4.9 ms of it in Postgres). The
+data was never the slow part; the state wipe was.
+
+`CompetitionsPage.initState` therefore calls `ensureLoaded()`, not `load()`:
+it fetches only when there is no data yet, dedupes concurrent callers onto
+one in-flight request, and returns immediately once `CompetitionListReady`
+holds a list. A failure is not cached — `CompetitionListFailed` is not
+`Ready`, so the next `ensureLoaded()` retries.
+
+Because the list is now cached, **every write to it has to say so**. `rename`/
+`leave`/`delete` already refreshed through `_mutate`; `CreateCompetitionPage`
+and `JoinCompetitionPage` now call `CompetitionListCubit.refresh()` in their
+success listeners. Both `context.push` the new competition on top of `/`, so
+the home page's `State` survives and `initState` never re-runs — without that
+explicit refresh the new competition would be missing from the list on the
+way back. (It already was, before the cache: nothing but pull-to-refresh ever
+refetched it.)
+
+The cubit subscribes to `AuthBloc` and resets to `CompetitionListLoading` when
+the session stops being authenticated, for the same reason `CompetitionCubit`
+does — otherwise signing out and back in as someone else serves the previous
+user's competitions from cache.
+
+**The router's recent-competition redirect reads this cubit instead of making
+its own request.** `resolveRecentCompetitionTarget` in `app_router.dart` used
+to call `CompetitionRepository.overview(recentId)` to confirm membership, and
+`redirect` **awaits** it before `/` may build — so a cold start with a stale
+recent id paid `overview` and then `myCompetitions` in series, two round trips
+against the same view, with the route blocked throughout. It now awaits
+`CompetitionListCubit.ensureLoaded()` and asks `isMember(recentId)`: one
+request, and its result is already in the cubit by the time `CompetitionsPage`
+builds, so `ensureLoaded()` there is a no-op. `test/app/app_router_test.dart`
+asserts exactly one `myCompetitions()` call and zero `overview()` calls.
+
+The distinction that test file exists to protect: **only a load that actually
+succeeded may clear `RecentCompetitionStore`.** The check is
+`state is! CompetitionListReady` first, `isMember` second — a `Failed` state
+means "we don't know", so the stored id survives a network blip instead of
+being wiped and dumping the user on the list page permanently.
+
 ## Coding conventions — read this before writing `lib/**`
 
 These are the conventions the codebase already follows. Match them in new
@@ -546,8 +593,10 @@ code; don't relitigate them.
 - Blocs that hold form state are `registerFactory`; session-wide ones are
   `registerLazySingleton`; ones scoped to a single competition are
   `registerFactoryParam<T, String, void>` and take the id as a constructor
-  argument (`getIt<PlayersCubit>(param1: id)`). `CompetitionCubit` is the
-  exception — it is session-wide, see "The current competition is app-wide".
+  argument (`getIt<PlayersCubit>(param1: id)`). `CompetitionCubit` and
+  `CompetitionListCubit` are the exceptions — both are session-wide, see
+  "The current competition is app-wide" and "The competition list is a
+  cache, not a fetch-on-open".
   See
   `lib/app/dependency_injection/injector.dart`. `MatchDetailCubit` uses both
   slots (`param1` match id, `param2` competition id) because it needs the
