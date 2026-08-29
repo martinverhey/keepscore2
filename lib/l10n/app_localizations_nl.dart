@@ -444,7 +444,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get matchNew => 'Nieuwe wedstrijd';
 
   @override
-  String get matchNewTitle => 'Wedstrijd invoeren';
+  String get matchNewTitle => 'Nieuwe wedstrijd';
 
   @override
   String get matchTeamA => 'Team A';
@@ -463,11 +463,7 @@ class AppLocalizationsNl extends AppLocalizations {
       'Deze wedstrijd verwijderen? De ratings van het seizoen worden opnieuw berekend.';
 
   @override
-  String get matchPickTeamsTitle => 'Kies spelers';
-
-  @override
-  String get matchPickTeamsHelp =>
-      'Tik op een team om te kiezen wie er gespeeld hebben.';
+  String get matchPickTeamsTitle => 'Spelers';
 
   @override
   String get matchTapToSelectPlayers => 'Tik om spelers toe te voegen';
@@ -496,6 +492,19 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get matchNeedsPlayers => 'Voeg spelers toe en maak wedstrijden aan.';
+
+  @override
+  String get matchDiscardTitle => 'Wedstrijd weggooien?';
+
+  @override
+  String get matchDiscardConfirm =>
+      'De ingevulde spelers en score gaan verloren.';
+
+  @override
+  String get matchDiscard => 'Weggooien';
+
+  @override
+  String get matchKeepEditing => 'Verder invullen';
 
   @override
   String get matchDetailTitle => 'Wedstrijd';

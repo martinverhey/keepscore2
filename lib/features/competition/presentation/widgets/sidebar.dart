@@ -8,6 +8,7 @@ import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/horizontal_divider.dart';
 import '../../../../core/widgets/section_label.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
+import '../../../match/presentation/widgets/new_match_sheet.dart';
 import '../../../settings/domain/theme_preference.enum.dart';
 import '../../../settings/presentation/cubit/theme_cubit.dart';
 import '../cubit/competition_cubit.dart';
@@ -68,7 +69,8 @@ class Sidebar extends StatelessWidget {
             AdaptiveButton(
               label: context.l10n.matchNew,
               icon: const AdaptiveIcon(AdaptiveGlyph.newMatch, size: 18),
-              onPressed: () => _select(SidebarSection.newMatch),
+              onPressed: () =>
+                  showNewMatchSheet(context, competitionId: competition.id),
             ),
             const SizedBox(height: AppSpacing.lg),
           ],

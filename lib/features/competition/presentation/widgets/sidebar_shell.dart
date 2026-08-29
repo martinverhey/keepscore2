@@ -30,7 +30,6 @@ class SidebarShell extends StatelessWidget {
     if (location.endsWith('/settings/configuration')) {
       return SidebarSection.configuration;
     }
-    if (location.endsWith('/match/new')) return SidebarSection.newMatch;
     if (location.endsWith('/settings')) return null;
     if (location.contains('/match/')) return SidebarSection.matches;
     if (location.endsWith('/matches')) return SidebarSection.matches;
@@ -57,7 +56,6 @@ class SidebarShell extends StatelessWidget {
     return switch (section) {
       SidebarSection.leaderboard => Routes.leaderboard(competitionId),
       SidebarSection.matches => Routes.matches(competitionId),
-      SidebarSection.newMatch => Routes.newMatch(competitionId),
       SidebarSection.players => Routes.players(competitionId),
       SidebarSection.history => Routes.history(competitionId),
       SidebarSection.configuration => Routes.configuration(competitionId),

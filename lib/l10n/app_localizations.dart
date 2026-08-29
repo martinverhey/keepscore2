@@ -851,7 +851,7 @@ abstract class AppLocalizations {
   /// No description provided for @matchNewTitle.
   ///
   /// In en, this message translates to:
-  /// **'Enter match'**
+  /// **'New Match'**
   String get matchNewTitle;
 
   /// No description provided for @matchTeamA.
@@ -887,14 +887,8 @@ abstract class AppLocalizations {
   /// No description provided for @matchPickTeamsTitle.
   ///
   /// In en, this message translates to:
-  /// **'Choose players'**
+  /// **'Players'**
   String get matchPickTeamsTitle;
-
-  /// No description provided for @matchPickTeamsHelp.
-  ///
-  /// In en, this message translates to:
-  /// **'Tap a team below to choose who played.'**
-  String get matchPickTeamsHelp;
 
   /// No description provided for @matchTapToSelectPlayers.
   ///
@@ -943,6 +937,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add players and start creating matches.'**
   String get matchNeedsPlayers;
+
+  /// No description provided for @matchDiscardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard this match?'**
+  String get matchDiscardTitle;
+
+  /// No description provided for @matchDiscardConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'The players and score you entered will be lost.'**
+  String get matchDiscardConfirm;
+
+  /// No description provided for @matchDiscard.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get matchDiscard;
+
+  /// No description provided for @matchKeepEditing.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep editing'**
+  String get matchKeepEditing;
 
   /// No description provided for @matchDetailTitle.
   ///

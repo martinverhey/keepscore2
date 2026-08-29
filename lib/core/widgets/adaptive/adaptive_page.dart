@@ -4,19 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import 'app_platform.dart';
 
-Page<T> adaptiveModalPage<T>(
-  BuildContext context, {
-  required Widget child,
-  LocalKey? key,
-}) {
-  if (AppPlatform.useWideWeb(context)) {
-    return adaptivePage<T>(context, child: child, key: key);
-  }
-  return AppPlatform.useCupertino
-      ? CupertinoPage<T>(key: key, fullscreenDialog: true, child: child)
-      : MaterialPage<T>(key: key, fullscreenDialog: true, child: child);
-}
-
 Page<T> adaptivePage<T>(
   BuildContext context, {
   required Widget child,

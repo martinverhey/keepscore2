@@ -22,6 +22,7 @@ class AdaptiveTextField extends StatelessWidget {
     this.onChanged,
     this.onSubmitted,
     this.accentColor,
+    this.labelFontWeight,
   });
 
   final String label;
@@ -38,6 +39,7 @@ class AdaptiveTextField extends StatelessWidget {
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
   final Color? accentColor;
+  final FontWeight? labelFontWeight;
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +74,9 @@ class AdaptiveTextField extends StatelessWidget {
         counterText: '',
         filled: accentColor != null,
         fillColor: accentColor?.withValues(alpha: AppOpacity.surfaceFill),
-        labelStyle: accentColor == null ? null : TextStyle(color: accentColor),
+        labelStyle: accentColor == null && labelFontWeight == null
+            ? null
+            : TextStyle(color: accentColor, fontWeight: labelFontWeight),
         border: accentBorder,
         enabledBorder: accentBorder,
         focusedBorder: accentColor == null
@@ -107,6 +111,7 @@ class AdaptiveTextField extends StatelessWidget {
         style: CupertinoTheme.of(context).textTheme.tabLabelTextStyle.copyWith(
           fontSize: AppTypography.labelLargeSize,
           color: accentColor,
+          fontWeight: labelFontWeight,
         ),
       ),
     );

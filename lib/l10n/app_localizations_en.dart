@@ -443,7 +443,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get matchNew => 'New match';
 
   @override
-  String get matchNewTitle => 'Enter match';
+  String get matchNewTitle => 'New Match';
 
   @override
   String get matchTeamA => 'Team A';
@@ -462,10 +462,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Delete this match? Ratings for the season will be recalculated.';
 
   @override
-  String get matchPickTeamsTitle => 'Choose players';
-
-  @override
-  String get matchPickTeamsHelp => 'Tap a team below to choose who played.';
+  String get matchPickTeamsTitle => 'Players';
 
   @override
   String get matchTapToSelectPlayers => 'Tap to add players';
@@ -493,6 +490,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get matchNeedsPlayers => 'Add players and start creating matches.';
+
+  @override
+  String get matchDiscardTitle => 'Discard this match?';
+
+  @override
+  String get matchDiscardConfirm =>
+      'The players and score you entered will be lost.';
+
+  @override
+  String get matchDiscard => 'Discard';
+
+  @override
+  String get matchKeepEditing => 'Keep editing';
 
   @override
   String get matchDetailTitle => 'Match';

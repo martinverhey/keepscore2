@@ -7,6 +7,7 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/selectable_row.dart';
 import '../../../../core/widgets/sheet.dart';
+import '../../../../core/widgets/tag.dart';
 import '../../../player/domain/player.model.dart';
 
 List<Player> _sortedByName(List<Player> players) {
@@ -26,6 +27,7 @@ class TeamPickerSheet extends StatefulWidget {
     required this.players,
     required this.initiallySelected,
     required this.competitionId,
+    this.myPlayerId,
   });
 
   final String title;
@@ -33,6 +35,7 @@ class TeamPickerSheet extends StatefulWidget {
   final List<Player> players;
   final Set<String> initiallySelected;
   final String competitionId;
+  final String? myPlayerId;
 
   @override
   State<TeamPickerSheet> createState() => _TeamPickerSheetState();
@@ -49,35 +52,49 @@ class _TeamPickerSheetState extends State<TeamPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Sheet(
-      title: widget.title,
-      titleColor: widget.color,
-      content: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          for (final player in _sortedByName(widget.players))
-            Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-              child: SelectableRow(
-                label: player.displayName,
-                color: widget.color,
-                selected: _selected.contains(player.id),
-                onTap: () => _toggle(player.id),
+    return PopScope<Set<String>>(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        Navigator.of(context).pop(_selected);
+      },
+      child: Sheet(
+        title: widget.title,
+        titleColor: widget.color,
+        content: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (final player in _sortedByName(widget.players))
+              Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                child: SelectableRow(
+                  label: player.displayName,
+                  color: widget.color,
+                  selected: _selected.contains(player.id),
+                  onTap: () => _toggle(player.id),
+                  trailing: player.id == widget.myPlayerId
+                      ? Tag(
+                          context.l10n.playersYou,
+                          color: AdaptiveColors.accent(context),
+                        )
+                      : null,
+                ),
               ),
+            AdaptiveButton(
+              label: context.l10n.playersManageTitle,
+              kind: AdaptiveButtonKind.tinted,
+              onPressed: () {
+                final router = GoRouter.of(context);
+                Navigator.of(context).pop(_selected);
+                router.push(Routes.players(widget.competitionId));
+              },
             ),
-          AdaptiveButton(
-            label: context.l10n.playersManageTitle,
-            kind: AdaptiveButtonKind.tinted,
-            onPressed: () async {
-              await context.push(Routes.players(widget.competitionId));
-              if (context.mounted) Navigator.of(context).pop(_selected);
-            },
-          ),
-        ],
-      ),
-      primaryButton: AdaptiveButton(
-        label: context.l10n.commonDone,
-        onPressed: () => Navigator.of(context).pop(_selected),
+          ],
+        ),
+        primaryButton: AdaptiveButton(
+          label: context.l10n.commonDone,
+          onPressed: () => Navigator.of(context).pop(_selected),
+        ),
       ),
     );
   }

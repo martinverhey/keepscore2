@@ -900,6 +900,24 @@ Kept here because the code cannot express them and they cost real debugging:
   players read (`players` embedding `competitions(starting_rating)`) so the
   page still shows everyone at the starting rating instead of an empty list.
   `Leaderboard.seasonId` is nullable for exactly this synthetic case.
+- **A sheet that guards its own dismissal needs `showAdaptiveSheet(
+  confirmsDismissal: true)`, not just a `PopScope`.** `NewMatchSheet` asks
+  before throwing away a half-filled match, via a `PopScope` whose `canPop`
+  is `!_hasUnsavedInput(state)`. Barrier taps, the Android back button, and
+  our own `ScrollDismissibleSheet` drag all route through
+  `Navigator.maybePop`, which consults that `PopScope` — but Flutter's
+  Material `showModalBottomSheet` has a *second*, built-in drag-to-close
+  whose `onClosing` calls `Navigator.pop(context)` directly
+  (`_ModalBottomSheetState.build` in `bottom_sheet.dart`), so it slips
+  straight past the guard and `ModalBottomSheetRoute.enableDrag` is `final`
+  and cannot be flipped once the route exists. `confirmsDismissal` is
+  therefore decided at show time and does exactly one thing: pass
+  `enableDrag: false` on the Material branch, leaving `ScrollDismissibleSheet`
+  (which uses `maybePop`) as that sheet's only drag path. Cupertino and the
+  wide-web dialog branch need nothing — neither has a drag of its own.
+  `_submit` pops with a bare `Navigator.pop`, which ignores `PopScope`, so a
+  successful save never prompts.
+
 - **`GameTypeFilterCubit` is a `registerLazySingleton`, scoped to the
   Matches list alone.** It's the one thing in the app that still cares about
   `game_type` beyond storing it on the match row — `MatchListCubit` is its
@@ -942,7 +960,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 213 tests at time of writing
+flutter test                    # 227 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 python3 scripts/generate_icon.py   # redraw assets/icon/*.png

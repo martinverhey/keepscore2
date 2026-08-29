@@ -25,6 +25,7 @@ import 'day_header.dart';
 import 'game_type_filter_dropdown.dart';
 import 'match_day_group.dart';
 import 'match_tile.dart';
+import 'new_match_sheet.dart';
 
 class MatchesPage extends StatefulWidget {
   const MatchesPage({super.key});
@@ -253,7 +254,7 @@ class _MatchesPageState extends State<MatchesPage> {
             message: context.l10n.matchesCreateHint,
             actionLabel: context.l10n.matchesCreateHintAction,
             onAction: () =>
-                context.push<Object?>(Routes.newMatch(competitionId)),
+                showNewMatchSheet(context, competitionId: competitionId),
           ),
         ],
       ],

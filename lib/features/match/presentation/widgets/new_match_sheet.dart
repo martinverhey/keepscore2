@@ -1,39 +1,48 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../../app/router/app_router.dart';
+import '../../../../app/dependency_injection/injector.dart';
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/extensions/double.extension.dart';
 import '../../../../core/extensions/text_editing_controller.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
-import '../../../../core/widgets/page_title.dart';
+import '../../../../core/widgets/sheet.dart';
 import '../../../../core/widgets/state_views.dart';
+import '../../../../core/widgets/tag.dart';
+import '../../../competition/presentation/cubit/competition_cubit.dart';
 import '../../../player/domain/player.model.dart';
 import '../../domain/match_entry.model.dart';
 import '../cubit/match_form_cubit.dart';
-import '../widgets/team_picker_sheet.dart';
 import 'new_match_keys.enum.dart';
+import 'team_picker_sheet.dart';
 
-class NewMatchPage extends StatefulWidget {
-  const NewMatchPage({super.key});
-
-  @override
-  State<NewMatchPage> createState() => _NewMatchPageState();
+Future<void> showNewMatchSheet(
+  BuildContext context, {
+  required String competitionId,
+}) {
+  return showAdaptiveSheet<void>(
+    context,
+    confirmsDismissal: true,
+    builder: (_) => BlocProvider(
+      create: (_) => getIt<MatchFormCubit>(param1: competitionId)..load(),
+      child: const NewMatchSheet(),
+    ),
+  );
 }
 
-class _NewMatchPageState extends State<NewMatchPage> {
-  final _scoreA = TextEditingController();
-  final _scoreB = TextEditingController();
+class NewMatchSheet extends StatefulWidget {
+  const NewMatchSheet({super.key});
 
   @override
-  void initState() {
-    super.initState();
-    context.read<MatchFormCubit>().load();
-  }
+  State<NewMatchSheet> createState() => _NewMatchSheetState();
+}
+
+class _NewMatchSheetState extends State<NewMatchSheet> {
+  final _scoreA = TextEditingController();
+  final _scoreB = TextEditingController();
 
   @override
   void dispose() {
@@ -45,38 +54,79 @@ class _NewMatchPageState extends State<NewMatchPage> {
   int? get _scoreAValue => _scoreA.intValue;
   int? get _scoreBValue => _scoreB.intValue;
 
-  Future<void> _submit() async {
+  Future<void> _submit(BuildContext context, MatchFormCubit cubit) async {
     final scoreA = _scoreAValue;
     final scoreB = _scoreBValue;
     if (scoreA == null || scoreB == null) return;
 
-    final cubit = context.read<MatchFormCubit>();
     final id = await cubit.submit(scoreA: scoreA, scoreB: scoreB);
-    if (id == null || !mounted) return;
+    if (id == null || !context.mounted) return;
 
-    context.go(Routes.matches(cubit.competitionId));
+    Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<MatchFormCubit>();
-    setPageTitle(context, context.l10n.matchNewTitle);
+    final myPlayerId = context.watch<CompetitionCubit>().state.myPlayerId;
 
-    return AdaptiveScaffold(
-      title: context.l10n.matchNewTitle,
-      body: BlocBuilder<MatchFormCubit, MatchFormState>(
-        builder: (context, state) => _body(context, state, cubit),
+    return BlocBuilder<MatchFormCubit, MatchFormState>(
+      builder: (context, state) => PopScope(
+        canPop: !_hasUnsavedInput(state),
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) _confirmDiscard(context);
+        },
+        child: Sheet(
+          title: context.l10n.matchNewTitle,
+          content: _content(context, state, cubit, myPlayerId),
+          primaryButton: state is MatchFormReady
+              ? AdaptiveButton(
+                  label: context.l10n.matchSubmit,
+                  busy: state.busy,
+                  onPressed:
+                      state.canSubmit(
+                        scoreAValue: _scoreAValue,
+                        scoreBValue: _scoreBValue,
+                      )
+                      ? () => _submit(context, cubit)
+                      : null,
+                )
+              : null,
+        ),
       ),
     );
   }
 
-  Widget _body(
+  bool _hasUnsavedInput(MatchFormState state) {
+    return _scoreA.text.isNotEmpty ||
+        _scoreB.text.isNotEmpty ||
+        (state is MatchFormReady && state.assignments.isNotEmpty);
+  }
+
+  Future<void> _confirmDiscard(BuildContext context) async {
+    final navigator = Navigator.of(context);
+    final discard = await showAdaptiveConfirm(
+      context,
+      title: context.l10n.matchDiscardTitle,
+      message: context.l10n.matchDiscardConfirm,
+      confirmLabel: context.l10n.matchDiscard,
+      cancelLabel: context.l10n.matchKeepEditing,
+      destructive: true,
+    );
+    if (discard) navigator.pop();
+  }
+
+  Widget _content(
     BuildContext context,
     MatchFormState state,
     MatchFormCubit cubit,
+    String? myPlayerId,
   ) {
     return switch (state) {
-      MatchFormLoading() => const AdaptiveLoader(),
+      MatchFormLoading() => const Padding(
+        padding: EdgeInsets.all(AppSpacing.xl),
+        child: AdaptiveLoader(),
+      ),
       MatchFormMissing() => EmptyState(
         message: context.l10n.competitionNotFound,
       ),
@@ -85,55 +135,42 @@ class _NewMatchPageState extends State<NewMatchPage> {
         retryLabel: context.l10n.commonRetry,
         onRetry: cubit.load,
       ),
-      MatchFormReady() => Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: _form(context, state),
-      ),
+      MatchFormReady() => _form(context, state, myPlayerId),
     };
   }
 
-  Widget _form(BuildContext context, MatchFormReady state) {
-    final canSubmit = state.canSubmit(
-      scoreAValue: _scoreAValue,
-      scoreBValue: _scoreBValue,
-    );
-
+  Widget _form(BuildContext context, MatchFormReady state, String? myPlayerId) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(context.l10n.matchPickTeamsTitle, style: AppTypography.titleSmall),
-        const SizedBox(height: AppSpacing.xs),
-        Text(context.l10n.matchPickTeamsHelp, style: AppTypography.caption),
         const SizedBox(height: AppSpacing.md),
 
         if (state.players.isEmpty)
           EmptyState(message: context.l10n.matchNeedsPlayers)
         else
-          _teamsRow(context, state),
+          _teamsRow(context, state, myPlayerId),
 
         const SizedBox(height: AppSpacing.lg),
         Text(context.l10n.matchScoreTitle, style: AppTypography.titleSmall),
         const SizedBox(height: AppSpacing.md),
         _scoreFields(context),
 
-        const SizedBox(height: AppSpacing.lg),
-
-        if (_hint(state, context) case final hint?) _hintText(hint),
-
-        AdaptiveButton(
-          label: context.l10n.matchSubmit,
-          busy: state.busy,
-          onPressed: canSubmit ? _submit : null,
-        ),
+        if (_hint(state, context) case final hint?) ...[
+          const SizedBox(height: AppSpacing.md),
+          _hintText(hint),
+        ],
 
         if (state.submitFailure != null) _submitFailureText(context, state),
-
-        const SizedBox(height: AppSpacing.xl),
       ],
     );
   }
 
-  Widget _teamsRow(BuildContext context, MatchFormReady state) {
+  Widget _teamsRow(
+    BuildContext context,
+    MatchFormReady state,
+    String? myPlayerId,
+  ) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -147,7 +184,8 @@ class _NewMatchPageState extends State<NewMatchPage> {
             rating: state.teamRating(MatchTeam.a),
             ratingOf: state.ratingOf,
             placeholder: context.l10n.matchTapToSelectPlayers,
-            onTap: () => _pickTeam(context, state, MatchTeam.a),
+            myPlayerId: myPlayerId,
+            onTap: () => _pickTeam(context, state, MatchTeam.a, myPlayerId),
           ),
         ),
         const SizedBox(width: AppSpacing.sm),
@@ -161,7 +199,8 @@ class _NewMatchPageState extends State<NewMatchPage> {
             rating: state.teamRating(MatchTeam.b),
             ratingOf: state.ratingOf,
             placeholder: context.l10n.matchTapToSelectPlayers,
-            onTap: () => _pickTeam(context, state, MatchTeam.b),
+            myPlayerId: myPlayerId,
+            onTap: () => _pickTeam(context, state, MatchTeam.b, myPlayerId),
           ),
         ),
       ],
@@ -181,6 +220,7 @@ class _NewMatchPageState extends State<NewMatchPage> {
             maxLength: 3,
             onChanged: (_) => setState(() {}),
             accentColor: AdaptiveColors.teamA(context),
+            labelFontWeight: FontWeight.w700,
           ),
         ),
         const SizedBox(width: AppSpacing.md),
@@ -193,6 +233,7 @@ class _NewMatchPageState extends State<NewMatchPage> {
             maxLength: 3,
             onChanged: (_) => setState(() {}),
             accentColor: AdaptiveColors.teamB(context),
+            labelFontWeight: FontWeight.w700,
           ),
         ),
       ],
@@ -200,13 +241,10 @@ class _NewMatchPageState extends State<NewMatchPage> {
   }
 
   Widget _hintText(String hint) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: Text(
-        hint,
-        textAlign: TextAlign.center,
-        style: AppTypography.caption,
-      ),
+    return Text(
+      hint,
+      textAlign: TextAlign.center,
+      style: AppTypography.caption,
     );
   }
 
@@ -243,6 +281,7 @@ class _NewMatchPageState extends State<NewMatchPage> {
     BuildContext context,
     MatchFormReady state,
     MatchTeam side,
+    String? myPlayerId,
   ) async {
     final cubit = context.read<MatchFormCubit>();
     final color = side == MatchTeam.a
@@ -263,6 +302,7 @@ class _NewMatchPageState extends State<NewMatchPage> {
             .toList(growable: false),
         initiallySelected: state.team(side).map((player) => player.id).toSet(),
         competitionId: cubit.competitionId,
+        myPlayerId: myPlayerId,
       ),
     );
     if (!context.mounted) return;
@@ -279,6 +319,7 @@ class _NewMatchPageState extends State<NewMatchPage> {
     required double rating,
     required double Function(String playerId) ratingOf,
     required String placeholder,
+    required String? myPlayerId,
     required VoidCallback onTap,
   }) {
     return AdaptiveTappable(
@@ -310,7 +351,7 @@ class _NewMatchPageState extends State<NewMatchPage> {
               Text(placeholder, style: AppTypography.caption)
             else
               for (final player in _sortedByName(members))
-                _teamMemberRow(player, ratingOf),
+                _teamMemberRow(context, player, ratingOf, myPlayerId),
           ],
         ),
       ),
@@ -327,9 +368,12 @@ class _NewMatchPageState extends State<NewMatchPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
-          child: Text(
-            title.toUpperCase(),
-            style: AppTypography.eyebrow.copyWith(color: color),
+          child: Transform.translate(
+            offset: const Offset(0, 4),
+            child: Text(
+              title.toUpperCase(),
+              style: AppTypography.eyebrow.copyWith(color: color),
+            ),
           ),
         ),
         if (members.isNotEmpty)
@@ -342,7 +386,6 @@ class _NewMatchPageState extends State<NewMatchPage> {
               style: AppTypography.headlineMedium.copyWith(
                 fontWeight: FontWeight.w800,
                 color: color,
-                fontFeatures: AppTypography.tabularFigures,
               ),
             ),
           ),
@@ -351,18 +394,33 @@ class _NewMatchPageState extends State<NewMatchPage> {
   }
 
   Widget _teamMemberRow(
+    BuildContext context,
     Player player,
     double Function(String playerId) ratingOf,
+    String? myPlayerId,
   ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.xs),
       child: Row(
         children: [
           Expanded(
-            child: Text(
-              player.displayName,
-              style: AppTypography.bodyMedium,
-              overflow: TextOverflow.ellipsis,
+            child: Row(
+              children: [
+                Flexible(
+                  child: Text(
+                    player.displayName,
+                    style: AppTypography.bodyMedium,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (player.id == myPlayerId) ...[
+                  const SizedBox(width: AppSpacing.xs),
+                  Tag(
+                    context.l10n.playersYou,
+                    color: AdaptiveColors.accent(context),
+                  ),
+                ],
+              ],
             ),
           ),
           Text(

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/router/app_router.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
+import '../../../match/presentation/widgets/new_match_sheet.dart';
 import 'competition_tab.enum.dart';
 
 class CompetitionTabBar extends StatelessWidget {
@@ -45,7 +46,7 @@ class CompetitionTabBar extends StatelessWidget {
 
   void _select(BuildContext context, int index) {
     if (isRegistered && index == 1) {
-      context.push<Object?>(Routes.newMatch(competitionId));
+      showNewMatchSheet(context, competitionId: competitionId);
       return;
     }
 
