@@ -59,27 +59,25 @@ class MatchCard extends StatelessWidget {
           null => null,
         },
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(child: _side(team: MatchTeam.a)),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-            child: Text(
-              '${match.teamAScore} – ${match.teamBScore}',
-              style: AppTypography.titleMedium.copyWith(
-                fontFeatures: AppTypography.tabularFigures,
-              ),
-            ),
-          ),
-          Expanded(child: _side(team: MatchTeam.b)),
-        ],
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [_teams(), const SizedBox(height: 2), _deltas()],
       ),
     );
   }
 
+  Widget _teams() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(child: _side(team: MatchTeam.a)),
+        _score(),
+        Expanded(child: _side(team: MatchTeam.b)),
+      ],
+    );
+  }
+
   Widget _side({required MatchTeam team}) {
-    final players = match.players(team);
     final won = match.winner == team;
     final alignEnd = team == MatchTeam.b;
 
@@ -89,7 +87,7 @@ class MatchCard extends StatelessWidget {
           : CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        for (final entry in players)
+        for (final entry in match.players(team))
           Text(
             entry.displayName,
             textAlign: alignEnd ? TextAlign.end : TextAlign.start,
@@ -100,12 +98,35 @@ class MatchCard extends StatelessWidget {
               color: won ? null : AppColors.neutral,
             ),
           ),
-        const SizedBox(height: 2),
-        RatingDelta(
-          value: players.isEmpty ? 0 : players.first.ratingDelta,
-          fontSize: AppTypography.labelLargeSize,
-        ),
       ],
+    );
+  }
+
+  Widget _score() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+      child: Text(
+        '${match.teamAScore} – ${match.teamBScore}',
+        style: AppTypography.headlineMedium.copyWith(
+          fontFeatures: AppTypography.tabularFigures,
+        ),
+      ),
+    );
+  }
+
+  Widget _deltas() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [_delta(MatchTeam.a), _delta(MatchTeam.b)],
+    );
+  }
+
+  Widget _delta(MatchTeam team) {
+    final players = match.players(team);
+
+    return RatingDelta(
+      value: players.isEmpty ? 0 : players.first.ratingDelta,
+      fontSize: AppTypography.labelLargeSize,
     );
   }
 }
