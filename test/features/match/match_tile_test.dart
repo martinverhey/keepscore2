@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/features/match/domain/match_entry.model.dart';
-import 'package:keepscore2/features/match/presentation/widgets/match_tile.dart';
+import 'package:keepscore2/features/match/presentation/widgets/match_card.dart';
 
 MatchParticipant _participant(String name) => MatchParticipant(
   playerId: name,
@@ -32,7 +32,7 @@ void main() {
         textDirection: TextDirection.ltr,
         child: SizedBox(
           width: 200,
-          child: MatchTile(match: match, onTap: () {}),
+          child: MatchCard(match: match, onTap: () {}),
         ),
       ),
     );
@@ -66,7 +66,7 @@ void main() {
       await tester.pumpWidget(
         Directionality(
           textDirection: TextDirection.ltr,
-          child: MatchTile(match: match, myPlayerId: myPlayerId, onTap: () {}),
+          child: MatchCard(match: match, myPlayerId: myPlayerId, onTap: () {}),
         ),
       );
       final container = tester.widget<Container>(find.byType(Container).first);

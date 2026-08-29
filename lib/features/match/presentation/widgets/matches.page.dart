@@ -1,8 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../../app/router/app_router.dart';
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/extensions/competition.extension.dart';
@@ -24,7 +22,8 @@ import '../cubit/match_list_cubit.dart';
 import 'day_header.dart';
 import 'game_type_filter_dropdown.dart';
 import 'match_day_group.dart';
-import 'match_tile.dart';
+import 'match_card.dart';
+import 'match_detail_sheet.dart';
 import 'new_match_sheet.dart';
 
 class MatchesPage extends StatefulWidget {
@@ -221,11 +220,15 @@ class _MatchesPageState extends State<MatchesPage> {
         for (final group in groupByDay(state.matches)) ...[
           DayHeader(day: group.day),
           for (final match in group.matches)
-            MatchTile(
+            MatchCard(
               match: match,
               myPlayerId: myPlayerId,
-              onTap: () =>
-                  context.push<Object?>(Routes.match(competitionId, match.id)),
+              onTap: () => showMatchDetailSheet(
+                context,
+                competitionId: competitionId,
+                matchId: match.id,
+                myPlayerId: myPlayerId,
+              ),
             ),
         ],
       ],

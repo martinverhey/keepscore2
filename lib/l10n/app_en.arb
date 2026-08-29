@@ -214,6 +214,9 @@
   "matchEditScoreTitle": "Change the score",
   "matchEditScoreHelp": "The season is recalculated from this match onwards.",
   "matchDraw": "Draw",
+  "matchPlayerRankTitle": "Player rank",
+  "matchTeamAverage": "Average",
+  "matchWinChanceTitle": "Win chance",
   "matchLoadMore": "Load more",
 
   "playersTitle": "Manage Players",

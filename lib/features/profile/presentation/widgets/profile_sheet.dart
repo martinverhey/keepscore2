@@ -20,7 +20,7 @@ import '../../../leaderboard/domain/leaderboard.model.dart';
 import '../../../leaderboard/domain/medals.model.dart';
 import '../../../leaderboard/domain/season_leaderboard.model.dart';
 import '../../../match/domain/match_entry.model.dart';
-import '../../../match/presentation/widgets/match_tile.dart';
+import '../../../match/presentation/widgets/match_card.dart';
 import '../cubit/profile_history_cubit.dart';
 import '../cubit/profile_overview_cubit.dart';
 import '../cubit/profile_versus_cubit.dart';
@@ -468,7 +468,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
   }
 
   Widget _recentMatchTile(MatchEntry match) {
-    return MatchTile(match: match, myPlayerId: widget.myPlayerId);
+    return MatchCard(match: match, myPlayerId: widget.myPlayerId);
   }
 
   Widget _historyTab(BuildContext context) {

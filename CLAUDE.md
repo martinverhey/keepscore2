@@ -81,11 +81,18 @@ leaderboards — so the picker itself needs no separate fetch), and selecting on
 fetches just that season's leaderboard. Neither tab filters by game type —
 that's Matches-only, see below.
 
-`/competition/:id/match/new` builds the teams and submits; `/competition/:id/match/:matchId` shows
-the per-player before → after and lets the creator or the owner change the
-score or delete the match. Both are pushed on top of the shell, so they build
-their own cubits; the shell reloads its list and overview whenever one of them
-pops.
+Logging a match and inspecting one are both sheets, not routes — there is no
+`match/*` route and no `Routes.match`, so neither is deep-linkable, and each
+builds its own cubit inside the `showAdaptiveSheet` builder rather than in a
+`GoRoute`. `showNewMatchSheet` builds the teams and submits.
+`showMatchDetailSheet` (`match/presentation/widgets/match_detail_sheet.dart`)
+renders the same `MatchCard` the list does, then a "Player rank" card (each
+player's rating going in, Team A left / Team B right, divided off from the two
+team averages) and a "Win chance" card (`EloCalculator.winChance`, the expected
+score the delta is already computed from, formatted with
+`NumberFormat.percentPattern`), and lets the creator or the owner change the
+score or delete the match from the sheet's primary/secondary buttons. Nothing
+refreshes the list when either sheet closes — realtime does it.
 
 ## Product decisions (already settled — do not relitigate)
 
@@ -118,7 +125,7 @@ or moved:
 - **Create a match** — the "new match" bottom tab item is omitted entirely for
   guests in `competition_tab_bar.dart`; `matches.page.dart` shows
   `GuestNotice` instead of the log affordance.
-- **Edit/delete a match** — `match_detail.page.dart`,
+- **Edit/delete a match** — `match_detail_sheet.dart`,
   `session.canWrite && state.isManageableBy(session.user?.id)` (creator or
   owner only, not just registered).
 - **History** (`settings.page.dart`) is deliberately *outside*

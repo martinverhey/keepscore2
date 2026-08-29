@@ -214,6 +214,9 @@
   "matchEditScoreTitle": "Score aanpassen",
   "matchEditScoreHelp": "Het seizoen wordt vanaf deze wedstrijd opnieuw berekend.",
   "matchDraw": "Gelijkspel",
+  "matchPlayerRankTitle": "Spelersranking",
+  "matchTeamAverage": "Gemiddelde",
+  "matchWinChanceTitle": "Winkans",
   "matchLoadMore": "Meer laden",
 
   "playersTitle": "Spelers beheren",

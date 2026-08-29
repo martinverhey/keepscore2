@@ -5,8 +5,8 @@ import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/rating_delta.dart';
 import '../../domain/match_entry.model.dart';
 
-class MatchTile extends StatelessWidget {
-  const MatchTile({
+class MatchCard extends StatelessWidget {
+  const MatchCard({
     super.key,
     required this.match,
     this.onTap,

@@ -13,6 +13,11 @@ abstract final class EloCalculator {
     return values.reduce((a, b) => a + b) / values.length;
   }
 
+  static double winChance({
+    required double ratingA,
+    required double ratingB,
+  }) => 1.0 / (1.0 + math.pow(10.0, (ratingB - ratingA) / 400.0));
+
   static double delta({
     required double ratingA,
     required double ratingB,
@@ -20,7 +25,7 @@ abstract final class EloCalculator {
     required int scoreB,
     required EloSettings settings,
   }) {
-    final expectedA = 1.0 / (1.0 + math.pow(10.0, (ratingB - ratingA) / 400.0));
+    final expectedA = winChance(ratingA: ratingA, ratingB: ratingB);
 
     final actualA = scoreA > scoreB
         ? 1.0

@@ -1010,6 +1010,24 @@ abstract class AppLocalizations {
   /// **'Draw'**
   String get matchDraw;
 
+  /// No description provided for @matchPlayerRankTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Player rank'**
+  String get matchPlayerRankTitle;
+
+  /// No description provided for @matchTeamAverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Average'**
+  String get matchTeamAverage;
+
+  /// No description provided for @matchWinChanceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Win chance'**
+  String get matchWinChanceTitle;
+
   /// No description provided for @matchLoadMore.
   ///
   /// In en, this message translates to:
