@@ -25,6 +25,17 @@ class _CompetitionShellState extends State<CompetitionShell> {
   @override
   void initState() {
     super.initState();
+    _enterCompetition();
+  }
+
+  @override
+  void didUpdateWidget(CompetitionShell oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.competitionId == oldWidget.competitionId) return;
+    _enterCompetition();
+  }
+
+  void _enterCompetition() {
     RecentCompetitionStore.set(widget.competitionId);
     context.read<PlayersCubit>().load();
   }

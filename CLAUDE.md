@@ -869,25 +869,41 @@ else in the suite:
   route is still part of the chain on every one of those. Comparing
   `matchedLocation` (this route's own matched segment) against `uri.path`
   (the full requested location) is what limits the redirect to the bare path.
-- **Switching *competitions*, not tabs, still needs the branches — and their
-  `LeaderboardCubit`/`MatchListCubit` — torn down, and that happens for
-  free.** The competition `ShellRoute`'s `KeyedSubtree(key: ValueKey(id))`
-  (there originally so `PlayersCubit` gets a fresh instance per competition)
-  wraps the entire nested Navigator, `StatefulShellRoute` included — so an id
-  change unmounts and rebuilds the whole branch structure, GlobalKeys and
-  all, rather than leaving a branch's Navigator (and whatever cubit its leaf
-  route is holding) alive underneath the new competition until it's
-  revisited. This was verified directly rather than assumed, since nothing
-  else in the app nests a `StatefulShellRoute` inside a re-keyed ancestor —
-  a merely-*updated* (not rebuilt) branch would otherwise silently keep
-  showing the previous competition's matches until the user switched tabs.
+- **Switching *competitions*, not tabs, does NOT tear the branches down, and
+  each branch's `BlocProvider` has to carry `key: ValueKey(id)` to compensate.**
+  go_router derives a page's key from the *route pattern*, not the resolved
+  location (`RouteMatchBase.match` → `pageKey: ValueKey(newMatchedPath)`,
+  where `newMatchedPath` is built from `route.path`), so
+  `/competition/c1/leaderboard` and `/competition/c2/leaderboard` produce the
+  identical `ValueKey('/competition/:id/leaderboard')`. `Navigator`'s page
+  diffing therefore *updates* the existing route in place instead of
+  replacing it, `LeaderboardPage`'s `State` survives, and `BlocProvider`'s
+  `create` — which only ever runs once per element — keeps handing out the
+  previous competition's `LeaderboardCubit`. Same for `MatchesPage`/
+  `MatchListCubit`. Keying the `BlocProvider` by the competition id is what
+  forces a new element, hence a new cubit and a fresh `initState` `load()`.
+  The competition `ShellRoute`'s `KeyedSubtree(key: ValueKey(id))` does *not*
+  save this: everything below it is a `GlobalKey`'d Navigator
+  (`ShellRoute.navigatorKey`, `StatefulShellBranch.navigatorKey`,
+  `StatefulShellRoute._shellStateKey`, all created once per route *config*),
+  so an id change reparents those elements intact rather than rebuilding
+  them. It only reaches as far as the `MultiBlocProvider` it directly wraps,
+  which is why `PlayersCubit` alone gets a genuinely fresh instance from it.
+  Re-keying the competition `ShellRoute`'s own page instead is not an option
+  — the outgoing and incoming pages would both be mounted during the
+  transition, each claiming those same Navigator `GlobalKey`s.
+  `test/flow/switch_competition_flow_test.dart` walks the real mobile path
+  (leaderboard → `push('/')` → `go('/competition/c2')`) and asserts both
+  cubits and the player list actually followed.
 
 `CompetitionShell` (`features/competition/presentation/pages/competition_shell.dart`)
 is what the `StatefulShellRoute`'s `builder` returns, wrapping
 `navigationShell` — it replaced `CompetitionContent` and shrank to just
-`RecentCompetitionStore.set`/`PlayersCubit.load()` in `initState` (no
-`didUpdateWidget` needed — the id-change reset above already remounts it
-fresh) and a `BlocListener` bouncing to `Routes.home` on `CompetitionMissing`.
+`RecentCompetitionStore.set`/`PlayersCubit.load()` (from `initState` *and*
+`didUpdateWidget`, since for the reason above it is updated, not remounted,
+when the competition id changes — without the second call the freshly built
+`PlayersCubit` would sit in `PlayersLoading` forever) and a `BlocListener`
+bouncing to `Routes.home` on `CompetitionMissing`.
 `CompetitionTabBar` (`features/competition/presentation/widgets/competition_tab_bar.dart`)
 is the bottom tab bar both pages render: it takes only primitives
 (`competitionId`, `current`, `isRegistered`) and navigates itself via

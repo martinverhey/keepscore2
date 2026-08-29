@@ -197,12 +197,15 @@ GoRouter createRouter(AuthBloc authBloc) {
                         routes: [
                           GoRoute(
                             path: 'leaderboard',
-                            builder: (context, state) => BlocProvider(
-                              create: (_) => getIt<LeaderboardCubit>(
-                                param1: state.pathParameters['id']!,
-                              ),
-                              child: const LeaderboardPage(),
-                            ),
+                            builder: (context, state) {
+                              final id = state.pathParameters['id']!;
+                              return BlocProvider(
+                                key: ValueKey(id),
+                                create: (_) =>
+                                    getIt<LeaderboardCubit>(param1: id),
+                                child: const LeaderboardPage(),
+                              );
+                            },
                           ),
                         ],
                       ),
@@ -210,12 +213,15 @@ GoRouter createRouter(AuthBloc authBloc) {
                         routes: [
                           GoRoute(
                             path: 'matches',
-                            builder: (context, state) => BlocProvider(
-                              create: (_) => getIt<MatchListCubit>(
-                                param1: state.pathParameters['id']!,
-                              ),
-                              child: const MatchesPage(),
-                            ),
+                            builder: (context, state) {
+                              final id = state.pathParameters['id']!;
+                              return BlocProvider(
+                                key: ValueKey(id),
+                                create: (_) =>
+                                    getIt<MatchListCubit>(param1: id),
+                                child: const MatchesPage(),
+                              );
+                            },
                           ),
                         ],
                       ),
