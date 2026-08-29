@@ -86,9 +86,8 @@ class _ProfileSheetState extends State<ProfileSheet> {
         return Sheet(
           title: widget.displayName,
           avatar: InitialsCircle(displayName: widget.displayName, size: 48),
-          subtitleWidget:
-              state is ProfileOverviewReady && state.leaderboard != null
-              ? _rankSummary(context, state)
+          subtitleWidget: state is ProfileOverviewReady
+              ? _medalSummary(state)
               : null,
           content: switch (state) {
             ProfileOverviewLoading() => const Padding(
@@ -221,26 +220,11 @@ class _ProfileSheetState extends State<ProfileSheet> {
     );
   }
 
-  Widget _rankSummary(BuildContext context, ProfileOverviewReady state) {
-    final leaderboard = state.leaderboard!;
+  Widget? _medalSummary(ProfileOverviewReady state) {
     final tally = state.medals;
+    if (tally == null || !tally.hasAny) return null;
 
-    return Row(
-      children: [
-        Flexible(
-          child: Text(
-            context.l10n.profileRank(leaderboard.rank, state.playerCount),
-            style: AppTypography.captionSmall,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-        if (tally != null && tally.hasAny) ...[
-          const Spacer(),
-          _medalRow(tally),
-          const Spacer(),
-        ],
-      ],
-    );
+    return _medalRow(tally);
   }
 
   Widget _medalRow(Medals medals) {
@@ -250,7 +234,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
       mainAxisSize: MainAxisSize.min,
       children: [
         for (var i = 0; i < chips.length; i++) ...[
-          if (i > 0) const SizedBox(width: AppSpacing.sm),
+          if (i > 0) const SizedBox(width: AppSpacing.xs),
           chips[i],
         ],
       ],

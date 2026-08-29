@@ -22,7 +22,6 @@ class ProfileSection extends StatelessWidget {
     required this.playerId,
     required this.displayName,
     required this.seasonLength,
-    required this.playerCount,
     this.leaderboard,
     this.medals,
   });
@@ -31,7 +30,6 @@ class ProfileSection extends StatelessWidget {
   final String playerId;
   final String displayName;
   final SeasonLength seasonLength;
-  final int playerCount;
   final Leaderboard? leaderboard;
   final Medals? medals;
 
@@ -69,7 +67,7 @@ class ProfileSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _header(context, leaderboard),
+            _header(context),
             if (hasStats) ...[
               const SizedBox(height: AppSpacing.md),
               _statRow(context, leaderboard),
@@ -80,13 +78,9 @@ class ProfileSection extends StatelessWidget {
     );
   }
 
-  Widget _header(BuildContext context, Leaderboard? leaderboard) {
+  Widget _header(BuildContext context) {
     final tally = medals;
-    final hasMedals =
-        leaderboard != null &&
-        leaderboard.played > 0 &&
-        tally != null &&
-        tally.hasAny;
+    final hasMedals = tally != null && tally.hasAny;
 
     return Row(
       children: [
@@ -103,21 +97,13 @@ class ProfileSection extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              if (leaderboard != null && leaderboard.played > 0) ...[
+              if (hasMedals) ...[
                 const SizedBox(height: 2),
-                Text(
-                  context.l10n.profileRank(leaderboard.rank, playerCount),
-                  style: AppTypography.captionSmall,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                Row(children: _medalChips(tally)),
               ],
             ],
           ),
         ),
-        if (hasMedals) ...[
-          const SizedBox(width: AppSpacing.sm),
-          _medalColumn(tally),
-        ],
         const SizedBox(width: AppSpacing.sm),
         const AdaptiveIcon(
           AdaptiveGlyph.chevronRight,
@@ -128,46 +114,20 @@ class ProfileSection extends StatelessWidget {
     );
   }
 
-  Widget _medalColumn(Medals medals) {
-    final chips = _medalChips(medals);
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        for (var i = 0; i < chips.length; i++) ...[
-          if (i > 0) const SizedBox(height: AppSpacing.xs),
-          chips[i],
-        ],
-      ],
-    );
-  }
-
   List<Widget> _medalChips(Medals medals) {
     final chips = [
-      if (medals.gold > 0)
-        MedalChip(
-          color: AppColors.gold,
-          count: medals.gold,
-          iconSize: 20,
-          fontSize: AppTypography.titleMediumSize,
-        ),
+      if (medals.gold > 0) MedalChip(color: AppColors.gold, count: medals.gold),
       if (medals.silver > 0)
-        MedalChip(
-          color: AppColors.silver,
-          count: medals.silver,
-          iconSize: 20,
-          fontSize: AppTypography.titleMediumSize,
-        ),
+        MedalChip(color: AppColors.silver, count: medals.silver),
       if (medals.bronze > 0)
-        MedalChip(
-          color: AppColors.bronze,
-          count: medals.bronze,
-          iconSize: 20,
-          fontSize: AppTypography.titleMediumSize,
-        ),
+        MedalChip(color: AppColors.bronze, count: medals.bronze),
     ];
-    return chips;
+    return [
+      for (var i = 0; i < chips.length; i++) ...[
+        if (i > 0) const SizedBox(width: AppSpacing.xs),
+        chips[i],
+      ],
+    ];
   }
 
   Widget _statRow(BuildContext context, Leaderboard leaderboard) {

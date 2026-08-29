@@ -197,7 +197,6 @@ void main() {
       expect(find.text(l10n.profileWinRateLabel), findsOneWidget);
       expect(find.text('60%'), findsOneWidget);
 
-      expect(find.text(l10n.profileRank(1, 1)), findsOneWidget);
       expect(find.text(l10n.profileSeasonRatingLabel), findsOneWidget);
       expect(find.text(l10n.profileBestRatingLabel), findsOneWidget);
       expect(find.text('1050'), findsNWidgets(2));
@@ -231,7 +230,7 @@ void main() {
   );
 
   testWidgets(
-    'the rank + medals header subtitle does not overflow on a narrow phone '
+    'the medals header subtitle does not overflow on a narrow phone '
     'with a long name and large counts',
     (tester) async {
       tester.view.physicalSize = const Size(360, 800);
@@ -312,11 +311,6 @@ void main() {
       await cubit.stream.firstWhere((s) => s is ProfileOverviewReady);
       await pumpSheet(tester, cubit, displayName: longName);
 
-      final l10n = AppLocalizations.of(
-        tester.element(find.byType(ProfileSheet)),
-      );
-
-      expect(find.text(l10n.profileRank(12, 87)), findsOneWidget);
       expect(find.text('12'), findsOneWidget);
       expect(find.text('34'), findsOneWidget);
       expect(find.text('56'), findsOneWidget);

@@ -133,7 +133,6 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
             seasonLength: competition.seasonLength,
             leaderboard: myLeaderboard,
             medals: myMedals,
-            playerCount: leaderboards.length,
           ),
         const SizedBox(height: AppSpacing.lg),
         LeaderboardList(

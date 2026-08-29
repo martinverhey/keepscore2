@@ -45,7 +45,6 @@ Future<void> _pump(
         playerId: 'p1',
         displayName: 'Bartholomew Alexandertonovich',
         seasonLength: SeasonLength.monthly,
-        playerCount: 6,
         leaderboard: leaderboard,
         medals: medals,
       ),
@@ -56,7 +55,7 @@ Future<void> _pump(
 
 void main() {
   testWidgets(
-    'shows the name without a greeting, and the rank, rating, win rate '
+    'shows the name without a greeting, and the rating, win rate '
     'and games as text, with no streak or record',
     (tester) async {
       await _pump(tester, _leaderboard());
@@ -67,7 +66,6 @@ void main() {
 
       expect(find.text('Bartholomew Alexandertonovich'), findsOneWidget);
       expect(find.textContaining('Hello'), findsNothing);
-      expect(find.text(l10n.profileRank(1, 6)), findsOneWidget);
       expect(find.text('1042'), findsOneWidget);
       expect(find.text('60%'), findsOneWidget);
       expect(find.text('5'), findsOneWidget);
