@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../theme/app_tokens.dart';
+import '../scroll_dismissible_sheet.dart';
 import 'app_platform.dart';
 
 Future<bool> showAdaptiveConfirm(
@@ -67,16 +68,19 @@ Future<bool> showAdaptiveConfirm(
 Future<T?> showAdaptiveSheet<T>(
   BuildContext context, {
   required WidgetBuilder builder,
+  bool confirmsDismissal = false,
 }) {
   if (AppPlatform.useCupertino) {
     return showCupertinoModalPopup<T>(
       context: context,
-      builder: (sheetContext) => Container(
-        decoration: BoxDecoration(
-          color: CupertinoColors.systemBackground.resolveFrom(sheetContext),
-          borderRadius: AppRadius.sheet,
+      builder: (sheetContext) => ScrollDismissibleSheet(
+        child: Container(
+          decoration: BoxDecoration(
+            color: CupertinoColors.systemBackground.resolveFrom(sheetContext),
+            borderRadius: AppRadius.sheet,
+          ),
+          child: SafeArea(top: false, child: builder(sheetContext)),
         ),
-        child: SafeArea(top: false, child: builder(sheetContext)),
       ),
     );
   }
@@ -95,6 +99,17 @@ Future<T?> showAdaptiveSheet<T>(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
-    builder: builder,
+    enableDrag: !confirmsDismissal,
+    backgroundColor: Colors.transparent,
+    elevation: 0,
+    builder: (sheetContext) => ScrollDismissibleSheet(
+      child: Container(
+        decoration: BoxDecoration(
+          color: Theme.of(sheetContext).colorScheme.surfaceContainerLow,
+          borderRadius: AppRadius.sheet,
+        ),
+        child: builder(sheetContext),
+      ),
+    ),
   );
 }

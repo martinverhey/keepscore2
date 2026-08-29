@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import '../theme/app_tokens.dart';
 import 'adaptive/adaptive.dart';
 import 'help_text.dart';
+import 'scroll_dismiss_scope.dart';
 
 class Sheet extends StatelessWidget {
   const Sheet({
@@ -52,7 +53,12 @@ class Sheet extends StatelessWidget {
                 _header(context),
                 const SizedBox(height: AppSpacing.lg),
               ],
-              Flexible(child: SingleChildScrollView(child: content)),
+              Flexible(
+                child: SingleChildScrollView(
+                  physics: ScrollDismissScope.physicsOf(context),
+                  child: content,
+                ),
+              ),
               if (primaryButton != null) ...[
                 const SizedBox(height: AppSpacing.lg),
                 primaryButton!,

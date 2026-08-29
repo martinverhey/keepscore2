@@ -37,6 +37,10 @@ abstract final class AppTheme {
         shape: const RoundedRectangleBorder(borderRadius: AppRadius.card),
         margin: EdgeInsets.zero,
       ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: scheme.surfaceContainerLow,
+        surfaceTintColor: Colors.transparent,
+      ),
       inputDecorationTheme: const InputDecorationTheme(
         border: OutlineInputBorder(borderRadius: AppRadius.card),
         filled: true,
