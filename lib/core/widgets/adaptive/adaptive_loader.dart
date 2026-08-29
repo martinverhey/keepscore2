@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import 'app_platform.dart';
 
 class AdaptiveLoader extends StatelessWidget {
-  const AdaptiveLoader({super.key, this.size});
+  const AdaptiveLoader({super.key, this.size, this.color});
   final double? size;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +19,7 @@ class AdaptiveLoader extends StatelessWidget {
 
   Widget _indicator() {
     return AppPlatform.useCupertino
-        ? const CupertinoActivityIndicator()
-        : const CircularProgressIndicator();
+        ? CupertinoActivityIndicator(color: color)
+        : CircularProgressIndicator(color: color);
   }
 }

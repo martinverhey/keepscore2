@@ -54,7 +54,11 @@ abstract final class AppColors {
   static const Color iceCore = Color(0xFF29B6F6);
 
   static const Color white = Color(0xFFFFFFFF);
+  static const Color black = Color(0xFF000000);
   static const Color transparent = Color(0x00000000);
+
+  static const Color splashGradientStart = Color(0xFFFF9400);
+  static const Color splashGradientEnd = Color(0xFFFF6900);
 
   static final Color neutralSurface = neutralSoft.withValues(
     alpha: AppOpacity.neutralSurfaceFill,
@@ -70,6 +74,11 @@ abstract final class AppTypography {
   ];
 
   static const String brandFontFamily = 'Permanent Marker';
+
+  static const double brandInitialSize = 125;
+  static const double brandWordSize = 55;
+  static const double brandBylineSize = 20;
+  static const double brandLineHeight = 0.76;
 
   static const double displaySize = 40;
   static const double headlineLargeSize = 28;
@@ -140,6 +149,23 @@ abstract final class AppTypography {
   static const TextStyle labelTiny = TextStyle(
     fontSize: labelTinySize,
     color: AppColors.neutral,
+  );
+  static const TextStyle brandInitial = TextStyle(
+    fontFamily: brandFontFamily,
+    fontSize: brandInitialSize,
+    height: brandLineHeight,
+    color: AppColors.white,
+  );
+  static const TextStyle brandWord = TextStyle(
+    fontFamily: brandFontFamily,
+    fontSize: brandWordSize,
+    height: brandLineHeight,
+    color: AppColors.white,
+  );
+  static const TextStyle brandByline = TextStyle(
+    fontFamily: brandFontFamily,
+    fontSize: brandBylineSize,
+    color: AppColors.black,
   );
 }
 
