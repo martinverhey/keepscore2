@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:keepscore2/core/theme/app_tokens.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 import 'package:keepscore2/features/auth/domain/auth_repository.dart';
 import 'package:keepscore2/features/auth/domain/auth_user.model.dart';
@@ -560,6 +561,55 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(themeCubit.state.preference, isNot(before));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('wide web keeps the app bar ends and the FAB inside the '
+      'content column', (tester) async {
+    useWideWebViewport(tester);
+    AppPlatform.debugOverrideCupertino = false;
+    addTearDown(() => AppPlatform.debugOverrideCupertino = null);
+
+    await tester.pumpWidget(
+      wrap(
+        Sidebar(
+          current: SidebarSection.leaderboard,
+          onSelectSection: (_) {},
+          child: const AdaptiveScaffold(
+            title: 'Leaderboard',
+            leading: Icon(Icons.arrow_back, key: Key('leading')),
+            trailing: Icon(Icons.filter_list, key: Key('trailing')),
+            floatingAction: FloatingActionButton(
+              key: Key('fab'),
+              onPressed: null,
+              child: Icon(Icons.add),
+            ),
+            body: Center(child: Text('body content')),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    const paneStart = 232.0;
+    const paneWidth = 1440.0 - paneStart;
+    const columnStart = paneStart + (paneWidth - kContentMaxWidth) / 2;
+    const columnEnd = columnStart + kContentMaxWidth;
+
+    for (final key in ['leading', 'trailing', 'fab']) {
+      final rect = tester.getRect(find.byKey(Key(key)));
+      expect(
+        rect.left,
+        greaterThanOrEqualTo(columnStart),
+        reason: '$key starts before the content column',
+      );
+      expect(
+        rect.right,
+        lessThanOrEqualTo(columnEnd),
+        reason: '$key runs past the content column',
+      );
+    }
+
     expect(tester.takeException(), isNull);
   });
 }

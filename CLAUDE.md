@@ -693,6 +693,49 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   plain, fixed-height, `pinned: true` `SliverAppBar` instead — mouse/trackpad
   scrolling has no reason to animate the title away, and doing so anyway reads
   as an unintentional phone skin on a desktop window.
+- **Three widths are stacked on wide web, and only the middle one is 640.**
+  The sidebar is a fixed `Sidebar._width = 232`, with the page `Expanded`
+  beside it, so the *pane* — and with it the whole `AdaptiveScaffold`:
+  `Scaffold` background, `SliverAppBar`, `floatingAction`, `bottomBar` — is
+  `viewport - 232`. Inside that, `AdaptiveScaffold._content` centers **`body`
+  alone** in a `ConstrainedBox(maxWidth: kContentMaxWidth)` (640,
+  `core/theme/app_tokens.dart`). Pages then add their own `AppSpacing.md`
+  horizontal padding inside that box, so the actual text/row width is 608.
+  The app bar's ends and the FAB are **not** part of `body`, so nothing
+  centers them for free — `leading`/`actions` sit in the `SliverAppBar`'s
+  own slots and the FAB is `Scaffold.floatingActionButton`, all three
+  measured off the pane, which on a 1440px window left ~280px of gutter
+  between them and the content column. They are pulled back in by
+  **padding, never by constraining anything**: `AdaptiveScaffold.build`
+  wraps the Material branch in a `LayoutBuilder`, reads
+  `BoxConstraints.contentGutter` (`max((paneWidth - 640) / 2, 0)`, in
+  `core/extensions/box_constraints.extension.dart` next to the
+  `contentHorizontalInset` that is now defined in terms of it), and threads
+  that one double down to `_leading`, `_actions`, `_bareBar` and
+  `_floatingAction`, each of which spends it as extra `EdgeInsets` on top
+  of the inset it already had. The gutter is `0` unless
+  `AppPlatform.useWideWeb`, so native and phone-width web keep their exact
+  previous edge insets and the `SliverAppBar.large` branch is untouched in
+  practice.
+  Two things that are load-bearing here:
+  - **`leadingWidth` has to grow by the gutter whenever `leading` is
+    padded.** `AppBar` hands its leading slot a fixed 56px
+    (`_leadingSlotWidth` mirrors that framework default), so a
+    `Padding(left: gutter)` inside an unadjusted slot leaves the child
+    `56 - gutter` and overflows. The implied back button cannot be padded
+    this way at all — it is built by `AppBar` itself — but under the
+    sidebar `SuppressedBackButtonScope` has already removed it, and
+    off-web the gutter is `0`, so there is nothing to align.
+  - **Only the bar's *contents* move; its surface still spans the pane.**
+    Wrapping the `SliverAppBar` in a `SliverPadding` would align everything
+    in one line, but it also narrows the bar's background and scroll-under
+    tint to 640, leaving it reading as a floating card over the empty
+    gutters. Chrome stays full-bleed; only what sits in it is columnized.
+  `sidebar_test.dart`'s "keeps the app bar ends and the FAB inside the
+  content column" pumps a real `AdaptiveScaffold` at 1440x900 under
+  `debugOverrideWideWeb` and asserts all three `getRect`s fall inside
+  `[516, 1156]`. It is the only thing watching this — see the
+  `kIsWeb`-is-always-false note in the sidebar section.
 - **`AdaptiveScaffold(hasScrollBody: true)` hands `body` the sliver's full
   remaining space, unconstrained, and expects `body` to own a scrollable and
   center its own content — it deliberately does not wrap `body` in the usual
@@ -714,20 +757,18 @@ the treatment below. Mirrors `debugOverrideCupertino` with
     the way `constrainWidth` normally does would narrow `body`'s own
     scrollable down to the centered column's render box — and a
     `Scrollable`'s hit-test region is exactly its own render box, so a mouse
-    wheel over the pane's side margins would stop reaching it. Callers that
-    pass `hasScrollBody: true` (`LeaderboardPage`/`MatchesPage`,
-    `history.page.dart`'s `_ready`) center their content themselves instead,
-    via `BoxConstraints.contentHorizontalInset`
-    (`core/extensions/box_constraints_content_inset.dart`) applied as
-    *padding inside* their own scrollable rather than a wrapper around it —
-    padding is still part of the scrollable's render box, so scrolling
-    anywhere across the pane keeps working. `ContentScrollView`
-    (`core/widgets/content_scroll_view.dart`) is that exact
-    `LayoutBuilder` + `SingleChildScrollView` + `ConstrainedBox(minHeight:)` +
-    inset-padding wrapper, promoted to `core/widgets/` once both pages needed
-    the identical block that used to live only in
-    `competition_content.page.dart`'s `_body`.
-    anywhere across the pane keeps working.
+    wheel over the pane's side margins would stop reaching it. **This is the
+    reason no wide-web width fix may wrap a scrollable in a
+    `ConstrainedBox`; reach for inset padding instead**, which is still part
+    of the scrollable's render box — the same reason the app bar and FAB
+    above are padded rather than constrained. `history.page.dart`'s `_ready` — the
+    only `hasScrollBody: true` caller left — does exactly that, centering
+    itself with `BoxConstraints.contentHorizontalInset`
+    (`core/extensions/box_constraints.extension.dart`, `max((maxWidth - 640)
+    / 2, AppSpacing.md)`) applied as padding inside its own scrollable.
+    `LeaderboardPage`/`MatchesPage` used to be callers too, back when they
+    were one `CompetitionContent` page; each is now a plain
+    `constrainWidth` page and neither passes the flag any more.
 - **Web gets one deliberate page-transition, not whatever the host OS
   happens to use.** `ThemeData.pageTransitionsTheme`'s default is keyed by
   `defaultTargetPlatform`, and on Flutter Web that reflects the *browsing
@@ -1056,7 +1097,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 238 tests at time of writing
+flutter test                    # 242 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 python3 scripts/generate_icon.py   # redraw assets/icon/*.png

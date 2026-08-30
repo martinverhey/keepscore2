@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../extensions/box_constraints.extension.dart';
 import '../../theme/app_tokens.dart';
 import 'app_platform.dart';
 import 'suppressed_back_button_scope.dart';
@@ -34,9 +35,17 @@ class AdaptiveScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final suppressBack = SuppressedBackButtonScope.of(context);
-    return AppPlatform.useCupertino
-        ? _cupertino(_sliverBody(), suppressBack)
-        : _material(context, _sliverBody(), suppressBack);
+    if (AppPlatform.useCupertino) {
+      return _cupertino(_sliverBody(), suppressBack);
+    }
+    return LayoutBuilder(
+      builder: (context, constraints) => _material(
+        context,
+        _sliverBody(),
+        suppressBack,
+        AppPlatform.useWideWeb(context) ? constraints.contentGutter : 0,
+      ),
+    );
   }
 
   Widget _cupertino(Widget sliverBody, bool suppressBack) {
@@ -73,7 +82,7 @@ class AdaptiveScaffold extends StatelessWidget {
             trailing: trailing,
           )
         else
-          _bareBar(),
+          _bareBar(0),
         if (onRefresh != null)
           CupertinoSliverRefreshControl(onRefresh: onRefresh),
         sliverBody,
@@ -81,15 +90,25 @@ class AdaptiveScaffold extends StatelessWidget {
     );
   }
 
-  Widget _material(BuildContext context, Widget sliverBody, bool suppressBack) {
+  Widget _material(
+    BuildContext context,
+    Widget sliverBody,
+    bool suppressBack,
+    double gutter,
+  ) {
     return Scaffold(
       body: onRefresh == null
-          ? _materialScrollView(context, sliverBody, suppressBack)
+          ? _materialScrollView(context, sliverBody, suppressBack, gutter)
           : RefreshIndicator(
               onRefresh: onRefresh!,
-              child: _materialScrollView(context, sliverBody, suppressBack),
+              child: _materialScrollView(
+                context,
+                sliverBody,
+                suppressBack,
+                gutter,
+              ),
             ),
-      floatingActionButton: floatingAction,
+      floatingActionButton: _floatingAction(gutter),
       bottomNavigationBar: bottomBar,
     );
   }
@@ -98,33 +117,55 @@ class AdaptiveScaffold extends StatelessWidget {
     BuildContext context,
     Widget sliverBody,
     bool suppressBack,
+    double gutter,
   ) {
     return CustomScrollView(
       physics: onRefresh == null ? null : const AlwaysScrollableScrollPhysics(),
-      slivers: [_appBar(context, suppressBack), sliverBody],
+      slivers: [_appBar(context, suppressBack, gutter), sliverBody],
     );
   }
 
-  Widget _appBar(BuildContext context, bool suppressBack) {
+  Widget _appBar(BuildContext context, bool suppressBack, double gutter) {
     return switch (title) {
-      null => _bareBar(),
+      null => _bareBar(gutter),
       final title when AppPlatform.useWideWeb(context) => SliverAppBar(
         pinned: true,
         centerTitle: true,
         toolbarHeight: kToolbarHeight + AppSpacing.md,
         title: Text(title, style: _titleStyle),
-        leading: leading,
+        leading: _leading(gutter),
+        leadingWidth: leading == null ? null : _leadingSlotWidth + gutter,
         automaticallyImplyLeading: !suppressBack,
-        actions: _actions(),
+        actions: _actions(gutter),
       ),
       final title => SliverAppBar.large(
         title: Text(title, style: _titleStyle),
-        leading: leading,
+        leading: _leading(gutter),
         automaticallyImplyLeading: !suppressBack,
-        actions: _actions(),
+        actions: _actions(gutter),
       ),
     };
   }
+
+  Widget? _leading(double gutter) {
+    return leading == null
+        ? null
+        : Padding(
+            padding: EdgeInsets.only(left: gutter),
+            child: leading,
+          );
+  }
+
+  Widget? _floatingAction(double gutter) {
+    return floatingAction == null
+        ? null
+        : Padding(
+            padding: EdgeInsets.only(right: gutter),
+            child: floatingAction,
+          );
+  }
+
+  static const double _leadingSlotWidth = 56;
 
   static const TextStyle _titleStyle = TextStyle(
     fontFamily: AppTypography.brandFontFamily,
@@ -164,15 +205,15 @@ class AdaptiveScaffold extends StatelessWidget {
     );
   }
 
-  Widget _bareBar() {
+  Widget _bareBar(double gutter) {
     final hasEnds = leading != null || trailing != null;
     return SliverSafeArea(
       bottom: false,
       sliver: SliverToBoxAdapter(
         child: hasEnds
             ? Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.sm,
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm + gutter,
                   vertical: AppSpacing.xs,
                 ),
                 child: Row(
@@ -188,12 +229,12 @@ class AdaptiveScaffold extends StatelessWidget {
     );
   }
 
-  List<Widget>? _actions() {
+  List<Widget>? _actions(double gutter) {
     return trailing == null
         ? null
         : [
             Padding(
-              padding: const EdgeInsets.only(right: AppSpacing.sm),
+              padding: EdgeInsets.only(right: AppSpacing.sm + gutter),
               child: trailing!,
             ),
           ];
