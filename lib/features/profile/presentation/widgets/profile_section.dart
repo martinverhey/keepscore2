@@ -155,7 +155,7 @@ class ProfileSection extends StatelessWidget {
     return _statBlock(
       '${leaderboard.streakCount}',
       isWin
-          ? context.l10n.profileWinStreakShortLabel
+          ? context.l10n.profileWinStreakLabel
           : context.l10n.profileLossStreakLabel,
     );
   }

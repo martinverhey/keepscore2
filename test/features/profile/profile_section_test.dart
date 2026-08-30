@@ -114,7 +114,7 @@ void main() {
     expect(find.text('2'), findsOneWidget);
     expect(find.text('1'), findsOneWidget);
     expect(find.text('7'), findsOneWidget);
-    expect(find.text(l10n.profileWinStreakShortLabel), findsOneWidget);
+    expect(find.text(l10n.profileWinStreakLabel), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

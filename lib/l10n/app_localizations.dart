@@ -1181,7 +1181,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileSeasonRatingLabel.
   ///
   /// In en, this message translates to:
-  /// **'Season rating'**
+  /// **'Rating'**
   String get profileSeasonRatingLabel;
 
   /// No description provided for @profileBestRatingLabel.
@@ -1211,20 +1211,14 @@ abstract class AppLocalizations {
   /// No description provided for @profileWinRateLabel.
   ///
   /// In en, this message translates to:
-  /// **'Win rate'**
+  /// **'W/L rate'**
   String get profileWinRateLabel;
 
   /// No description provided for @profileWinStreakLabel.
   ///
   /// In en, this message translates to:
-  /// **'Win streak season'**
-  String get profileWinStreakLabel;
-
-  /// No description provided for @profileWinStreakShortLabel.
-  ///
-  /// In en, this message translates to:
   /// **'Win streak'**
-  String get profileWinStreakShortLabel;
+  String get profileWinStreakLabel;
 
   /// No description provided for @profileLossStreakLabel.
   ///

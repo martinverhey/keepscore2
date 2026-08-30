@@ -629,7 +629,7 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
-  String get profileSeasonRatingLabel => 'Rating dit seizoen';
+  String get profileSeasonRatingLabel => 'Rating';
 
   @override
   String get profileBestRatingLabel => 'Beste rating';
@@ -644,13 +644,10 @@ class AppLocalizationsNl extends AppLocalizations {
   String get profileDrawsLabel => 'Gelijk';
 
   @override
-  String get profileWinRateLabel => 'Winstpercentage';
+  String get profileWinRateLabel => 'W/L rate';
 
   @override
-  String get profileWinStreakLabel => 'Winreeks seizoen';
-
-  @override
-  String get profileWinStreakShortLabel => 'Winreeks';
+  String get profileWinStreakLabel => 'Winreeks';
 
   @override
   String get profileLossStreakLabel => 'Verliesreeks';

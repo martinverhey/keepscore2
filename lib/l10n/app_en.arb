@@ -256,14 +256,13 @@
   "@profileWinRate": {
     "placeholders": { "percent": { "type": "int" } }
   },
-  "profileSeasonRatingLabel": "Season rating",
+  "profileSeasonRatingLabel": "Rating",
   "profileBestRatingLabel": "Best rating",
   "profileWinsLabel": "Wins",
   "profileLossesLabel": "Losses",
   "profileDrawsLabel": "Draws",
-  "profileWinRateLabel": "Win rate",
-  "profileWinStreakLabel": "Win streak season",
-  "profileWinStreakShortLabel": "Win streak",
+  "profileWinRateLabel": "W/L rate",
+  "profileWinStreakLabel": "Win streak",
   "profileLossStreakLabel": "Loss streak",
   "profileBestWinStreakLabel": "Win streak overall",
   "profileBestLossStreakLabel": "Worst loss streak",

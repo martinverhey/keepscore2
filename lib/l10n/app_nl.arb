@@ -256,14 +256,13 @@
   "@profileWinRate": {
     "placeholders": { "percent": { "type": "int" } }
   },
-  "profileSeasonRatingLabel": "Rating dit seizoen",
+  "profileSeasonRatingLabel": "Rating",
   "profileBestRatingLabel": "Beste rating",
   "profileWinsLabel": "Gewonnen",
   "profileLossesLabel": "Verloren",
   "profileDrawsLabel": "Gelijk",
-  "profileWinRateLabel": "Winstpercentage",
-  "profileWinStreakLabel": "Winreeks seizoen",
-  "profileWinStreakShortLabel": "Winreeks",
+  "profileWinRateLabel": "W/L rate",
+  "profileWinStreakLabel": "Winreeks",
   "profileLossStreakLabel": "Verliesreeks",
   "profileBestWinStreakLabel": "Winreeks totaal",
   "profileBestLossStreakLabel": "Slechtste verliesreeks",
