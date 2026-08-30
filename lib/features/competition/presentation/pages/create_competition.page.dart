@@ -42,12 +42,23 @@ class _CreateCompetitionPageState extends State<CreateCompetitionPage> {
         setPageTitle(context, context.l10n.competitionsCreate);
         return AdaptiveScaffold(
           title: context.l10n.competitionsCreate,
+          leading: _backButton(context),
           body: switch (state) {
             CreateCompetitionEditing editing => _form(context, editing),
             CreateCompetitionCreated() => const AdaptiveLoader(),
           },
         );
       },
+    );
+  }
+
+  Widget? _backButton(BuildContext context) {
+    if (!SuppressedBackButtonScope.of(context)) return null;
+
+    return AdaptiveIconButton(
+      glyph: AdaptiveGlyph.back,
+      semanticLabel: context.l10n.commonBack,
+      onPressed: context.pop,
     );
   }
 

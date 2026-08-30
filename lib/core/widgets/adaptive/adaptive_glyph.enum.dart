@@ -6,6 +6,7 @@ enum AdaptiveGlyph {
   history,
   settings,
   competitions,
+  back,
   chevronRight,
   chevronDown,
   check,

@@ -122,20 +122,6 @@ GoRouter createRouter(AuthBloc authBloc) {
         ),
       ),
       GoRoute(
-        path: Routes.upgradeAccount,
-        builder: (context, state) => BlocProvider(
-          create: (_) => getIt<SignInCubit>(param1: SignInMode.upgrade),
-          child: const UpgradeAccountPage(),
-        ),
-      ),
-      GoRoute(
-        path: Routes.createCompetition,
-        builder: (context, state) => BlocProvider(
-          create: (_) => getIt<CreateCompetitionCubit>(),
-          child: const CreateCompetitionPage(),
-        ),
-      ),
-      GoRoute(
         path: Routes.joinCompetition,
         builder: (context, state) => BlocProvider(
           create: (_) => getIt<JoinCompetitionCubit>(),
@@ -155,6 +141,26 @@ GoRouter createRouter(AuthBloc authBloc) {
             path: Routes.language,
             pageBuilder: (context, state) =>
                 adaptivePage(context, child: const LanguagePage()),
+          ),
+          GoRoute(
+            path: Routes.createCompetition,
+            pageBuilder: (context, state) => adaptivePage(
+              context,
+              child: BlocProvider(
+                create: (_) => getIt<CreateCompetitionCubit>(),
+                child: const CreateCompetitionPage(),
+              ),
+            ),
+          ),
+          GoRoute(
+            path: Routes.upgradeAccount,
+            pageBuilder: (context, state) => adaptivePage(
+              context,
+              child: BlocProvider(
+                create: (_) => getIt<SignInCubit>(param1: SignInMode.upgrade),
+                child: const UpgradeAccountPage(),
+              ),
+            ),
           ),
           ShellRoute(
             pageBuilder: (context, state, child) {

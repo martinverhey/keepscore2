@@ -9,6 +9,8 @@ import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
+import 'package:keepscore2/features/competition/presentation/cubit/create_competition_cubit.dart';
+import 'package:keepscore2/features/competition/presentation/pages/create_competition.page.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/sidebar.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/sidebar_shell.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/sidebar_section.enum.dart';
@@ -465,6 +467,59 @@ void main() {
 
     expect(find.text('history body'), findsOneWidget);
     expect(find.byType(BackButton), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a page pushed under the shell trades the implied back button '
+      'for its own', (tester) async {
+    useWideWebViewport(tester);
+
+    final router = GoRouter(
+      routes: [
+        ShellRoute(
+          builder: (context, state, child) =>
+              SidebarShell(location: state.uri.path, child: child),
+          routes: [
+            GoRoute(
+              path: '/',
+              builder: (context, state) =>
+                  const AdaptiveScaffold(title: 'home', body: Text('home')),
+            ),
+            GoRoute(
+              path: '/create',
+              builder: (context, state) => BlocProvider(
+                create: (_) => CreateCompetitionCubit(competitions),
+                child: const CreateCompetitionPage(),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(
+      withProviders(
+        MaterialApp.router(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          routerConfig: router,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    router.push('/create');
+    await tester.pumpAndSettle();
+
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(CreateCompetitionPage)),
+    );
+
+    expect(find.byType(Sidebar), findsOneWidget);
+    expect(find.text(l10n.competitionsCreate), findsWidgets);
+    expect(find.text(l10n.leaderboardTitle), findsOneWidget);
+    expect(find.byType(BackButton), findsNothing);
+    expect(find.byType(AdaptiveIconButton), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
