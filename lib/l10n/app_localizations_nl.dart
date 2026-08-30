@@ -330,11 +330,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String get joinCodeInvalid => 'Een code bestaat uit zes tekens.';
 
   @override
-  String joinConfirmTitle(String name) {
-    return 'Deelnemen aan $name';
-  }
-
-  @override
   String joinRunBy(String owner) {
     return 'Beheerd door $owner';
   }

@@ -119,10 +119,6 @@
   "joinSubtitle": "Voer de code van zes tekens in die je van de organisator hebt gekregen.",
   "joinLookUp": "Competitie opzoeken",
   "joinCodeInvalid": "Een code bestaat uit zes tekens.",
-  "joinConfirmTitle": "Deelnemen aan {name}",
-  "@joinConfirmTitle": {
-    "placeholders": { "name": { "type": "String" } }
-  },
   "joinRunBy": "Beheerd door {owner}",
   "@joinRunBy": {
     "placeholders": { "owner": { "type": "String" } }

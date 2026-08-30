@@ -19,6 +19,7 @@ import '../widgets/competition_action.enum.dart';
 import '../widgets/competition_action_sheet.dart';
 import '../widgets/competition_add_action.enum.dart';
 import '../widgets/competition_add_sheet.dart';
+import '../widgets/join_competition_sheet.dart';
 import '../widgets/competition_tile.dart';
 
 class CompetitionsPage extends StatefulWidget {
@@ -147,7 +148,7 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
 
   Future<void> _add(BuildContext context, {required bool canCreate}) async {
     if (!canCreate) {
-      context.push(Routes.joinCompetition);
+      await _join(context);
       return;
     }
 
@@ -161,8 +162,16 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
       case CompetitionAddAction.create:
         context.push(Routes.createCompetition);
       case CompetitionAddAction.join:
-        context.push(Routes.joinCompetition);
+        await _join(context);
     }
+  }
+
+  Future<void> _join(BuildContext context) async {
+    final competitionId = await showJoinCompetitionSheet(context);
+    if (competitionId == null || !context.mounted) return;
+
+    context.read<CompetitionListCubit>().refresh();
+    context.push(Routes.competition(competitionId));
   }
 
   Future<void> _manage(

@@ -81,10 +81,13 @@ leaderboards — so the picker itself needs no separate fetch), and selecting on
 fetches just that season's leaderboard. Neither tab filters by game type —
 that's Matches-only, see below.
 
-Logging a match and inspecting one are both sheets, not routes — there is no
-`match/*` route and no `Routes.match`, so neither is deep-linkable, and each
-builds its own cubit inside the `showAdaptiveSheet` builder rather than in a
-`GoRoute`. `showNewMatchSheet` builds the teams and submits.
+Logging a match, inspecting one, and joining a competition are all sheets, not
+routes — there is no `match/*` route, no `Routes.match` and no
+`Routes.joinCompetition`, so none of them is deep-linkable, and each builds its
+own cubit inside the `showAdaptiveSheet` builder rather than in a `GoRoute`.
+`showJoinCompetitionSheet` returns the joined competition's id (or null), and
+`CompetitionsPage` is what refreshes `CompetitionListCubit` and pushes the
+competition — the sheet itself never navigates. `showNewMatchSheet` builds the teams and submits.
 `showMatchDetailSheet` (`match/presentation/widgets/match_detail_sheet.dart`)
 renders the same `MatchCard` the list does, then a "Player rank" card (each
 player's rating going in, Team A left / Team B right, divided off from the two
@@ -800,10 +803,20 @@ the treatment below. Mirrors `debugOverrideCupertino` with
 
 `Sidebar` is rendered once, by `SidebarShell`
 (`features/competition/presentation/widgets/sidebar_shell.dart`) from a
-go_router `ShellRoute` that wraps `/`, `/settings/language`, and the whole
-`/competition/:id` subtree. `/splash`, `/sign-in`, `/upgrade`, `/create` and
-`/join` stay outside it and have no sidebar, as before. Pages therefore
+go_router `ShellRoute` that wraps `/`, `/settings/language`, `/create`,
+`/upgrade`, and the whole `/competition/:id` subtree. Only `/splash` and
+`/sign-in` stay outside it and have no sidebar. Pages therefore
 compose only their own `AdaptiveScaffold`; none of them mention `Sidebar`.
+A page that is a *task* rather than a destination has to carry its own way
+back, since the shell's `SuppressedBackButtonScope` kills the implied one:
+`CreateCompetitionPage._backButton` returns an `AdaptiveIconButton` only when
+`SuppressedBackButtonScope.of(context)` is true, so native and narrow web keep
+the platform's own arrow untouched; `UpgradeAccountPage` already passes an
+explicit `leading` on every step, and an explicit `leading` bypasses the
+suppression outright. Highlighting a sidebar section for such a page is *not*
+the alternative — `Sidebar._select` early-returns on `section == current`, so
+marking `/create` as `SidebarSection.competitions` would make the row that
+leads back out unclickable.
 `SettingsPage` and `MatchDetailPage` gain a sidebar on wide web as a
 side effect of living in that subtree — `SettingsPage` is unreachable there
 anyway (its rows are sidebar items), and a full-viewport match detail next to
@@ -1043,7 +1056,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 227 tests at time of writing
+flutter test                    # 238 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 python3 scripts/generate_icon.py   # redraw assets/icon/*.png

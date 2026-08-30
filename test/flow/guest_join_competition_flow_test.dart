@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:keepscore2/app/dependency_injection/injector.dart';
 import 'package:keepscore2/app/router/go_router_refresh_stream.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive_tab_bar.dart';
 import 'package:keepscore2/core/widgets/adaptive/app_platform.dart';
@@ -19,8 +20,8 @@ import 'package:keepscore2/features/competition/presentation/cubit/competition_c
 import 'package:keepscore2/features/competition/presentation/cubit/competition_list_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/join_competition_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/pages/competition_shell.dart';
-import 'package:keepscore2/features/competition/presentation/pages/join_competition.page.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/competition_scope.dart';
+import 'package:keepscore2/features/competition/presentation/widgets/join_competition_sheet.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
 import 'package:keepscore2/features/leaderboard/domain/season_window.model.dart';
@@ -243,10 +244,14 @@ void main() {
       final authBloc = AuthBloc(auth);
       addTearDown(authBloc.close);
 
+      getIt.registerFactory<JoinCompetitionCubit>(
+        () => JoinCompetitionCubit(competitions),
+      );
+      addTearDown(() => getIt.reset(dispose: false));
+
       final router = _buildRouter(
         authBloc,
         authRepository: auth,
-        competitionRepository: competitions,
         playerRepository: players,
         matchRepository: matches,
         leaderboardRepository: leaderboard,
@@ -354,7 +359,6 @@ Future<void> _expectMatchesTabIsPopulated(
 GoRouter _buildRouter(
   AuthBloc authBloc, {
   required AuthRepository authRepository,
-  required CompetitionRepository competitionRepository,
   required PlayerRepository playerRepository,
   required MatchRepository matchRepository,
   required LeaderboardRepository leaderboardRepository,
@@ -380,13 +384,6 @@ GoRouter _buildRouter(
         ),
       ),
       GoRoute(path: '/home', builder: (context, state) => const _HomeStub()),
-      GoRoute(
-        path: '/join',
-        builder: (context, state) => BlocProvider(
-          create: (_) => JoinCompetitionCubit(competitionRepository),
-          child: const JoinCompetitionPage(),
-        ),
-      ),
       ShellRoute(
         builder: (context, state, child) {
           final id = state.pathParameters['id']!;
@@ -470,10 +467,17 @@ class _HomeStub extends StatelessWidget {
     return Scaffold(
       body: Center(
         child: TextButton(
-          onPressed: () => context.push('/join'),
+          onPressed: () => _join(context),
           child: const Text('Join a competition'),
         ),
       ),
     );
+  }
+
+  Future<void> _join(BuildContext context) async {
+    final competitionId = await showJoinCompetitionSheet(context);
+    if (competitionId == null || !context.mounted) return;
+
+    context.push('/competition/$competitionId');
   }
 }

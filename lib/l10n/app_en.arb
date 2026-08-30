@@ -119,10 +119,6 @@
   "joinSubtitle": "Enter the six-character code from whoever set it up.",
   "joinLookUp": "Find competition",
   "joinCodeInvalid": "A code is six characters.",
-  "joinConfirmTitle": "Join {name}",
-  "@joinConfirmTitle": {
-    "placeholders": { "name": { "type": "String" } }
-  },
   "joinRunBy": "Run by {owner}",
   "@joinRunBy": {
     "placeholders": { "owner": { "type": "String" } }

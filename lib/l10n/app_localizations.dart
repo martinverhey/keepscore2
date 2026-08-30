@@ -656,12 +656,6 @@ abstract class AppLocalizations {
   /// **'A code is six characters.'**
   String get joinCodeInvalid;
 
-  /// No description provided for @joinConfirmTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Join {name}'**
-  String joinConfirmTitle(String name);
-
   /// No description provided for @joinRunBy.
   ///
   /// In en, this message translates to:

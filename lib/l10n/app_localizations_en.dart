@@ -329,11 +329,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get joinCodeInvalid => 'A code is six characters.';
 
   @override
-  String joinConfirmTitle(String name) {
-    return 'Join $name';
-  }
-
-  @override
   String joinRunBy(String owner) {
     return 'Run by $owner';
   }

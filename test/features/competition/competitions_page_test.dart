@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:keepscore2/app/dependency_injection/injector.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive_floating_action.dart';
 import 'package:keepscore2/core/widgets/adaptive/app_platform.dart';
 import 'package:keepscore2/features/auth/domain/auth_repository.dart';
@@ -10,8 +11,10 @@ import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_list_cubit.dart';
+import 'package:keepscore2/features/competition/presentation/cubit/join_competition_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/pages/competitions.page.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/competition_add_sheet.dart';
+import 'package:keepscore2/features/competition/presentation/widgets/join_competition_sheet.dart';
 import 'package:keepscore2/features/settings/presentation/cubit/theme_cubit.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
@@ -37,12 +40,16 @@ Future<void> _pumpHarness(WidgetTester tester, {required bool isGuest}) async {
   final authBloc = AuthBloc(auth);
   addTearDown(authBloc.close);
 
+  getIt.registerFactory<JoinCompetitionCubit>(
+    () => JoinCompetitionCubit(competitions),
+  );
+  addTearDown(() => getIt.reset(dispose: false));
+
   final router = GoRouter(
     initialLocation: '/',
     routes: [
       GoRoute(path: '/', builder: (_, _) => const CompetitionsPage()),
       GoRoute(path: '/create', builder: (_, _) => const _RouteStub('create')),
-      GoRoute(path: '/join', builder: (_, _) => const _RouteStub('join')),
     ],
   );
 
@@ -78,7 +85,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(CompetitionAddSheet), findsNothing);
-    expect(find.text('join'), findsOneWidget);
+    expect(find.byType(JoinCompetitionSheet), findsOneWidget);
     expect(find.text('create'), findsNothing);
   });
 
