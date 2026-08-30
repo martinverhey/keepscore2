@@ -128,6 +128,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get competitionsJoin => 'Join competition';
 
   @override
+  String get competitionsAddHint =>
+      'Use + to create or join your first competition.';
+
+  @override
+  String get competitionsJoinHint => 'Use + to join your first competition.';
+
+  @override
   String get competitionNameLabel => 'Competition name';
 
   @override

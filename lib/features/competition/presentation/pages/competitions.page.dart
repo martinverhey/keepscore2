@@ -7,6 +7,8 @@ import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
+import '../../../../core/widgets/curved_arrow.dart';
+import '../../../../core/widgets/curved_arrow_direction.enum.dart';
 import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../../core/widgets/text_entry_sheet.dart';
@@ -118,9 +120,11 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
             const SizedBox(height: AppSpacing.md),
           ],
 
-          if (state.competitions.isEmpty)
-            EmptyState(message: context.l10n.competitionsEmpty)
-          else
+          if (state.competitions.isEmpty) ...[
+            EmptyState(message: context.l10n.competitionsEmpty),
+            const SizedBox(height: AppSpacing.xxl),
+            _addHint(context, canCreate: canCreate),
+          ] else
             for (final overview in state.competitions) ...[
               CompetitionTile(
                 overview: overview,
@@ -133,6 +137,30 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
           if (state.actionFailure != null) _actionFailureText(context, state),
         ],
       ),
+    );
+  }
+
+  Widget _addHint(BuildContext context, {required bool canCreate}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Flexible(
+          child: Text(
+            canCreate
+                ? context.l10n.competitionsAddHint
+                : context.l10n.competitionsJoinHint,
+            style: AppTypography.caption,
+            textAlign: TextAlign.end,
+          ),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        CurvedArrow(
+          direction: CurvedArrowDirection.down,
+          color: AdaptiveColors.accent(context),
+          size: const Size(50, 200),
+        ),
+      ],
     );
   }
 

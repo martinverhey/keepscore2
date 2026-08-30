@@ -326,6 +326,18 @@ abstract class AppLocalizations {
   /// **'Join competition'**
   String get competitionsJoin;
 
+  /// No description provided for @competitionsAddHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Use + to create or join your first competition.'**
+  String get competitionsAddHint;
+
+  /// No description provided for @competitionsJoinHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Use + to join your first competition.'**
+  String get competitionsJoinHint;
+
   /// No description provided for @competitionNameLabel.
   ///
   /// In en, this message translates to:

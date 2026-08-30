@@ -46,6 +46,8 @@
   "competitionsAdd": "Add competition",
   "competitionsCreate": "Create competition",
   "competitionsJoin": "Join competition",
+  "competitionsAddHint": "Use + to create or join your first competition.",
+  "competitionsJoinHint": "Use + to join your first competition.",
   "competitionNameLabel": "Competition name",
   "competitionSeasonLengthLabel": "Season length",
   "seasonMonthly": "Monthly",

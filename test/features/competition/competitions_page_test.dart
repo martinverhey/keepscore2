@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:keepscore2/app/dependency_injection/injector.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive_floating_action.dart';
 import 'package:keepscore2/core/widgets/adaptive/app_platform.dart';
+import 'package:keepscore2/core/widgets/curved_arrow.dart';
 import 'package:keepscore2/features/auth/domain/auth_repository.dart';
 import 'package:keepscore2/features/auth/domain/auth_user.model.dart';
 import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
@@ -74,7 +75,10 @@ Future<void> _pumpHarness(WidgetTester tester, {required bool isGuest}) async {
 }
 
 void main() {
-  tearDown(() => AppPlatform.debugOverrideCupertino = null);
+  tearDown(() {
+    AppPlatform.debugOverrideCupertino = null;
+    AppPlatform.debugOverrideWideWeb = null;
+  });
 
   testWidgets('a guest goes straight to join, with no create choice', (
     tester,
@@ -87,6 +91,42 @@ void main() {
     expect(find.byType(CompetitionAddSheet), findsNothing);
     expect(find.byType(JoinCompetitionSheet), findsOneWidget);
     expect(find.text('create'), findsNothing);
+  });
+
+  testWidgets('the empty state points a curved arrow at the add button', (
+    tester,
+  ) async {
+    await _pumpHarness(tester, isGuest: false);
+
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(CompetitionsPage)),
+    );
+    expect(find.text(l10n.competitionsAddHint), findsOneWidget);
+    expect(find.byType(CurvedArrow), findsOneWidget);
+  });
+
+  testWidgets('a guest is pointed at joining instead of adding', (
+    tester,
+  ) async {
+    await _pumpHarness(tester, isGuest: true);
+
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(CompetitionsPage)),
+    );
+    expect(find.text(l10n.competitionsJoinHint), findsOneWidget);
+    expect(find.byType(CurvedArrow), findsOneWidget);
+  });
+
+  testWidgets('the hint survives the wide web layout', (tester) async {
+    AppPlatform.debugOverrideWideWeb = true;
+
+    await _pumpHarness(tester, isGuest: false);
+
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(CompetitionsPage)),
+    );
+    expect(find.text(l10n.competitionsAddHint), findsOneWidget);
+    expect(find.byType(CurvedArrow), findsOneWidget);
   });
 
   testWidgets('a registered user picks between create and join', (

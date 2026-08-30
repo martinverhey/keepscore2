@@ -46,6 +46,8 @@
   "competitionsAdd": "Competitie toevoegen",
   "competitionsCreate": "Competitie maken",
   "competitionsJoin": "Deelnemen aan competitie",
+  "competitionsAddHint": "Gebruik + om je eerste competitie te maken of eraan deel te nemen.",
+  "competitionsJoinHint": "Gebruik + om deel te nemen aan je eerste competitie.",
   "competitionNameLabel": "Naam van de competitie",
   "competitionSeasonLengthLabel": "Lengte van het seizoen",
   "seasonMonthly": "Maandelijks",

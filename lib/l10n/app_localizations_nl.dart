@@ -129,6 +129,14 @@ class AppLocalizationsNl extends AppLocalizations {
   String get competitionsJoin => 'Deelnemen aan competitie';
 
   @override
+  String get competitionsAddHint =>
+      'Gebruik + om je eerste competitie te maken of eraan deel te nemen.';
+
+  @override
+  String get competitionsJoinHint =>
+      'Gebruik + om deel te nemen aan je eerste competitie.';
+
+  @override
   String get competitionNameLabel => 'Naam van de competitie';
 
   @override
