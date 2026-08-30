@@ -426,10 +426,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get matchesCreateHint => 'Create your first match.';
+  String get matchesCreateHintTabBar =>
+      'Tap New match below to create your first one.';
 
   @override
-  String get matchesCreateHintAction => 'Create Match';
+  String get matchesCreateHintSidebar =>
+      'Use New match to create your first one.';
 
   @override
   String get matchDayToday => 'Today';

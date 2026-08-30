@@ -427,10 +427,12 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
-  String get matchesCreateHint => 'Maak je eerste wedstrijd aan.';
+  String get matchesCreateHintTabBar =>
+      'Tik hieronder op Nieuwe wedstrijd om je eerste wedstrijd aan te maken.';
 
   @override
-  String get matchesCreateHintAction => 'Wedstrijd aanmaken';
+  String get matchesCreateHintSidebar =>
+      'Gebruik Nieuwe wedstrijd om je eerste wedstrijd aan te maken.';
 
   @override
   String get matchDayToday => 'Vandaag';

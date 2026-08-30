@@ -818,17 +818,17 @@ abstract class AppLocalizations {
   /// **'No {gameType} matches yet.'**
   String matchesFilterEmpty(String gameType);
 
-  /// No description provided for @matchesCreateHint.
+  /// No description provided for @matchesCreateHintTabBar.
   ///
   /// In en, this message translates to:
-  /// **'Create your first match.'**
-  String get matchesCreateHint;
+  /// **'Tap New match below to create your first one.'**
+  String get matchesCreateHintTabBar;
 
-  /// No description provided for @matchesCreateHintAction.
+  /// No description provided for @matchesCreateHintSidebar.
   ///
   /// In en, this message translates to:
-  /// **'Create Match'**
-  String get matchesCreateHintAction;
+  /// **'Use New match to create your first one.'**
+  String get matchesCreateHintSidebar;
 
   /// No description provided for @matchDayToday.
   ///

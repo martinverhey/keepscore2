@@ -3,11 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context.extension.dart';
-import '../../../../core/extensions/competition.extension.dart';
 import '../../../../core/extensions/game_type.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
-import '../../../../core/widgets/hint_card.dart';
+import '../../../../core/widgets/curved_arrow.dart';
+import '../../../../core/widgets/curved_arrow_direction.enum.dart';
 import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
@@ -24,7 +24,6 @@ import 'game_type_filter_dropdown.dart';
 import 'match_day_group.dart';
 import 'match_card.dart';
 import 'match_detail_sheet.dart';
-import 'new_match_sheet.dart';
 
 class MatchesPage extends StatefulWidget {
   const MatchesPage({super.key, required this.competitionId});
@@ -57,7 +56,6 @@ class _MatchesPageState extends State<MatchesPage> {
     final session = context.watch<AuthBloc>().state;
     final playersState = context.watch<PlayersCubit>().state;
     final isRegistered = session.canWrite;
-    final isOwner = competition.isOwnedBySession(session);
     final hasPlayers =
         playersState is PlayersReady && playersState.active.length >= 2;
     final myPlayerId = competitionState.myPlayerId;
@@ -93,7 +91,6 @@ class _MatchesPageState extends State<MatchesPage> {
             state,
             competitionId: competitionId,
             isRegistered: isRegistered,
-            isOwner: isOwner,
             hasPlayers: hasPlayers,
             myPlayerId: myPlayerId,
           ),
@@ -127,7 +124,6 @@ class _MatchesPageState extends State<MatchesPage> {
     MatchListState state, {
     required String competitionId,
     required bool isRegistered,
-    required bool isOwner,
     required bool hasPlayers,
     required String? myPlayerId,
   }) {
@@ -149,7 +145,6 @@ class _MatchesPageState extends State<MatchesPage> {
         cubit,
         competitionId: competitionId,
         isRegistered: isRegistered,
-        isOwner: isOwner,
         hasPlayers: hasPlayers,
         myPlayerId: myPlayerId,
       ),
@@ -162,7 +157,6 @@ class _MatchesPageState extends State<MatchesPage> {
     MatchListCubit cubit, {
     required String competitionId,
     required bool isRegistered,
-    required bool isOwner,
     required bool hasPlayers,
     required String? myPlayerId,
   }) {
@@ -179,7 +173,8 @@ class _MatchesPageState extends State<MatchesPage> {
           context,
           state,
           competitionId: competitionId,
-          isOwner: isOwner,
+          isRegistered: isRegistered,
+          hasPlayers: hasPlayers,
           myPlayerId: myPlayerId,
         ),
         if (state.hasMore) _loadMoreButton(context, state, cubit),
@@ -199,7 +194,8 @@ class _MatchesPageState extends State<MatchesPage> {
     BuildContext context,
     MatchListReady state, {
     required String competitionId,
-    required bool isOwner,
+    required bool isRegistered,
+    required bool hasPlayers,
     required String? myPlayerId,
   }) {
     if (state.busy) {
@@ -213,8 +209,8 @@ class _MatchesPageState extends State<MatchesPage> {
       return _emptyState(
         context,
         state,
-        competitionId: competitionId,
-        isOwner: isOwner,
+        isRegistered: isRegistered,
+        hasPlayers: hasPlayers,
       );
     }
 
@@ -242,8 +238,8 @@ class _MatchesPageState extends State<MatchesPage> {
   Widget _emptyState(
     BuildContext context,
     MatchListReady state, {
-    required String competitionId,
-    required bool isOwner,
+    required bool isRegistered,
+    required bool hasPlayers,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -255,15 +251,53 @@ class _MatchesPageState extends State<MatchesPage> {
                   state.selectedGameType!.label(context),
                 ),
         ),
-        if (isOwner && state.selectedGameType == null) ...[
-          const SizedBox(height: AppSpacing.sm),
-          HintCard(
-            message: context.l10n.matchesCreateHint,
-            actionLabel: context.l10n.matchesCreateHintAction,
-            onAction: () =>
-                showNewMatchSheet(context, competitionId: competitionId),
+        if (isRegistered) _newMatchHint(context),
+      ],
+    );
+  }
+
+  Widget _newMatchHint(BuildContext context) {
+    return AppPlatform.useWideWeb(context)
+        ? _sidebarHint(context)
+        : _tabBarHint(context);
+  }
+
+  Widget _tabBarHint(BuildContext context) {
+    return Column(
+      children: [
+        const SizedBox(height: AppSpacing.xxl),
+        Text(
+          context.l10n.matchesCreateHintTabBar,
+          style: AppTypography.caption,
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        CurvedArrow(
+          direction: CurvedArrowDirection.down,
+          color: AdaptiveColors.accent(context),
+          size: const Size(150, 300),
+        ),
+      ],
+    );
+  }
+
+  Widget _sidebarHint(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        CurvedArrow(
+          direction: CurvedArrowDirection.left,
+          color: AdaptiveColors.accent(context),
+          size: const Size(150, 50),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        Flexible(
+          child: Text(
+            context.l10n.matchesCreateHintSidebar,
+            style: AppTypography.caption,
           ),
-        ],
+        ),
       ],
     );
   }

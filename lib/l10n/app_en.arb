@@ -176,8 +176,8 @@
   "@matchesFilterEmpty": {
     "placeholders": { "gameType": { "type": "String" } }
   },
-  "matchesCreateHint": "Create your first match.",
-  "matchesCreateHintAction": "Create Match",
+  "matchesCreateHintTabBar": "Tap New match below to create your first one.",
+  "matchesCreateHintSidebar": "Use New match to create your first one.",
   "matchDayToday": "Today",
   "matchDayYesterday": "Yesterday",
   "matchNew": "New match",

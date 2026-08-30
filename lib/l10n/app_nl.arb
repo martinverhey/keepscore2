@@ -176,8 +176,8 @@
   "@matchesFilterEmpty": {
     "placeholders": { "gameType": { "type": "String" } }
   },
-  "matchesCreateHint": "Maak je eerste wedstrijd aan.",
-  "matchesCreateHintAction": "Wedstrijd aanmaken",
+  "matchesCreateHintTabBar": "Tik hieronder op Nieuwe wedstrijd om je eerste wedstrijd aan te maken.",
+  "matchesCreateHintSidebar": "Gebruik Nieuwe wedstrijd om je eerste wedstrijd aan te maken.",
   "matchDayToday": "Vandaag",
   "matchDayYesterday": "Gisteren",
   "matchNew": "Nieuwe wedstrijd",
