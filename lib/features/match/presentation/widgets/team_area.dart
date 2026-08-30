@@ -79,19 +79,18 @@ class TeamArea extends StatelessWidget {
             ),
           ),
         ),
-        if (members.isNotEmpty)
-          TweenAnimationBuilder<double>(
-            tween: Tween<double>(end: rating),
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeOutCubic,
-            builder: (_, value, _) => Text(
-              value.ratingLabel,
-              style: AppTypography.headlineMedium.copyWith(
-                fontWeight: FontWeight.w800,
-                color: color,
-              ),
+        TweenAnimationBuilder<double>(
+          tween: Tween<double>(end: rating),
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeOutCubic,
+          builder: (_, value, _) => Text(
+            value.ratingLabel,
+            style: AppTypography.headlineMedium.copyWith(
+              fontWeight: FontWeight.w800,
+              color: color,
             ),
           ),
+        ),
       ],
     );
   }
