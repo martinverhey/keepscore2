@@ -43,6 +43,7 @@
 
   "competitionsTitle": "Competities",
   "competitionsEmpty": "Je zit nog niet in een competitie.",
+  "competitionsAdd": "Competitie toevoegen",
   "competitionsCreate": "Competitie maken",
   "competitionsJoin": "Deelnemen aan competitie",
   "competitionNameLabel": "Naam van de competitie",
@@ -66,7 +67,7 @@
   "@competitionMatches": {
     "placeholders": { "count": { "type": "int" } }
   },
-  "competitionGuestCannotCreate": "Als gast kun je rondkijken, maar voor het maken van een competitie heb je een account nodig.",
+  "competitionGuestCannotCreate": "Als gast kun je deelnemen aan een competitie en rondkijken, maar voor het maken van een competitie heb je een account nodig.",
   "competitionCodeHelp": "Iedereen met deze code kan meedoen.",
   "competitionQrInvite": "Scan om direct mee te doen",
   "competitionQrHelp": "Richt een camera op deze code — typen hoeft niet.",

@@ -43,6 +43,7 @@
 
   "competitionsTitle": "Competitions",
   "competitionsEmpty": "You're not in any competition yet.",
+  "competitionsAdd": "Add competition",
   "competitionsCreate": "Create competition",
   "competitionsJoin": "Join competition",
   "competitionNameLabel": "Competition name",
@@ -66,7 +67,7 @@
   "@competitionMatches": {
     "placeholders": { "count": { "type": "int" } }
   },
-  "competitionGuestCannotCreate": "Guests can look around, but creating a competition needs an account.",
+  "competitionGuestCannotCreate": "Guests can join a competition and look around, but creating one needs an account.",
   "competitionCodeHelp": "Anyone with this code can join.",
   "competitionQrInvite": "Scan to join instantly",
   "competitionQrHelp": "Point a camera at this code — no typing required.",

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:keepscore2/core/widgets/adaptive/adaptive_floating_action.dart';
+import 'package:keepscore2/core/widgets/adaptive/app_platform.dart';
 import 'package:keepscore2/features/auth/domain/auth_repository.dart';
 import 'package:keepscore2/features/auth/domain/auth_user.model.dart';
 import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
@@ -9,107 +11,99 @@ import 'package:keepscore2/features/competition/domain/competition_repository.da
 import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_list_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/pages/competitions.page.dart';
+import 'package:keepscore2/features/competition/presentation/widgets/competition_add_sheet.dart';
+import 'package:keepscore2/features/settings/presentation/cubit/theme_cubit.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
-
-class MockCompetitionRepository extends Mock implements CompetitionRepository {}
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
-void main() {
-  late MockCompetitionRepository competitions;
-  late MockAuthRepository auth;
-  late CompetitionListCubit competitionListCubit;
-  late AuthBloc authBloc;
-  late CompetitionCubit competitionCubit;
+class MockCompetitionRepository extends Mock implements CompetitionRepository {}
 
-  setUp(() {
-    competitions = MockCompetitionRepository();
-    auth = MockAuthRepository();
+Future<void> _pumpHarness(WidgetTester tester, {required bool isGuest}) async {
+  SharedPreferences.setMockInitialValues({});
+  AppPlatform.debugOverrideCupertino = false;
 
-    when(() => competitions.myCompetitions()).thenAnswer((_) async => []);
-    when(() => auth.currentUser).thenReturn(
-      const AuthUser(id: 'user-1', displayName: 'Ada', isGuest: false),
-    );
-    when(() => auth.watchUser()).thenAnswer((_) => const Stream.empty());
-    when(() => auth.signOut()).thenAnswer((_) async {});
+  final auth = MockAuthRepository();
+  final competitions = MockCompetitionRepository();
 
-    authBloc = AuthBloc(auth);
-    competitionListCubit = CompetitionListCubit(competitions, authBloc);
-    competitionCubit = CompetitionCubit(competitions, authBloc);
-  });
+  when(
+    () => auth.currentUser,
+  ).thenReturn(AuthUser(id: 'u-ada', displayName: 'Ada', isGuest: isGuest));
+  when(() => auth.watchUser()).thenAnswer((_) => const Stream.empty());
+  when(() => competitions.myCompetitions()).thenAnswer((_) async => []);
 
-  tearDown(() {
-    competitionListCubit.close();
-    competitionCubit.close();
-    authBloc.close();
-  });
+  final authBloc = AuthBloc(auth);
+  addTearDown(authBloc.close);
 
-  Widget wrap(GoRouter router) => MultiBlocProvider(
-    providers: [
-      BlocProvider.value(value: competitionListCubit),
-      BlocProvider.value(value: authBloc),
-      BlocProvider.value(value: competitionCubit),
+  final router = GoRouter(
+    initialLocation: '/',
+    routes: [
+      GoRoute(path: '/', builder: (_, _) => const CompetitionsPage()),
+      GoRoute(path: '/create', builder: (_, _) => const _RouteStub('create')),
+      GoRoute(path: '/join', builder: (_, _) => const _RouteStub('join')),
     ],
-    child: MaterialApp.router(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      routerConfig: router,
+  );
+
+  await tester.pumpWidget(
+    MultiBlocProvider(
+      providers: [
+        BlocProvider<AuthBloc>.value(value: authBloc),
+        BlocProvider<ThemeCubit>(create: (_) => ThemeCubit()),
+        BlocProvider(create: (_) => CompetitionCubit(competitions, authBloc)),
+        BlocProvider(
+          create: (_) => CompetitionListCubit(competitions, authBloc),
+        ),
+      ],
+      child: MaterialApp.router(
+        routerConfig: router,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+      ),
     ),
   );
+  await tester.pumpAndSettle();
+}
 
-  testWidgets(
-    'landing here fresh (nothing to pop back to) offers a way to sign out',
-    (tester) async {
-      final router = GoRouter(
-        initialLocation: '/',
-        routes: [
-          GoRoute(path: '/', builder: (_, _) => const CompetitionsPage()),
-        ],
-      );
+void main() {
+  tearDown(() => AppPlatform.debugOverrideCupertino = null);
 
-      await tester.pumpWidget(wrap(router));
-      await tester.pumpAndSettle();
+  testWidgets('a guest goes straight to join, with no create choice', (
+    tester,
+  ) async {
+    await _pumpHarness(tester, isGuest: true);
 
-      final signOutButton = find.byIcon(Icons.logout);
-      expect(signOutButton, findsOneWidget);
+    await tester.tap(find.byType(AdaptiveFloatingAction));
+    await tester.pumpAndSettle();
 
-      await tester.tap(signOutButton);
-      await tester.pumpAndSettle();
+    expect(find.byType(CompetitionAddSheet), findsNothing);
+    expect(find.text('join'), findsOneWidget);
+    expect(find.text('create'), findsNothing);
+  });
 
-      verify(() => auth.signOut()).called(1);
-      expect(tester.takeException(), isNull);
-    },
-  );
+  testWidgets('a registered user picks between create and join', (
+    tester,
+  ) async {
+    await _pumpHarness(tester, isGuest: false);
 
-  testWidgets(
-    'reached by pushing from inside a competition (switching) relies on the '
-    'back button instead',
-    (tester) async {
-      final router = GoRouter(
-        initialLocation: '/start',
-        routes: [
-          GoRoute(
-            path: '/start',
-            builder: (context, _) => Center(
-              child: ElevatedButton(
-                onPressed: () => context.push('/'),
-                child: const Text('open'),
-              ),
-            ),
-          ),
-          GoRoute(path: '/', builder: (_, _) => const CompetitionsPage()),
-        ],
-      );
+    await tester.tap(find.byType(AdaptiveFloatingAction));
+    await tester.pumpAndSettle();
 
-      await tester.pumpWidget(wrap(router));
-      await tester.pumpAndSettle();
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(CompetitionAddSheet)),
+    );
+    expect(find.text(l10n.competitionsCreate), findsOneWidget);
+    expect(find.text(l10n.competitionsJoin), findsOneWidget);
+  });
+}
 
-      await tester.tap(find.text('open'));
-      await tester.pumpAndSettle();
+class _RouteStub extends StatelessWidget {
+  const _RouteStub(this.label);
 
-      expect(find.byIcon(Icons.logout), findsNothing);
-      expect(tester.takeException(), isNull);
-    },
-  );
+  final String label;
+
+  @override
+  Widget build(BuildContext context) =>
+      Scaffold(body: Center(child: Text(label)));
 }

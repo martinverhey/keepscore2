@@ -120,6 +120,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get competitionsEmpty => 'Je zit nog niet in een competitie.';
 
   @override
+  String get competitionsAdd => 'Competitie toevoegen';
+
+  @override
   String get competitionsCreate => 'Competitie maken';
 
   @override
@@ -183,7 +186,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get competitionGuestCannotCreate =>
-      'Als gast kun je rondkijken, maar voor het maken van een competitie heb je een account nodig.';
+      'Als gast kun je deelnemen aan een competitie en rondkijken, maar voor het maken van een competitie heb je een account nodig.';
 
   @override
   String get competitionCodeHelp => 'Iedereen met deze code kan meedoen.';

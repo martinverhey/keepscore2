@@ -17,6 +17,8 @@ import '../cubit/competition_cubit.dart';
 import '../cubit/competition_list_cubit.dart';
 import '../widgets/competition_action.enum.dart';
 import '../widgets/competition_action_sheet.dart';
+import '../widgets/competition_add_action.enum.dart';
+import '../widgets/competition_add_sheet.dart';
 import '../widgets/competition_tile.dart';
 
 class CompetitionsPage extends StatefulWidget {
@@ -43,10 +45,27 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
       trailing: !AppPlatform.useWideWeb(context) && !context.canPop()
           ? _signOutButton(context)
           : null,
+      floatingAction: _addCompetitionButton(
+        context,
+        canCreate: session.canWrite,
+      ),
       onRefresh: context.read<CompetitionListCubit>().refresh,
       body: BlocBuilder<CompetitionListCubit, CompetitionListState>(
         builder: (context, state) => _body(context, state, session),
       ),
+    );
+  }
+
+  Widget _addCompetitionButton(
+    BuildContext context, {
+    required bool canCreate,
+  }) {
+    return AdaptiveFloatingAction(
+      glyph: AdaptiveGlyph.add,
+      semanticLabel: canCreate
+          ? context.l10n.competitionsAdd
+          : context.l10n.competitionsJoin,
+      onPressed: () => _add(context, canCreate: canCreate),
     );
   }
 
@@ -84,7 +103,12 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
     required String? myUserId,
   }) {
     return Padding(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.only(
+        left: AppSpacing.md,
+        right: AppSpacing.md,
+        top: AppSpacing.md,
+        bottom: _floatingActionInset,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -105,21 +129,6 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
               const SizedBox(height: AppSpacing.sm),
             ],
 
-          const SizedBox(height: AppSpacing.lg),
-
-          if (canCreate)
-            AdaptiveButton(
-              label: context.l10n.competitionsCreate,
-              onPressed: () => context.push(Routes.createCompetition),
-            ),
-
-          const SizedBox(height: AppSpacing.sm),
-          AdaptiveButton(
-            label: context.l10n.competitionsJoin,
-            kind: AdaptiveButtonKind.tinted,
-            onPressed: () => context.push(Routes.joinCompetition),
-          ),
-
           if (state.actionFailure != null) _actionFailureText(context, state),
         ],
       ),
@@ -134,6 +143,26 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
         style: const TextStyle(color: AppColors.negative),
       ),
     );
+  }
+
+  Future<void> _add(BuildContext context, {required bool canCreate}) async {
+    if (!canCreate) {
+      context.push(Routes.joinCompetition);
+      return;
+    }
+
+    final action = await showAdaptiveSheet<CompetitionAddAction>(
+      context,
+      builder: (_) => const CompetitionAddSheet(),
+    );
+    if (action == null || !context.mounted) return;
+
+    switch (action) {
+      case CompetitionAddAction.create:
+        context.push(Routes.createCompetition);
+      case CompetitionAddAction.join:
+        context.push(Routes.joinCompetition);
+    }
   }
 
   Future<void> _manage(
@@ -201,4 +230,7 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
         }
     }
   }
+
+  static const double _floatingActionInset =
+      AdaptiveFloatingAction.diameter + AppSpacing.lg;
 }

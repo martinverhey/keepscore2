@@ -308,6 +308,12 @@ abstract class AppLocalizations {
   /// **'You\'re not in any competition yet.'**
   String get competitionsEmpty;
 
+  /// No description provided for @competitionsAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add competition'**
+  String get competitionsAdd;
+
   /// No description provided for @competitionsCreate.
   ///
   /// In en, this message translates to:
@@ -395,7 +401,7 @@ abstract class AppLocalizations {
   /// No description provided for @competitionGuestCannotCreate.
   ///
   /// In en, this message translates to:
-  /// **'Guests can look around, but creating a competition needs an account.'**
+  /// **'Guests can join a competition and look around, but creating one needs an account.'**
   String get competitionGuestCannotCreate;
 
   /// No description provided for @competitionCodeHelp.
