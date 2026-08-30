@@ -15,8 +15,11 @@ import 'package:keepscore2/features/match/domain/match_repository.dart';
 import 'package:keepscore2/features/match/presentation/cubit/match_form_cubit.dart';
 import 'package:keepscore2/features/match/presentation/widgets/new_match_keys.enum.dart';
 import 'package:keepscore2/features/match/presentation/widgets/new_match_sheet.dart';
+import 'package:keepscore2/app/dependency_injection/injector.dart';
 import 'package:keepscore2/features/player/domain/player.model.dart';
 import 'package:keepscore2/features/player/domain/player_repository.dart';
+import 'package:keepscore2/features/player/presentation/cubit/players_cubit.dart';
+import 'package:keepscore2/features/player/presentation/widgets/manage_players_sheet.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -48,7 +51,14 @@ Competition _competition() => Competition(
 Player _player(String id, String name) =>
     Player(id: id, competitionId: 'c1', displayName: name, isActive: true);
 
-({AuthBloc auth, CompetitionCubit competition, MatchFormCubit form}) _blocs() {
+typedef _Blocs = ({
+  AuthBloc auth,
+  CompetitionCubit competition,
+  MatchFormCubit form,
+  PlayerRepository players,
+});
+
+_Blocs _blocs() {
   final auth = MockAuthRepository();
   final matches = MockMatchRepository();
   final competitions = MockCompetitionRepository();
@@ -94,14 +104,15 @@ Player _player(String id, String name) =>
   addTearDown(authBloc.close);
   addTearDown(competitionCubit.close);
 
-  return (auth: authBloc, competition: competitionCubit, form: form);
+  return (
+    auth: authBloc,
+    competition: competitionCubit,
+    form: form,
+    players: players,
+  );
 }
 
-Widget _app({
-  required ({AuthBloc auth, CompetitionCubit competition, MatchFormCubit form})
-  blocs,
-  required Widget home,
-}) {
+Widget _app({required _Blocs blocs, required Widget home}) {
   return MultiBlocProvider(
     providers: [
       BlocProvider.value(value: blocs.form),
@@ -207,6 +218,60 @@ void main() {
       expect(otherSheetNames, contains('Mia'));
       expect(otherSheetNames, isNot(contains('Ada')));
       expect(otherSheetNames, isNot(contains('Zoe')));
+    },
+  );
+
+  testWidgets(
+    'managing players opens a sheet over the picker and refreshes its list',
+    (tester) async {
+      final blocs = _blocs();
+      getIt.registerFactoryParam<PlayersCubit, String, void>(
+        (competitionId, _) => PlayersCubit(blocs.players, competitionId),
+      );
+      addTearDown(getIt.reset);
+
+      await tester.pumpWidget(
+        _app(blocs: blocs, home: const Material(child: NewMatchSheet())),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey(NewMatchKey.teamAreaA)));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Manage players'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ManagePlayersSheet), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey(NewMatchKey.teamPickerSheet)),
+        findsOneWidget,
+      );
+
+      when(() => blocs.players.currentPlayers('c1')).thenAnswer(
+        (_) async => [
+          _player('p1', 'Zoe'),
+          _player('p2', 'Ada'),
+          _player('p3', 'Mia'),
+          _player('p4', 'Ben'),
+        ],
+      );
+
+      await tester.tap(
+        find.descendant(
+          of: find.byType(ManagePlayersSheet),
+          matching: find.text('Done'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ManagePlayersSheet), findsNothing);
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey(NewMatchKey.teamPickerSheet)),
+          matching: find.text('Ben'),
+        ),
+        findsOneWidget,
+      );
     },
   );
 

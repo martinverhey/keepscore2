@@ -11,6 +11,8 @@ import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/sheet.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
+import '../../../player/domain/player.model.dart';
+import '../../../player/presentation/widgets/manage_players_sheet.dart';
 import '../../domain/match_entry.model.dart';
 import '../cubit/match_form_cubit.dart';
 import 'new_match_keys.enum.dart';
@@ -295,7 +297,6 @@ class _NewMatchSheetState extends State<NewMatchSheet> {
         ? AdaptiveColors.teamA(context)
         : AdaptiveColors.teamB(context);
 
-    final otherSide = side.opposite;
     final selected = await showAdaptiveSheet<Set<String>>(
       context,
       builder: (_) => TeamPickerSheet(
@@ -304,11 +305,9 @@ class _NewMatchSheetState extends State<NewMatchSheet> {
             ? context.l10n.matchTeamA
             : context.l10n.matchTeamB,
         color: color,
-        players: state.players
-            .where((player) => state.assignments[player.id] != otherSide)
-            .toList(growable: false),
+        players: _selectablePlayers(state, side),
         initiallySelected: state.team(side).map((player) => player.id).toSet(),
-        competitionId: cubit.competitionId,
+        onManagePlayers: () => _managePlayers(context, cubit, side),
         myPlayerId: myPlayerId,
       ),
     );
@@ -316,4 +315,23 @@ class _NewMatchSheetState extends State<NewMatchSheet> {
     await cubit.refreshPlayers();
     if (selected != null) cubit.setTeam(side, selected);
   }
+
+  Future<List<Player>> _managePlayers(
+    BuildContext context,
+    MatchFormCubit cubit,
+    MatchTeam side,
+  ) async {
+    await showManagePlayersSheet(context, competitionId: cubit.competitionId);
+    await cubit.refreshPlayers();
+    final state = cubit.state;
+    if (state is! MatchFormReady) return const [];
+    return _selectablePlayers(state, side);
+  }
+}
+
+List<Player> _selectablePlayers(MatchFormReady state, MatchTeam side) {
+  final otherSide = side.opposite;
+  return state.players
+      .where((player) => state.assignments[player.id] != otherSide)
+      .toList(growable: false);
 }

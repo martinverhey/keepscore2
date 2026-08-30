@@ -1,7 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../../app/router/app_router.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
@@ -25,7 +23,7 @@ class TeamPickerSheet extends StatefulWidget {
     required this.color,
     required this.players,
     required this.initiallySelected,
-    required this.competitionId,
+    required this.onManagePlayers,
     this.myPlayerId,
   });
 
@@ -33,7 +31,7 @@ class TeamPickerSheet extends StatefulWidget {
   final Color color;
   final List<Player> players;
   final Set<String> initiallySelected;
-  final String competitionId;
+  final Future<List<Player>> Function() onManagePlayers;
   final String? myPlayerId;
 
   @override
@@ -42,10 +40,22 @@ class TeamPickerSheet extends StatefulWidget {
 
 class _TeamPickerSheetState extends State<TeamPickerSheet> {
   late final Set<String> _selected = Set.of(widget.initiallySelected);
+  late List<Player> _players = widget.players;
 
   void _toggle(String playerId) {
     setState(() {
       if (!_selected.remove(playerId)) _selected.add(playerId);
+    });
+  }
+
+  Future<void> _managePlayers() async {
+    final players = await widget.onManagePlayers();
+    if (!mounted) return;
+    setState(() {
+      _players = players;
+      _selected.removeWhere(
+        (playerId) => !players.any((player) => player.id == playerId),
+      );
     });
   }
 
@@ -63,7 +73,7 @@ class _TeamPickerSheetState extends State<TeamPickerSheet> {
         content: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            for (final player in _sortedByName(widget.players))
+            for (final player in _sortedByName(_players))
               Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                 child: SelectableRow(
@@ -79,11 +89,7 @@ class _TeamPickerSheetState extends State<TeamPickerSheet> {
             AdaptiveButton(
               label: context.l10n.playersManageTitle,
               kind: AdaptiveButtonKind.tinted,
-              onPressed: () {
-                final router = GoRouter.of(context);
-                Navigator.of(context).pop(_selected);
-                router.push(Routes.players(widget.competitionId));
-              },
+              onPressed: _managePlayers,
             ),
           ],
         ),

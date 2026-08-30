@@ -88,6 +88,14 @@ own cubit inside the `showAdaptiveSheet` builder rather than in a `GoRoute`.
 `showJoinCompetitionSheet` returns the joined competition's id (or null), and
 `CompetitionsPage` is what refreshes `CompetitionListCubit` and pushes the
 competition — the sheet itself never navigates. `showNewMatchSheet` builds the teams and submits.
+`TeamPickerSheet`'s "Manage players" button opens `showManagePlayersSheet`
+(`player/presentation/widgets/manage_players_sheet.dart`) on top of the picker
+rather than popping and pushing `Routes.players` — the sheet builds its own
+`PlayersCubit` via `getIt` (a nested sheet route inherits no providers from the
+route underneath it), and `NewMatchSheet._managePlayers` refreshes
+`MatchFormCubit` afterwards and hands the picker back its freshly filtered
+player list through `TeamPickerSheet.onManagePlayers`, so a player added there
+is selectable without closing anything.
 `showMatchDetailSheet` (`match/presentation/widgets/match_detail_sheet.dart`)
 renders the same `MatchCard` the list does, then a "Player rank" card (each
 player's rating going in, Team A left / Team B right, divided off from the two
