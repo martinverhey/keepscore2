@@ -951,6 +951,28 @@ guest is now simply `action: null`. The platforms with no separate action slot
 (Material, and Cupertino on macOS) **append it as a trailing item** and
 `_tap` routes `index == items.length` to `onPressed`, so New match moved from
 the middle to the right there too.
+**Each page owns its own bar, so the glass bar's internal selection has to be
+reseeded on every tap that navigates.** `LiquidGlassTabBar`'s Impeller path is
+stateful (`LiquidGlassAnimatedNavBar`): a tap sets its own `_tabIndex` and its
+`didUpdateWidget` resyncs **only when `selectedIndex` differs from the previous
+widget's**. `LeaderboardPage` and `MatchesPage` each render their own
+`CompetitionTabBar` with a *constant* `current`, so that prop never changes and
+the resync never fires — after tapping "Matches" on the leaderboard's bar, that
+bar's pill sits on Matches forever, and returning to the page shows the wrong
+tab highlighted until you tap it again. `AdaptiveBottomTabBar` is therefore a
+`StatefulWidget` whose `_tap` bumps a `_glassGeneration` counter, keyed into
+the `LiquidGlassTabBar`, whenever the tapped index is not this bar's own — the
+remount reseeds `initState` from the correct prop. A tap on the already-current
+tab or on the action does not bump it, since neither moves the pill.
+The cost is that the pill never animates across a tab switch; it cannot, when
+the bar you tapped belongs to the page you are leaving. Hoisting one bar into
+`CompetitionShell` (fed from `navigationShell.currentIndex`) is the change that
+would earn that animation back, and it would touch every platform's bar.
+**`flutter test` cannot see any of this**: `ui.ImageFilter.isShaderFilterSupported`
+is false there, so the bar falls back to its *stateless* Skia path, which reads
+`selectedIndex` directly and is always right. The suite pins the reseed
+mechanism (the key changes / does not change) rather than the symptom.
+
 Geometry, on both render paths (`resolveBarPosition` on Impeller, the
 `Align`/`Padding` fallback on Skia): with an action the capsule takes
 `alignment: bottomLeft` and a left margin, sized
@@ -1240,7 +1262,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 268 tests at time of writing
+flutter test                    # 271 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 python3 scripts/generate_icon.py   # redraw assets/icon/*.png

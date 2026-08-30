@@ -154,6 +154,53 @@ void main() {
       expect(tapped, [1]);
     });
 
+    testWidgets('keeps its own tab highlighted when a tap navigates away', (
+      tester,
+    ) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+      await pumpGlass(tester, _tabBar((_) {}));
+
+      await tester.tap(find.text('Matches'));
+      await tester.pumpAndSettle();
+
+      expect(_isHighlighted(tester, AdaptiveGlyph.leaderboard), isTrue);
+      expect(_isHighlighted(tester, AdaptiveGlyph.matches), isFalse);
+    });
+
+    testWidgets('reseeds the glass bar when a tap navigates away', (
+      tester,
+    ) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+      await pumpGlass(tester, _tabBar((_) {}, onNewMatch: () {}));
+
+      final before = _glassBarKey(tester);
+
+      await tester.tap(find.text('Matches'));
+      await tester.pumpAndSettle();
+
+      expect(_glassBarKey(tester), isNot(before));
+    });
+
+    testWidgets('leaves the glass bar alone for taps that do not move it', (
+      tester,
+    ) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+      await pumpGlass(tester, _tabBar((_) {}, onNewMatch: () {}));
+
+      final before = _glassBarKey(tester);
+
+      await tester.tap(find.text('Ranking'));
+      await tester.pumpAndSettle();
+      expect(_glassBarKey(tester), before);
+
+      await tester.tap(find.byType(LiquidGlassTabBarAction));
+      await tester.pumpAndSettle();
+      expect(_glassBarKey(tester), before);
+    });
+
     testWidgets('reports the tapped index from the glass bar', (tester) async {
       AppPlatform.debugOverrideCupertino = true;
       AppPlatform.debugOverrideLiquidGlass = true;
@@ -284,6 +331,16 @@ void main() {
       expect(taps, 1);
     });
   });
+}
+
+Key? _glassBarKey(WidgetTester tester) {
+  return tester.widget<LiquidGlassTabBar>(find.byType(LiquidGlassTabBar)).key;
+}
+
+bool _isHighlighted(WidgetTester tester, AdaptiveGlyph glyph) {
+  return tester
+      .widgetList<AdaptiveIcon>(find.byType(AdaptiveIcon))
+      .any((icon) => icon.glyph == glyph && icon.color == AppColors.seed);
 }
 
 Widget _tabBar(ValueChanged<int> onTap, {VoidCallback? onNewMatch}) {
