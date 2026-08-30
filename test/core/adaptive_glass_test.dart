@@ -263,6 +263,37 @@ void main() {
     });
   });
 
+  group('showAdaptiveSheet', () {
+    testWidgets('puts the iOS sheet on glass', (tester) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+      await _openSheet(tester);
+
+      expect(find.byType(LiquidGlassLens), findsOneWidget);
+      expect(find.text('sheet body'), findsOneWidget);
+    });
+
+    testWidgets('keeps the sheet opaque without glass', (tester) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = false;
+      await _openSheet(tester);
+
+      expect(find.byType(LiquidGlassLens), findsNothing);
+      expect(find.text('sheet body'), findsOneWidget);
+    });
+
+    testWidgets('still guards dismissal on a glass sheet', (tester) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+      await _openSheet(tester, guarded: true);
+
+      await tester.tapAt(const Offset(20, 20));
+      await tester.pumpAndSettle();
+
+      expect(find.text('sheet body'), findsOneWidget);
+    });
+  });
+
   group('AdaptiveScaffold under a floating glass bar', () {
     testWidgets('leaves room below the body for the bar', (tester) async {
       AppPlatform.debugOverrideCupertino = true;
@@ -317,6 +348,28 @@ void main() {
       expect(taps, 1);
     });
   });
+}
+
+Future<void> _openSheet(WidgetTester tester, {bool guarded = false}) async {
+  await tester.pumpWidget(
+    CupertinoApp(
+      home: Builder(
+        builder: (context) => CupertinoButton(
+          onPressed: () => showAdaptiveSheet<void>(
+            context,
+            confirmsDismissal: guarded,
+            builder: (_) => guarded
+                ? const PopScope(canPop: false, child: Text('sheet body'))
+                : const Text('sheet body'),
+          ),
+          child: const Text('open'),
+        ),
+      ),
+    ),
+  );
+
+  await tester.tap(find.text('open'));
+  await tester.pumpAndSettle();
 }
 
 class _SwitchingTabBar extends StatefulWidget {

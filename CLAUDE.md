@@ -955,6 +955,20 @@ guest is now simply `action: null`. The platforms with no separate action slot
 (Material, and Cupertino on macOS) **append it as a trailing item** and
 `_tap` routes `index == items.length` to `onPressed`, so New match moved from
 the middle to the right there too.
+**iOS sheets sit on a glass panel, at a much heavier tint than the bar.**
+`showAdaptiveSheet`'s Cupertino branch swaps its opaque `Container` for an
+`AdaptiveGlass` whose tint is `AdaptiveColors.glassSheetTint` — the modal
+surface at `AppOpacity.glassSheetFill` (0.75), where the bar uses 0.22/0.28.
+A sheet is a reading surface: at the bar's tint the leaderboard behind it
+shows through the text. The refraction and the edge still read as glass; the
+body stays legible. Only the Cupertino branch changes — the Material sheet and
+the wide-web dialog are unreachable on iOS. `AdaptiveGlass` grew a `tint`
+override for this, threaded into `styleOf`. The `ScrollDismissibleSheet` /
+`PopScope` / `confirmsDismissal` arrangement is untouched: the lens replaces
+the surface *inside* it, so the drag and barrier paths still route through
+`Navigator.maybePop`, and `adaptive_glass_test.dart` asserts a guarded glass
+sheet survives a barrier tap.
+
 **The scroll edge band is part of the host, not of any page.**
 `AdaptiveBottomBarHost._floating` stacks a `LiquidGlassScrollEdge` between the
 page and the bar — content fades into the page colour as it slides under the
@@ -1285,7 +1299,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 271 tests at time of writing
+flutter test                    # 274 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 python3 scripts/generate_icon.py   # redraw assets/icon/*.png

@@ -26,6 +26,9 @@ abstract final class AdaptiveColors {
     AppColors.glassTintOnDark,
   );
 
+  static Color glassSheetTint(BuildContext context) =>
+      modalSurface(context).withValues(alpha: AppOpacity.glassSheetFill);
+
   static Color scrollEdgeTint(BuildContext context) =>
       pageBackground(context).withValues(alpha: AppOpacity.scrollEdgeFill);
 
