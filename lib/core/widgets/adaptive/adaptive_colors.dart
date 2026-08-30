@@ -20,6 +20,10 @@ abstract final class AdaptiveColors {
     AppColors.modalSurfaceOnDark,
   );
 
+  static Color pageBackground(BuildContext context) => AppPlatform.useCupertino
+      ? CupertinoTheme.of(context).scaffoldBackgroundColor
+      : Theme.of(context).scaffoldBackgroundColor;
+
   static Color surfaceTint(BuildContext context) =>
       Theme.of(context).colorScheme.surfaceContainerLow;
 

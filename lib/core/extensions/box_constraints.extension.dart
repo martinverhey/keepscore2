@@ -1,12 +1,10 @@
 import 'package:flutter/widgets.dart';
 
 import '../theme/app_tokens.dart';
+import 'double.extension.dart';
 
 extension BoxConstraintsContentInset on BoxConstraints {
-  double get contentGutter {
-    final gutter = (maxWidth - kContentMaxWidth) / 2;
-    return gutter > 0 ? gutter : 0;
-  }
+  double get contentGutter => maxWidth.contentGutter;
 
   double get contentHorizontalInset {
     final gutter = contentGutter;

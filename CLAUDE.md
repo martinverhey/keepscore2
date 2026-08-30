@@ -775,8 +775,27 @@ the treatment below. Mirrors `debugOverrideCupertino` with
     (`core/extensions/box_constraints.extension.dart`, `max((maxWidth - 640)
     / 2, AppSpacing.md)`) applied as padding inside its own scrollable.
     `LeaderboardPage`/`MatchesPage` used to be callers too, back when they
-    were one `CompetitionContent` page; each is now a plain
-    `constrainWidth` page and neither passes the flag any more.
+    were one `CompetitionContent` page; neither passes the flag any more —
+    `LeaderboardPage` is a plain `constrainWidth` `body` page, and
+    `MatchesPage` takes the `slivers` route below.
+- **`AdaptiveScaffold` takes either a `body` box or a `slivers` list, never
+  both** (asserted in the constructor). The sliver form exists for the
+  Matches list's sticky day headers: `PinnedHeaderSliver` pins against the
+  scroll view that owns the app bar, so the page's content has to *be*
+  slivers in `AdaptiveScaffold`'s own `CustomScrollView` — a box handed to
+  `SliverFillRemaining` has nothing to pin to, and `hasScrollBody: true`
+  would give it a nested scrollable that neither pull-to-refresh nor the
+  collapsing app bar can see. `MatchesPage` wraps each day in a
+  `SliverMainAxisGroup` of a `PinnedHeaderSliver(DayHeader)` plus that day's
+  `MatchCard`s, so a header pins only while its own day is on screen and the
+  next day pushes it off; `DayHeader` paints an opaque
+  `AdaptiveColors.pageBackground` for the cards to scroll under.
+  `constrainWidth` still applies, but through a `SliverLayoutBuilder` +
+  `SliverPadding` off `crossAxisExtent.contentGutter` (`double.extension.dart`,
+  which `BoxConstraints.contentGutter` now delegates to) rather than a
+  `Center`/`ConstrainedBox` — pad, never constrain, for the same reason as
+  the app bar and FAB above. `test/features/match/matches_page_test.dart`
+  is the only thing watching any of it, wide-web column included.
 - **Web gets one deliberate page-transition, not whatever the host OS
   happens to use.** `ThemeData.pageTransitionsTheme`'s default is keyed by
   `defaultTargetPlatform`, and on Flutter Web that reflects the *browsing
@@ -1105,7 +1124,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 242 tests at time of writing
+flutter test                    # 247 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 python3 scripts/generate_icon.py   # redraw assets/icon/*.png

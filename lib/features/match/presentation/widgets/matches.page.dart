@@ -17,6 +17,7 @@ import '../../../competition/presentation/widgets/competition_settings_button.da
 import '../../../competition/presentation/widgets/competition_tab.enum.dart';
 import '../../../competition/presentation/widgets/competition_tab_bar.dart';
 import '../../../player/presentation/cubit/players_cubit.dart';
+import '../../domain/match_entry.model.dart';
 import '../cubit/game_type_filter_cubit.dart';
 import '../cubit/match_list_cubit.dart';
 import 'day_header.dart';
@@ -78,24 +79,26 @@ class _MatchesPageState extends State<MatchesPage> {
               current: CompetitionTab.matches,
               isRegistered: isRegistered,
             ),
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.md,
-          AppSpacing.sm,
-          AppSpacing.md,
-          AppSpacing.xl,
-        ),
-        child: BlocBuilder<MatchListCubit, MatchListState>(
-          builder: (context, state) => _body(
-            context,
-            state,
-            competitionId: competitionId,
-            isRegistered: isRegistered,
-            hasPlayers: hasPlayers,
-            myPlayerId: myPlayerId,
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.md,
+            AppSpacing.sm,
+            AppSpacing.md,
+            AppSpacing.xl,
+          ),
+          sliver: BlocBuilder<MatchListCubit, MatchListState>(
+            builder: (context, state) => _body(
+              context,
+              state,
+              competitionId: competitionId,
+              isRegistered: isRegistered,
+              hasPlayers: hasPlayers,
+              myPlayerId: myPlayerId,
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
 
@@ -130,14 +133,13 @@ class _MatchesPageState extends State<MatchesPage> {
     final cubit = context.read<MatchListCubit>();
 
     return switch (state) {
-      MatchListLoading() => const Padding(
-        padding: EdgeInsets.all(AppSpacing.xl),
-        child: AdaptiveLoader(),
-      ),
-      MatchListFailed(:final failure) => ErrorRetry(
-        message: failure.localized(context.l10n),
-        retryLabel: context.l10n.commonRetry,
-        onRetry: cubit.load,
+      MatchListLoading() => _loader(),
+      MatchListFailed(:final failure) => SliverToBoxAdapter(
+        child: ErrorRetry(
+          message: failure.localized(context.l10n),
+          retryLabel: context.l10n.commonRetry,
+          onRetry: cubit.load,
+        ),
       ),
       MatchListReady() => _list(
         context,
@@ -160,15 +162,14 @@ class _MatchesPageState extends State<MatchesPage> {
     required bool hasPlayers,
     required String? myPlayerId,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
+    return SliverMainAxisGroup(
+      slivers: [
         if (!isRegistered)
-          GuestNotice(message: context.l10n.matchGuestCannotLog),
-        if (isRegistered && !hasPlayers) ...[
-          _needsPlayersHint(context),
-          const SizedBox(height: AppSpacing.lg),
-        ],
+          SliverToBoxAdapter(
+            child: GuestNotice(message: context.l10n.matchGuestCannotLog),
+          ),
+        if (isRegistered && !hasPlayers)
+          SliverToBoxAdapter(child: _needsPlayersHint(context)),
         _matchesSection(
           context,
           state,
@@ -177,15 +178,17 @@ class _MatchesPageState extends State<MatchesPage> {
           hasPlayers: hasPlayers,
           myPlayerId: myPlayerId,
         ),
-        if (state.hasMore) _loadMoreButton(context, state, cubit),
-        if (state.actionFailure != null) _actionFailureText(context, state),
+        if (state.hasMore)
+          SliverToBoxAdapter(child: _loadMoreButton(context, state, cubit)),
+        if (state.actionFailure != null)
+          SliverToBoxAdapter(child: _actionFailureText(context, state)),
       ],
     );
   }
 
   Widget _needsPlayersHint(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.sm),
+      padding: const EdgeInsets.only(top: AppSpacing.sm, bottom: AppSpacing.lg),
       child: Text(context.l10n.matchNeedsPlayers, style: AppTypography.caption),
     );
   }
@@ -198,40 +201,71 @@ class _MatchesPageState extends State<MatchesPage> {
     required bool hasPlayers,
     required String? myPlayerId,
   }) {
-    if (state.busy) {
-      return const Padding(
-        padding: EdgeInsets.all(AppSpacing.xl),
-        child: AdaptiveLoader(),
-      );
-    }
+    if (state.busy) return _loader();
 
     if (state.matches.isEmpty) {
-      return _emptyState(
-        context,
-        state,
-        isRegistered: isRegistered,
-        hasPlayers: hasPlayers,
+      return SliverToBoxAdapter(
+        child: _emptyState(
+          context,
+          state,
+          isRegistered: isRegistered,
+          hasPlayers: hasPlayers,
+        ),
       );
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        for (final group in groupByDay(state.matches)) ...[
-          DayHeader(day: group.day),
-          for (final match in group.matches)
-            MatchCard(
-              match: match,
-              myPlayerId: myPlayerId,
-              onTap: () => showMatchDetailSheet(
+    return SliverMainAxisGroup(
+      slivers: [
+        for (final group in groupByDay(state.matches))
+          _daySliver(
+            context,
+            group,
+            competitionId: competitionId,
+            myPlayerId: myPlayerId,
+          ),
+      ],
+    );
+  }
+
+  Widget _daySliver(
+    BuildContext context,
+    MatchDayGroup group, {
+    required String competitionId,
+    required String? myPlayerId,
+  }) {
+    return SliverMainAxisGroup(
+      slivers: [
+        PinnedHeaderSliver(child: DayHeader(day: group.day)),
+        SliverList.list(
+          children: [
+            for (final match in group.matches)
+              _matchCard(
                 context,
+                match,
                 competitionId: competitionId,
-                matchId: match.id,
                 myPlayerId: myPlayerId,
               ),
-            ),
-        ],
+          ],
+        ),
       ],
+    );
+  }
+
+  Widget _matchCard(
+    BuildContext context,
+    MatchEntry match, {
+    required String competitionId,
+    required String? myPlayerId,
+  }) {
+    return MatchCard(
+      match: match,
+      myPlayerId: myPlayerId,
+      onTap: () => showMatchDetailSheet(
+        context,
+        competitionId: competitionId,
+        matchId: match.id,
+        myPlayerId: myPlayerId,
+      ),
     );
   }
 
@@ -314,6 +348,15 @@ class _MatchesPageState extends State<MatchesPage> {
         kind: AdaptiveButtonKind.plain,
         busy: state.loadingMore,
         onPressed: cubit.loadMore,
+      ),
+    );
+  }
+
+  Widget _loader() {
+    return const SliverToBoxAdapter(
+      child: Padding(
+        padding: EdgeInsets.all(AppSpacing.xl),
+        child: AdaptiveLoader(),
       ),
     );
   }

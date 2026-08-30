@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../extensions/box_constraints.extension.dart';
+import '../../extensions/double.extension.dart';
 import '../../theme/app_tokens.dart';
 import 'app_platform.dart';
 import 'suppressed_back_button_scope.dart';
@@ -12,7 +13,8 @@ class AdaptiveScaffold extends StatelessWidget {
   const AdaptiveScaffold({
     super.key,
     this.title,
-    required this.body,
+    this.body,
+    this.slivers,
     this.trailing,
     this.leading,
     this.floatingAction,
@@ -20,10 +22,14 @@ class AdaptiveScaffold extends StatelessWidget {
     this.onRefresh,
     this.constrainWidth = true,
     this.hasScrollBody = false,
-  });
+  }) : assert(
+         (body == null) != (slivers == null),
+         'Pass either body or slivers, never both',
+       );
 
   final String? title;
-  final Widget body;
+  final Widget? body;
+  final List<Widget>? slivers;
   final Widget? trailing;
   final Widget? leading;
   final Widget? floatingAction;
@@ -172,12 +178,29 @@ class AdaptiveScaffold extends StatelessWidget {
   );
 
   Widget _sliverBody() {
-    return SliverSafeArea(
-      top: false,
-      sliver: hasScrollBody
-          ? _ownScrollSliver(_content())
-          : SliverFillRemaining(hasScrollBody: false, child: _content()),
+    return SliverSafeArea(top: false, sliver: _bodySliver());
+  }
+
+  Widget _bodySliver() {
+    if (slivers case final slivers?) return _constrainedSlivers(slivers);
+    if (hasScrollBody) return _ownScrollSliver(_content());
+    return SliverFillRemaining(hasScrollBody: false, child: _content());
+  }
+
+  Widget _constrainedSlivers(List<Widget> slivers) {
+    if (!constrainWidth) return _sliverGroup(slivers);
+    return SliverLayoutBuilder(
+      builder: (context, constraints) => SliverPadding(
+        padding: EdgeInsets.symmetric(
+          horizontal: constraints.crossAxisExtent.contentGutter,
+        ),
+        sliver: _sliverGroup(slivers),
+      ),
     );
+  }
+
+  Widget _sliverGroup(List<Widget> slivers) {
+    return SliverMainAxisGroup(slivers: slivers);
   }
 
   Widget _content() {
@@ -188,7 +211,7 @@ class AdaptiveScaffold extends StatelessWidget {
               child: body,
             ),
           )
-        : body;
+        : body!;
   }
 
   Widget _ownScrollSliver(Widget child) {
