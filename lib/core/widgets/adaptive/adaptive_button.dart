@@ -65,7 +65,7 @@ class AdaptiveButton extends StatelessWidget {
   Widget _materialButton(BuildContext context, bool enabled) {
     final scheme = Theme.of(context).colorScheme;
     final callback = enabled ? onPressed : null;
-    final size = expand ? const Size.fromHeight(52) : Size.zero;
+    final size = expand ? const Size.fromHeight(52) : null;
 
     return switch (kind) {
       AdaptiveButtonKind.filled => FilledButton(
@@ -107,15 +107,20 @@ class AdaptiveButton extends StatelessWidget {
   Widget _cupertinoButton(BuildContext context, bool enabled) {
     final callback = enabled ? onPressed : null;
     final accent = AdaptiveColors.accent(context);
+    final sizeStyle = expand
+        ? CupertinoButtonSize.large
+        : CupertinoButtonSize.medium;
 
     return switch (kind) {
       AdaptiveButtonKind.filled => CupertinoButton.filled(
         onPressed: callback,
+        sizeStyle: sizeStyle,
         child: _child(CupertinoColors.white),
       ),
       AdaptiveButtonKind.tinted => CupertinoButton(
         color: accent.withValues(alpha: AppOpacity.tintedButtonFill),
         onPressed: callback,
+        sizeStyle: sizeStyle,
         child: DefaultTextStyle.merge(
           style: TextStyle(color: accent),
           child: _child(accent),
@@ -123,10 +128,12 @@ class AdaptiveButton extends StatelessWidget {
       ),
       AdaptiveButtonKind.plain => CupertinoButton(
         onPressed: callback,
+        sizeStyle: sizeStyle,
         child: _child(accent),
       ),
       AdaptiveButtonKind.destructive => CupertinoButton(
         onPressed: callback,
+        sizeStyle: sizeStyle,
         child: DefaultTextStyle.merge(
           style: const TextStyle(color: CupertinoColors.destructiveRed),
           child: _child(CupertinoColors.destructiveRed),
