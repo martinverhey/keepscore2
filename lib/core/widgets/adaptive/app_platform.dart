@@ -8,6 +8,9 @@ abstract final class AppPlatform {
   @visibleForTesting
   static bool? debugOverrideWideWeb;
 
+  @visibleForTesting
+  static bool? debugOverrideLiquidGlass;
+
   static const double wideWebBreakpoint = 720;
 
   static bool get useCupertino {
@@ -18,6 +21,12 @@ abstract final class AppPlatform {
   }
 
   static bool get useMaterial => !useCupertino;
+
+  static bool get useLiquidGlass {
+    if (debugOverrideLiquidGlass != null) return debugOverrideLiquidGlass!;
+    if (kIsWeb) return false;
+    return defaultTargetPlatform == TargetPlatform.iOS;
+  }
 
   static bool useWideWeb(BuildContext context) {
     if (debugOverrideWideWeb != null) return debugOverrideWideWeb!;

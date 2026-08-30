@@ -867,6 +867,46 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   `fullscreenDialog` page (used by `match/new`), but on wide web it defers to
   `adaptivePage` instead, so New Match reads as an in-place page inside the
   sidebar rather than a modal takeover of the whole viewport.
+
+### Liquid glass is iOS-only (`AppPlatform.useLiquidGlass`)
+
+A third platform axis, independent of both `useCupertino` and `useWideWeb`:
+`!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS`, mirrored by
+`AppPlatform.debugOverrideLiquidGlass` for tests. **It is deliberately not
+derived from `useCupertino`** — that would hand glass to macOS (a different
+idiom, untested) and, worse, to the ~15 test files that pin
+`debugOverrideCupertino = true`. Because `defaultTargetPlatform` is forced to
+`android` whenever `FLUTTER_TEST` is set (`foundation/_platform_io.dart`),
+glass is off in every test that doesn't ask for it, and
+`test/core/adaptive_glass_test.dart` is the one file that asks — the same
+arrangement `sidebar_test.dart` has with `debugOverrideWideWeb`, and the same
+blind spot: nothing else in the suite renders a lens.
+
+**Exactly one file in `lib/**` may import `package:liquid_glass_easy`:**
+`core/widgets/adaptive/adaptive_glass.dart`. It re-exports the handful of
+package types the other adaptive widgets name, so every glass branch elsewhere
+imports the seam, never the package. `main()` calls `AdaptiveGlass.warmUp()`
+(a no-op off iOS) rather than `LiquidGlassShaders.ensureLoaded()` directly, so
+the first frame showing glass isn't the frame that compiles the shader. The
+package is pure Dart plus six fragment shaders declared in its own pubspec —
+no Podfile, no `IPHONEOS_DEPLOYMENT_TARGET` change, no native setup — and it is
+constrained `^4.2.0`: every widget rename in its history landed in a major, so
+the caret is what protects the call sites. Widening past `^4` means re-reading
+its changelog first.
+
+`AdaptiveGlass.isEnabled(context)` is the runtime check the widgets branch on,
+not the bare `AppPlatform.useLiquidGlass` getter: it also refuses glass under
+`MediaQuery.highContrastOf` (iOS "Increase Contrast"). Flutter exposes **no**
+reduce-transparency flag, so that setting alone cannot turn glass off — this
+is the closest proxy available. Colours come from
+`AdaptiveColors.glassTint`/`AppGlass` like every other themed value; the
+package's own defaults are never used raw.
+
+**Glass is chrome, never content.** The package's own guidance is that a lens
+belongs above scrolling content, not inside it — a lens placed as a list item
+fights the backdrop read and hits overscroll artefacts. So bars, floating
+buttons and panels may be glass; `LeaderboardRow`/`MatchCard` may not.
+
 ### The sidebar is a shell, not a per-page wrapper
 
 `Sidebar` is rendered once, by `SidebarShell`
@@ -1124,7 +1164,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 247 tests at time of writing
+flutter test                    # 255 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 python3 scripts/generate_icon.py   # redraw assets/icon/*.png

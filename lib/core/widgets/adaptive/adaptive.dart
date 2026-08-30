@@ -4,6 +4,7 @@ export 'adaptive_button.dart';
 export 'adaptive_colors.dart';
 export 'adaptive_dialogs.dart';
 export 'adaptive_floating_action.dart';
+export 'adaptive_glass.dart';
 export 'adaptive_icon.dart';
 export 'adaptive_loader.dart';
 export 'adaptive_material_scope.dart';
