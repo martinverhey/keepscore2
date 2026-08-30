@@ -26,6 +26,9 @@ abstract final class AdaptiveColors {
     AppColors.glassTintOnDark,
   );
 
+  static Color glassGlyph(BuildContext context) =>
+      _forBrightness(context, AppColors.black, AppColors.white);
+
   static Color pageBackground(BuildContext context) => AppPlatform.useCupertino
       ? CupertinoTheme.of(context).scaffoldBackgroundColor
       : Theme.of(context).scaffoldBackgroundColor;

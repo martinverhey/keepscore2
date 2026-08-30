@@ -961,12 +961,17 @@ action the capsule keeps `bottomCenter` and a bottom-only margin, which is the
 one shape that lets `resolveBarPosition` return `null` and leave the package's
 default centring untouched.
 
-The FAB and the tab action are **untinted glass with an accent glyph**, not
-accent-tinted glass: a filled accent lens reads as a flat orange circle rather
-than as glass. Since clear glass has no fill to carry the affordance, the
-glyph itself is `AdaptiveColors.accent` — white would vanish over a light page.
+The FAB and the tab action are **untinted glass with a label-coloured glyph**
+— no accent anywhere on them. A filled accent lens read as a flat orange
+circle rather than as glass, and an accent glyph on clear glass read as
+orange too; both were rejected on sight. `AdaptiveColors.glassGlyph` is black
+on light and white on dark (what iOS itself uses for a glass control's
+symbol), which is also why the package's own `foregroundColor` default of
+plain white is not enough — it vanishes over a light page.
 `AdaptiveFloatingAction` passes no `style` at all, so `LiquidGlassFab`'s tuned
-default (contact shadow and optical border included) applies as shipped.
+default (contact shadow and optical border included) applies as shipped. The
+tab action carries `AdaptiveGlyph.add`, the same bare `+` as the competitions
+and players FABs, rather than `newMatch`'s filled plus-in-a-circle.
 
 **A component's `style` replaces its tuned appearance and refraction
 wholesale — only `shape`/`adaptivity` fall back.** `LiquidGlassStyle.merge`
@@ -1235,7 +1240,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 267 tests at time of writing
+flutter test                    # 268 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 python3 scripts/generate_icon.py   # redraw assets/icon/*.png

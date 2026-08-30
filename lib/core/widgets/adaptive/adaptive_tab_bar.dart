@@ -120,7 +120,7 @@ class AdaptiveBottomTabBar extends StatelessWidget {
         onTap: action.onPressed,
         child: AdaptiveIcon(
           action.glyph,
-          color: AdaptiveColors.accent(context),
+          color: AdaptiveColors.glassGlyph(context),
           size: AppGlass.barIconSize,
         ),
       ),

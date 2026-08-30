@@ -39,7 +39,7 @@ class AdaptiveFloatingAction extends StatelessWidget {
       child: LiquidGlassFab(
         onPressed: busy ? null : onPressed,
         size: diameter,
-        child: _child(AdaptiveColors.accent(context)),
+        child: _child(AdaptiveColors.glassGlyph(context)),
       ),
     );
   }

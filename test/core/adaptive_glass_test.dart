@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keepscore2/core/theme/app_tokens.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 
 Future<void> pumpGlass(
@@ -192,6 +193,26 @@ void main() {
       expect(
         tester.widget<LiquidGlassFab>(find.byType(LiquidGlassFab)).style,
         isNull,
+      );
+    });
+
+    testWidgets('paints its glyph in the label colour, not the accent', (
+      tester,
+    ) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+      await pumpGlass(tester, _floatingAction(() {}));
+
+      expect(
+        tester
+            .widget<AdaptiveIcon>(
+              find.descendant(
+                of: find.byType(LiquidGlassFab),
+                matching: find.byType(AdaptiveIcon),
+              ),
+            )
+            .color,
+        AppColors.black,
       );
     });
 

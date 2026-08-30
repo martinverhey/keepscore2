@@ -40,7 +40,7 @@ class CompetitionTabBar extends StatelessWidget {
 
   AdaptiveTabBarAction _newMatch(BuildContext context) {
     return AdaptiveTabBarAction(
-      glyph: AdaptiveGlyph.newMatch,
+      glyph: AdaptiveGlyph.add,
       label: context.l10n.matchNew,
       onPressed: () =>
           showNewMatchSheet(context, competitionId: competitionId),
