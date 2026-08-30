@@ -26,9 +26,6 @@ abstract final class AdaptiveColors {
     AppColors.glassTintOnDark,
   );
 
-  static Color accentGlassTint(BuildContext context) =>
-      accent(context).withValues(alpha: AppOpacity.glassAccentFill);
-
   static Color pageBackground(BuildContext context) => AppPlatform.useCupertino
       ? CupertinoTheme.of(context).scaffoldBackgroundColor
       : Theme.of(context).scaffoldBackgroundColor;

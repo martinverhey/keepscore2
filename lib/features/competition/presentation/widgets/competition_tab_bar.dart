@@ -27,29 +27,27 @@ class CompetitionTabBar extends StatelessWidget {
           glyph: AdaptiveGlyph.leaderboard,
           label: context.l10n.leaderboardTitle,
         ),
-        if (isRegistered)
-          AdaptiveTabBarItem(
-            glyph: AdaptiveGlyph.newMatch,
-            label: context.l10n.matchNew,
-          ),
         AdaptiveTabBarItem(
           glyph: AdaptiveGlyph.matches,
           label: context.l10n.matchesTitle,
         ),
       ],
-      selectedIndex: current == CompetitionTab.leaderboard
-          ? 0
-          : (isRegistered ? 2 : 1),
+      selectedIndex: current == CompetitionTab.leaderboard ? 0 : 1,
       onTap: (index) => _select(context, index),
+      action: isRegistered ? _newMatch(context) : null,
+    );
+  }
+
+  AdaptiveTabBarAction _newMatch(BuildContext context) {
+    return AdaptiveTabBarAction(
+      glyph: AdaptiveGlyph.newMatch,
+      label: context.l10n.matchNew,
+      onPressed: () =>
+          showNewMatchSheet(context, competitionId: competitionId),
     );
   }
 
   void _select(BuildContext context, int index) {
-    if (isRegistered && index == 1) {
-      showNewMatchSheet(context, competitionId: competitionId);
-      return;
-    }
-
     final tab = index == 0
         ? CompetitionTab.leaderboard
         : CompetitionTab.matches;

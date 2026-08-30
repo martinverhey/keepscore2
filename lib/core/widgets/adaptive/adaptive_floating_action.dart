@@ -39,16 +39,7 @@ class AdaptiveFloatingAction extends StatelessWidget {
       child: LiquidGlassFab(
         onPressed: busy ? null : onPressed,
         size: diameter,
-        style: _glassStyle(context),
-        child: _child(AppColors.white),
-      ),
-    );
-  }
-
-  LiquidGlassStyle _glassStyle(BuildContext context) {
-    return LiquidGlassFab.defaultStyle.copyWith(
-      appearance: LiquidGlassFab.defaultStyle.appearance.copyWith(
-        color: AdaptiveColors.accentGlassTint(context),
+        child: _child(AdaptiveColors.accent(context)),
       ),
     );
   }

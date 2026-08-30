@@ -15,17 +15,30 @@ class AdaptiveTabBarItem {
   final String label;
 }
 
+class AdaptiveTabBarAction {
+  const AdaptiveTabBarAction({
+    required this.glyph,
+    required this.label,
+    required this.onPressed,
+  });
+  final AdaptiveGlyph glyph;
+  final String label;
+  final VoidCallback onPressed;
+}
+
 class AdaptiveBottomTabBar extends StatelessWidget {
   const AdaptiveBottomTabBar({
     super.key,
     required this.items,
     required this.selectedIndex,
     required this.onTap,
+    this.action,
   });
 
   final List<AdaptiveTabBarItem> items;
   final int selectedIndex;
   final ValueChanged<int> onTap;
+  final AdaptiveTabBarAction? action;
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +48,20 @@ class AdaptiveBottomTabBar extends StatelessWidget {
   }
 
   Widget _glass(BuildContext context) {
+    if (action == null) return _glassBar(context);
+    return Stack(
+      children: [
+        Positioned.fill(child: _glassBar(context)),
+        Positioned(
+          right: AppGlass.barMargin,
+          bottom: MediaQuery.paddingOf(context).bottom + AppGlass.barMargin,
+          child: _glassAction(context, action!),
+        ),
+      ],
+    );
+  }
+
+  Widget _glassBar(BuildContext context) {
     return LiquidGlassTabBar.withImpeller(
       items: [for (final item in items) _glassItem(item)],
       selectedIndex: selectedIndex,
@@ -49,9 +76,10 @@ class AdaptiveBottomTabBar extends StatelessWidget {
         iconSize: AppGlass.barIconSize,
         labelFontSize: AppTypography.labelTinySize,
       ),
-      width: _glassWidth(context),
+      width: _glassBarWidth(context),
       height: AppGlass.barHeight,
-      margin: const EdgeInsets.only(bottom: AppGlass.barMargin),
+      alignment: _glassAlignment(),
+      margin: _glassMargin(),
     );
   }
 
@@ -63,17 +91,51 @@ class AdaptiveBottomTabBar extends StatelessWidget {
     );
   }
 
-  double _glassWidth(BuildContext context) {
-    final available = MediaQuery.sizeOf(context).width - AppGlass.barMargin * 2;
+  double _glassBarWidth(BuildContext context) {
+    final available =
+        MediaQuery.sizeOf(context).width -
+        AppGlass.barMargin * 2 -
+        _glassActionSpace;
     return math.max(0, math.min(available, AppGlass.barMaxWidth));
   }
+
+  Alignment _glassAlignment() =>
+      action == null ? Alignment.bottomCenter : Alignment.bottomLeft;
+
+  EdgeInsets _glassMargin() {
+    return action == null
+        ? const EdgeInsets.only(bottom: AppGlass.barMargin)
+        : const EdgeInsets.only(
+            left: AppGlass.barMargin,
+            bottom: AppGlass.barMargin,
+          );
+  }
+
+  Widget _glassAction(BuildContext context, AdaptiveTabBarAction action) {
+    return Semantics(
+      button: true,
+      label: action.label,
+      child: LiquidGlassTabBarAction(
+        size: AppGlass.barHeight,
+        onTap: action.onPressed,
+        child: AdaptiveIcon(
+          action.glyph,
+          color: AdaptiveColors.accent(context),
+          size: AppGlass.barIconSize,
+        ),
+      ),
+    );
+  }
+
+  double get _glassActionSpace =>
+      action == null ? 0 : AppGlass.barHeight + AppSpacing.sm;
 
   Widget _cupertino() {
     return CupertinoTabBar(
       currentIndex: selectedIndex,
-      onTap: onTap,
+      onTap: _tap,
       items: [
-        for (final item in items)
+        for (final item in _itemsWithAction())
           BottomNavigationBarItem(
             icon: AdaptiveIcon(item.glyph),
             label: item.label,
@@ -85,14 +147,32 @@ class AdaptiveBottomTabBar extends StatelessWidget {
   Widget _material() {
     return NavigationBar(
       selectedIndex: selectedIndex,
-      onDestinationSelected: onTap,
+      onDestinationSelected: _tap,
       destinations: [
-        for (final item in items)
+        for (final item in _itemsWithAction())
           NavigationDestination(
             icon: AdaptiveIcon(item.glyph),
             label: item.label,
           ),
       ],
     );
+  }
+
+  List<AdaptiveTabBarItem> _itemsWithAction() {
+    if (action case final action?) {
+      return [
+        ...items,
+        AdaptiveTabBarItem(glyph: action.glyph, label: action.label),
+      ];
+    }
+    return items;
+  }
+
+  void _tap(int index) {
+    if (index == items.length) {
+      action?.onPressed();
+      return;
+    }
+    onTap(index);
   }
 }

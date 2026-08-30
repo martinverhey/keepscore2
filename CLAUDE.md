@@ -937,20 +937,46 @@ bottom (it positions the capsule itself, safe area included, from `margin` /
 content underneath it** — asserted, since a full-screen overlay swallowing
 hits would otherwise be a silent, total loss of interaction. Icons go through
 `iconBuilder` rather than `icon` so `AdaptiveIcon` stays the one source of
-glyph truth, and the capsule is sized `min(screen - 2 × barMargin, 420)`
-rather than the package's fixed 300.
+glyph truth.
+
+**"New match" is an action beside the capsule, not a tab inside it.** The
+capsule groups the two destinations (Leaderboard, Matches); logging a match is
+a separate circular `LiquidGlassTabBarAction` at the right edge — the
+arrangement iOS 26 itself uses (a centred/left pill plus a standalone button),
+and the package's own Photos showcase. `AdaptiveBottomTabBar` therefore takes
+an optional `action` (`AdaptiveTabBarAction`: glyph, label, callback) next to
+`items`, which is also what removed `CompetitionTabBar`'s old index juggling
+(`isRegistered ? 2 : 1`, plus an `index == 1` special case in `_select`) — a
+guest is now simply `action: null`. The platforms with no separate action slot
+(Material, and Cupertino on macOS) **append it as a trailing item** and
+`_tap` routes `index == items.length` to `onPressed`, so New match moved from
+the middle to the right there too.
+Geometry, on both render paths (`resolveBarPosition` on Impeller, the
+`Align`/`Padding` fallback on Skia): with an action the capsule takes
+`alignment: bottomLeft` and a left margin, sized
+`min(screen - 2 × barMargin - (barHeight + sm), 420)`, and the action is
+`Positioned` at `right: barMargin, bottom: viewPadding.bottom + barMargin`
+matching what `LiquidGlassScaffold` does for its own action slot. Without an
+action the capsule keeps `bottomCenter` and a bottom-only margin, which is the
+one shape that lets `resolveBarPosition` return `null` and leave the package's
+default centring untouched.
+
+The FAB and the tab action are **untinted glass with an accent glyph**, not
+accent-tinted glass: a filled accent lens reads as a flat orange circle rather
+than as glass. Since clear glass has no fill to carry the affordance, the
+glyph itself is `AdaptiveColors.accent` — white would vanish over a light page.
+`AdaptiveFloatingAction` passes no `style` at all, so `LiquidGlassFab`'s tuned
+default (contact shadow and optical border included) applies as shipped.
 
 **A component's `style` replaces its tuned appearance and refraction
 wholesale — only `shape`/`adaptivity` fall back.** `LiquidGlassStyle.merge`
-takes `other.appearance`/`other.refraction` outright, so handing
-`LiquidGlassFab` an `AdaptiveGlass.styleOf` style would silently drop the
-contact shadow and tuned optical border it ships with. `AdaptiveFloatingAction`
-therefore composes *from* the package's own default —
-`LiquidGlassFab.defaultStyle.copyWith(appearance: …defaultStyle.appearance
-.copyWith(color: AdaptiveColors.accentGlassTint(context)))` — overriding
-nothing but the tint. The FAB stays accent-tinted rather than clear glass
-because it is the page's primary action; `AppOpacity.glassAccentFill` is what
-keeps it reading that way while still refracting.
+takes `other.appearance`/`other.refraction` outright, so handing a component
+an `AdaptiveGlass.styleOf` style silently drops the contact shadow and tuned
+optical border it ships with. Pass no style to keep the component's own look
+(the FAB and the tab action do); to change one facet, compose from its
+`defaultStyle` with `copyWith` rather than building a style from scratch. The
+tab bar capsule is the one place we do override wholesale, because its tint
+has to follow our light/dark tokens.
 
 ### The sidebar is a shell, not a per-page wrapper
 
@@ -1209,7 +1235,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 263 tests at time of writing
+flutter test                    # 267 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 python3 scripts/generate_icon.py   # redraw assets/icon/*.png

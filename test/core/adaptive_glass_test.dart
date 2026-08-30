@@ -67,10 +67,7 @@ void main() {
       AppPlatform.debugOverrideLiquidGlass = false;
       await pumpGlass(
         tester,
-        const AdaptiveGlass(
-          opaqueFallback: Text('opaque'),
-          child: Text('bar'),
-        ),
+        const AdaptiveGlass(opaqueFallback: Text('opaque'), child: Text('bar')),
       );
 
       expect(find.text('opaque'), findsOneWidget);
@@ -113,6 +110,49 @@ void main() {
       expect(find.byType(CupertinoTabBar), findsOneWidget);
     });
 
+    testWidgets('splits the action out of the glass capsule', (tester) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+      var actions = 0;
+      final tapped = <int>[];
+      await pumpGlass(tester, _tabBar(tapped.add, onNewMatch: () => actions++));
+
+      expect(find.byType(LiquidGlassTabBarAction), findsOneWidget);
+
+      await tester.tap(find.byType(LiquidGlassTabBarAction));
+      await tester.pumpAndSettle();
+
+      expect(actions, 1);
+      expect(tapped, isEmpty);
+    });
+
+    testWidgets('has no action button when none is given', (tester) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+      await pumpGlass(tester, _tabBar((_) {}));
+
+      expect(find.byType(LiquidGlassTabBarAction), findsNothing);
+    });
+
+    testWidgets('trails the action as an item without glass', (tester) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = false;
+      var actions = 0;
+      final tapped = <int>[];
+      await pumpGlass(tester, _tabBar(tapped.add, onNewMatch: () => actions++));
+
+      await tester.tap(find.text('New match'));
+      await tester.pumpAndSettle();
+
+      expect(actions, 1);
+      expect(tapped, isEmpty);
+
+      await tester.tap(find.text('Matches'));
+      await tester.pumpAndSettle();
+
+      expect(tapped, [1]);
+    });
+
     testWidgets('reports the tapped index from the glass bar', (tester) async {
       AppPlatform.debugOverrideCupertino = true;
       AppPlatform.debugOverrideLiquidGlass = true;
@@ -144,16 +184,24 @@ void main() {
       expect(find.byType(CupertinoButton), findsOneWidget);
     });
 
+    testWidgets('keeps the untinted package default glass', (tester) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+      await pumpGlass(tester, _floatingAction(() {}));
+
+      expect(
+        tester.widget<LiquidGlassFab>(find.byType(LiquidGlassFab)).style,
+        isNull,
+      );
+    });
+
     testWidgets('keeps its semantics label and fires on tap', (tester) async {
       AppPlatform.debugOverrideCupertino = true;
       AppPlatform.debugOverrideLiquidGlass = true;
       var taps = 0;
       await pumpGlass(tester, _floatingAction(() => taps++));
 
-      expect(
-        find.bySemanticsLabel('Add competition'),
-        findsOneWidget,
-      );
+      expect(find.bySemanticsLabel('Add competition'), findsOneWidget);
 
       await tester.tap(find.byType(LiquidGlassFab));
       await tester.pumpAndSettle();
@@ -217,7 +265,7 @@ void main() {
   });
 }
 
-Widget _tabBar(ValueChanged<int> onTap) {
+Widget _tabBar(ValueChanged<int> onTap, {VoidCallback? onNewMatch}) {
   return AdaptiveBottomTabBar(
     items: const [
       AdaptiveTabBarItem(glyph: AdaptiveGlyph.leaderboard, label: 'Ranking'),
@@ -225,6 +273,13 @@ Widget _tabBar(ValueChanged<int> onTap) {
     ],
     selectedIndex: 0,
     onTap: onTap,
+    action: onNewMatch == null
+        ? null
+        : AdaptiveTabBarAction(
+            glyph: AdaptiveGlyph.newMatch,
+            label: 'New match',
+            onPressed: onNewMatch,
+          ),
   );
 }
 
@@ -245,10 +300,7 @@ Widget _scaffold({bool withFloatingAction = false, VoidCallback? onBodyTap}) {
     body: GestureDetector(
       key: const Key('body'),
       onTap: onBodyTap,
-      child: const Align(
-        alignment: Alignment.topCenter,
-        child: Text('tap me'),
-      ),
+      child: const Align(alignment: Alignment.topCenter, child: Text('tap me')),
     ),
     floatingAction: withFloatingAction
         ? const SizedBox(key: Key('fab'), width: 56, height: 56)
