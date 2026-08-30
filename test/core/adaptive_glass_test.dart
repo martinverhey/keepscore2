@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/theme/app_tokens.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
@@ -111,12 +112,14 @@ void main() {
       expect(find.byType(CupertinoTabBar), findsOneWidget);
     });
 
-    testWidgets('splits the action out of the glass capsule', (tester) async {
+    testWidgets('renders the action beside the glass capsule', (tester) async {
       AppPlatform.debugOverrideCupertino = true;
       AppPlatform.debugOverrideLiquidGlass = true;
       var actions = 0;
-      final tapped = <int>[];
-      await pumpGlass(tester, _tabBar(tapped.add, onNewMatch: () => actions++));
+      await pumpGlass(
+        tester,
+        _host(child: const SizedBox(), onNewMatch: () => actions++),
+      );
 
       expect(find.byType(LiquidGlassTabBarAction), findsOneWidget);
 
@@ -124,34 +127,25 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(actions, 1);
-      expect(tapped, isEmpty);
     });
 
-    testWidgets('has no action button when none is given', (tester) async {
-      AppPlatform.debugOverrideCupertino = true;
-      AppPlatform.debugOverrideLiquidGlass = true;
-      await pumpGlass(tester, _tabBar((_) {}));
-
-      expect(find.byType(LiquidGlassTabBarAction), findsNothing);
-    });
-
-    testWidgets('trails the action as an item without glass', (tester) async {
-      AppPlatform.debugOverrideCupertino = true;
+    testWidgets('renders the action as a fab without glass', (tester) async {
+      AppPlatform.debugOverrideCupertino = false;
       AppPlatform.debugOverrideLiquidGlass = false;
       var actions = 0;
-      final tapped = <int>[];
-      await pumpGlass(tester, _tabBar(tapped.add, onNewMatch: () => actions++));
+      await tester.pumpWidget(
+        MaterialApp(
+          home: _host(child: const SizedBox(), onNewMatch: () => actions++),
+        ),
+      );
 
-      await tester.tap(find.text('New match'));
+      expect(find.byType(FloatingActionButton), findsOneWidget);
+      expect(find.text('New match'), findsNothing);
+
+      await tester.tap(find.byType(FloatingActionButton));
       await tester.pumpAndSettle();
 
       expect(actions, 1);
-      expect(tapped, isEmpty);
-
-      await tester.tap(find.text('Matches'));
-      await tester.pumpAndSettle();
-
-      expect(tapped, [1]);
     });
 
     testWidgets('follows selectedIndex without remounting the bar', (
@@ -186,20 +180,20 @@ void main() {
   });
 
   group('AdaptiveFloatingAction', () {
-    testWidgets('renders a glass fab on iOS and a plain button without', (
+    testWidgets('renders a glass action on iOS and a plain button without', (
       tester,
     ) async {
       AppPlatform.debugOverrideCupertino = true;
       AppPlatform.debugOverrideLiquidGlass = true;
       await pumpGlass(tester, _floatingAction(() {}));
 
-      expect(find.byType(LiquidGlassFab), findsOneWidget);
+      expect(find.byType(LiquidGlassTabBarAction), findsOneWidget);
       expect(find.byType(CupertinoButton), findsNothing);
 
       AppPlatform.debugOverrideLiquidGlass = false;
       await pumpGlass(tester, _floatingAction(() {}));
 
-      expect(find.byType(LiquidGlassFab), findsNothing);
+      expect(find.byType(LiquidGlassTabBarAction), findsNothing);
       expect(find.byType(CupertinoButton), findsOneWidget);
     });
 
@@ -209,7 +203,11 @@ void main() {
       await pumpGlass(tester, _floatingAction(() {}));
 
       expect(
-        tester.widget<LiquidGlassFab>(find.byType(LiquidGlassFab)).style,
+        tester
+            .widget<LiquidGlassTabBarAction>(
+              find.byType(LiquidGlassTabBarAction),
+            )
+            .style,
         isNull,
       );
     });
@@ -225,7 +223,7 @@ void main() {
         tester
             .widget<AdaptiveIcon>(
               find.descendant(
-                of: find.byType(LiquidGlassFab),
+                of: find.byType(LiquidGlassTabBarAction),
                 matching: find.byType(AdaptiveIcon),
               ),
             )
@@ -242,7 +240,7 @@ void main() {
 
       expect(find.bySemanticsLabel('Add competition'), findsOneWidget);
 
-      await tester.tap(find.byType(LiquidGlassFab));
+      await tester.tap(find.byType(LiquidGlassTabBarAction));
       await tester.pumpAndSettle();
 
       expect(taps, 1);
@@ -256,10 +254,25 @@ void main() {
 
       expect(find.byType(AdaptiveLoader), findsOneWidget);
 
-      await tester.tap(find.byType(LiquidGlassFab));
+      await tester.tap(find.byType(LiquidGlassTabBarAction));
       await tester.pump();
 
       expect(taps, 0);
+    });
+  });
+
+  group('AdaptiveBottomBarHost without glass', () {
+    testWidgets('adds no height of its own to the opaque bar', (tester) async {
+      AppPlatform.debugOverrideCupertino = false;
+      AppPlatform.debugOverrideLiquidGlass = false;
+
+      await _pumpInset(tester, _host(child: const SizedBox()));
+      final hosted = tester.getSize(find.byType(NavigationBar)).height;
+
+      await _pumpInset(tester, Scaffold(bottomNavigationBar: _tabBar((_) {})));
+      final scaffolded = tester.getSize(find.byType(NavigationBar)).height;
+
+      expect(hosted, scaffolded);
     });
   });
 
@@ -401,7 +414,7 @@ bool _isHighlighted(WidgetTester tester, AdaptiveGlyph glyph) {
       .any((icon) => icon.glyph == glyph && icon.color == AppColors.seed);
 }
 
-Widget _tabBar(ValueChanged<int> onTap, {VoidCallback? onNewMatch}) {
+Widget _tabBar(ValueChanged<int> onTap, {bool reservesTrailingAction = false}) {
   return AdaptiveBottomTabBar(
     items: const [
       AdaptiveTabBarItem(glyph: AdaptiveGlyph.leaderboard, label: 'Ranking'),
@@ -409,13 +422,39 @@ Widget _tabBar(ValueChanged<int> onTap, {VoidCallback? onNewMatch}) {
     ],
     selectedIndex: 0,
     onTap: onTap,
+    reservesTrailingAction: reservesTrailingAction,
+  );
+}
+
+Future<void> _pumpInset(WidgetTester tester, Widget child) {
+  return tester.pumpWidget(
+    MaterialApp(
+      home: MediaQuery(
+        data: const MediaQueryData(
+          padding: EdgeInsets.only(bottom: 34),
+          viewPadding: EdgeInsets.only(bottom: 34),
+        ),
+        child: child,
+      ),
+    ),
+  );
+}
+
+Widget _host({
+  required Widget child,
+  VoidCallback? onNewMatch,
+  bool withBar = true,
+}) {
+  return AdaptiveBottomBarHost(
+    bar: withBar ? _tabBar((_) {}, reservesTrailingAction: true) : null,
     action: onNewMatch == null
         ? null
-        : AdaptiveTabBarAction(
-            glyph: AdaptiveGlyph.newMatch,
+        : AdaptiveBottomBarAction(
+            glyph: AdaptiveGlyph.add,
             label: 'New match',
             onPressed: onNewMatch,
           ),
+    child: child,
   );
 }
 
@@ -431,8 +470,7 @@ Widget _floatingAction(VoidCallback onPressed, {bool busy = false}) {
 }
 
 Widget _scaffold({bool withFloatingAction = false, VoidCallback? onBodyTap}) {
-  return AdaptiveBottomBarHost(
-    bar: _tabBar((_) {}),
+  return _host(
     child: AdaptiveScaffold(
       title: 'Leaderboard',
       body: GestureDetector(

@@ -2,13 +2,32 @@ import 'package:flutter/widgets.dart';
 
 import '../../theme/app_tokens.dart';
 import 'adaptive_colors.dart';
+import 'adaptive_floating_action.dart';
 import 'adaptive_glass.dart';
 
+class AdaptiveBottomBarAction {
+  const AdaptiveBottomBarAction({
+    required this.glyph,
+    required this.label,
+    required this.onPressed,
+  });
+
+  final AdaptiveGlyph glyph;
+  final String label;
+  final VoidCallback onPressed;
+}
+
 class AdaptiveBottomBarHost extends StatelessWidget {
-  const AdaptiveBottomBarHost({super.key, required this.child, this.bar});
+  const AdaptiveBottomBarHost({
+    super.key,
+    required this.child,
+    this.bar,
+    this.action,
+  });
 
   final Widget child;
   final Widget? bar;
+  final AdaptiveBottomBarAction? action;
 
   static const double glassInset = AppGlass.barHeight + AppGlass.barMargin;
 
@@ -35,6 +54,12 @@ class AdaptiveBottomBarHost extends StatelessWidget {
         ),
         _scrollEdge(context),
         Positioned.fill(child: bar!),
+        if (action case final action?)
+          Positioned(
+            right: AppGlass.barMargin,
+            bottom: MediaQuery.paddingOf(context).bottom + AppGlass.barMargin,
+            child: _action(action),
+          ),
       ],
     );
   }
@@ -58,12 +83,30 @@ class AdaptiveBottomBarHost extends StatelessWidget {
   }
 
   Widget _stacked(BuildContext context) {
-    return ColoredBox(
-      color: AdaptiveColors.pageBackground(context),
-      child: SafeArea(
-        top: false,
-        child: Column(children: [Expanded(child: child), bar!]),
-      ),
+    return Column(children: [Expanded(child: _floated()), bar!]);
+  }
+
+  Widget _floated() {
+    if (action case final action?) {
+      return Stack(
+        children: [
+          Positioned.fill(child: child),
+          Positioned(
+            right: AppSpacing.md,
+            bottom: AppSpacing.md,
+            child: _action(action),
+          ),
+        ],
+      );
+    }
+    return child;
+  }
+
+  Widget _action(AdaptiveBottomBarAction action) {
+    return AdaptiveFloatingAction(
+      glyph: action.glyph,
+      onPressed: action.onPressed,
+      semanticLabel: action.label,
     );
   }
 }

@@ -4,8 +4,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/app_router.dart';
 import '../../../../core/data/recent_competition_store.dart';
+import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
+import '../../../match/presentation/widgets/new_match_sheet.dart';
 import '../../../player/presentation/cubit/players_cubit.dart';
 import '../cubit/competition_cubit.dart';
 import '../widgets/competition_tab.enum.dart';
@@ -55,6 +57,7 @@ class _CompetitionShellState extends State<CompetitionShell> {
       },
       child: AdaptiveBottomBarHost(
         bar: _bar(context),
+        action: _newMatch(context),
         child: widget.navigationShell,
       ),
     );
@@ -67,7 +70,20 @@ class _CompetitionShellState extends State<CompetitionShell> {
       current: widget.navigationShell.currentIndex == 0
           ? CompetitionTab.leaderboard
           : CompetitionTab.matches,
-      isRegistered: context.watch<AuthBloc>().state.canWrite,
+      isRegistered: _canWrite(context),
     );
   }
+
+  AdaptiveBottomBarAction? _newMatch(BuildContext context) {
+    if (AppPlatform.useWideWeb(context) || !_canWrite(context)) return null;
+    return AdaptiveBottomBarAction(
+      glyph: AdaptiveGlyph.add,
+      label: context.l10n.matchNew,
+      onPressed: () =>
+          showNewMatchSheet(context, competitionId: widget.competitionId),
+    );
+  }
+
+  bool _canWrite(BuildContext context) =>
+      context.watch<AuthBloc>().state.canWrite;
 }

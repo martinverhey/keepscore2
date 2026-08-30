@@ -15,57 +15,32 @@ class AdaptiveTabBarItem {
   final String label;
 }
 
-class AdaptiveTabBarAction {
-  const AdaptiveTabBarAction({
-    required this.glyph,
-    required this.label,
-    required this.onPressed,
-  });
-  final AdaptiveGlyph glyph;
-  final String label;
-  final VoidCallback onPressed;
-}
-
 class AdaptiveBottomTabBar extends StatelessWidget {
   const AdaptiveBottomTabBar({
     super.key,
     required this.items,
     required this.selectedIndex,
     required this.onTap,
-    this.action,
+    this.reservesTrailingAction = false,
   });
 
   final List<AdaptiveTabBarItem> items;
   final int selectedIndex;
   final ValueChanged<int> onTap;
-  final AdaptiveTabBarAction? action;
+  final bool reservesTrailingAction;
 
   @override
   Widget build(BuildContext context) {
-    if (AdaptiveGlass.isEnabled(context)) return _glass(context);
+    if (AdaptiveGlass.isEnabled(context)) return _glassBar(context);
     if (AppPlatform.useCupertino) return _cupertino();
     return _material();
-  }
-
-  Widget _glass(BuildContext context) {
-    if (action == null) return _glassBar(context);
-    return Stack(
-      children: [
-        Positioned.fill(child: _glassBar(context)),
-        Positioned(
-          right: AppGlass.barMargin,
-          bottom: MediaQuery.paddingOf(context).bottom + AppGlass.barMargin,
-          child: _glassAction(context, action!),
-        ),
-      ],
-    );
   }
 
   Widget _glassBar(BuildContext context) {
     return LiquidGlassTabBar.withImpeller(
       items: [for (final item in items) _glassItem(item)],
       selectedIndex: selectedIndex,
-      onChanged: _tap,
+      onChanged: onTap,
       style: AdaptiveGlass.styleOf(
         context,
         cornerRadius: AppGlass.barCornerRadius,
@@ -100,42 +75,26 @@ class AdaptiveBottomTabBar extends StatelessWidget {
   }
 
   Alignment _glassAlignment() =>
-      action == null ? Alignment.bottomCenter : Alignment.bottomLeft;
+      reservesTrailingAction ? Alignment.bottomLeft : Alignment.bottomCenter;
 
   EdgeInsets _glassMargin() {
-    return action == null
-        ? const EdgeInsets.only(bottom: AppGlass.barMargin)
-        : const EdgeInsets.only(
+    return reservesTrailingAction
+        ? const EdgeInsets.only(
             left: AppGlass.barMargin,
             bottom: AppGlass.barMargin,
-          );
-  }
-
-  Widget _glassAction(BuildContext context, AdaptiveTabBarAction action) {
-    return Semantics(
-      button: true,
-      label: action.label,
-      child: LiquidGlassTabBarAction(
-        size: AppGlass.barHeight,
-        onTap: action.onPressed,
-        child: AdaptiveIcon(
-          action.glyph,
-          color: AdaptiveColors.glassGlyph(context),
-          size: AppGlass.barIconSize,
-        ),
-      ),
-    );
+          )
+        : const EdgeInsets.only(bottom: AppGlass.barMargin);
   }
 
   double get _glassActionSpace =>
-      action == null ? 0 : AppGlass.barHeight + AppSpacing.sm;
+      reservesTrailingAction ? AppGlass.barHeight + AppSpacing.sm : 0;
 
   Widget _cupertino() {
     return CupertinoTabBar(
       currentIndex: selectedIndex,
-      onTap: _tap,
+      onTap: onTap,
       items: [
-        for (final item in _itemsWithAction())
+        for (final item in items)
           BottomNavigationBarItem(
             icon: AdaptiveIcon(item.glyph),
             label: item.label,
@@ -147,32 +106,14 @@ class AdaptiveBottomTabBar extends StatelessWidget {
   Widget _material() {
     return NavigationBar(
       selectedIndex: selectedIndex,
-      onDestinationSelected: _tap,
+      onDestinationSelected: onTap,
       destinations: [
-        for (final item in _itemsWithAction())
+        for (final item in items)
           NavigationDestination(
             icon: AdaptiveIcon(item.glyph),
             label: item.label,
           ),
       ],
     );
-  }
-
-  List<AdaptiveTabBarItem> _itemsWithAction() {
-    if (action case final action?) {
-      return [
-        ...items,
-        AdaptiveTabBarItem(glyph: action.glyph, label: action.label),
-      ];
-    }
-    return items;
-  }
-
-  void _tap(int index) {
-    if (index == items.length) {
-      action?.onPressed();
-      return;
-    }
-    onTap(index);
   }
 }

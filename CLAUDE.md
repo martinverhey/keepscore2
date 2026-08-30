@@ -943,18 +943,41 @@ hits would otherwise be a silent, total loss of interaction. Icons go through
 `iconBuilder` rather than `icon` so `AdaptiveIcon` stays the one source of
 glyph truth.
 
+**A glass action on iOS is a FAB everywhere else — they are the same thing.**
+`AdaptiveFloatingAction` is the single widget for "the primary action on this
+screen": a `LiquidGlassTabBarAction` at `AppGlass.barHeight` on iOS, a Material
+`FloatingActionButton` or the Cupertino accent circle elsewhere. So every FAB
+in the app (competitions, players) reads as a glass action on iOS, and
+conversely **"New match" is a FAB on Android**, never a third tab. Do not add a
+`LiquidGlassFab`, a bespoke glass circle, or a tab-shaped action to one of
+these surfaces without the other — the mapping is the rule.
+
 **"New match" is an action beside the capsule, not a tab inside it.** The
 capsule groups the two destinations (Leaderboard, Matches); logging a match is
-a separate circular `LiquidGlassTabBarAction` at the right edge — the
-arrangement iOS 26 itself uses (a centred/left pill plus a standalone button),
-and the package's own Photos showcase. `AdaptiveBottomTabBar` therefore takes
-an optional `action` (`AdaptiveTabBarAction`: glyph, label, callback) next to
-`items`, which is also what removed `CompetitionTabBar`'s old index juggling
-(`isRegistered ? 2 : 1`, plus an `index == 1` special case in `_select`) — a
-guest is now simply `action: null`. The platforms with no separate action slot
-(Material, and Cupertino on macOS) **append it as a trailing item** and
-`_tap` routes `index == items.length` to `onPressed`, so New match moved from
-the middle to the right there too.
+a separate circular button at the right edge — the arrangement iOS 26 itself
+uses (a left-hugging pill plus a standalone button), and the package's own
+Photos showcase. That action belongs to `AdaptiveBottomBarHost`
+(`AdaptiveBottomBarAction`: glyph, label, callback), **not** to
+`AdaptiveBottomTabBar`, because only the host spans enough of the screen to
+place it: on glass it sits beside the capsule at the bar's own baseline, and
+without glass it floats above the bar inside the page area, where a Material
+FAB belongs. A bar-owned action could only paint outside its own strip, and
+Flutter rejects hit tests outside a render box — it would have been visible and
+dead. The bar still needs to know the action is there, to narrow the capsule
+and hug the left: that is `reservesTrailingAction`, the one deliberate
+redundancy, passed from the same `isRegistered` the host's `action` is. This
+arrangement is also what removed `CompetitionTabBar`'s old index juggling
+(`isRegistered ? 2 : 1`, plus an `index == 1` special case in `_select`).
+
+**Never wrap a bottom bar in `SafeArea`.** Both `CupertinoTabBar` and Material's
+`NavigationBar` add `MediaQuery.viewPaddingOf(context).bottom` to their own
+height, and `SafeArea` removes `padding`, **not** `viewPadding` — so wrapping
+one leaves the bar its full height *and* a dead inset-sized band beneath it,
+which reads as a taller bar. `AdaptiveBottomBarHost._stacked` is therefore a
+bare `Column`, exactly what `Scaffold.bottomNavigationBar` used to give it.
+`adaptive_glass_test.dart` measures the hosted bar against the same bar inside
+a plain `Scaffold` under a 34px inset; the wrapped version rendered 80 against
+the reference 114.
 **iOS sheets sit on a glass panel, at a much heavier tint than the bar.**
 `showAdaptiveSheet`'s Cupertino branch swaps its opaque `Container` for an
 `AdaptiveGlass` whose tint is `AdaptiveColors.glassSheetTint` — the modal

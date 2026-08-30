@@ -9,7 +9,6 @@ export 'package:liquid_glass_easy/liquid_glass_easy.dart'
     show
         LiquidGlassAppearance,
         LiquidGlassBlur,
-        LiquidGlassFab,
         LiquidGlassLens,
         LiquidGlassRefraction,
         LiquidGlassEdge,
