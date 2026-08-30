@@ -12,7 +12,10 @@ export 'package:liquid_glass_easy/liquid_glass_easy.dart'
         LiquidGlassLens,
         LiquidGlassRefraction,
         LiquidGlassShape,
-        LiquidGlassStyle;
+        LiquidGlassStyle,
+        LiquidGlassTabBar,
+        LiquidGlassTabBarItem,
+        LiquidGlassTabItemStyle;
 
 class AdaptiveGlass extends StatelessWidget {
   const AdaptiveGlass({

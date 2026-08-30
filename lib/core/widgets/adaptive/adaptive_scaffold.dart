@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../extensions/box_constraints.extension.dart';
 import '../../extensions/double.extension.dart';
 import '../../theme/app_tokens.dart';
+import 'adaptive_glass.dart';
 import 'app_platform.dart';
 import 'suppressed_back_button_scope.dart';
 
@@ -42,29 +43,32 @@ class AdaptiveScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     final suppressBack = SuppressedBackButtonScope.of(context);
     if (AppPlatform.useCupertino) {
-      return _cupertino(_sliverBody(), suppressBack);
+      return _cupertino(context, suppressBack);
     }
     return LayoutBuilder(
       builder: (context, constraints) => _material(
         context,
-        _sliverBody(),
+        _sliverBody(0),
         suppressBack,
         AppPlatform.useWideWeb(context) ? constraints.contentGutter : 0,
       ),
     );
   }
 
-  Widget _cupertino(Widget sliverBody, bool suppressBack) {
+  Widget _cupertino(BuildContext context, bool suppressBack) {
+    if (_usesGlassBar(context)) {
+      return CupertinoPageScaffold(child: _glassStack(suppressBack));
+    }
     return CupertinoPageScaffold(
       child: bottomBar == null
-          ? _floated(_cupertinoScrollView(sliverBody, suppressBack))
+          ? _floated(_cupertinoScrollView(_sliverBody(0), suppressBack))
           : SafeArea(
               top: false,
               child: Column(
                 children: [
                   Expanded(
                     child: _floated(
-                      _cupertinoScrollView(sliverBody, suppressBack),
+                      _cupertinoScrollView(_sliverBody(0), suppressBack),
                     ),
                   ),
                   bottomBar!,
@@ -73,6 +77,27 @@ class AdaptiveScaffold extends StatelessWidget {
             ),
     );
   }
+
+  bool _usesGlassBar(BuildContext context) =>
+      bottomBar != null &&
+      AppPlatform.useCupertino &&
+      AdaptiveGlass.isEnabled(context);
+
+  Widget _glassStack(bool suppressBack) {
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: _floated(
+            _cupertinoScrollView(_sliverBody(glassBarInset), suppressBack),
+            extraBottom: glassBarInset,
+          ),
+        ),
+        Positioned.fill(child: bottomBar!),
+      ],
+    );
+  }
+
+  static const double glassBarInset = AppGlass.barHeight + AppGlass.barMargin;
 
   Widget _cupertinoScrollView(Widget sliverBody, bool suppressBack) {
     return CustomScrollView(
@@ -177,14 +202,37 @@ class AdaptiveScaffold extends StatelessWidget {
     fontFamily: AppTypography.brandFontFamily,
   );
 
-  Widget _sliverBody() {
-    return SliverSafeArea(top: false, sliver: _bodySliver());
+  Widget _sliverBody(double bottomInset) {
+    return SliverSafeArea(top: false, sliver: _bodySliver(bottomInset));
   }
 
-  Widget _bodySliver() {
-    if (slivers case final slivers?) return _constrainedSlivers(slivers);
-    if (hasScrollBody) return _ownScrollSliver(_content());
-    return SliverFillRemaining(hasScrollBody: false, child: _content());
+  Widget _bodySliver(double bottomInset) {
+    if (slivers case final slivers?) {
+      return _sliverWithBottomInset(_constrainedSlivers(slivers), bottomInset);
+    }
+    if (hasScrollBody) {
+      return _ownScrollSliver(_withBottomInset(_content(), bottomInset));
+    }
+    return SliverFillRemaining(
+      hasScrollBody: false,
+      child: _withBottomInset(_content(), bottomInset),
+    );
+  }
+
+  Widget _sliverWithBottomInset(Widget sliver, double bottomInset) {
+    if (bottomInset == 0) return sliver;
+    return SliverPadding(
+      padding: EdgeInsets.only(bottom: bottomInset),
+      sliver: sliver,
+    );
+  }
+
+  Widget _withBottomInset(Widget child, double bottomInset) {
+    if (bottomInset == 0) return child;
+    return Padding(
+      padding: EdgeInsets.only(bottom: bottomInset),
+      child: child,
+    );
   }
 
   Widget _constrainedSlivers(List<Widget> slivers) {
@@ -263,14 +311,14 @@ class AdaptiveScaffold extends StatelessWidget {
           ];
   }
 
-  Widget _floated(Widget child) {
+  Widget _floated(Widget child, {double extraBottom = 0}) {
     if (floatingAction == null) return child;
     return Stack(
       children: [
         Positioned.fill(child: child),
         Positioned(
           right: AppSpacing.md,
-          bottom: AppSpacing.md,
+          bottom: AppSpacing.md + extraBottom,
           child: SafeArea(top: false, child: floatingAction!),
         ),
       ],

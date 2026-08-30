@@ -907,6 +907,39 @@ belongs above scrolling content, not inside it — a lens placed as a list item
 fights the backdrop read and hits overscroll artefacts. So bars, floating
 buttons and panels may be glass; `LeaderboardRow`/`MatchCard` may not.
 
+**The glass tab bar floats; the opaque one takes layout space.** That is the
+whole structural difference, and it is why `AdaptiveScaffold._cupertino`
+branches on `_usesGlassBar(context)` (`bottomBar != null && useCupertino &&
+AdaptiveGlass.isEnabled`): the opaque path keeps its `SafeArea` + `Column`,
+the glass path is a `Stack` of the scroll view under a `Positioned.fill`
+bottom bar, because a lens with nothing painted behind it has nothing to
+refract. Room for it is reserved as `AdaptiveScaffold.glassBarInset`
+(`AppGlass.barHeight + barMargin`), and **how** that inset is applied depends
+on the body's shape — `_bodySliver` picks:
+- a `SliverPadding` for the `slivers` form (Matches), so the last card scrolls
+  clear of the bar;
+- a box `Padding` for both box forms, because a **trailing `SliverPadding`
+  does not shrink `SliverFillRemaining`** — `RenderSliverPadding` only takes
+  leading padding off the child's `remainingPaintExtent`, so a non-scrolling
+  body would still paint its full viewport height underneath the bar and only
+  gain scrollable slack below it. `test/core/adaptive_glass_test.dart`'s
+  "leaves room below the body for the bar" is what caught that.
+Both helpers return the child untouched at inset `0`, so every off-glass tree
+is byte-identical to what it was.
+
+`AdaptiveBottomTabBar`'s glass branch must use **`LiquidGlassTabBar.withImpeller`**,
+not the default constructor: the plain one expects to sit in a
+`LiquidGlassScaffold` that owns the capture pipeline, while `.withImpeller`
+renders the bodyless morph-pill overlay that samples the live backdrop — which
+is what we have. That overlay fills the whole stack rather than sitting at the
+bottom (it positions the capsule itself, safe area included, from `margin` /
+`alignment`), so it goes in as `Positioned.fill` and **taps still reach the
+content underneath it** — asserted, since a full-screen overlay swallowing
+hits would otherwise be a silent, total loss of interaction. Icons go through
+`iconBuilder` rather than `icon` so `AdaptiveIcon` stays the one source of
+glyph truth, and the capsule is sized `min(screen - 2 × barMargin, 420)`
+rather than the package's fixed 300.
+
 ### The sidebar is a shell, not a per-page wrapper
 
 `Sidebar` is rendered once, by `SidebarShell`
@@ -1164,7 +1197,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 255 tests at time of writing
+flutter test                    # 260 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 python3 scripts/generate_icon.py   # redraw assets/icon/*.png

@@ -83,7 +83,10 @@ abstract final class AppColors {
 abstract final class AppGlass {
   static const double cornerRadius = 28;
   static const double barHeight = 64;
+  static const double barMaxWidth = 420;
   static const double barMargin = AppSpacing.md;
+  static const double barCornerRadius = barHeight / 2;
+  static const double barIconSize = 24;
   static const double blurSigma = 8;
   static const double distortion = 0.13;
   static const double distortionWidth = 34;
