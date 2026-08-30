@@ -34,15 +34,14 @@ class _PlayersPageState extends State<PlayersPage> {
 
     return AdaptiveScaffold(
       title: context.l10n.playersTitle,
-      trailing: isOwner
-          ? AdaptiveIconButton(
-              glyph: AdaptiveGlyph.add,
-              semanticLabel: context.l10n.playersAddDummy,
-              onPressed: () => addPlaceholderPlayer(context),
-            )
-          : null,
+      floatingAction: isOwner ? _addPlayerButton(context) : null,
       body: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: EdgeInsets.only(
+          left: AppSpacing.md,
+          right: AppSpacing.md,
+          top: AppSpacing.md,
+          bottom: isOwner ? _floatingActionInset : AppSpacing.md,
+        ),
         child: Players(
           ownerUserId: competition?.ownerId,
           myUserId: session.user?.id,
@@ -51,4 +50,18 @@ class _PlayersPageState extends State<PlayersPage> {
       ),
     );
   }
+
+  Widget _addPlayerButton(BuildContext context) {
+    return BlocBuilder<PlayersCubit, PlayersState>(
+      builder: (context, state) => AdaptiveFloatingAction(
+        glyph: AdaptiveGlyph.add,
+        semanticLabel: context.l10n.playersAddDummy,
+        busy: state is PlayersReady && state.busy,
+        onPressed: () => addPlaceholderPlayer(context),
+      ),
+    );
+  }
+
+  static const double _floatingActionInset =
+      AdaptiveFloatingAction.diameter + AppSpacing.lg;
 }

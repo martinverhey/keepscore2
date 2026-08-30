@@ -69,8 +69,6 @@ class Players extends StatelessWidget {
           SectionLabel(context.l10n.playersRemoved),
           for (final player in state.inactive) _playerRow(player),
         ],
-        const SizedBox(height: AppSpacing.md),
-        if (_isOwner) _addPlaceholderButton(context, state),
         if (state.actionFailure != null) _actionFailureText(context, state),
       ],
     );
@@ -82,15 +80,6 @@ class Players extends StatelessWidget {
       isOwnerRow: player.userId != null && player.userId == ownerUserId,
       isMe: player.userId != null && player.userId == myUserId,
       canEdit: _canEdit(player),
-    );
-  }
-
-  Widget _addPlaceholderButton(BuildContext context, PlayersReady state) {
-    return AdaptiveButton(
-      label: context.l10n.playersAddDummy,
-      kind: AdaptiveButtonKind.tinted,
-      busy: state.busy,
-      onPressed: () => addPlaceholderPlayer(context),
     );
   }
 

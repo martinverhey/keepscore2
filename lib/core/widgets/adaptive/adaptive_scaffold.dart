@@ -207,7 +207,7 @@ class AdaptiveScaffold extends StatelessWidget {
         Positioned(
           right: AppSpacing.md,
           bottom: AppSpacing.md,
-          child: floatingAction!,
+          child: SafeArea(top: false, child: floatingAction!),
         ),
       ],
     );

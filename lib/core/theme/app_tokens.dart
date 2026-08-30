@@ -32,6 +32,7 @@ abstract final class AppOpacity {
   static const double controlBorder = 0.35;
   static const double fieldBorder = 0.4;
   static const double winnerBorder = 0.6;
+  static const double shadow = 0.18;
 }
 
 abstract final class AppColors {
