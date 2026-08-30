@@ -135,6 +135,7 @@ class _HistoryPageState extends State<HistoryPage> {
             isMe: leaderboard.playerId == myPlayerId,
             myPlayerId: myPlayerId,
             seasonLength: seasonLength,
+            opensProfile: false,
           ),
       ],
     );

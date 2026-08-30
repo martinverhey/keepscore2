@@ -27,6 +27,7 @@ class LeaderboardRow extends StatelessWidget {
     required this.myPlayerId,
     required this.seasonLength,
     this.medals,
+    this.opensProfile = true,
   });
 
   final String competitionId;
@@ -35,6 +36,7 @@ class LeaderboardRow extends StatelessWidget {
   final String? myPlayerId;
   final SeasonLength seasonLength;
   final Medals? medals;
+  final bool opensProfile;
 
   void _openProfile(BuildContext context) => showAdaptiveSheet<void>(
     context,
@@ -53,37 +55,43 @@ class LeaderboardRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: opensProfile
+          ? AdaptiveTappable(
+              onTap: () => _openProfile(context),
+              borderRadius: AppRadius.card,
+              child: _card(context),
+            )
+          : _card(context),
+    );
+  }
+
+  Widget _card(BuildContext context) {
     final hasStreak =
         leaderboard.streakType == StreakType.win &&
         leaderboard.streakType.tier(leaderboard.streakCount) > 0;
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: AdaptiveTappable(
-        onTap: () => _openProfile(context),
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
+      decoration: BoxDecoration(
         borderRadius: AppRadius.card,
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.sm,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: AppRadius.card,
-            color: isMe
-                ? AdaptiveColors.accent(
-                    context,
-                  ).withValues(alpha: AppOpacity.selectedFill)
-                : AppColors.neutralSurface,
-          ),
-          child: Row(
-            children: [
-              _rank(),
-              Expanded(child: _nameColumn(context)),
-              const SizedBox(width: AppSpacing.sm),
-              _ratingColumn(context, hasStreak),
-            ],
-          ),
-        ),
+        color: isMe
+            ? AdaptiveColors.accent(
+                context,
+              ).withValues(alpha: AppOpacity.selectedFill)
+            : AppColors.neutralSurface,
+      ),
+      child: Row(
+        children: [
+          _rank(),
+          Expanded(child: _nameColumn(context)),
+          const SizedBox(width: AppSpacing.sm),
+          _ratingColumn(context, hasStreak),
+        ],
       ),
     );
   }
