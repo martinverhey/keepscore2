@@ -14,8 +14,6 @@ import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../auth/presentation/widgets/guest_notice.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
 import '../../../competition/presentation/widgets/competition_settings_button.dart';
-import '../../../competition/presentation/widgets/competition_tab.enum.dart';
-import '../../../competition/presentation/widgets/competition_tab_bar.dart';
 import '../../../player/presentation/cubit/players_cubit.dart';
 import '../../domain/match_entry.model.dart';
 import '../cubit/game_type_filter_cubit.dart';
@@ -72,13 +70,6 @@ class _MatchesPageState extends State<MatchesPage> {
       title: context.l10n.matchesTitle,
       onRefresh: _refresh,
       trailing: _trailing(context, competitionId),
-      bottomBar: AppPlatform.useWideWeb(context)
-          ? null
-          : CompetitionTabBar(
-              competitionId: competitionId,
-              current: CompetitionTab.matches,
-              isRegistered: isRegistered,
-            ),
       slivers: [
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(

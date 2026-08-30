@@ -4,18 +4,22 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/app_router.dart';
 import '../../../../core/data/recent_competition_store.dart';
+import '../../../../core/widgets/adaptive/adaptive.dart';
+import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../player/presentation/cubit/players_cubit.dart';
 import '../cubit/competition_cubit.dart';
+import '../widgets/competition_tab.enum.dart';
+import '../widgets/competition_tab_bar.dart';
 
 class CompetitionShell extends StatefulWidget {
   const CompetitionShell({
     super.key,
     required this.competitionId,
-    required this.child,
+    required this.navigationShell,
   });
 
   final String competitionId;
-  final Widget child;
+  final StatefulNavigationShell navigationShell;
 
   @override
   State<CompetitionShell> createState() => _CompetitionShellState();
@@ -49,7 +53,21 @@ class _CompetitionShellState extends State<CompetitionShell> {
           context.go(Routes.home);
         }
       },
-      child: widget.child,
+      child: AdaptiveBottomBarHost(
+        bar: _bar(context),
+        child: widget.navigationShell,
+      ),
+    );
+  }
+
+  Widget? _bar(BuildContext context) {
+    if (AppPlatform.useWideWeb(context)) return null;
+    return CompetitionTabBar(
+      competitionId: widget.competitionId,
+      current: widget.navigationShell.currentIndex == 0
+          ? CompetitionTab.leaderboard
+          : CompetitionTab.matches,
+      isRegistered: context.watch<AuthBloc>().state.canWrite,
     );
   }
 }

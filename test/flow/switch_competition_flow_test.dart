@@ -181,7 +181,7 @@ void main() {
                   builder: (context, state, navigationShell) =>
                       CompetitionShell(
                         competitionId: state.pathParameters['id']!,
-                        child: navigationShell,
+                        navigationShell: navigationShell,
                       ),
                   branches: [
                     StatefulShellBranch(

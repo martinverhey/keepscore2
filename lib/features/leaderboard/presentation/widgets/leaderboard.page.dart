@@ -14,8 +14,6 @@ import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../competition/domain/competition.model.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
 import '../../../competition/presentation/widgets/competition_settings_button.dart';
-import '../../../competition/presentation/widgets/competition_tab.enum.dart';
-import '../../../competition/presentation/widgets/competition_tab_bar.dart';
 import '../../../competition/presentation/widgets/invite_sheet.dart';
 import '../../../player/presentation/cubit/players_cubit.dart';
 import '../../../profile/presentation/widgets/profile_section.dart';
@@ -71,13 +69,6 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
       trailing: AppPlatform.useWideWeb(context)
           ? null
           : CompetitionSettingsButton(competitionId: competitionId),
-      bottomBar: AppPlatform.useWideWeb(context)
-          ? null
-          : CompetitionTabBar(
-              competitionId: competitionId,
-              current: CompetitionTab.leaderboard,
-              isRegistered: session.canWrite,
-            ),
       body: competition == null
           ? const AdaptiveLoader()
           : Padding(

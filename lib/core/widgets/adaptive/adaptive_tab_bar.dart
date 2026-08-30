@@ -26,7 +26,7 @@ class AdaptiveTabBarAction {
   final VoidCallback onPressed;
 }
 
-class AdaptiveBottomTabBar extends StatefulWidget {
+class AdaptiveBottomTabBar extends StatelessWidget {
   const AdaptiveBottomTabBar({
     super.key,
     required this.items,
@@ -41,13 +41,6 @@ class AdaptiveBottomTabBar extends StatefulWidget {
   final AdaptiveTabBarAction? action;
 
   @override
-  State<AdaptiveBottomTabBar> createState() => _AdaptiveBottomTabBarState();
-}
-
-class _AdaptiveBottomTabBarState extends State<AdaptiveBottomTabBar> {
-  int _glassGeneration = 0;
-
-  @override
   Widget build(BuildContext context) {
     if (AdaptiveGlass.isEnabled(context)) return _glass(context);
     if (AppPlatform.useCupertino) return _cupertino();
@@ -55,14 +48,14 @@ class _AdaptiveBottomTabBarState extends State<AdaptiveBottomTabBar> {
   }
 
   Widget _glass(BuildContext context) {
-    if (widget.action == null) return _glassBar(context);
+    if (action == null) return _glassBar(context);
     return Stack(
       children: [
         Positioned.fill(child: _glassBar(context)),
         Positioned(
           right: AppGlass.barMargin,
           bottom: MediaQuery.paddingOf(context).bottom + AppGlass.barMargin,
-          child: _glassAction(context, widget.action!),
+          child: _glassAction(context, action!),
         ),
       ],
     );
@@ -70,9 +63,8 @@ class _AdaptiveBottomTabBarState extends State<AdaptiveBottomTabBar> {
 
   Widget _glassBar(BuildContext context) {
     return LiquidGlassTabBar.withImpeller(
-      items: [for (final item in widget.items) _glassItem(item)],
-      key: ValueKey(_glassGeneration),
-      selectedIndex: widget.selectedIndex,
+      items: [for (final item in items) _glassItem(item)],
+      selectedIndex: selectedIndex,
       onChanged: _tap,
       style: AdaptiveGlass.styleOf(
         context,
@@ -108,10 +100,10 @@ class _AdaptiveBottomTabBarState extends State<AdaptiveBottomTabBar> {
   }
 
   Alignment _glassAlignment() =>
-      widget.action == null ? Alignment.bottomCenter : Alignment.bottomLeft;
+      action == null ? Alignment.bottomCenter : Alignment.bottomLeft;
 
   EdgeInsets _glassMargin() {
-    return widget.action == null
+    return action == null
         ? const EdgeInsets.only(bottom: AppGlass.barMargin)
         : const EdgeInsets.only(
             left: AppGlass.barMargin,
@@ -136,11 +128,11 @@ class _AdaptiveBottomTabBarState extends State<AdaptiveBottomTabBar> {
   }
 
   double get _glassActionSpace =>
-      widget.action == null ? 0 : AppGlass.barHeight + AppSpacing.sm;
+      action == null ? 0 : AppGlass.barHeight + AppSpacing.sm;
 
   Widget _cupertino() {
     return CupertinoTabBar(
-      currentIndex: widget.selectedIndex,
+      currentIndex: selectedIndex,
       onTap: _tap,
       items: [
         for (final item in _itemsWithAction())
@@ -154,7 +146,7 @@ class _AdaptiveBottomTabBarState extends State<AdaptiveBottomTabBar> {
 
   Widget _material() {
     return NavigationBar(
-      selectedIndex: widget.selectedIndex,
+      selectedIndex: selectedIndex,
       onDestinationSelected: _tap,
       destinations: [
         for (final item in _itemsWithAction())
@@ -167,23 +159,20 @@ class _AdaptiveBottomTabBarState extends State<AdaptiveBottomTabBar> {
   }
 
   List<AdaptiveTabBarItem> _itemsWithAction() {
-    if (widget.action case final action?) {
+    if (action case final action?) {
       return [
-        ...widget.items,
+        ...items,
         AdaptiveTabBarItem(glyph: action.glyph, label: action.label),
       ];
     }
-    return widget.items;
+    return items;
   }
 
   void _tap(int index) {
-    if (index == widget.items.length) {
-      widget.action?.onPressed();
+    if (index == items.length) {
+      action?.onPressed();
       return;
     }
-    if (index != widget.selectedIndex) {
-      setState(() => _glassGeneration++);
-    }
-    widget.onTap(index);
+    onTap(index);
   }
 }

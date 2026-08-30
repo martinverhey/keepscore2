@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import '../../extensions/box_constraints.extension.dart';
 import '../../extensions/double.extension.dart';
 import '../../theme/app_tokens.dart';
-import 'adaptive_glass.dart';
+import 'adaptive_bottom_bar_host.dart';
 import 'app_platform.dart';
 import 'suppressed_back_button_scope.dart';
 
@@ -19,7 +19,6 @@ class AdaptiveScaffold extends StatelessWidget {
     this.trailing,
     this.leading,
     this.floatingAction,
-    this.bottomBar,
     this.onRefresh,
     this.constrainWidth = true,
     this.hasScrollBody = false,
@@ -34,7 +33,6 @@ class AdaptiveScaffold extends StatelessWidget {
   final Widget? trailing;
   final Widget? leading;
   final Widget? floatingAction;
-  final Widget? bottomBar;
   final Future<void> Function()? onRefresh;
   final bool constrainWidth;
   final bool hasScrollBody;
@@ -48,7 +46,7 @@ class AdaptiveScaffold extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) => _material(
         context,
-        _sliverBody(0),
+        _sliverBody(AdaptiveBottomBarHost.insetOf(context)),
         suppressBack,
         AppPlatform.useWideWeb(context) ? constraints.contentGutter : 0,
       ),
@@ -56,46 +54,14 @@ class AdaptiveScaffold extends StatelessWidget {
   }
 
   Widget _cupertino(BuildContext context, bool suppressBack) {
-    if (_usesGlassBar(context)) {
-      return CupertinoPageScaffold(child: _glassStack(suppressBack));
-    }
+    final inset = AdaptiveBottomBarHost.insetOf(context);
     return CupertinoPageScaffold(
-      child: bottomBar == null
-          ? _floated(_cupertinoScrollView(_sliverBody(0), suppressBack))
-          : SafeArea(
-              top: false,
-              child: Column(
-                children: [
-                  Expanded(
-                    child: _floated(
-                      _cupertinoScrollView(_sliverBody(0), suppressBack),
-                    ),
-                  ),
-                  bottomBar!,
-                ],
-              ),
-            ),
+      child: _floated(
+        _cupertinoScrollView(_sliverBody(inset), suppressBack),
+        extraBottom: inset,
+      ),
     );
   }
-
-  bool _usesGlassBar(BuildContext context) =>
-      bottomBar != null && AdaptiveGlass.isEnabled(context);
-
-  Widget _glassStack(bool suppressBack) {
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: _floated(
-            _cupertinoScrollView(_sliverBody(glassBarInset), suppressBack),
-            extraBottom: glassBarInset,
-          ),
-        ),
-        Positioned.fill(child: bottomBar!),
-      ],
-    );
-  }
-
-  static const double glassBarInset = AppGlass.barHeight + AppGlass.barMargin;
 
   Widget _cupertinoScrollView(Widget sliverBody, bool suppressBack) {
     return CustomScrollView(
@@ -138,7 +104,6 @@ class AdaptiveScaffold extends StatelessWidget {
               ),
             ),
       floatingActionButton: _floatingAction(gutter),
-      bottomNavigationBar: bottomBar,
     );
   }
 

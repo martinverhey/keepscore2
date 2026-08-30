@@ -154,51 +154,22 @@ void main() {
       expect(tapped, [1]);
     });
 
-    testWidgets('keeps its own tab highlighted when a tap navigates away', (
+    testWidgets('follows selectedIndex without remounting the bar', (
       tester,
     ) async {
       AppPlatform.debugOverrideCupertino = true;
       AppPlatform.debugOverrideLiquidGlass = true;
-      await pumpGlass(tester, _tabBar((_) {}));
-
-      await tester.tap(find.text('Matches'));
-      await tester.pumpAndSettle();
+      await pumpGlass(tester, const _SwitchingTabBar());
 
       expect(_isHighlighted(tester, AdaptiveGlyph.leaderboard), isTrue);
-      expect(_isHighlighted(tester, AdaptiveGlyph.matches), isFalse);
-    });
-
-    testWidgets('reseeds the glass bar when a tap navigates away', (
-      tester,
-    ) async {
-      AppPlatform.debugOverrideCupertino = true;
-      AppPlatform.debugOverrideLiquidGlass = true;
-      await pumpGlass(tester, _tabBar((_) {}, onNewMatch: () {}));
-
-      final before = _glassBarKey(tester);
+      final element = tester.element(find.byType(LiquidGlassTabBar));
 
       await tester.tap(find.text('Matches'));
       await tester.pumpAndSettle();
 
-      expect(_glassBarKey(tester), isNot(before));
-    });
-
-    testWidgets('leaves the glass bar alone for taps that do not move it', (
-      tester,
-    ) async {
-      AppPlatform.debugOverrideCupertino = true;
-      AppPlatform.debugOverrideLiquidGlass = true;
-      await pumpGlass(tester, _tabBar((_) {}, onNewMatch: () {}));
-
-      final before = _glassBarKey(tester);
-
-      await tester.tap(find.text('Ranking'));
-      await tester.pumpAndSettle();
-      expect(_glassBarKey(tester), before);
-
-      await tester.tap(find.byType(LiquidGlassTabBarAction));
-      await tester.pumpAndSettle();
-      expect(_glassBarKey(tester), before);
+      expect(_isHighlighted(tester, AdaptiveGlyph.matches), isTrue);
+      expect(_isHighlighted(tester, AdaptiveGlyph.leaderboard), isFalse);
+      expect(tester.element(find.byType(LiquidGlassTabBar)), same(element));
     });
 
     testWidgets('reports the tapped index from the glass bar', (tester) async {
@@ -301,7 +272,7 @@ void main() {
       final height = tester.getSize(find.byType(CupertinoPageScaffold)).height;
       expect(
         tester.getRect(find.byKey(const Key('body'))).bottom,
-        lessThanOrEqualTo(height - AdaptiveScaffold.glassBarInset),
+        lessThanOrEqualTo(height - AdaptiveBottomBarHost.glassInset),
       );
     });
 
@@ -313,7 +284,7 @@ void main() {
       final height = tester.getSize(find.byType(CupertinoPageScaffold)).height;
       expect(
         tester.getRect(find.byKey(const Key('fab'))).bottom,
-        lessThanOrEqualTo(height - AdaptiveScaffold.glassBarInset),
+        lessThanOrEqualTo(height - AdaptiveBottomBarHost.glassInset),
       );
     });
 
@@ -333,8 +304,27 @@ void main() {
   });
 }
 
-Key? _glassBarKey(WidgetTester tester) {
-  return tester.widget<LiquidGlassTabBar>(find.byType(LiquidGlassTabBar)).key;
+class _SwitchingTabBar extends StatefulWidget {
+  const _SwitchingTabBar();
+
+  @override
+  State<_SwitchingTabBar> createState() => _SwitchingTabBarState();
+}
+
+class _SwitchingTabBarState extends State<_SwitchingTabBar> {
+  int _selected = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return AdaptiveBottomTabBar(
+      items: const [
+        AdaptiveTabBarItem(glyph: AdaptiveGlyph.leaderboard, label: 'Ranking'),
+        AdaptiveTabBarItem(glyph: AdaptiveGlyph.matches, label: 'Matches'),
+      ],
+      selectedIndex: _selected,
+      onTap: (index) => setState(() => _selected = index),
+    );
+  }
 }
 
 bool _isHighlighted(WidgetTester tester, AdaptiveGlyph glyph) {
@@ -373,16 +363,21 @@ Widget _floatingAction(VoidCallback onPressed, {bool busy = false}) {
 }
 
 Widget _scaffold({bool withFloatingAction = false, VoidCallback? onBodyTap}) {
-  return AdaptiveScaffold(
-    title: 'Leaderboard',
-    body: GestureDetector(
-      key: const Key('body'),
-      onTap: onBodyTap,
-      child: const Align(alignment: Alignment.topCenter, child: Text('tap me')),
+  return AdaptiveBottomBarHost(
+    bar: _tabBar((_) {}),
+    child: AdaptiveScaffold(
+      title: 'Leaderboard',
+      body: GestureDetector(
+        key: const Key('body'),
+        onTap: onBodyTap,
+        child: const Align(
+          alignment: Alignment.topCenter,
+          child: Text('tap me'),
+        ),
+      ),
+      floatingAction: withFloatingAction
+          ? const SizedBox(key: Key('fab'), width: 56, height: 56)
+          : null,
     ),
-    floatingAction: withFloatingAction
-        ? const SizedBox(key: Key('fab'), width: 56, height: 56)
-        : null,
-    bottomBar: _tabBar((_) {}),
   );
 }

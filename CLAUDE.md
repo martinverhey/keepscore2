@@ -704,8 +704,9 @@ the treatment below. Mirrors `debugOverrideCupertino` with
 - **Three widths are stacked on wide web, and only the middle one is 640.**
   The sidebar is a fixed `Sidebar._width = 232`, with the page `Expanded`
   beside it, so the *pane* — and with it the whole `AdaptiveScaffold`:
-  `Scaffold` background, `SliverAppBar`, `floatingAction`, `bottomBar` — is
-  `viewport - 232`. Inside that, `AdaptiveScaffold._content` centers **`body`
+  `Scaffold` background, `SliverAppBar`, `floatingAction` — is
+  `viewport - 232`. (Wide web has no bottom bar at all; the shell passes
+  `bar: null` and the sidebar is the navigation.) Inside that, `AdaptiveScaffold._content` centers **`body`
   alone** in a `ConstrainedBox(maxWidth: kContentMaxWidth)` (640,
   `core/theme/app_tokens.dart`). Pages then add their own `AppSpacing.md`
   horizontal padding inside that box, so the actual text/row width is 608.
@@ -908,14 +909,17 @@ fights the backdrop read and hits overscroll artefacts. So bars, floating
 buttons and panels may be glass; `LeaderboardRow`/`MatchCard` may not.
 
 **The glass tab bar floats; the opaque one takes layout space.** That is the
-whole structural difference, and it is why `AdaptiveScaffold._cupertino`
-branches on `_usesGlassBar(context)` (`bottomBar != null && useCupertino &&
-AdaptiveGlass.isEnabled`): the opaque path keeps its `SafeArea` + `Column`,
-the glass path is a `Stack` of the scroll view under a `Positioned.fill`
-bottom bar, because a lens with nothing painted behind it has nothing to
-refract. Room for it is reserved as `AdaptiveScaffold.glassBarInset`
-(`AppGlass.barHeight + barMargin`), and **how** that inset is applied depends
-on the body's shape — `_bodySliver` picks:
+whole structural difference, and it is what `AdaptiveBottomBarHost`
+(`core/widgets/adaptive/adaptive_bottom_bar_host.dart`) exists to express:
+given a `child` and an optional `bar`, the opaque path is a `SafeArea` +
+`Column` over the page background, the glass path is a `Stack` of the page
+under a `Positioned.fill` bar, because a lens with nothing painted behind it
+has nothing to refract. **`AdaptiveScaffold` has no `bottomBar` parameter** —
+it only reads `AdaptiveBottomBarHost.insetOf(context)`, the room the floating
+bar needs (`glassInset` = `AppGlass.barHeight + barMargin`, and `0` whenever
+the bar takes layout space instead), to inset its own body and lift its FAB.
+**How** that inset is applied depends on the body's shape — `_bodySliver`
+picks:
 - a `SliverPadding` for the `slivers` form (Matches), so the last card scrolls
   clear of the bar;
 - a box `Padding` for both box forms, because a **trailing `SliverPadding`
@@ -951,27 +955,29 @@ guest is now simply `action: null`. The platforms with no separate action slot
 (Material, and Cupertino on macOS) **append it as a trailing item** and
 `_tap` routes `index == items.length` to `onPressed`, so New match moved from
 the middle to the right there too.
-**Each page owns its own bar, so the glass bar's internal selection has to be
-reseeded on every tap that navigates.** `LiquidGlassTabBar`'s Impeller path is
-stateful (`LiquidGlassAnimatedNavBar`): a tap sets its own `_tabIndex` and its
+**One tab bar lives above both branches, not one per page.** `CompetitionShell`
+renders the single `CompetitionTabBar` through `AdaptiveBottomBarHost`, wrapping
+`navigationShell`, and derives `current` from `navigationShell.currentIndex`;
+`LeaderboardPage`/`MatchesPage` pass no `bottomBar` at all. This is load-bearing
+for the glass bar, not a tidy-up. `LiquidGlassTabBar`'s Impeller path is
+stateful (`LiquidGlassAnimatedNavBar`): a tap sets its own `_tabIndex`, and its
 `didUpdateWidget` resyncs **only when `selectedIndex` differs from the previous
-widget's**. `LeaderboardPage` and `MatchesPage` each render their own
-`CompetitionTabBar` with a *constant* `current`, so that prop never changes and
-the resync never fires — after tapping "Matches" on the leaderboard's bar, that
-bar's pill sits on Matches forever, and returning to the page shows the wrong
-tab highlighted until you tap it again. `AdaptiveBottomTabBar` is therefore a
-`StatefulWidget` whose `_tap` bumps a `_glassGeneration` counter, keyed into
-the `LiquidGlassTabBar`, whenever the tapped index is not this bar's own — the
-remount reseeds `initState` from the correct prop. A tap on the already-current
-tab or on the action does not bump it, since neither moves the pill.
-The cost is that the pill never animates across a tab switch; it cannot, when
-the bar you tapped belongs to the page you are leaving. Hoisting one bar into
-`CompetitionShell` (fed from `navigationShell.currentIndex`) is the change that
-would earn that animation back, and it would touch every platform's bar.
-**`flutter test` cannot see any of this**: `ui.ImageFilter.isShaderFilterSupported`
-is false there, so the bar falls back to its *stateless* Skia path, which reads
-`selectedIndex` directly and is always right. The suite pins the reseed
-mechanism (the key changes / does not change) rather than the symptom.
+widget's**. With a bar per page that prop was a *constant* (`current:
+CompetitionTab.leaderboard` on one page, `.matches` on the other), so the
+resync could never fire — after tapping "Matches" on the leaderboard's bar that
+bar's pill sat on Matches forever, and returning to the page showed the wrong
+tab highlighted until you tapped it again. One shared bar whose prop actually
+changes 0↔1 fixes that at the source *and* is what earns the morph pill its
+travel animation, which no per-page arrangement can produce: the bar you tap
+would be the one leaving the screen.
+**`flutter test` cannot see the bug this fixes**:
+`ui.ImageFilter.isShaderFilterSupported` is false there, so the bar falls back
+to its *stateless* Skia path, which reads `selectedIndex` directly and was
+always right. `adaptive_glass_test.dart` pins the invariant that survives both
+paths — the highlight follows `selectedIndex` and the bar's element is *not*
+remounted, since a remount would kill the travel — and
+`competition_content_page_test.dart` asserts a single `CompetitionTabBar`
+across a tab switch.
 
 Geometry, on both render paths (`resolveBarPosition` on Impeller, the
 `Align`/`Padding` fallback on Skia): with an action the capsule takes
@@ -1139,14 +1145,19 @@ is what the `StatefulShellRoute`'s `builder` returns, wrapping
 `RecentCompetitionStore.set`/`PlayersCubit.load()` (from `initState` *and*
 `didUpdateWidget`, since for the reason above it is updated, not remounted,
 when the competition id changes — without the second call the freshly built
-`PlayersCubit` would sit in `PlayersLoading` forever) and a `BlocListener`
-bouncing to `Routes.home` on `CompetitionMissing`.
+`PlayersCubit` would sit in `PlayersLoading` forever), a `BlocListener`
+bouncing to `Routes.home` on `CompetitionMissing`, and the one
+`AdaptiveBottomBarHost`/`CompetitionTabBar` both branches share. It takes the
+`StatefulNavigationShell` itself, not a bare `child`, because the bar's
+`current` comes from `navigationShell.currentIndex`.
 `CompetitionTabBar` (`features/competition/presentation/widgets/competition_tab_bar.dart`)
-is the bottom tab bar both pages render: it takes only primitives
-(`competitionId`, `current`, `isRegistered`) and navigates itself via
-`context.go`/`push` rather than `onSelectTab`/`onNewMatch` callbacks — every
-call site would have passed the identical closure, the same reasoning that
-has `Sidebar` read `ThemeCubit` from context instead of a callback prop.
+is the bottom tab bar, rendered once by the shell rather than by either page
+(see "One tab bar lives above both branches" in the liquid glass section for
+why): it takes only primitives (`competitionId`, `current`, `isRegistered`) and
+navigates itself via `context.go`/`push` rather than `onSelectTab`/`onNewMatch`
+callbacks — every call site would have passed the identical closure, the same
+reasoning that has `Sidebar` read `ThemeCubit` from context instead of a
+callback prop.
 `CompetitionSettingsButton` is the same move for the settings icon both
 pages show in their (non-wide-web) app bar trailing slot.
 
@@ -1262,7 +1273,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 271 tests at time of writing
+flutter test                    # 270 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 python3 scripts/generate_icon.py   # redraw assets/icon/*.png

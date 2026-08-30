@@ -1,5 +1,6 @@
 library;
 
+export 'adaptive_bottom_bar_host.dart';
 export 'adaptive_button.dart';
 export 'adaptive_colors.dart';
 export 'adaptive_dialogs.dart';

@@ -183,7 +183,7 @@ GoRouter createRouter(AuthBloc authBloc) {
                     builder: (context, state, navigationShell) =>
                         CompetitionShell(
                           competitionId: state.pathParameters['id']!,
-                          child: navigationShell,
+                          navigationShell: navigationShell,
                         ),
                     branches: [
                       StatefulShellBranch(
