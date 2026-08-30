@@ -35,6 +35,7 @@ abstract final class AppOpacity {
   static const double shadow = 0.18;
   static const double glassFill = 0.22;
   static const double glassFillOnDark = 0.28;
+  static const double glassAccentFill = 0.55;
 }
 
 abstract final class AppColors {

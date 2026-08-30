@@ -126,6 +126,56 @@ void main() {
     });
   });
 
+  group('AdaptiveFloatingAction', () {
+    testWidgets('renders a glass fab on iOS and a plain button without', (
+      tester,
+    ) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+      await pumpGlass(tester, _floatingAction(() {}));
+
+      expect(find.byType(LiquidGlassFab), findsOneWidget);
+      expect(find.byType(CupertinoButton), findsNothing);
+
+      AppPlatform.debugOverrideLiquidGlass = false;
+      await pumpGlass(tester, _floatingAction(() {}));
+
+      expect(find.byType(LiquidGlassFab), findsNothing);
+      expect(find.byType(CupertinoButton), findsOneWidget);
+    });
+
+    testWidgets('keeps its semantics label and fires on tap', (tester) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+      var taps = 0;
+      await pumpGlass(tester, _floatingAction(() => taps++));
+
+      expect(
+        find.bySemanticsLabel('Add competition'),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.byType(LiquidGlassFab));
+      await tester.pumpAndSettle();
+
+      expect(taps, 1);
+    });
+
+    testWidgets('shows the loader and refuses taps while busy', (tester) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+      var taps = 0;
+      await pumpGlass(tester, _floatingAction(() => taps++, busy: true));
+
+      expect(find.byType(AdaptiveLoader), findsOneWidget);
+
+      await tester.tap(find.byType(LiquidGlassFab));
+      await tester.pump();
+
+      expect(taps, 0);
+    });
+  });
+
   group('AdaptiveScaffold under a floating glass bar', () {
     testWidgets('leaves room below the body for the bar', (tester) async {
       AppPlatform.debugOverrideCupertino = true;
@@ -175,6 +225,17 @@ Widget _tabBar(ValueChanged<int> onTap) {
     ],
     selectedIndex: 0,
     onTap: onTap,
+  );
+}
+
+Widget _floatingAction(VoidCallback onPressed, {bool busy = false}) {
+  return Center(
+    child: AdaptiveFloatingAction(
+      glyph: AdaptiveGlyph.add,
+      onPressed: onPressed,
+      semanticLabel: 'Add competition',
+      busy: busy,
+    ),
   );
 }
 

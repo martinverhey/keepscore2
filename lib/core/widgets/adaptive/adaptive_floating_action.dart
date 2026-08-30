@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../theme/app_tokens.dart';
 import 'adaptive_colors.dart';
+import 'adaptive_glass.dart';
 import 'adaptive_icon.dart';
 import 'adaptive_loader.dart';
 import 'app_platform.dart';
@@ -27,7 +28,29 @@ class AdaptiveFloatingAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (AdaptiveGlass.isEnabled(context)) return _glass(context);
     return AppPlatform.useCupertino ? _cupertino(context) : _material(context);
+  }
+
+  Widget _glass(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: semanticLabel,
+      child: LiquidGlassFab(
+        onPressed: busy ? null : onPressed,
+        size: diameter,
+        style: _glassStyle(context),
+        child: _child(AppColors.white),
+      ),
+    );
+  }
+
+  LiquidGlassStyle _glassStyle(BuildContext context) {
+    return LiquidGlassFab.defaultStyle.copyWith(
+      appearance: LiquidGlassFab.defaultStyle.appearance.copyWith(
+        color: AdaptiveColors.accentGlassTint(context),
+      ),
+    );
   }
 
   Widget _cupertino(BuildContext context) {

@@ -79,9 +79,7 @@ class AdaptiveScaffold extends StatelessWidget {
   }
 
   bool _usesGlassBar(BuildContext context) =>
-      bottomBar != null &&
-      AppPlatform.useCupertino &&
-      AdaptiveGlass.isEnabled(context);
+      bottomBar != null && AdaptiveGlass.isEnabled(context);
 
   Widget _glassStack(bool suppressBack) {
     return Stack(

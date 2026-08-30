@@ -940,6 +940,18 @@ hits would otherwise be a silent, total loss of interaction. Icons go through
 glyph truth, and the capsule is sized `min(screen - 2 × barMargin, 420)`
 rather than the package's fixed 300.
 
+**A component's `style` replaces its tuned appearance and refraction
+wholesale — only `shape`/`adaptivity` fall back.** `LiquidGlassStyle.merge`
+takes `other.appearance`/`other.refraction` outright, so handing
+`LiquidGlassFab` an `AdaptiveGlass.styleOf` style would silently drop the
+contact shadow and tuned optical border it ships with. `AdaptiveFloatingAction`
+therefore composes *from* the package's own default —
+`LiquidGlassFab.defaultStyle.copyWith(appearance: …defaultStyle.appearance
+.copyWith(color: AdaptiveColors.accentGlassTint(context)))` — overriding
+nothing but the tint. The FAB stays accent-tinted rather than clear glass
+because it is the page's primary action; `AppOpacity.glassAccentFill` is what
+keeps it reading that way while still refracting.
+
 ### The sidebar is a shell, not a per-page wrapper
 
 `Sidebar` is rendered once, by `SidebarShell`
@@ -1197,7 +1209,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 260 tests at time of writing
+flutter test                    # 263 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 python3 scripts/generate_icon.py   # redraw assets/icon/*.png
