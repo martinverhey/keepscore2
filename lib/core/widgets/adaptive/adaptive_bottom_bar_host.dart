@@ -53,7 +53,7 @@ class AdaptiveBottomBarHost extends StatelessWidget {
           child: _AdaptiveBottomBarInset(inset: glassInset, child: child),
         ),
         _scrollEdge(context),
-        Positioned.fill(child: bar!),
+        Positioned.fill(child: _bar(context)),
         if (action case final action?)
           Positioned(
             right: AppGlass.barMargin,
@@ -92,8 +92,16 @@ class AdaptiveBottomBarHost extends StatelessWidget {
             child: _floated(),
           ),
         ),
-        bar!,
+        _bar(context),
       ],
+    );
+  }
+
+  Widget _bar(BuildContext context) {
+    return MediaQuery.removePadding(
+      context: context,
+      removeTop: true,
+      child: bar!,
     );
   }
 

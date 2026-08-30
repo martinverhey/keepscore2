@@ -986,6 +986,23 @@ difference at all, because trailing sliver padding does not shrink that sliver
 test asserts the invariant directly — `MediaQuery.paddingOf` inside the hosted
 page has `bottom == 0` with a bar, and keeps the inset without one.
 
+**A hosted bar needs its top padding removed, or it inflates by the status
+bar.** Material's `NavigationBar` wraps its own content in a full `SafeArea`
+(`material/navigation_bar.dart`) — top included — and `Scaffold` compensates by
+handing its `bottomNavigationBar` slot `removeTopPadding: true`. Hosting the bar
+ourselves dropped that, so the bar reserved the *status bar / camera cutout*
+inset **above its own icons**: on a 480dpi emulator that measured 179dp against
+a `Scaffold`'s 114dp, with 65dp of dead bar-coloured space above the labels.
+`AdaptiveBottomBarHost._bar` therefore wraps the bar in
+`MediaQuery.removePadding(removeTop: true)`, mirroring what `Scaffold` did.
+This is the third distinct thing `Scaffold` was silently doing for the bar
+(the others: not removing the *bottom* padding from the bar, and removing it
+from the body). When a test harness says a hoisted widget is unchanged, check
+what the widget it came out of was passing it.
+**Every bar test must supply a top inset**, or it cannot see this: the first
+three harnesses set only `padding.bottom` and reported a perfect match while
+the device was visibly wrong.
+
 **Never wrap a bottom bar in `SafeArea`.** Both `CupertinoTabBar` and Material's
 `NavigationBar` add `MediaQuery.viewPaddingOf(context).bottom` to their own
 height, and `SafeArea` removes `padding`, **not** `viewPadding` — so wrapping

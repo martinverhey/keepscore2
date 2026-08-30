@@ -462,8 +462,8 @@ Future<void> _pumpInset(WidgetTester tester, Widget child) {
     MaterialApp(
       home: MediaQuery(
         data: const MediaQueryData(
-          padding: EdgeInsets.only(bottom: 34),
-          viewPadding: EdgeInsets.only(bottom: 34),
+          padding: EdgeInsets.only(top: 65, bottom: 34),
+          viewPadding: EdgeInsets.only(top: 65, bottom: 34),
         ),
         child: child,
       ),
