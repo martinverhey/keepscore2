@@ -27,7 +27,9 @@ import 'match_detail_sheet.dart';
 import 'new_match_sheet.dart';
 
 class MatchesPage extends StatefulWidget {
-  const MatchesPage({super.key});
+  const MatchesPage({super.key, required this.competitionId});
+
+  final String competitionId;
 
   @override
   State<MatchesPage> createState() => _MatchesPageState();
@@ -51,7 +53,7 @@ class _MatchesPageState extends State<MatchesPage> {
     final competitionCubit = context.watch<CompetitionCubit>();
     final competitionState = competitionCubit.state;
     final competition = competitionState.competition;
-    final competitionId = competitionCubit.competitionId!;
+    final competitionId = widget.competitionId;
     final session = context.watch<AuthBloc>().state;
     final playersState = context.watch<PlayersCubit>().state;
     final isRegistered = session.canWrite;

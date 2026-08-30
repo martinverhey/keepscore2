@@ -24,7 +24,9 @@ import '../cubit/leaderboard_cubit.dart';
 import 'leaderboard_list.dart';
 
 class LeaderboardPage extends StatefulWidget {
-  const LeaderboardPage({super.key});
+  const LeaderboardPage({super.key, required this.competitionId});
+
+  final String competitionId;
 
   @override
   State<LeaderboardPage> createState() => _LeaderboardPageState();
@@ -48,7 +50,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
     final competitionCubit = context.watch<CompetitionCubit>();
     final competitionState = competitionCubit.state;
     final competition = competitionState.competition;
-    final competitionId = competitionCubit.competitionId!;
+    final competitionId = widget.competitionId;
     final session = context.watch<AuthBloc>().state;
     final playersState = context.watch<PlayersCubit>().state;
     final myPlayerId = competitionState.myPlayerId;

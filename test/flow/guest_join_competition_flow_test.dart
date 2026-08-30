@@ -428,7 +428,9 @@ GoRouter _buildRouter(
                             leaderboardRepository,
                             state.pathParameters['id']!,
                           ),
-                          child: const LeaderboardPage(),
+                          child: LeaderboardPage(
+                            competitionId: state.pathParameters['id']!,
+                          ),
                         ),
                       ),
                     ],
@@ -443,7 +445,9 @@ GoRouter _buildRouter(
                             gameTypeFilterCubit,
                             state.pathParameters['id']!,
                           ),
-                          child: const MatchesPage(),
+                          child: MatchesPage(
+                            competitionId: state.pathParameters['id']!,
+                          ),
                         ),
                       ),
                     ],

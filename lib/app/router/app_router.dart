@@ -200,7 +200,7 @@ GoRouter createRouter(AuthBloc authBloc) {
                                 key: ValueKey(id),
                                 create: (_) =>
                                     getIt<LeaderboardCubit>(param1: id),
-                                child: const LeaderboardPage(),
+                                child: LeaderboardPage(competitionId: id),
                               );
                             },
                           ),
@@ -216,7 +216,7 @@ GoRouter createRouter(AuthBloc authBloc) {
                                 key: ValueKey(id),
                                 create: (_) =>
                                     getIt<MatchListCubit>(param1: id),
-                                child: const MatchesPage(),
+                                child: MatchesPage(competitionId: id),
                               );
                             },
                           ),

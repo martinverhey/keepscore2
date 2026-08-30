@@ -193,7 +193,7 @@ void main() {
                             return BlocProvider(
                               key: ValueKey(id),
                               create: (_) => LeaderboardCubit(leaderboard, id),
-                              child: const LeaderboardPage(),
+                              child: LeaderboardPage(competitionId: id),
                             );
                           },
                         ),
@@ -212,7 +212,7 @@ void main() {
                                 gameTypeFilterCubit,
                                 id,
                               ),
-                              child: const MatchesPage(),
+                              child: MatchesPage(competitionId: id),
                             );
                           },
                         ),

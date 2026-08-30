@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -41,6 +43,7 @@ const _competitionId = 'c1';
 Future<GoRouter> _pumpHarness(
   WidgetTester tester, {
   String initialLocation = '/competition/$_competitionId/leaderboard',
+  StreamController<AuthUser?>? userChanges,
 }) async {
   SharedPreferences.setMockInitialValues({});
 
@@ -53,7 +56,9 @@ Future<GoRouter> _pumpHarness(
   when(
     () => auth.currentUser,
   ).thenReturn(const AuthUser(id: 'p-ada', displayName: 'Ada', isGuest: false));
-  when(() => auth.watchUser()).thenAnswer((_) => const Stream.empty());
+  when(
+    () => auth.watchUser(),
+  ).thenAnswer((_) => userChanges?.stream ?? const Stream.empty());
 
   when(() => competitions.overview(_competitionId)).thenAnswer(
     (_) async => CompetitionOverview(
@@ -152,7 +157,9 @@ Future<GoRouter> _pumpHarness(
                             leaderboard,
                             state.pathParameters['id']!,
                           ),
-                          child: const LeaderboardPage(),
+                          child: LeaderboardPage(
+                            competitionId: state.pathParameters['id']!,
+                          ),
                         ),
                       ),
                     ],
@@ -167,7 +174,9 @@ Future<GoRouter> _pumpHarness(
                             gameTypeFilterCubit,
                             state.pathParameters['id']!,
                           ),
-                          child: const MatchesPage(),
+                          child: MatchesPage(
+                            competitionId: state.pathParameters['id']!,
+                          ),
                         ),
                       ),
                     ],
@@ -223,6 +232,23 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('signing out while the leaderboard is open does not throw', (
+    tester,
+  ) async {
+    AppPlatform.debugOverrideCupertino = false;
+    final userChanges = StreamController<AuthUser?>();
+    addTearDown(userChanges.close);
+
+    await _pumpHarness(tester, userChanges: userChanges);
+    expect(find.byType(LeaderboardPage), findsOneWidget);
+
+    userChanges.add(null);
+    await tester.pump();
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+  });
 }
 
 class _CompetitionsStub extends StatelessWidget {
