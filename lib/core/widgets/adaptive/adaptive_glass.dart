@@ -14,6 +14,7 @@ export 'package:liquid_glass_easy/liquid_glass_easy.dart'
         LiquidGlassEdge,
         LiquidGlassScrollEdge,
         LiquidGlassShape,
+        OpticalBorder,
         LiquidGlassStyle,
         LiquidGlassTabBar,
         LiquidGlassTabBarAction,
@@ -42,13 +43,32 @@ class AdaptiveGlass extends StatelessWidget {
   static bool isEnabled(BuildContext context) =>
       AppPlatform.useLiquidGlass && !MediaQuery.highContrastOf(context);
 
+  static LiquidGlassShape shapeOf(
+    BuildContext context, {
+    double cornerRadius = AppGlass.cornerRadius,
+  }) {
+    final dark = AdaptiveColors.isDark(context);
+    return LiquidGlassShape(
+      cornerRadius: cornerRadius,
+      lightColor: AdaptiveColors.glassRim(context),
+      lightIntensity: dark
+          ? AppGlass.rimIntensityOnDark
+          : AppGlass.rimIntensity,
+      borderType: OpticalBorder(
+        ambientIntensity: dark
+            ? AppGlass.rimAmbientOnDark
+            : AppGlass.rimAmbient,
+      ),
+    );
+  }
+
   static LiquidGlassStyle styleOf(
     BuildContext context, {
     double cornerRadius = AppGlass.cornerRadius,
     Color? tint,
   }) {
     return LiquidGlassStyle(
-      shape: LiquidGlassShape(cornerRadius: cornerRadius),
+      shape: shapeOf(context, cornerRadius: cornerRadius),
       appearance: LiquidGlassAppearance(
         color: tint ?? AdaptiveColors.glassTint(context),
         blur: const LiquidGlassBlur(

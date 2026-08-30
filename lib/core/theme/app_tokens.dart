@@ -37,6 +37,8 @@ abstract final class AppOpacity {
   static const double glassFillOnDark = 0.28;
   static const double scrollEdgeFill = 0.9;
   static const double glassSheetFill = 0.75;
+  static const double glassRim = 0.7;
+  static const double glassRimOnDark = 0.32;
 }
 
 abstract final class AppColors {
@@ -80,6 +82,10 @@ abstract final class AppColors {
   static final Color glassTintOnDark = modalSurfaceOnDark.withValues(
     alpha: AppOpacity.glassFillOnDark,
   );
+  static final Color glassRim = white.withValues(alpha: AppOpacity.glassRim);
+  static final Color glassRimOnDark = white.withValues(
+    alpha: AppOpacity.glassRimOnDark,
+  );
 }
 
 abstract final class AppGlass {
@@ -89,6 +95,10 @@ abstract final class AppGlass {
   static const double barMargin = AppSpacing.md;
   static const double barCornerRadius = barHeight / 2;
   static const double barIconSize = 24;
+  static const double rimIntensity = 1;
+  static const double rimIntensityOnDark = 0.45;
+  static const double rimAmbient = 1;
+  static const double rimAmbientOnDark = 0.35;
   static const double scrollEdgeFade = 40;
   static const double blurSigma = 8;
   static const double distortion = 0.13;

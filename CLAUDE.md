@@ -943,6 +943,25 @@ hits would otherwise be a silent, total loss of interaction. Icons go through
 `iconBuilder` rather than `icon` so `AdaptiveIcon` stays the one source of
 glyph truth.
 
+**The rim is the one part of the glass look with a dark variant, and it needs
+one.** A lens's bright edge comes from `LiquidGlassShape`'s
+`lightColor`/`lightIntensity` plus `OpticalBorder.ambientIntensity` — all
+theme-independent in the package, tuned for glass over light content
+(`0xB2FFFFFF` at full intensity). Left at those defaults on a near-black
+surface they read as a hard white outline around the capsule, the action and
+the sheet, which is what shipped in the first TestFlight build.
+`AdaptiveGlass.shapeOf(context, cornerRadius:)` is now the single place a shape
+is built, and it resolves all three per brightness —
+`AdaptiveColors.glassRim` (white at `AppOpacity.glassRim` 0.7 light /
+`glassRimOnDark` 0.32), `AppGlass.rimIntensity(OnDark)` 1 / 0.45, and
+`AppGlass.rimAmbient(OnDark)` 1 / 0.35. **Ambient is the one that matters
+most**: it brightens the rim uniformly all the way round, so it is what turns
+an edge highlight into an outline. Light mode keeps the package's values.
+`AdaptiveFloatingAction` composes it as
+`LiquidGlassTabBarAction.defaultStyle.copyWith(shape: …)` so the action keeps
+its tuned appearance and refraction and changes only the rim — the pattern the
+`style`-replaces-wholesale note below describes.
+
 **A glass action on iOS is a FAB everywhere else — they are the same thing.**
 `AdaptiveFloatingAction` is the single widget for "the primary action on this
 screen": a `LiquidGlassTabBarAction` at `AppGlass.barHeight` on iOS, a Material
@@ -1356,7 +1375,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 276 tests at time of writing
+flutter test                    # 277 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 python3 scripts/generate_icon.py   # redraw assets/icon/*.png

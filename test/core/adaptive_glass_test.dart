@@ -4,13 +4,24 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/theme/app_tokens.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 
+LiquidGlassShape _rimOf(WidgetTester tester) {
+  return tester
+      .widget<LiquidGlassTabBarAction>(find.byType(LiquidGlassTabBarAction))
+      .style!
+      .shape!;
+}
+
 Future<void> pumpGlass(
   WidgetTester tester,
   Widget child, {
   bool highContrast = false,
+  bool dark = false,
 }) {
   return tester.pumpWidget(
     CupertinoApp(
+      theme: CupertinoThemeData(
+        brightness: dark ? Brightness.dark : Brightness.light,
+      ),
       home: Builder(
         builder: (context) => MediaQuery(
           data: MediaQuery.of(context).copyWith(highContrast: highContrast),
@@ -197,7 +208,7 @@ void main() {
       expect(find.byType(CupertinoButton), findsOneWidget);
     });
 
-    testWidgets('keeps the untinted package default glass', (tester) async {
+    testWidgets('keeps the untinted package appearance', (tester) async {
       AppPlatform.debugOverrideCupertino = true;
       AppPlatform.debugOverrideLiquidGlass = true;
       await pumpGlass(tester, _floatingAction(() {}));
@@ -207,9 +218,24 @@ void main() {
             .widget<LiquidGlassTabBarAction>(
               find.byType(LiquidGlassTabBarAction),
             )
-            .style,
-        isNull,
+            .style
+            ?.appearance,
+        LiquidGlassTabBarAction.defaultStyle.appearance,
       );
+    });
+
+    testWidgets('softens its rim in dark mode', (tester) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+
+      await pumpGlass(tester, _floatingAction(() {}), dark: true);
+      final darkRim = _rimOf(tester);
+
+      await pumpGlass(tester, _floatingAction(() {}));
+      final lightRim = _rimOf(tester);
+
+      expect(darkRim.lightIntensity, lessThan(lightRim.lightIntensity));
+      expect(darkRim.lightColor.a, lessThan(lightRim.lightColor.a));
     });
 
     testWidgets('paints its glyph in the label colour, not the accent', (

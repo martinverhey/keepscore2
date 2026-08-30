@@ -26,6 +26,13 @@ abstract final class AdaptiveColors {
     AppColors.glassTintOnDark,
   );
 
+  static Color glassRim(BuildContext context) =>
+      _forBrightness(context, AppColors.glassRim, AppColors.glassRimOnDark);
+
+  static bool isDark(BuildContext context) =>
+      _forBrightness(context, AppColors.white, AppColors.black) ==
+      AppColors.black;
+
   static Color glassSheetTint(BuildContext context) =>
       modalSurface(context).withValues(alpha: AppOpacity.glassSheetFill);
 
