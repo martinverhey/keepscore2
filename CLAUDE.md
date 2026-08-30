@@ -969,6 +969,23 @@ redundancy, passed from the same `isRegistered` the host's `action` is. This
 arrangement is also what removed `CompetitionTabBar`'s old index juggling
 (`isRegistered ? 2 : 1`, plus an `index == 1` special case in `_select`).
 
+**Hosting a bar means taking the bottom padding off the page, the way
+`Scaffold` did.** `Scaffold` passes its body `removeBottomPadding:
+bottomNavigationBar != null` (`material/scaffold.dart`), so while the bar lived
+in the page's own `Scaffold` the body's `SliverSafeArea(top: false)` added
+nothing. Hoisting the bar out silently handed that padding back, and a
+scrolling list ended an inset-sized band *above* the bar — read on device as
+"the tab bar got taller", though the bar had not changed by a pixel.
+`AdaptiveBottomBarHost._stacked` therefore wraps the page in
+`MediaQuery.removePadding(removeBottom: true)`. The glass path deliberately
+does **not**: there the bar floats, and the page's own padding plus
+`glassInset` is exactly the bar's height above the screen edge.
+Note what hid this: a probe with a `SliverFillRemaining` body showed no
+difference at all, because trailing sliver padding does not shrink that sliver
+(see `_bodySliver` above). Only a *scrolling* body reveals it, which is why the
+test asserts the invariant directly — `MediaQuery.paddingOf` inside the hosted
+page has `bottom == 0` with a bar, and keeps the inset without one.
+
 **Never wrap a bottom bar in `SafeArea`.** Both `CupertinoTabBar` and Material's
 `NavigationBar` add `MediaQuery.viewPaddingOf(context).bottom` to their own
 height, and `SafeArea` removes `padding`, **not** `viewPadding` — so wrapping
@@ -1322,7 +1339,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 274 tests at time of writing
+flutter test                    # 276 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 python3 scripts/generate_icon.py   # redraw assets/icon/*.png

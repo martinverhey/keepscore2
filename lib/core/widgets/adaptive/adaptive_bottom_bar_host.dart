@@ -83,7 +83,18 @@ class AdaptiveBottomBarHost extends StatelessWidget {
   }
 
   Widget _stacked(BuildContext context) {
-    return Column(children: [Expanded(child: _floated()), bar!]);
+    return Column(
+      children: [
+        Expanded(
+          child: MediaQuery.removePadding(
+            context: context,
+            removeBottom: true,
+            child: _floated(),
+          ),
+        ),
+        bar!,
+      ],
+    );
   }
 
   Widget _floated() {

@@ -262,6 +262,26 @@ void main() {
   });
 
   group('AdaptiveBottomBarHost without glass', () {
+    testWidgets('takes the bottom padding the bar covers off the page', (
+      tester,
+    ) async {
+      AppPlatform.debugOverrideCupertino = false;
+      AppPlatform.debugOverrideLiquidGlass = false;
+
+      await _pumpInset(tester, _host(child: _paddingProbe()));
+
+      expect(_probedPadding.bottom, 0);
+    });
+
+    testWidgets('leaves the page padding alone with no bar', (tester) async {
+      AppPlatform.debugOverrideCupertino = false;
+      AppPlatform.debugOverrideLiquidGlass = false;
+
+      await _pumpInset(tester, _host(child: _paddingProbe(), withBar: false));
+
+      expect(_probedPadding.bottom, 34);
+    });
+
     testWidgets('adds no height of its own to the opaque bar', (tester) async {
       AppPlatform.debugOverrideCupertino = false;
       AppPlatform.debugOverrideLiquidGlass = false;
@@ -423,6 +443,17 @@ Widget _tabBar(ValueChanged<int> onTap, {bool reservesTrailingAction = false}) {
     selectedIndex: 0,
     onTap: onTap,
     reservesTrailingAction: reservesTrailingAction,
+  );
+}
+
+EdgeInsets _probedPadding = EdgeInsets.zero;
+
+Widget _paddingProbe() {
+  return Builder(
+    builder: (context) {
+      _probedPadding = MediaQuery.paddingOf(context);
+      return const SizedBox();
+    },
   );
 }
 
