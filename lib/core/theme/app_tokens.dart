@@ -35,6 +35,7 @@ abstract final class AppOpacity {
   static const double shadow = 0.18;
   static const double glassFill = 0.22;
   static const double glassFillOnDark = 0.28;
+  static const double scrollEdgeFill = 0.9;
 }
 
 abstract final class AppColors {
@@ -87,6 +88,7 @@ abstract final class AppGlass {
   static const double barMargin = AppSpacing.md;
   static const double barCornerRadius = barHeight / 2;
   static const double barIconSize = 24;
+  static const double scrollEdgeFade = 40;
   static const double blurSigma = 8;
   static const double distortion = 0.13;
   static const double distortionWidth = 34;

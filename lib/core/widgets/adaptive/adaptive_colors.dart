@@ -26,6 +26,9 @@ abstract final class AdaptiveColors {
     AppColors.glassTintOnDark,
   );
 
+  static Color scrollEdgeTint(BuildContext context) =>
+      pageBackground(context).withValues(alpha: AppOpacity.scrollEdgeFill);
+
   static Color glassGlyph(BuildContext context) =>
       _forBrightness(context, AppColors.black, AppColors.white);
 

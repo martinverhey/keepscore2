@@ -955,6 +955,18 @@ guest is now simply `action: null`. The platforms with no separate action slot
 (Material, and Cupertino on macOS) **append it as a trailing item** and
 `_tap` routes `index == items.length` to `onPressed`, so New match moved from
 the middle to the right there too.
+**The scroll edge band is part of the host, not of any page.**
+`AdaptiveBottomBarHost._floating` stacks a `LiquidGlassScrollEdge` between the
+page and the bar — content fades into the page colour as it slides under the
+floating capsule, which is what keeps a dense list from showing through it as
+noise. It is tinted `AdaptiveColors.scrollEdgeTint` (the page background at
+`AppOpacity.scrollEdgeFill`), **not** the package's default 54%-black dim: a
+black band reads as a shadow in light mode, where the effect should look like
+content dissolving into the background. Its height covers the bar, the home
+indicator and `AppGlass.scrollEdgeFade` of ramp above them. It is wrapped in
+`IgnorePointer` — it is decoration, and a full-width band that ate taps would
+silently kill the bottom of every list.
+
 **One tab bar lives above both branches, not one per page.** `CompetitionShell`
 renders the single `CompetitionTabBar` through `AdaptiveBottomBarHost`, wrapping
 `navigationShell`, and derives `current` from `navigationShell.currentIndex`;
@@ -1273,7 +1285,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 270 tests at time of writing
+flutter test                    # 271 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 python3 scripts/generate_icon.py   # redraw assets/icon/*.png

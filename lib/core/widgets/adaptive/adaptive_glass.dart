@@ -12,6 +12,8 @@ export 'package:liquid_glass_easy/liquid_glass_easy.dart'
         LiquidGlassFab,
         LiquidGlassLens,
         LiquidGlassRefraction,
+        LiquidGlassEdge,
+        LiquidGlassScrollEdge,
         LiquidGlassShape,
         LiquidGlassStyle,
         LiquidGlassTabBar,

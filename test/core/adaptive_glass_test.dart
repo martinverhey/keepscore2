@@ -288,6 +288,21 @@ void main() {
       );
     });
 
+    testWidgets('dims the scroll edge beneath the bar, on glass only', (
+      tester,
+    ) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+      await pumpGlass(tester, _scaffold());
+
+      expect(find.byType(LiquidGlassScrollEdge), findsOneWidget);
+
+      AppPlatform.debugOverrideLiquidGlass = false;
+      await pumpGlass(tester, _scaffold());
+
+      expect(find.byType(LiquidGlassScrollEdge), findsNothing);
+    });
+
     testWidgets('lets taps through to the content under the overlay', (
       tester,
     ) async {
