@@ -76,9 +76,7 @@ abstract final class AppColors {
   static final Color fireBadgeFill = fireCore.withValues(
     alpha: AppOpacity.badgeFill,
   );
-  static final Color glassTint = white.withValues(
-    alpha: AppOpacity.glassFill,
-  );
+  static final Color glassTint = white.withValues(alpha: AppOpacity.glassFill);
   static final Color glassTintOnDark = modalSurfaceOnDark.withValues(
     alpha: AppOpacity.glassFillOnDark,
   );
@@ -95,12 +93,12 @@ abstract final class AppGlass {
   static const double barMargin = AppSpacing.md;
   static const double barCornerRadius = barHeight / 2;
   static const double barIconSize = 24;
-  static const double rimIntensity = 1;
-  static const double rimIntensityOnDark = 0.45;
+  static const double rimIntensity = 0.25;
+  static const double rimIntensityOnDark = 0.1;
   static const double rimAmbient = 1;
   static const double rimAmbientOnDark = 0.35;
-  static const double scrollEdgeFade = 40;
-  static const double blurSigma = 8;
+  static const double scrollEdgeFade = 0;
+  static const double blurSigma = 5;
   static const double distortion = 0.13;
   static const double distortionWidth = 34;
 }

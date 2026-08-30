@@ -952,11 +952,13 @@ surface they read as a hard white outline around the capsule, the action and
 the sheet, which is what shipped in the first TestFlight build.
 `AdaptiveGlass.shapeOf(context, cornerRadius:)` is now the single place a shape
 is built, and it resolves all three per brightness —
-`AdaptiveColors.glassRim` (white at `AppOpacity.glassRim` 0.7 light /
-`glassRimOnDark` 0.32), `AppGlass.rimIntensity(OnDark)` 1 / 0.45, and
-`AppGlass.rimAmbient(OnDark)` 1 / 0.35. **Ambient is the one that matters
+`AdaptiveColors.glassRim` (white at `AppOpacity.glassRim`/`glassRimOnDark`),
+`AppGlass.rimIntensity`/`rimIntensityOnDark` and
+`AppGlass.rimAmbient`/`rimAmbientOnDark`. **Ambient is the one that matters
 most**: it brightens the rim uniformly all the way round, so it is what turns
-an edge highlight into an outline. Light mode keeps the package's values.
+an edge highlight into an outline. The shipped values are far below the
+package's defaults on both themes — they were tuned against a real device, so
+treat them as measured, not as a starting guess.
 `AdaptiveFloatingAction` composes it as
 `LiquidGlassTabBarAction.defaultStyle.copyWith(shape: …)` so the action keeps
 its tuned appearance and refraction and changes only the rim — the pattern the
@@ -1053,7 +1055,8 @@ noise. It is tinted `AdaptiveColors.scrollEdgeTint` (the page background at
 `AppOpacity.scrollEdgeFill`), **not** the package's default 54%-black dim: a
 black band reads as a shadow in light mode, where the effect should look like
 content dissolving into the background. Its height covers the bar, the home
-indicator and `AppGlass.scrollEdgeFade` of ramp above them. It is wrapped in
+indicator and `AppGlass.scrollEdgeFade` of extra ramp above them (currently
+`0` — the band stops at the bar). It is wrapped in
 `IgnorePointer` — it is decoration, and a full-width band that ate taps would
 silently kill the bottom of every list.
 
