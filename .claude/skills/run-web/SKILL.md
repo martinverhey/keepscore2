@@ -27,7 +27,7 @@ announces itself.
 ## Recipe
 
 ```bash
-flutter build web --no-tree-shake-icons
+flutter build web
 
 # a port you have not served from yet this session
 PORT=8801

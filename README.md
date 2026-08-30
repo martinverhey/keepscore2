@@ -55,7 +55,7 @@ flutter gen-l10n                # after editing any .arb file
 python3 scripts/generate_icon.py    # redraw assets/icon/*.png
 dart run flutter_launcher_icons     # push icons into ios/ android/ web/
 
-flutter build web --no-tree-shake-icons
+flutter build web
 flutter build apk --debug
 ```
 
