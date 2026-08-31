@@ -1147,6 +1147,56 @@ platforms. `test/core/adaptive_bar_action_test.dart` pins it, the untinted
 lens included, and is the second file in the suite to set
 `debugOverrideLiquidGlass`.
 
+**`AdaptiveSwitch` is the one glass control that is not chrome.** On the glass
+path it is the package's own `LiquidGlassSwitch` — the iOS-26 sliding switch,
+whose thumb is picked up and carried rather than snapped — so the dark-mode
+toggle in `SettingsPage`'s System section (and any future `AdaptiveSwitch`)
+reads as glass on iOS. Three things it does *not* do, each deliberate:
+- **It passes no `style`**, the same call as `AdaptiveFloatingAction` and for
+  the same reason — `LiquidGlassSwitch.defaultStyle` is a thumb-tuned clear
+  pill (near-zero blur, a tucked-in contact shadow tied to the morph, a
+  softened grey rim rather than the package's usual `0xB2FFFFFF`), and a
+  style handed in wholesale would drop all of it. The rim's light/dark split
+  that `AdaptiveGlass.shapeOf` exists for is not applied here: the thumb's
+  rim is already the soft grey, and it sits on its own coloured track rather
+  than over page content, so it does not read as the outline a bar-sized lens
+  did.
+- **It keeps the package's `activeColor`/`inactiveColor`/`thumbColor`
+  defaults**, which are the iOS system values `CupertinoSwitch` was already
+  painting — the switch does not change colour when it becomes glass, only
+  shape and behaviour.
+- **It drops the `SizedBox`/`OverflowBox`/`FittedBox` wrapper** the platform
+  branch scales a native switch with, and takes the layout's own 63×28 track
+  instead. `reserveSwellRoom` stays `false`: the held thumb swells past the
+  track on purpose, and no ancestor between it and the scroll viewport clips.
+A `null` `onChanged` falls back to the platform switch even under glass —
+`LiquidGlassSwitch.onChanged` is non-nullable and has no disabled rendering,
+where `CupertinoSwitch`/`Switch` both do.
+**The platform branch is scaled to sit beside it.** `CupertinoSwitch` renders
+59×39 and Material's `Switch` 60×40 (with `shrinkWrap`), and
+`AdaptiveSwitch`'s wrapper paints both at 51×34 inside a 52×28 footprint —
+`FittedBox` fits the native control into `_visualHeight`, and the shorter
+`_height` is what the row actually reserves, so the switch overflows its own
+footprint vertically into the row's padding and never horizontally into the
+label. It was 34×20 (painting ~36×24, overhanging the label by 2 px) until
+the glass switch's 63-wide track made every other platform look undersized
+next to it. Numbers measured, not derived: `Switch` returns 60×40 even under
+`MaterialTapTargetSize.shrinkWrap`.
+**Wide web runs one size down** — 44×29 painted in a 44×24 footprint — the
+one place a switch is driven by a mouse rather than a thumb. The gate is
+`AppPlatform.useWideWeb`, not `kIsWeb`, so a phone-width browser tab keeps
+the native size along with the rest of the native chrome; a tap target is
+the wrong thing to shrink where the pointer is a finger.
+`adaptive_widgets_test.dart` pins both pairs — it is the only thing watching
+them, and the wide-web half needs `debugOverrideWideWeb` to see anything at
+all (`kIsWeb` is always `false` under `flutter test`).
+
+**A tight parent breaks it**: the switch's internal `OverflowBox` asserts on
+non-normalized constraints if it is given a tight box larger than the track
+(a `min` above the track's own size), which is why
+`adaptive_glass_test.dart` pumps it inside a `Center`. In the app it is
+always a `Row` child, which is loose.
+
 **The spacer sliver that makes room for the band is `PinnedHeaderSliver`, not
 a plain `SliverToBoxAdapter`, and it has to be both things at once.** A
 scrolling spacer looks identical on the Leaderboard and is wrong on Matches:
@@ -1500,7 +1550,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 295 tests at time of writing
+flutter test                    # 299 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 python3 scripts/generate_icon.py   # redraw assets/icon/*.png

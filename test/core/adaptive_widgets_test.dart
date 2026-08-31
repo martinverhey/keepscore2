@@ -12,7 +12,10 @@ Future<void> pumpAdaptive(WidgetTester tester, Widget child) {
 }
 
 void main() {
-  tearDown(() => AppPlatform.debugOverrideCupertino = null);
+  tearDown(() {
+    AppPlatform.debugOverrideCupertino = null;
+    AppPlatform.debugOverrideWideWeb = null;
+  });
 
   group('AppPlatform', () {
     test('honours the test override in both directions', () {
@@ -106,6 +109,42 @@ void main() {
       await tester.tap(find.text('Save match'));
       await tester.pump();
       expect(taps, 1);
+    });
+  });
+
+  group('AdaptiveSwitch', () {
+    Future<void> pumpSwitch(WidgetTester tester) {
+      AppPlatform.debugOverrideCupertino = false;
+      return tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [AdaptiveSwitch(value: true, onChanged: (_) {})],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    testWidgets('paints the switch wider than the row it reserves', (
+      tester,
+    ) async {
+      AppPlatform.debugOverrideWideWeb = false;
+      await pumpSwitch(tester);
+
+      expect(tester.getSize(find.byType(AdaptiveSwitch)), const Size(52, 28));
+      expect(tester.getSize(find.byType(FittedBox)), const Size(52, 34));
+    });
+
+    testWidgets('runs smaller on wide web', (tester) async {
+      AppPlatform.debugOverrideWideWeb = true;
+      await pumpSwitch(tester);
+
+      expect(tester.getSize(find.byType(AdaptiveSwitch)), const Size(44, 24));
+      expect(tester.getSize(find.byType(FittedBox)), const Size(44, 29));
     });
   });
 }

@@ -16,6 +16,7 @@ export 'package:liquid_glass_easy/liquid_glass_easy.dart'
         LiquidGlassShape,
         OpticalBorder,
         LiquidGlassStyle,
+        LiquidGlassSwitch,
         LiquidGlassTabBar,
         LiquidGlassTabBarAction,
         LiquidGlassTabBarItem,

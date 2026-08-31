@@ -444,6 +444,45 @@ void main() {
     });
   });
 
+  group('AdaptiveSwitch', () {
+    testWidgets('is a glass switch on iOS and a platform switch without', (
+      tester,
+    ) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+      await pumpGlass(
+        tester,
+        Center(child: AdaptiveSwitch(value: true, onChanged: (_) {})),
+      );
+
+      expect(find.byType(LiquidGlassSwitch), findsOneWidget);
+      expect(find.byType(CupertinoSwitch), findsNothing);
+
+      AppPlatform.debugOverrideLiquidGlass = false;
+      await pumpGlass(
+        tester,
+        Center(child: AdaptiveSwitch(value: true, onChanged: (_) {})),
+      );
+
+      expect(find.byType(LiquidGlassSwitch), findsNothing);
+      expect(find.byType(CupertinoSwitch), findsOneWidget);
+    });
+
+    testWidgets('keeps the platform switch when it cannot be changed', (
+      tester,
+    ) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+      await pumpGlass(
+        tester,
+        const Center(child: AdaptiveSwitch(value: true, onChanged: null)),
+      );
+
+      expect(find.byType(LiquidGlassSwitch), findsNothing);
+      expect(find.byType(CupertinoSwitch), findsOneWidget);
+    });
+  });
+
   group('AdaptiveTopBar', () {
     testWidgets('floats a plain title instead of the nav bar', (tester) async {
       AppPlatform.debugOverrideCupertino = true;
