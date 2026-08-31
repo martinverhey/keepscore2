@@ -105,7 +105,7 @@ class _MatchesPageState extends State<MatchesPage> {
             onSelected: context.read<GameTypeFilterCubit>().select,
           ),
           if (!AppPlatform.useWideWeb(context)) ...[
-            const SizedBox(width: AppSpacing.xs),
+            const SizedBox(width: AppSpacing.sm),
             CompetitionSettingsButton(competitionId: competitionId),
           ],
         ],

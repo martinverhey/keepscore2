@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/theme/app_tokens.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
+import 'package:keepscore2/l10n/app_localizations.dart';
 
 LiquidGlassShape _rimOf(WidgetTester tester) {
   return tester
@@ -19,6 +20,7 @@ Future<void> pumpGlass(
 }) {
   return tester.pumpWidget(
     CupertinoApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
       theme: CupertinoThemeData(
         brightness: dark ? Brightness.dark : Brightness.light,
       ),
@@ -378,14 +380,15 @@ void main() {
       );
     });
 
-    testWidgets('dims the scroll edge beneath the bar, on glass only', (
-      tester,
-    ) async {
+    testWidgets('dims both scroll edges, on glass only', (tester) async {
       AppPlatform.debugOverrideCupertino = true;
       AppPlatform.debugOverrideLiquidGlass = true;
       await pumpGlass(tester, _scaffold());
 
-      expect(find.byType(LiquidGlassScrollEdge), findsOneWidget);
+      expect(_scrollEdges(tester), {
+        LiquidGlassEdge.top,
+        LiquidGlassEdge.bottom,
+      });
 
       AppPlatform.debugOverrideLiquidGlass = false;
       await pumpGlass(tester, _scaffold());
@@ -407,6 +410,174 @@ void main() {
       expect(taps, 1);
     });
   });
+
+  group('AdaptiveBarAction', () {
+    testWidgets('is a glass circle on iOS and a plain icon button without', (
+      tester,
+    ) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+      await pumpGlass(tester, _barAction());
+
+      expect(find.byType(LiquidGlassTabBarAction), findsOneWidget);
+      expect(find.byType(AdaptiveIconButton), findsNothing);
+
+      AppPlatform.debugOverrideLiquidGlass = false;
+      await pumpGlass(tester, _barAction());
+
+      expect(find.byType(LiquidGlassTabBarAction), findsNothing);
+      expect(find.byType(AdaptiveIconButton), findsOneWidget);
+    });
+
+    testWidgets('paints its glyph in the label colour, not the accent', (
+      tester,
+    ) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+      await pumpGlass(tester, _barAction());
+
+      expect(_glyphColour(tester, AdaptiveGlyph.settings), AppColors.black);
+
+      await pumpGlass(tester, _barAction(), dark: true);
+
+      expect(_glyphColour(tester, AdaptiveGlyph.settings), AppColors.white);
+    });
+  });
+
+  group('AdaptiveTopBar', () {
+    testWidgets('floats a plain title instead of the nav bar', (tester) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+      await pumpGlass(tester, _scaffold());
+
+      expect(find.byType(AdaptiveTopBar), findsOneWidget);
+      expect(find.byType(CupertinoSliverNavigationBar), findsNothing);
+      expect(find.text('Leaderboard'), findsOneWidget);
+    });
+
+    testWidgets('keeps the collapsing nav bar without glass', (tester) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = false;
+      await pumpGlass(tester, _scaffold());
+
+      expect(find.byType(AdaptiveTopBar), findsNothing);
+      expect(find.byType(CupertinoSliverNavigationBar), findsOneWidget);
+    });
+
+    testWidgets('leaves room above the body for the bar', (tester) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+      await pumpGlass(tester, _scaffold());
+
+      expect(
+        tester.getRect(find.byKey(const Key('body'))).top,
+        greaterThanOrEqualTo(
+          tester.getRect(find.byType(AdaptiveTopBar)).bottom,
+        ),
+      );
+    });
+
+    testWidgets('keeps the title off the glass', (tester) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+      await pumpGlass(tester, _scaffold(onTrailingTap: () {}));
+
+      expect(
+        find.descendant(
+          of: find.byType(LiquidGlassLens),
+          matching: find.text('Leaderboard'),
+        ),
+        findsNothing,
+      );
+    });
+
+    testWidgets('holds the page trailing action', (tester) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+      var taps = 0;
+      await pumpGlass(tester, _scaffold(onTrailingTap: () => taps++));
+
+      expect(find.byType(LiquidGlassTabBarAction), findsOneWidget);
+
+      await tester.tap(find.byType(AdaptiveBarAction));
+      await tester.pumpAndSettle();
+
+      expect(taps, 1);
+    });
+
+    testWidgets('carries its own back button where the route can pop', (
+      tester,
+    ) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+      await _pumpPushedScaffold(tester);
+
+      expect(_hasGlyph(tester, AdaptiveGlyph.back), isTrue);
+
+      await tester.tap(find.byType(AdaptiveBarAction));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AdaptiveTopBar), findsNothing);
+    });
+
+    testWidgets('shows no back button on a root route', (tester) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+      await pumpGlass(tester, _scaffold());
+
+      expect(_hasGlyph(tester, AdaptiveGlyph.back), isFalse);
+    });
+  });
+}
+
+Widget _barAction() {
+  return Center(
+    child: AdaptiveBarAction(
+      key: UniqueKey(),
+      glyph: AdaptiveGlyph.settings,
+      semanticLabel: 'Settings',
+      onPressed: () {},
+    ),
+  );
+}
+
+Color? _glyphColour(WidgetTester tester, AdaptiveGlyph glyph) {
+  return tester
+      .widgetList<AdaptiveIcon>(find.byType(AdaptiveIcon))
+      .firstWhere((icon) => icon.glyph == glyph)
+      .color;
+}
+
+Set<LiquidGlassEdge> _scrollEdges(WidgetTester tester) {
+  return tester
+      .widgetList<LiquidGlassScrollEdge>(find.byType(LiquidGlassScrollEdge))
+      .map((edge) => edge.edge)
+      .toSet();
+}
+
+bool _hasGlyph(WidgetTester tester, AdaptiveGlyph glyph) {
+  return tester
+      .widgetList<AdaptiveIcon>(find.byType(AdaptiveIcon))
+      .any((icon) => icon.glyph == glyph);
+}
+
+Future<void> _pumpPushedScaffold(WidgetTester tester) async {
+  await tester.pumpWidget(
+    CupertinoApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      home: Builder(
+        builder: (context) => CupertinoButton(
+          onPressed: () => Navigator.of(
+            context,
+          ).push<void>(CupertinoPageRoute<void>(builder: (_) => _scaffold())),
+          child: const Text('open'),
+        ),
+      ),
+    ),
+  );
+
+  await tester.tap(find.text('open'));
+  await tester.pumpAndSettle();
 }
 
 Future<void> _openSheet(WidgetTester tester, {bool guarded = false}) async {
@@ -526,10 +697,21 @@ Widget _floatingAction(VoidCallback onPressed, {bool busy = false}) {
   );
 }
 
-Widget _scaffold({bool withFloatingAction = false, VoidCallback? onBodyTap}) {
+Widget _scaffold({
+  bool withFloatingAction = false,
+  VoidCallback? onBodyTap,
+  VoidCallback? onTrailingTap,
+}) {
   return _host(
     child: AdaptiveScaffold(
       title: 'Leaderboard',
+      trailing: onTrailingTap == null
+          ? null
+          : AdaptiveBarAction(
+              glyph: AdaptiveGlyph.settings,
+              semanticLabel: 'Settings',
+              onPressed: onTrailingTap,
+            ),
       body: GestureDetector(
         key: const Key('body'),
         onTap: onBodyTap,

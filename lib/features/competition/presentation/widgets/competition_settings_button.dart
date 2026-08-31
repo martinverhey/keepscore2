@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/app_router.dart';
+import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 
 class CompetitionSettingsButton extends StatelessWidget {
@@ -11,8 +12,9 @@ class CompetitionSettingsButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AdaptiveIconButton(
+    return AdaptiveBarAction(
       glyph: AdaptiveGlyph.settings,
+      semanticLabel: context.l10n.competitionSettings,
       onPressed: () => context.push<Object?>(Routes.settings(competitionId)),
     );
   }

@@ -1060,6 +1060,74 @@ indicator and `AppGlass.scrollEdgeFade` of extra ramp above them (currently
 `IgnorePointer` — it is decoration, and a full-width band that ate taps would
 silently kill the bottom of every list.
 
+**The top bar floats too, and the large title is the price.** A
+`LiquidGlassLens` refracts *what is painted behind it*, so anything meant to
+be glass has to have the content behind it — which rules out every
+arrangement that keeps `CupertinoSliverNavigationBar`. A lens behind the
+scroll view has nothing to refract (the page background paints over it); a
+lens `Positioned` over the scroll view refracts and blurs the nav bar's own
+title and buttons; and a top `LiquidGlassScrollEdge` cannot be slipped
+*between* the body slivers and the pinned nav bar from outside the scroll
+view at all. So on the glass path `AdaptiveScaffold._cupertinoGlass` drops the
+nav bar entirely and stacks `AdaptiveTopBar`
+(`core/widgets/adaptive/adaptive_top_bar.dart`) over the content. **iOS
+therefore has no large titles any more**, and no collapse-on-scroll; that was
+accepted deliberately in exchange for the lens. Off glass (and under Increase
+Contrast, since the gate is `AdaptiveGlass.isEnabled`) the
+`CupertinoSliverNavigationBar` branch is untouched, and a page with no `title`
+at all (Sign in, Upgrade) keeps `_bareBar` on both paths.
+
+**The title is not glass; the buttons are** — the iOS 26 Photos arrangement,
+and the one place the shape deliberately departs from the bottom bar. A
+capsule around the title was built first and rejected: a lens is a *control*
+surface, and wrapping a page's name in one reads as a button that cannot be
+pressed. So `AdaptiveTopBar` is a plain `Row` — bare title text in
+`AppTypography.barTitle`, `leading`/`trailing` beside it — over its own
+top-edge `LiquidGlassScrollEdge` band, which is what keeps that unglassed text
+legible as content passes beneath it (the same `Positioned.fill` +
+`IgnorePointer` shape `AdaptiveBottomBarHost._floating` uses at the bottom).
+The band is the only thing standing between the title and the list; do not
+remove it while the title is bare.
+
+**`AdaptiveBarAction` is the small sibling of `AdaptiveFloatingAction`**, and
+the two together are the whole glass-control vocabulary: an untinted
+`LiquidGlassTabBarAction` carrying `AdaptiveColors.glassGlyph`, at
+`AppGlass.barActionSize` (44) rather than `barHeight` (64). Every bar button
+goes through it — `CompetitionSettingsButton`, `GameTypeFilterDropdown`, and
+`AdaptiveScaffold._glassLeading`'s hand-built back button — so the top bar's
+controls, the tab action and the FAB are all the same untinted lens with the
+same black/white glyph. Off glass it is exactly the `AdaptiveIconButton` those
+call sites used before, which is what a bar button already is on every other
+platform; that is how it satisfies the "a glass action is a FAB everywhere
+else" pairing rule without inventing an Android affordance.
+**`GameTypeFilterDropdown` collapses to a bare filter glyph on glass** and
+keeps its labelled `PillDropdown` everywhere else — so on iOS the *current*
+filter is no longer visible in the bar, only reachable through the sheet.
+That is the accepted cost of the icon-only shape; if it needs to show state,
+mark the button, do not bring the label back into the bar.
+
+**The spacer sliver that makes room for the band is `PinnedHeaderSliver`, not
+a plain `SliverToBoxAdapter`, and it has to be both things at once.** A
+scrolling spacer looks identical on the Leaderboard and is wrong on Matches:
+with nothing pinned above them, that page's `PinnedHeaderSliver` day headers
+pin at viewport `y = 0`, hidden behind the floating chrome.
+`PinnedHeaderSliver` reports `paintOrigin: constraints.overlap` and
+`maxScrollObstructionExtent: childExtent`, so a pinned spacer makes every
+later pinned header stack *below* it — while its `layoutExtent` still clamps
+to `0` as it scrolls, which is what lets content pass under the band and give
+the lenses something to refract. Take either property away and one of the two
+breaks. `CupertinoSliverRefreshControl` goes after the spacer, exactly where
+it already sat after the nav bar.
+
+**A floating bar has no `automaticallyImplyLeading`, so the back button is
+built by hand** — `AdaptiveScaffold._glassLeading` returns an explicit
+`AdaptiveBarAction` off `ModalRoute.of(context)?.canPop`, deferring to a
+page's own `leading` and to `SuppressedBackButtonScope` first, mirroring what
+the Cupertino nav bar did for free. Labelling it pulled `context.l10n` into
+`AdaptiveScaffold`, which means **any test pumping a glass scaffold on a
+poppable route needs `AppLocalizations.localizationsDelegates` on its
+`CupertinoApp`** or it throws a null check inside `AppLocalizations.of`.
+
 **One tab bar lives above both branches, not one per page.** `CompetitionShell`
 renders the single `CompetitionTabBar` through `AdaptiveBottomBarHost`, wrapping
 `navigationShell`, and derives `current` from `navigationShell.currentIndex`;
@@ -1378,7 +1446,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 277 tests at time of writing
+flutter test                    # 286 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 python3 scripts/generate_icon.py   # redraw assets/icon/*.png

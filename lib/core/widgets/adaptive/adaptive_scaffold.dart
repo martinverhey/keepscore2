@@ -4,9 +4,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../extensions/box_constraints.extension.dart';
+import '../../extensions/build_context.extension.dart';
 import '../../extensions/double.extension.dart';
 import '../../theme/app_tokens.dart';
+import 'adaptive_bar_action.dart';
 import 'adaptive_bottom_bar_host.dart';
+import 'adaptive_glass.dart';
+import 'adaptive_top_bar.dart';
 import 'app_platform.dart';
 import 'suppressed_back_button_scope.dart';
 
@@ -55,11 +59,74 @@ class AdaptiveScaffold extends StatelessWidget {
 
   Widget _cupertino(BuildContext context, bool suppressBack) {
     final inset = AdaptiveBottomBarHost.insetOf(context);
+    if (_hasGlassTopBar(context)) {
+      return _cupertinoGlass(context, inset, suppressBack);
+    }
     return CupertinoPageScaffold(
       child: _floated(
         _cupertinoScrollView(_sliverBody(inset), suppressBack),
         extraBottom: inset,
       ),
+    );
+  }
+
+  bool _hasGlassTopBar(BuildContext context) =>
+      title != null && AdaptiveGlass.isEnabled(context);
+
+  Widget _cupertinoGlass(
+    BuildContext context,
+    double bottomInset,
+    bool suppressBack,
+  ) {
+    return CupertinoPageScaffold(
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: _floated(
+              _glassScrollView(context, bottomInset),
+              extraBottom: bottomInset,
+            ),
+          ),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: AdaptiveTopBar(
+              title: title!,
+              leading: _glassLeading(context, suppressBack),
+              trailing: trailing,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _glassScrollView(BuildContext context, double bottomInset) {
+    return CustomScrollView(
+      physics: const AlwaysScrollableScrollPhysics(
+        parent: BouncingScrollPhysics(),
+      ),
+      slivers: [
+        PinnedHeaderSliver(
+          child: SizedBox(
+            height: MediaQuery.paddingOf(context).top + AdaptiveTopBar.inset,
+          ),
+        ),
+        if (onRefresh != null)
+          CupertinoSliverRefreshControl(onRefresh: onRefresh),
+        _sliverBody(bottomInset),
+      ],
+    );
+  }
+
+  Widget? _glassLeading(BuildContext context, bool suppressBack) {
+    if (leading != null) return leading;
+    if (suppressBack || !(ModalRoute.of(context)?.canPop ?? false)) return null;
+    return AdaptiveBarAction(
+      glyph: AdaptiveGlyph.back,
+      semanticLabel: context.l10n.commonBack,
+      onPressed: () => Navigator.maybePop(context),
     );
   }
 

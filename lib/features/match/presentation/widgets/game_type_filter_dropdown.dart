@@ -46,12 +46,19 @@ class GameTypeFilterDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label = selected == null
-        ? context.l10n.leaderboardFilterAll
-        : selected!.label(context);
-
-    return PillDropdown(label: label, onTap: () => _pick(context));
+    if (AdaptiveGlass.isEnabled(context)) {
+      return AdaptiveBarAction(
+        glyph: AdaptiveGlyph.filter,
+        semanticLabel: context.l10n.gameTypeFilterPick,
+        onPressed: () => _pick(context),
+      );
+    }
+    return PillDropdown(label: _label(context), onTap: () => _pick(context));
   }
+
+  String _label(BuildContext context) => selected == null
+      ? context.l10n.leaderboardFilterAll
+      : selected!.label(context);
 
   Future<void> _pick(BuildContext context) async {
     final option = await showAdaptiveSheet<GameTypeFilterOption>(
