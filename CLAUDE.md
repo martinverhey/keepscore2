@@ -79,7 +79,7 @@ finished season at a time — `SeasonFilterButton` in the app bar's `trailing`
 slot opens `SeasonSheet`, which picks among `HistoryState.seasons` (the lean,
 already-loaded season list — id/starts_at/ends_at only, no leaderboards — so
 the picker itself needs no separate fetch), selecting one fetches just that
-season's leaderboard, and the chosen season heads the list as a `SeasonHeader`
+season's leaderboard, and the chosen season heads the list as a `ListHeader`
 — the same title-plus-subtitle block `LeaderboardList._seasonBar` uses, so
 both pages name their season identically; only the subtitle differs
 (`Ends <date>` for the running season, the finished season's date range in
@@ -655,8 +655,8 @@ the treatment below. Mirrors `debugOverrideCupertino` with
 
 - **Custom tappable rows get hover/cursor feedback everywhere, not just wide
   web.** Every hand-rolled `GestureDetector(behavior: opaque, onTap: …)` around
-  a row/tile (`LeaderboardRow`, `NavRow`, `SelectableRow`, `PillDropdown`,
-  `MatchTile`, `CompetitionTile`, `ProfileSection`, the team-picker tile, the
+  a row/tile (`LeaderboardRow`, `NavRow`, `SelectableRow`, `MatchTile`,
+  `CompetitionTile`, `ProfileSection`, the team-picker tile, the
   competition-name header) is `AdaptiveTappable` instead
   (`core/widgets/adaptive/adaptive_tappable.dart`): `InkWell` (hover cursor +
   ripple, clipped to the same `borderRadius` as the row's own decoration) on
@@ -1098,7 +1098,7 @@ remove it while the title is bare.
 the two together are the whole glass-control vocabulary: an untinted
 `LiquidGlassTabBarAction` carrying `AdaptiveColors.glassGlyph`, at
 `AppGlass.barActionSize` (44) rather than `barHeight` (64). Every bar button
-goes through it — `CompetitionSettingsButton`, `GameTypeFilterDropdown`, and
+goes through it — `CompetitionSettingsButton`, `GameTypeFilterButton`, and
 `AdaptiveScaffold._glassLeading`'s hand-built back button — so the top bar's
 controls, the tab action and the FAB are all the same untinted lens with the
 same black/white glyph. Off glass it is exactly the `AdaptiveIconButton` those
@@ -1106,24 +1106,46 @@ call sites used before, which is what a bar button already is on every other
 platform; that is how it satisfies the "a glass action is a FAB everywhere
 else" pairing rule without inventing an Android affordance.
 **A page filter is an `AdaptiveBarAction` carrying `AdaptiveGlyph.filter` in
-the scaffold's `trailing` slot, opening a sheet — that is the default shape
-now, and both existing filters follow it.** What differs is only where the
-*active* value is shown, and that follows from whether the page has room for
-it:
+the scaffold's `trailing` slot, opening a sheet, with the active value named
+by a `ListHeader` above the list rather than by the button — on every
+platform, glass or not — and the button itself marked `active` while a filter
+is on.** `SeasonFilterButton` (History) and
+`GameTypeFilterButton` (Matches) are both exactly that, and a third filter
+should be too. Each replaced a `PillDropdown` labelled with its own current
+value; that label is the heading now, so nothing was lost and `PillDropdown`
+itself is gone. (`SeasonFilterButton` was `SeasonDropdown`, and
+`GameTypeFilterButton` was `GameTypeFilterDropdown`, until each stopped being
+one.)
+Matches heads the list only when a game type is actually picked — "All" is
+the unfiltered list and heading it would be noise — which is why the
+game-type-specific empty message went away with the pill: the header names
+the filter, so the body says only `matchesEmpty`.
+`ListHeader` (`core/widgets/list_header.dart`) is the shared block: a
+`titleSmall` title over an optional `captionSmall` subtitle. History and the
+Leaderboard's running season pass both; Matches passes a title alone.
+Only Matches passes `active` — History always has a season selected, so
+"filtering" is not a state it can be out of.
 
-- **History** shows the chosen season as plain `AppTypography.sectionHeader`
-  text above the list, so `SeasonFilterButton` is icon-only on **every**
-  platform — it is literally just an `AdaptiveBarAction`, with no labelled
-  variant at all. It used to be a `PillDropdown` labelled with the season
-  name; that label is the text heading now, which is why moving it did not
-  cost any information. (It was renamed from `SeasonDropdown` when it stopped
-  being one.)
-- **Matches** has nowhere to put such a heading, so `GameTypeFilterDropdown`
-  collapses to the bare glyph on glass and keeps its labelled `PillDropdown`
-  everywhere else. On iOS the current game type is therefore only reachable
-  through the sheet — the accepted cost of the icon-only shape. If it ever
-  needs to show state, mark the button or add a heading; do not put the label
-  back in the bar.
+**`AdaptiveBarAction.active` is ours, not the package's.** No component in
+`liquid_glass_easy` that we use carries a selected state: `LiquidGlassTabBarAction`
+takes only `icon`/`child`, `onTap`, `foregroundColor`, `size`, `style`,
+`visibility` and `touch`, and `LiquidGlassButton`/`LiquidGlassFab` are the
+same. Selection exists there only in widgets whose whole job is selection
+(`LiquidGlassTabBar.selectedIndex`, the segmented controls, `LiquidGlassSwitch`)
+plus `LiquidGlassControlTile`, whose `active`/`activeColor` tint the lens.
+**That tint is deliberately not what `active` does here — the glass stays
+exactly as it is and only the glyph changes colour**, to
+`AdaptiveColors.accent`. Tinting the lens was built first and dropped: a
+filled accent lens is the same flat-orange-circle read that got the accent
+FAB rejected, and it makes the button louder than the heading naming the
+filter. So the lens keeps `LiquidGlassTabBarAction.defaultStyle` with only
+its shape swapped, and `active` is one line in `_glyphColor` — accent when
+on, `glassGlyph` (black on light, white on dark) when off. Off glass,
+`AdaptiveIconButton` does the identical thing plus Material's own
+`isSelected`; both paths mark `Semantics(selected:)`. One rule, both
+platforms. `test/core/adaptive_bar_action_test.dart` pins it, the untinted
+lens included, and is the second file in the suite to set
+`debugOverrideLiquidGlass`.
 
 **The spacer sliver that makes room for the band is `PinnedHeaderSliver`, not
 a plain `SliverToBoxAdapter`, and it has to be both things at once.** A
@@ -1478,7 +1500,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 286 tests at time of writing
+flutter test                    # 295 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 python3 scripts/generate_icon.py   # redraw assets/icon/*.png

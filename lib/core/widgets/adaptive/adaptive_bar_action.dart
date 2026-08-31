@@ -13,11 +13,13 @@ class AdaptiveBarAction extends StatelessWidget {
     required this.glyph,
     required this.onPressed,
     this.semanticLabel,
+    this.active = false,
   });
 
   final AdaptiveGlyph glyph;
   final VoidCallback? onPressed;
   final String? semanticLabel;
+  final bool active;
 
   @override
   Widget build(BuildContext context) {
@@ -26,10 +28,12 @@ class AdaptiveBarAction extends StatelessWidget {
         glyph: glyph,
         onPressed: onPressed,
         semanticLabel: semanticLabel,
+        active: active,
       );
     }
     return Semantics(
       button: true,
+      selected: active,
       label: semanticLabel,
       child: LiquidGlassTabBarAction(
         onTap: onPressed,
@@ -40,8 +44,12 @@ class AdaptiveBarAction extends StatelessWidget {
             cornerRadius: AppGlass.barActionSize / 2,
           ),
         ),
-        child: AdaptiveIcon(glyph, color: AdaptiveColors.glassGlyph(context)),
+        child: AdaptiveIcon(glyph, color: _glyphColor(context)),
       ),
     );
   }
+
+  Color _glyphColor(BuildContext context) => active
+      ? AdaptiveColors.accent(context)
+      : AdaptiveColors.glassGlyph(context);
 }

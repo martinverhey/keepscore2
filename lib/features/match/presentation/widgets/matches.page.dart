@@ -8,6 +8,7 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/curved_arrow.dart';
 import '../../../../core/widgets/curved_arrow_direction.enum.dart';
+import '../../../../core/widgets/list_header.dart';
 import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
@@ -15,11 +16,12 @@ import '../../../auth/presentation/widgets/guest_notice.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
 import '../../../competition/presentation/widgets/competition_settings_button.dart';
 import '../../../player/presentation/cubit/players_cubit.dart';
+import '../../domain/game_type.enum.dart';
 import '../../domain/match_entry.model.dart';
 import '../cubit/game_type_filter_cubit.dart';
 import '../cubit/match_list_cubit.dart';
 import 'day_header.dart';
-import 'game_type_filter_dropdown.dart';
+import 'game_type_filter_button.dart';
 import 'match_day_group.dart';
 import 'match_card.dart';
 import 'match_detail_sheet.dart';
@@ -100,7 +102,7 @@ class _MatchesPageState extends State<MatchesPage> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          GameTypeFilterDropdown(
+          GameTypeFilterButton(
             selected: context.watch<GameTypeFilterCubit>().state,
             onSelected: context.read<GameTypeFilterCubit>().select,
           ),
@@ -155,18 +157,16 @@ class _MatchesPageState extends State<MatchesPage> {
   }) {
     return SliverMainAxisGroup(
       slivers: [
-        if (!isRegistered)
-          SliverToBoxAdapter(
-            child: GuestNotice(message: context.l10n.matchGuestCannotLog),
-          ),
+        if (!isRegistered) SliverToBoxAdapter(child: _guestNotice(context)),
         if (isRegistered && !hasPlayers)
           SliverToBoxAdapter(child: _needsPlayersHint(context)),
+        if (state.selectedGameType case final gameType?)
+          SliverToBoxAdapter(child: _gameTypeHeader(context, gameType)),
         _matchesSection(
           context,
           state,
           competitionId: competitionId,
           isRegistered: isRegistered,
-          hasPlayers: hasPlayers,
           myPlayerId: myPlayerId,
         ),
         if (state.hasMore)
@@ -177,10 +177,24 @@ class _MatchesPageState extends State<MatchesPage> {
     );
   }
 
+  Widget _guestNotice(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: GuestNotice(message: context.l10n.matchGuestCannotLog),
+    );
+  }
+
   Widget _needsPlayersHint(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.sm, bottom: AppSpacing.lg),
       child: Text(context.l10n.matchNeedsPlayers, style: AppTypography.caption),
+    );
+  }
+
+  Widget _gameTypeHeader(BuildContext context, GameType gameType) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: ListHeader(title: gameType.label(context)),
     );
   }
 
@@ -189,19 +203,13 @@ class _MatchesPageState extends State<MatchesPage> {
     MatchListReady state, {
     required String competitionId,
     required bool isRegistered,
-    required bool hasPlayers,
     required String? myPlayerId,
   }) {
     if (state.busy) return _loader();
 
     if (state.matches.isEmpty) {
       return SliverToBoxAdapter(
-        child: _emptyState(
-          context,
-          state,
-          isRegistered: isRegistered,
-          hasPlayers: hasPlayers,
-        ),
+        child: _emptyState(context, isRegistered: isRegistered),
       );
     }
 
@@ -260,22 +268,11 @@ class _MatchesPageState extends State<MatchesPage> {
     );
   }
 
-  Widget _emptyState(
-    BuildContext context,
-    MatchListReady state, {
-    required bool isRegistered,
-    required bool hasPlayers,
-  }) {
+  Widget _emptyState(BuildContext context, {required bool isRegistered}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        EmptyState(
-          message: state.selectedGameType == null
-              ? context.l10n.matchesEmpty
-              : context.l10n.matchesFilterEmpty(
-                  state.selectedGameType!.label(context),
-                ),
-        ),
+        EmptyState(message: context.l10n.matchesEmpty),
         if (isRegistered) _newMatchHint(context),
       ],
     );

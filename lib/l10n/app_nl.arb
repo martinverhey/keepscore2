@@ -178,10 +178,6 @@
 
   "matchesTitle": "Wedstrijden",
   "matchesEmpty": "Nog geen wedstrijden.",
-  "matchesFilterEmpty": "Nog geen {gameType}-wedstrijden.",
-  "@matchesFilterEmpty": {
-    "placeholders": { "gameType": { "type": "String" } }
-  },
   "matchesCreateHintTabBar": "Tik hieronder op Nieuwe wedstrijd om je eerste wedstrijd aan te maken.",
   "matchesCreateHintSidebar": "Gebruik Nieuwe wedstrijd om je eerste wedstrijd aan te maken.",
   "matchDayToday": "Vandaag",

@@ -435,11 +435,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String get matchesEmpty => 'Nog geen wedstrijden.';
 
   @override
-  String matchesFilterEmpty(String gameType) {
-    return 'Nog geen $gameType-wedstrijden.';
-  }
-
-  @override
   String get matchesCreateHintTabBar =>
       'Tik hieronder op Nieuwe wedstrijd om je eerste wedstrijd aan te maken.';
 

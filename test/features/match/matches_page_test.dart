@@ -2,22 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
+import 'package:keepscore2/core/widgets/list_header.dart';
 import 'package:keepscore2/features/auth/domain/auth_repository.dart';
 import 'package:keepscore2/features/auth/domain/auth_user.model.dart';
 import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
+import 'package:keepscore2/features/match/domain/game_type.enum.dart';
 import 'package:keepscore2/features/match/domain/match_entry.model.dart';
 import 'package:keepscore2/features/match/domain/match_repository.dart';
 import 'package:keepscore2/features/match/presentation/cubit/game_type_filter_cubit.dart';
 import 'package:keepscore2/features/match/presentation/cubit/match_list_cubit.dart';
 import 'package:keepscore2/features/match/presentation/widgets/day_header.dart';
+import 'package:keepscore2/features/match/presentation/widgets/game_type_filter_button.dart';
 import 'package:keepscore2/features/match/presentation/widgets/match_card.dart';
 import 'package:keepscore2/features/match/presentation/widgets/matches.page.dart';
 import 'package:keepscore2/features/player/domain/player_repository.dart';
 import 'package:keepscore2/features/player/presentation/cubit/players_cubit.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
@@ -56,7 +60,7 @@ MatchEntry _match(int day, int index) => MatchEntry(
   ],
 );
 
-Future<void> _pumpMatchesPage(WidgetTester tester) async {
+Future<GameTypeFilterCubit> _pumpMatchesPage(WidgetTester tester) async {
   final auth = MockAuthRepository();
   final competitions = MockCompetitionRepository();
   final players = MockPlayerRepository();
@@ -106,6 +110,8 @@ Future<void> _pumpMatchesPage(WidgetTester tester) async {
     ),
   );
   await tester.pumpAndSettle();
+
+  return gameTypeFilterCubit;
 }
 
 Future<void> _scrollTo(WidgetTester tester, double offset) async {
@@ -125,6 +131,8 @@ Finder _matchCard(String id) => find.byWidgetPredicate(
 );
 
 void main() {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+
   tearDown(() {
     AppPlatform.debugOverrideCupertino = null;
     AppPlatform.debugOverrideWideWeb = null;
@@ -170,6 +178,67 @@ void main() {
 
     expect(tester.getRect(_dayHeader(4)).top, pinnedTop);
   });
+
+  testWidgets('a filtered list is headed by the game type it is filtered to', (
+    tester,
+  ) async {
+    AppPlatform.debugOverrideCupertino = false;
+    final filter = await _pumpMatchesPage(tester);
+
+    expect(find.byType(ListHeader), findsNothing);
+
+    await filter.select(GameType.twoVTwo);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(
+        of: find.byType(ListHeader),
+        matching: find.text('2v2'),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('the filter button reads as active only while filtering', (
+    tester,
+  ) async {
+    AppPlatform.debugOverrideCupertino = false;
+    final filter = await _pumpMatchesPage(tester);
+
+    Finder barAction() => find.descendant(
+      of: find.byType(GameTypeFilterButton),
+      matching: find.byType(AdaptiveBarAction),
+    );
+
+    expect(tester.widget<AdaptiveBarAction>(barAction()).active, isFalse);
+
+    await filter.select(GameType.twoVTwo);
+    await tester.pumpAndSettle();
+
+    expect(tester.widget<AdaptiveBarAction>(barAction()).active, isTrue);
+  });
+
+  for (final useCupertino in [false, true]) {
+    testWidgets(
+      'the filter button carries no label of its own '
+      '(cupertino: $useCupertino)',
+      (tester) async {
+        AppPlatform.debugOverrideCupertino = useCupertino;
+        final filter = await _pumpMatchesPage(tester);
+        await filter.select(GameType.twoVTwo);
+        await tester.pumpAndSettle();
+
+        expect(find.byType(GameTypeFilterButton), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byType(GameTypeFilterButton),
+            matching: find.byType(Text),
+          ),
+          findsNothing,
+        );
+      },
+    );
+  }
 
   testWidgets('the list keeps to the centered content column on wide web', (
     tester,

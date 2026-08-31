@@ -433,11 +433,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get matchesEmpty => 'No matches yet.';
 
   @override
-  String matchesFilterEmpty(String gameType) {
-    return 'No $gameType matches yet.';
-  }
-
-  @override
   String get matchesCreateHintTabBar =>
       'Tap New match below to create your first one.';
 

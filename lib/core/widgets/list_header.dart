@@ -2,11 +2,11 @@ import 'package:flutter/widgets.dart';
 
 import '../theme/app_tokens.dart';
 
-class SeasonHeader extends StatelessWidget {
-  const SeasonHeader({super.key, required this.title, required this.subtitle});
+class ListHeader extends StatelessWidget {
+  const ListHeader({super.key, required this.title, this.subtitle});
 
   final String title;
-  final String subtitle;
+  final String? subtitle;
 
   @override
   Widget build(BuildContext context) {
@@ -15,8 +15,10 @@ class SeasonHeader extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(title, style: AppTypography.titleSmall),
-        const SizedBox(height: 2),
-        Text(subtitle, style: AppTypography.captionSmall),
+        if (subtitle case final subtitle?) ...[
+          const SizedBox(height: 2),
+          Text(subtitle, style: AppTypography.captionSmall),
+        ],
       ],
     );
   }

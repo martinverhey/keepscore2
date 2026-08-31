@@ -830,12 +830,6 @@ abstract class AppLocalizations {
   /// **'No matches yet.'**
   String get matchesEmpty;
 
-  /// No description provided for @matchesFilterEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'No {gameType} matches yet.'**
-  String matchesFilterEmpty(String gameType);
-
   /// No description provided for @matchesCreateHintTabBar.
   ///
   /// In en, this message translates to:

@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import 'adaptive_colors.dart';
 import 'adaptive_glyph.enum.dart';
 import 'app_platform.dart';
 
@@ -77,28 +78,39 @@ class AdaptiveIconButton extends StatelessWidget {
     required this.glyph,
     required this.onPressed,
     this.semanticLabel,
+    this.active = false,
   });
 
   final AdaptiveGlyph glyph;
   final VoidCallback? onPressed;
   final String? semanticLabel;
+  final bool active;
 
   @override
   Widget build(BuildContext context) {
     return AppPlatform.useCupertino
         ? Semantics(
             button: true,
+            selected: active,
             label: semanticLabel,
             child: CupertinoButton(
               padding: EdgeInsets.zero,
               onPressed: onPressed,
-              child: AdaptiveIcon(glyph),
+              child: _icon(context),
             ),
           )
         : IconButton(
             onPressed: onPressed,
             tooltip: semanticLabel,
-            icon: AdaptiveIcon(glyph),
+            isSelected: active,
+            icon: _icon(context),
           );
+  }
+
+  Widget _icon(BuildContext context) {
+    return AdaptiveIcon(
+      glyph,
+      color: active ? AdaptiveColors.accent(context) : null,
+    );
   }
 }
