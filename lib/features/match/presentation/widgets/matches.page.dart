@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context.extension.dart';
+import '../../../../core/extensions/date_time.extension.dart';
 import '../../../../core/extensions/game_type.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
@@ -36,10 +37,21 @@ class MatchesPage extends StatefulWidget {
 }
 
 class _MatchesPageState extends State<MatchesPage> {
+  final ValueNotifier<DateTime?> _currentDay = ValueNotifier(null);
+  final Map<DateTime, double> _dayStarts = {};
+  List<DateTime> _days = const [];
+  double _scrollOffset = 0;
+
   @override
   void initState() {
     super.initState();
     context.read<MatchListCubit>().load();
+  }
+
+  @override
+  void dispose() {
+    _currentDay.dispose();
+    super.dispose();
   }
 
   Future<void> _refresh() => Future.wait([
@@ -68,30 +80,90 @@ class _MatchesPageState extends State<MatchesPage> {
           : '${competition.name} · ${context.l10n.matchesTitle}',
     );
 
-    return AdaptiveScaffold(
-      title: context.l10n.matchesTitle,
-      onRefresh: _refresh,
-      trailing: _trailing(context, competitionId),
-      slivers: [
-        SliverPadding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.md,
-            AppSpacing.sm,
-            AppSpacing.md,
-            AppSpacing.xl,
-          ),
-          sliver: BlocBuilder<MatchListCubit, MatchListState>(
-            builder: (context, state) => _body(
-              context,
-              state,
-              competitionId: competitionId,
-              isRegistered: isRegistered,
-              hasPlayers: hasPlayers,
-              myPlayerId: myPlayerId,
+    return NotificationListener<ScrollNotification>(
+      onNotification: _trackDay,
+      child: AdaptiveScaffold(
+        title: context.l10n.matchesTitle,
+        subtitle: _daySubtitle(),
+        onRefresh: _refresh,
+        trailing: _trailing(context, competitionId),
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              AppSpacing.sm,
+              AppSpacing.md,
+              AppSpacing.xl,
+            ),
+            sliver: BlocBuilder<MatchListCubit, MatchListState>(
+              builder: (context, state) => _body(
+                context,
+                state,
+                competitionId: competitionId,
+                isRegistered: isRegistered,
+                hasPlayers: hasPlayers,
+                myPlayerId: myPlayerId,
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
+    );
+  }
+
+  bool _trackDay(ScrollNotification notification) {
+    if (notification.depth > 0) return false;
+    _scrollOffset = notification.metrics.pixels;
+    _resolveDay();
+    return false;
+  }
+
+  void _rememberDays(List<DateTime> days) {
+    _days = days;
+    _scheduleDayResolve();
+  }
+
+  void _scheduleDayResolve() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _resolveDay();
+    });
+  }
+
+  void _resolveDay() {
+    if (_days.isEmpty) {
+      _currentDay.value = null;
+      return;
+    }
+
+    final threshold =
+        _scrollOffset +
+        MediaQuery.paddingOf(context).top +
+        AdaptiveTopBar.insetFor(hasSubtitle: true);
+
+    var topmost = _days.first;
+    for (final day in _days) {
+      final start = _dayStarts[day];
+      if (start == null || start > threshold) break;
+      topmost = day;
+    }
+    _currentDay.value = topmost;
+  }
+
+  Widget _daySubtitle() {
+    return ValueListenableBuilder<DateTime?>(
+      valueListenable: _currentDay,
+      builder: (context, day, _) => AnimatedSwitcher(
+        duration: const Duration(milliseconds: 200),
+        child: day == null
+            ? const SizedBox.shrink()
+            : Text(
+                day.matchDayLabel(context),
+                key: ValueKey(day),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTypography.captionStrong,
+              ),
+      ),
     );
   }
 
@@ -208,14 +280,18 @@ class _MatchesPageState extends State<MatchesPage> {
     if (state.busy) return _loader();
 
     if (state.matches.isEmpty) {
+      _rememberDays(const []);
       return SliverToBoxAdapter(
         child: _emptyState(context, isRegistered: isRegistered),
       );
     }
 
+    final groups = groupByDay(state.matches);
+    _rememberDays([for (final group in groups) group.day]);
+
     return SliverMainAxisGroup(
       slivers: [
-        for (final group in groupByDay(state.matches))
+        for (final group in groups)
           _daySliver(
             context,
             group,
@@ -234,7 +310,7 @@ class _MatchesPageState extends State<MatchesPage> {
   }) {
     return SliverMainAxisGroup(
       slivers: [
-        PinnedHeaderSliver(child: DayHeader(day: group.day)),
+        ..._dayHeaderSlivers(context, group.day),
         SliverList.list(
           children: [
             for (final match in group.matches)
@@ -247,6 +323,26 @@ class _MatchesPageState extends State<MatchesPage> {
           ],
         ),
       ],
+    );
+  }
+
+  List<Widget> _dayHeaderSlivers(BuildContext context, DateTime day) {
+    if (!AdaptiveGlass.isEnabled(context)) {
+      return [PinnedHeaderSliver(child: DayHeader(day: day))];
+    }
+
+    return [
+      _dayStartMarker(day),
+      SliverToBoxAdapter(child: DayHeader(day: day)),
+    ];
+  }
+
+  Widget _dayStartMarker(DateTime day) {
+    return SliverLayoutBuilder(
+      builder: (context, constraints) {
+        _dayStarts[day] = constraints.precedingScrollExtent;
+        return const SliverToBoxAdapter(child: SizedBox.shrink());
+      },
     );
   }
 

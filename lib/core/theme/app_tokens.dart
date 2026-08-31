@@ -94,6 +94,7 @@ abstract final class AppGlass {
   static const double barCornerRadius = barHeight / 2;
   static const double barIconSize = 24;
   static const double topBarHeight = 52;
+  static const double topBarSubtitleHeight = 64;
   static const double barActionSize = 60;
   static const double rimIntensity = 0.25;
   static const double rimIntensityOnDark = 0.1;
@@ -188,6 +189,9 @@ abstract final class AppTypography {
   static const TextStyle caption = TextStyle(
     fontSize: labelLargeSize,
     color: AppColors.neutral,
+  );
+  static final TextStyle captionStrong = caption.copyWith(
+    fontWeight: FontWeight.w700,
   );
   static const TextStyle captionSmall = TextStyle(
     fontSize: captionSmallSize,

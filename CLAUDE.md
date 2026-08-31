@@ -564,8 +564,10 @@ code; don't relitigate them.
   never a raw `TextStyle(fontSize: N, ...)` literal.** It's a fixed scale —
   `displayLarge`/`headlineLarge`/`headlineMedium`/`titleLarge`/`titleMedium`/
   `titleSmall`/`bodyLarge`/`bodyMedium`/`bodySmall`/`labelLarge`/`eyebrow`,
-  plus three colour-baked muted variants (`caption`/`captionSmall`/
-  `labelTiny`, all `AppColors.neutral`) for the "secondary text" role that
+  plus four colour-baked muted variants (`caption`/`captionStrong`/
+  `captionSmall`/`labelTiny`, all `AppColors.neutral`; `captionStrong` is
+  `caption` at `w700`, shared by Matches' `DayHeader` and the top bar's day
+  subtitle so the two always read as the same label) for the "secondary text" role that
   showed up identically in a dozen files before this existed. Each carries
   its own weight (`titleSmall` is bold, `bodyLarge` is semibold, etc.) since
   that pairing was already consistent across the app wherever a given size
@@ -1094,6 +1096,65 @@ legible as content passes beneath it (the same `Positioned.fill` +
 The band is the only thing standing between the title and the list; do not
 remove it while the title is bare.
 
+**The bar carries a `subtitle`, and on Matches that subtitle is the day you
+are looking at.** `AdaptiveScaffold.subtitle` is a `Widget?` threaded to
+`AdaptiveTopBar` and read **only** by `_cupertinoGlass` — the
+`CupertinoSliverNavigationBar`, `SliverAppBar.large` and wide-web
+`SliverAppBar` branches ignore it entirely, so this is an iOS-glass-only
+affordance and every other platform is byte-identical to what it was. That is
+deliberate: iOS under Increase Contrast falls back to the nav bar, so the day
+has to stay in the list as well (see below) or that user loses it, and
+`MatchCard` itself shows no date at all.
+
+The bar grows for it rather than squeezing: `AppGlass.topBarSubtitleHeight`
+(64) against `topBarHeight` (52), resolved by
+`AdaptiveTopBar.barHeightFor`/`insetFor(hasSubtitle:)`, which is why `inset`
+is no longer the only spelling of that number — `AdaptiveScaffold`'s pinned
+spacer asks `insetFor` too, so the reserved room and the bar agree. 52 was
+not enough by measurement, not by guess: Permanent Marker's own metrics
+(`asc 1136`, `desc -325`, `gap 31` over a 1024 em) put the 24px brand title's
+line box at **35.0px**, leaving ~14px for a 12px caption — it fit at text
+scale 1.0 and overflowed the moment Dynamic Type touched it. 64 tolerates
+about 1.28× before the two lines collide.
+
+**Matches keeps its day headers on glass; they just stop pinning.**
+`_dayHeaderSlivers` returns a `PinnedHeaderSliver` off glass (unchanged) and a
+plain `SliverToBoxAdapter` on it — a pinned header directly under the floating
+band guillotined whatever card was passing behind it, and with the day now
+named in the bar there is nothing left for it to pin *for*. Note this makes
+the pinned spacer sliver's original justification obsolete (nothing stacks
+under it on Matches any more) but **not** the spacer itself: it still has to
+be a `PinnedHeaderSliver` so `CupertinoSliverRefreshControl`, which follows
+it, lands below the bar rather than under it.
+
+**Which day is under the bar comes from the sliver protocol, not from
+probing render boxes.** Each day group is preceded by a zero-extent
+`SliverLayoutBuilder` marker that records `constraints.precedingScrollExtent`
+into `_dayStarts` — the group's absolute start offset, stable regardless of
+scroll position, and correct through both `SliverPadding` and
+`SliverMainAxisGroup` since each adds its own leading extent to what it
+passes down. A `NotificationListener<ScrollNotification>` around the scaffold
+then picks the last group whose start is at or above
+`pixels + padding.top + insetFor(hasSubtitle: true)`, and writes it to a
+`ValueNotifier<DateTime?>` that only the subtitle's `ValueListenableBuilder`
+listens to, so a day change repaints the caption and nothing else.
+Three things this shape is deliberately avoiding:
+- **`GlobalKey`s per group with `localToGlobal` on every scroll do not
+  work here.** The group you want is usually the one that has just scrolled
+  *off* the top, and a lazy `SliverList`'s box children are collected once
+  they leave the cache extent — so it reports correctly for about 250px and
+  then silently names the wrong day. Marker *slivers* have no such problem:
+  every sliver in a viewport is laid out each frame, however far off-screen,
+  because the viewport needs its extent to place the next one.
+- **Recomputing `groupByDay` inside the scroll handler**, which would rebuild
+  the whole grouping on every scroll frame. The day list is memoized by
+  `_rememberDays` where the groups are already being computed for the build.
+- **Resolving from `MatchesPage.build`.** The list arrives through an inner
+  `BlocBuilder`, which rebuilds *without* rebuilding the page — a post-frame
+  hook registered in `build` therefore fires once, on the loading state, and
+  never again. `_rememberDays` is called from `_matchesSection`, the one place
+  that actually knows the content changed.
+
 **`AdaptiveBarAction` is the small sibling of `AdaptiveFloatingAction`**, and
 the two together are the whole glass-control vocabulary: an untinted
 `LiquidGlassTabBarAction` carrying `AdaptiveColors.glassGlyph`, at
@@ -1550,7 +1611,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 299 tests at time of writing
+flutter test                    # 302 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 python3 scripts/generate_icon.py   # redraw assets/icon/*.png

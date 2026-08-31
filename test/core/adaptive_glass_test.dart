@@ -516,6 +516,29 @@ void main() {
       );
     });
 
+    testWidgets('gives a subtitle its own line and reserves the room', (
+      tester,
+    ) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+      await pumpGlass(tester, _scaffold());
+      final bareBody = tester.getRect(find.byKey(const Key('body'))).top;
+
+      await pumpGlass(tester, _scaffold(subtitle: const Text('Saturday')));
+
+      expect(
+        find.descendant(
+          of: find.byType(AdaptiveTopBar),
+          matching: find.text('Saturday'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        tester.getRect(find.byKey(const Key('body'))).top,
+        greaterThan(bareBody),
+      );
+    });
+
     testWidgets('keeps the title off the glass', (tester) async {
       AppPlatform.debugOverrideCupertino = true;
       AppPlatform.debugOverrideLiquidGlass = true;
@@ -740,10 +763,12 @@ Widget _scaffold({
   bool withFloatingAction = false,
   VoidCallback? onBodyTap,
   VoidCallback? onTrailingTap,
+  Widget? subtitle,
 }) {
   return _host(
     child: AdaptiveScaffold(
       title: 'Leaderboard',
+      subtitle: subtitle,
       trailing: onTrailingTap == null
           ? null
           : AdaptiveBarAction(

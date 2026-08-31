@@ -20,10 +20,7 @@ class DayHeader extends StatelessWidget {
         ),
         child: Text(
           day.matchDayLabel(context),
-          style: AppTypography.labelLarge.copyWith(
-            fontWeight: FontWeight.w700,
-            color: AppColors.neutral,
-          ),
+          style: AppTypography.captionStrong,
         ),
       ),
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/intl.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 import 'package:keepscore2/core/widgets/list_header.dart';
 import 'package:keepscore2/features/auth/domain/auth_repository.dart';
@@ -126,6 +127,11 @@ Finder _dayHeader(int day) => find.byWidgetPredicate(
   (widget) => widget is DayHeader && widget.day == DateTime(2026, 8, day),
 );
 
+Finder _barDay(int day) => find.descendant(
+  of: find.byType(AdaptiveTopBar),
+  matching: find.text(DateFormat.MMMMEEEEd('en').format(DateTime(2026, 8, day))),
+);
+
 Finder _matchCard(String id) => find.byWidgetPredicate(
   (widget) => widget is MatchCard && widget.match.id == id,
 );
@@ -136,6 +142,7 @@ void main() {
   tearDown(() {
     AppPlatform.debugOverrideCupertino = null;
     AppPlatform.debugOverrideWideWeb = null;
+    AppPlatform.debugOverrideLiquidGlass = null;
   });
 
   for (final useCupertino in [false, true]) {
@@ -177,6 +184,37 @@ void main() {
     await _scrollTo(tester, 600);
 
     expect(tester.getRect(_dayHeader(4)).top, pinnedTop);
+  });
+
+  testWidgets('the day headers scroll away under the glass bar', (tester) async {
+    AppPlatform.debugOverrideCupertino = true;
+    AppPlatform.debugOverrideLiquidGlass = true;
+    await _pumpMatchesPage(tester);
+
+    final headerBefore = tester.getRect(_dayHeader(5));
+    final cardBefore = tester.getRect(_matchCard('m5-2'));
+
+    await _scrollTo(tester, 150);
+
+    expect(
+      headerBefore.top - tester.getRect(_dayHeader(5)).top,
+      cardBefore.top - tester.getRect(_matchCard('m5-2')).top,
+    );
+  });
+
+  testWidgets('the glass bar names the day at the top of the list', (
+    tester,
+  ) async {
+    AppPlatform.debugOverrideCupertino = true;
+    AppPlatform.debugOverrideLiquidGlass = true;
+    await _pumpMatchesPage(tester);
+
+    expect(_barDay(5), findsOneWidget);
+
+    await _scrollTo(tester, 400);
+
+    expect(_barDay(4), findsOneWidget);
+    expect(_barDay(5), findsNothing);
   });
 
   testWidgets('a filtered list is headed by the game type it is filtered to', (

@@ -18,6 +18,7 @@ class AdaptiveScaffold extends StatelessWidget {
   const AdaptiveScaffold({
     super.key,
     this.title,
+    this.subtitle,
     this.body,
     this.slivers,
     this.trailing,
@@ -32,6 +33,7 @@ class AdaptiveScaffold extends StatelessWidget {
        );
 
   final String? title;
+  final Widget? subtitle;
   final Widget? body;
   final List<Widget>? slivers;
   final Widget? trailing;
@@ -93,6 +95,7 @@ class AdaptiveScaffold extends StatelessWidget {
             right: 0,
             child: AdaptiveTopBar(
               title: title!,
+              subtitle: subtitle,
               leading: _glassLeading(context, suppressBack),
               trailing: trailing,
             ),
@@ -110,7 +113,9 @@ class AdaptiveScaffold extends StatelessWidget {
       slivers: [
         PinnedHeaderSliver(
           child: SizedBox(
-            height: MediaQuery.paddingOf(context).top + AdaptiveTopBar.inset,
+            height:
+                MediaQuery.paddingOf(context).top +
+                AdaptiveTopBar.insetFor(hasSubtitle: subtitle != null),
           ),
         ),
         if (onRefresh != null)
