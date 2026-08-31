@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/box_constraints.extension.dart';
 import '../../../../core/extensions/build_context.extension.dart';
+import '../../../../core/extensions/season.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/page_title.dart';
@@ -12,7 +13,7 @@ import '../../../competition/domain/competition.model.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
 import '../../../leaderboard/domain/leaderboard.model.dart';
 import '../../../leaderboard/presentation/widgets/leaderboard_row.dart';
-import '../../../leaderboard/presentation/widgets/season_dropdown.dart';
+import '../../../leaderboard/presentation/widgets/season_filter_button.dart';
 import '../cubit/history_cubit.dart';
 
 class HistoryPage extends StatefulWidget {
@@ -43,6 +44,7 @@ class _HistoryPageState extends State<HistoryPage> {
         return AdaptiveScaffold(
           title: context.l10n.historyTitle,
           hasScrollBody: true,
+          trailing: _seasonFilter(state, cubit, seasonLength),
           body: switch (state) {
             HistoryLoading() => const AdaptiveLoader(),
             HistoryFailed(:final failure) => ErrorRetry(
@@ -65,6 +67,23 @@ class _HistoryPageState extends State<HistoryPage> {
     );
   }
 
+  Widget? _seasonFilter(
+    HistoryState state,
+    HistoryCubit cubit,
+    SeasonLength? seasonLength,
+  ) {
+    if (state is! HistoryReady || seasonLength == null) return null;
+    if (state.selectedSeason case final season?) {
+      return SeasonFilterButton(
+        seasons: state.seasons,
+        selected: season,
+        seasonLength: seasonLength,
+        onSelected: cubit.selectSeason,
+      );
+    }
+    return null;
+  }
+
   Widget _ready(
     BuildContext context,
     HistoryReady state,
@@ -79,16 +98,14 @@ class _HistoryPageState extends State<HistoryPage> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (state.selectedSeason != null)
+            if (state.selectedSeason case final season?)
               Padding(
                 padding: EdgeInsets.fromLTRB(inset, AppSpacing.md, inset, 0),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: SeasonDropdown(
-                    seasons: state.seasons,
-                    selected: state.selectedSeason!,
-                    seasonLength: seasonLength,
-                    onSelected: cubit.selectSeason,
+                child: Text(
+                  season.label(context, seasonLength),
+                  style: AppTypography.labelLarge.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.neutral,
                   ),
                 ),
               ),

@@ -13,7 +13,7 @@ import 'package:keepscore2/features/leaderboard/domain/medal.enum.dart';
 import 'package:keepscore2/features/leaderboard/domain/season.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/season_leaderboard.model.dart';
 import 'package:keepscore2/features/leaderboard/presentation/widgets/leaderboard_row.dart';
-import 'package:keepscore2/features/leaderboard/presentation/widgets/season_dropdown.dart';
+import 'package:keepscore2/features/leaderboard/presentation/widgets/season_filter_button.dart';
 import 'package:keepscore2/features/settings/presentation/cubit/history_cubit.dart';
 import 'package:keepscore2/features/settings/presentation/pages/history.page.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
@@ -162,7 +162,7 @@ void main() {
 
       expect(find.text(l10n.historyTitle), findsWidgets);
       expect(find.text(l10n.leaderboardPickSeason), findsNothing);
-      expect(find.byType(SeasonDropdown), findsOneWidget);
+      expect(find.byType(SeasonFilterButton), findsOneWidget);
       expect(find.text('July 2026'), findsOneWidget);
 
       expect(find.byType(LeaderboardRow), findsOneWidget);
@@ -179,7 +179,7 @@ void main() {
         findsOneWidget,
       );
 
-      await tester.tap(find.byType(SeasonDropdown));
+      await tester.tap(find.byType(SeasonFilterButton));
       await tester.pumpAndSettle();
 
       expect(find.text(l10n.leaderboardPickSeason), findsOneWidget);

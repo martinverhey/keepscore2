@@ -75,10 +75,12 @@ routes, not tabs" for why. The leaderboard tab always shows the
 current calendar window — which has no row until the first match lands in it.
 It has no season picker: that moved to
 `/competition/:id/settings/history` (`HistoryPage`), which shows one
-finished season at a time — `SeasonSheet` picks among `HistoryState.seasons`
-(the lean, already-loaded season list — id/starts_at/ends_at only, no
-leaderboards — so the picker itself needs no separate fetch), and selecting one
-fetches just that season's leaderboard. Neither tab filters by game type —
+finished season at a time — `SeasonFilterButton` in the app bar's `trailing`
+slot opens `SeasonSheet`, which picks among `HistoryState.seasons` (the lean,
+already-loaded season list — id/starts_at/ends_at only, no leaderboards — so
+the picker itself needs no separate fetch), selecting one fetches just that
+season's leaderboard, and the chosen season's name is plain text above the
+list, not part of the control. Neither tab filters by game type —
 that's Matches-only, see below.
 
 Logging a match, inspecting one, and joining a competition are all sheets, not
@@ -1100,11 +1102,24 @@ same black/white glyph. Off glass it is exactly the `AdaptiveIconButton` those
 call sites used before, which is what a bar button already is on every other
 platform; that is how it satisfies the "a glass action is a FAB everywhere
 else" pairing rule without inventing an Android affordance.
-**`GameTypeFilterDropdown` collapses to a bare filter glyph on glass** and
-keeps its labelled `PillDropdown` everywhere else — so on iOS the *current*
-filter is no longer visible in the bar, only reachable through the sheet.
-That is the accepted cost of the icon-only shape; if it needs to show state,
-mark the button, do not bring the label back into the bar.
+**A page filter is an `AdaptiveBarAction` carrying `AdaptiveGlyph.filter` in
+the scaffold's `trailing` slot, opening a sheet — that is the default shape
+now, and both existing filters follow it.** What differs is only where the
+*active* value is shown, and that follows from whether the page has room for
+it:
+
+- **History** shows the chosen season as plain text above the list, so
+  `SeasonFilterButton` is icon-only on **every** platform — it is literally
+  just an `AdaptiveBarAction`, with no labelled variant at all. It used to be
+  a `PillDropdown` labelled with the season name; that label is the text
+  heading now, which is why moving it did not cost any information. (It was
+  renamed from `SeasonDropdown` when it stopped being one.)
+- **Matches** has nowhere to put such a heading, so `GameTypeFilterDropdown`
+  collapses to the bare glyph on glass and keeps its labelled `PillDropdown`
+  everywhere else. On iOS the current game type is therefore only reachable
+  through the sheet — the accepted cost of the icon-only shape. If it ever
+  needs to show state, mark the button or add a heading; do not put the label
+  back in the bar.
 
 **The spacer sliver that makes room for the band is `PinnedHeaderSliver`, not
 a plain `SliverToBoxAdapter`, and it has to be both things at once.** A
@@ -1376,9 +1391,10 @@ Kept here because the code cannot express them and they cost real debugging:
   expanded app bar at once**, so a widget test finding a page's plain title
   text legitimately gets two matches (`findsWidgets`, not `findsOneWidget`) —
   `history_page_test.dart`'s season-picker test is the one that depends on
-  this: the dropdown that replaces the title in the picked state is the thing
-  actually asserted `findsOneWidget`, the plain title text is deliberately
-  `findsWidgets`.
+  this: `historyTitle` is deliberately asserted `findsWidgets`, while the
+  season label — body text, mounted once — stays `findsOneWidget`. An app bar
+  *action* is mounted once too, so a `trailing` widget is safe to assert
+  exactly.
 - **The current calendar season has no `seasons` row until its first match is
   created** (`season_window()` returns `season_id = null`), so the `leaderboard`
   view — inner-joined from `seasons` — cannot be queried for it. Before a
