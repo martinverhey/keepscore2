@@ -164,6 +164,7 @@ void main() {
       expect(find.text(l10n.leaderboardPickSeason), findsNothing);
       expect(find.byType(SeasonFilterButton), findsOneWidget);
       expect(find.text('July 2026'), findsOneWidget);
+      expect(find.text('Jul 1 – Jul 31, 2026'), findsOneWidget);
 
       expect(find.byType(LeaderboardRow), findsOneWidget);
       expect(find.text('Bram'), findsOneWidget);
@@ -189,6 +190,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('July 2026'), findsNothing);
+      expect(find.text('Jun 1 – Jun 30, 2026'), findsOneWidget);
       expect(find.byType(LeaderboardRow), findsNWidgets(2));
       expect(find.text('Ada'), findsOneWidget);
       expect(find.text('Bram'), findsOneWidget);

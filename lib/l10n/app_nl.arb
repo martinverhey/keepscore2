@@ -140,6 +140,10 @@
   "@leaderboardSeasonEnds": {
     "placeholders": { "date": { "type": "String" } }
   },
+  "seasonRange": "{start} – {end}",
+  "@seasonRange": {
+    "placeholders": { "start": { "type": "String" }, "end": { "type": "String" } }
+  },
   "leaderboardPickSeason": "Kies een seizoen",
   "leaderboardTodayGain": "Vandaag {amount} punten gewonnen",
   "@leaderboardTodayGain": {

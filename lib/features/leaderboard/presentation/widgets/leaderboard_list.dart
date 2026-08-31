@@ -7,6 +7,7 @@ import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/extensions/season.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
+import '../../../../core/widgets/season_header.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../competition/domain/competition.model.dart';
 import '../../domain/season.model.dart';
@@ -109,22 +110,11 @@ class LeaderboardList extends StatelessWidget {
   }
 
   Widget _seasonBar(BuildContext context, Season season) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          season.label(context, seasonLength),
-          style: AppTypography.titleSmall,
-        ),
-        const SizedBox(height: 2),
-        Text(
-          context.l10n.leaderboardSeasonEnds(
-            DateFormat.MMMd(context.languageTag).format(season.endsAt),
-          ),
-          style: AppTypography.captionSmall,
-        ),
-      ],
+    return SeasonHeader(
+      title: season.label(context, seasonLength),
+      subtitle: context.l10n.leaderboardSeasonEnds(
+        DateFormat.MMMd(context.languageTag).format(season.endsAt),
+      ),
     );
   }
 }

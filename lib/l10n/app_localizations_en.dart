@@ -378,6 +378,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String seasonRange(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
   String get leaderboardPickSeason => 'Choose a season';
 
   @override

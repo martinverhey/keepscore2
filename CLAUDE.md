@@ -79,8 +79,11 @@ finished season at a time — `SeasonFilterButton` in the app bar's `trailing`
 slot opens `SeasonSheet`, which picks among `HistoryState.seasons` (the lean,
 already-loaded season list — id/starts_at/ends_at only, no leaderboards — so
 the picker itself needs no separate fetch), selecting one fetches just that
-season's leaderboard, and the chosen season's name is plain text above the
-list, not part of the control. Neither tab filters by game type —
+season's leaderboard, and the chosen season heads the list as a `SeasonHeader`
+— the same title-plus-subtitle block `LeaderboardList._seasonBar` uses, so
+both pages name their season identically; only the subtitle differs
+(`Ends <date>` for the running season, the finished season's date range in
+History). Neither tab filters by game type —
 that's Matches-only, see below.
 
 Logging a match, inspecting one, and joining a competition are all sheets, not
@@ -1108,12 +1111,13 @@ now, and both existing filters follow it.** What differs is only where the
 *active* value is shown, and that follows from whether the page has room for
 it:
 
-- **History** shows the chosen season as plain text above the list, so
-  `SeasonFilterButton` is icon-only on **every** platform — it is literally
-  just an `AdaptiveBarAction`, with no labelled variant at all. It used to be
-  a `PillDropdown` labelled with the season name; that label is the text
-  heading now, which is why moving it did not cost any information. (It was
-  renamed from `SeasonDropdown` when it stopped being one.)
+- **History** shows the chosen season as plain `AppTypography.sectionHeader`
+  text above the list, so `SeasonFilterButton` is icon-only on **every**
+  platform — it is literally just an `AdaptiveBarAction`, with no labelled
+  variant at all. It used to be a `PillDropdown` labelled with the season
+  name; that label is the text heading now, which is why moving it did not
+  cost any information. (It was renamed from `SeasonDropdown` when it stopped
+  being one.)
 - **Matches** has nowhere to put such a heading, so `GameTypeFilterDropdown`
   collapses to the bare glyph on glass and keeps its labelled `PillDropdown`
   everywhere else. On iOS the current game type is therefore only reachable
@@ -1381,6 +1385,18 @@ Kept here because the code cannot express them and they cost real debugging:
 - **Derive a season's label from `Season.midpoint`, never from `startsAt`.**
   The boundaries are midnight in the *competition's* timezone, so on a device
   further west "August" starts on 31 July and a naive label is off by a month.
+  `SeasonRangeLabel.rangeLabel` (History's subtitle) has the same problem at
+  both ends and solves it the same way: it formats `startsAt + 12h` and
+  `endsAt - 12h`, never the boundaries themselves. Two separate things are
+  going on there. `seasons.ends_at` is **exclusive** — `functions.sql` sets it
+  to `v_start_local + v_step`, i.e. the next period's midnight — so a raw
+  format reads "Jul 1 – Aug 1" for July; and the device's own offset can drag
+  either boundary onto the neighbouring calendar day. Nudging half a day
+  inward fixes both at once, and `history_page_test.dart` pins the result
+  (`Jul 1 – Jul 31, 2026`) off UTC fixtures that are Amsterdam midnights, so
+  it would fail if either correction were dropped. The Leaderboard's own
+  `Ends {date}` / `Loopt tot {date}` is deliberately *not* nudged: that string
+  is phrased for the exclusive boundary.
 - **`AppTheme` uses `DynamicSchemeVariant.fidelity`** so the generated primary
   stays on the seed colour. The default variant pulls the saturated orange most
   of the way to brown.

@@ -8,6 +8,7 @@ import '../../../../core/extensions/season.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/page_title.dart';
+import '../../../../core/widgets/season_header.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../competition/domain/competition.model.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
@@ -101,12 +102,9 @@ class _HistoryPageState extends State<HistoryPage> {
             if (state.selectedSeason case final season?)
               Padding(
                 padding: EdgeInsets.fromLTRB(inset, AppSpacing.md, inset, 0),
-                child: Text(
-                  season.label(context, seasonLength),
-                  style: AppTypography.labelLarge.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.neutral,
-                  ),
+                child: SeasonHeader(
+                  title: season.label(context, seasonLength),
+                  subtitle: season.rangeLabel(context),
                 ),
               ),
             Expanded(

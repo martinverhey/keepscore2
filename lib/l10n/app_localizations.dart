@@ -740,6 +740,12 @@ abstract class AppLocalizations {
   /// **'Ends {date}'**
   String leaderboardSeasonEnds(String date);
 
+  /// No description provided for @seasonRange.
+  ///
+  /// In en, this message translates to:
+  /// **'{start} – {end}'**
+  String seasonRange(String start, String end);
+
   /// No description provided for @leaderboardPickSeason.
   ///
   /// In en, this message translates to:
