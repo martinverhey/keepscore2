@@ -5,10 +5,12 @@ description: Cut a new KeepScore2 version — reconcile pubspec.yaml against the
 
 # Bumping the version
 
-The version lives in exactly two places and they must agree:
+The version lives in exactly three places and they must agree:
 
 - `pubspec.yaml`'s `version:` line — bare `X.Y.Z`, no `+build` suffix.
 - an annotated git tag `vX.Y.Z` on the commit that set it.
+- the top heading of `CHANGELOG.md` — `## vX.Y.Z — YYYY-MM-DD`, newest
+  first, listing what that version changed.
 
 **Pushing the tag is the release.** Both `.github/workflows/beta-*.yml` fire on
 `v*.*.*` and upload to TestFlight and Play internal testing. There is no
@@ -27,7 +29,12 @@ git rev-parse --abbrev-ref HEAD
 sed -n 's/^version:[[:space:]]*//p' pubspec.yaml | head -1
 git tag -l 'v*' --sort=-v:refname | head -3
 git ls-remote --tags origin 'v*' | tail -3
+sed -n 's/^## \(v[0-9].*\)/\1/p' CHANGELOG.md | head -1
 ```
+
+A tag that exists locally but not on `origin` never shipped. Say so before
+bumping: `git push --follow-tags` will carry it along and run its workflows
+against that older commit, which is a second build the user may not want.
 
 Stop and say so if the tree is dirty or HEAD is not `main` — this repo commits
 straight to `main`, so a release is always cut from a clean `main`.
@@ -49,9 +56,14 @@ ask before doing it — do not fold the correction into the bump.
   user meant — tag the current commit at the pubspec version, or roll pubspec
   back to the tag and treat the bump as the release about to be cut.
 
+`CHANGELOG.md` is reconciled the same way: if its top heading is behind the
+latest tag, that version shipped without notes. Write them from
+`git log --oneline --no-merges <previous tag>..<latest tag>` and commit that
+alone, before the bump.
+
 Then continue from the reconciled version.
 
-## 3. Ask for the bump, apply it, commit, tag
+## 3. Ask for the bump, apply it, write the notes, commit, tag
 
 Ask with `AskUserQuestion`, and put the resulting number in each option label
 so the choice is concrete — `Patch → 0.1.3`, `Minor → 0.2.0`,
@@ -71,8 +83,32 @@ else:
     raise SystemExit("no version: line in pubspec.yaml")
 path.write_text("".join(lines))
 PY
+```
 
-git add pubspec.yaml
+Then write the entry at the top of `CHANGELOG.md`, above the previous
+version:
+
+```bash
+git log --oneline --no-merges "v$PREVIOUS..HEAD"
+```
+
+Group what that turns up under `### Added` / `### Changed` / `### Fixed` —
+`feat` is Added, `fix` is Fixed, `refactor`/`style`/`perf` are Changed when a
+user could notice and dropped when they could not. `chore`, `docs`, `test` and
+`ci` stay out entirely.
+
+**One short line per bullet, no trailing explanation.** Name what the user gets
+or what was broken and stop — "Profile tabs scrolled away with the tab body",
+not "the profile sheet's tabs now stay pinned because they moved into the
+header slot". The reason lives in the commit; the changelog is scanned, not
+read. A version with nothing a user can see still gets a heading, with one line
+saying so.
+
+The notes go in the release commit, so the tag points at the version, its
+pubspec and its notes together:
+
+```bash
+git add pubspec.yaml CHANGELOG.md
 git commit -m "chore(release): v$NEXT"
 git tag -a "v$NEXT" -m "v$NEXT"
 ```
