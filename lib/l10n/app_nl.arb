@@ -302,5 +302,7 @@
   "settingsLanguageTitle": "Taal",
   "languageOptionSystem": "Systeem",
   "languageOptionEnglish": "English",
-  "languageOptionDutch": "Nederlands"
+  "languageOptionDutch": "Nederlands",
+
+  "settingsVersionLabel": "Versie {version}"
 }

@@ -744,4 +744,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get languageOptionDutch => 'Nederlands';
+
+  @override
+  String settingsVersionLabel(String version) {
+    return 'Version $version';
+  }
 }

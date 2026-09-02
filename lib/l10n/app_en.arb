@@ -302,5 +302,10 @@
   "settingsLanguageTitle": "Language",
   "languageOptionSystem": "System",
   "languageOptionEnglish": "English",
-  "languageOptionDutch": "Nederlands"
+  "languageOptionDutch": "Nederlands",
+
+  "settingsVersionLabel": "Version {version}",
+  "@settingsVersionLabel": {
+    "placeholders": { "version": { "type": "String" } }
+  }
 }

@@ -1375,6 +1375,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Nederlands'**
   String get languageOptionDutch;
+
+  /// No description provided for @settingsVersionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version}'**
+  String settingsVersionLabel(String version);
 }
 
 class _AppLocalizationsDelegate

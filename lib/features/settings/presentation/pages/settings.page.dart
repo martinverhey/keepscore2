@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/app_router.dart';
+import '../../../../core/config/app_version.dart';
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/extensions/competition.extension.dart';
@@ -114,7 +115,8 @@ class _SettingsPageState extends State<SettingsPage> {
             label: context.l10n.settingsLanguageTitle,
             onTap: () => context.push(Routes.language),
           ),
-          const SizedBox(height: AppSpacing.xl),
+          _version(context),
+          const SizedBox(height: AppSpacing.sm),
           AdaptiveButton(
             label: context.l10n.authSignOut,
             kind: AdaptiveButtonKind.plain,
@@ -136,6 +138,17 @@ class _SettingsPageState extends State<SettingsPage> {
           onChanged: (_) => context.read<ThemeCubit>().toggle(),
         ),
       ),
+    );
+  }
+
+  Widget _version(BuildContext context) {
+    final label = AppVersion.label;
+    if (label == null) return const SizedBox.shrink();
+
+    return Text(
+      context.l10n.settingsVersionLabel(label),
+      textAlign: TextAlign.center,
+      style: AppTypography.captionSmall,
     );
   }
 

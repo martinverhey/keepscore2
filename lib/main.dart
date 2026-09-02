@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app/app.dart';
 import 'app/dependency_injection/injector.dart';
+import 'core/config/app_version.dart';
 import 'core/config/env.dart';
 import 'core/widgets/adaptive/adaptive_glass.dart';
 import 'features/match/presentation/cubit/game_type_filter_cubit.dart';
@@ -15,6 +16,7 @@ Future<void> main() async {
   usePathUrlStrategy();
 
   await Env.load();
+  await AppVersion.load();
   await Supabase.initialize(
     url: Env.supabaseUrl,
     publishableKey: Env.supabasePublishableKey,
