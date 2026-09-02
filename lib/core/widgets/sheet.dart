@@ -1,7 +1,6 @@
 import 'package:flutter/widgets.dart';
 
 import '../theme/app_tokens.dart';
-import 'adaptive/adaptive.dart';
 import 'help_text.dart';
 import 'scroll_dismiss_scope.dart';
 
@@ -22,8 +21,8 @@ class Sheet extends StatelessWidget {
   final Color? titleColor;
   final String? subtitle;
   final Widget content;
-  final AdaptiveButton? primaryButton;
-  final AdaptiveButton? secondaryButton;
+  final Widget? primaryButton;
+  final Widget? secondaryButton;
 
   bool get _hasHeader => header != null || title != null || subtitle != null;
 

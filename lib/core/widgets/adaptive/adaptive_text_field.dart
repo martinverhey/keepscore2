@@ -10,6 +10,7 @@ class AdaptiveTextField extends StatelessWidget {
     super.key,
     required this.label,
     this.controller,
+    this.focusNode,
     this.hintText,
     this.errorText,
     this.keyboardType,
@@ -27,6 +28,7 @@ class AdaptiveTextField extends StatelessWidget {
 
   final String label;
   final TextEditingController? controller;
+  final FocusNode? focusNode;
   final String? hintText;
   final String? errorText;
   final TextInputType? keyboardType;
@@ -58,6 +60,7 @@ class AdaptiveTextField extends StatelessWidget {
 
     return TextField(
       controller: controller,
+      focusNode: focusNode,
       keyboardType: keyboardType,
       textInputAction: textInputAction,
       inputFormatters: inputFormatters,
@@ -120,6 +123,7 @@ class AdaptiveTextField extends StatelessWidget {
   Widget _cupertinoField(BuildContext context) {
     return CupertinoTextField(
       controller: controller,
+      focusNode: focusNode,
       placeholder: hintText,
       keyboardType: keyboardType,
       textInputAction: textInputAction,
