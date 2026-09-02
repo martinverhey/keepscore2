@@ -8,11 +8,12 @@ class RatingPoint extends Equatable {
   });
 
   factory RatingPoint.fromMap(Map<String, dynamic> map) {
-    final match = map['matches'] as Map<String, dynamic>;
+    final participation =
+        (map['match_players'] as List).first as Map<String, dynamic>;
     return RatingPoint(
-      playedAt: DateTime.parse(match['played_at'] as String).toLocal(),
-      ratingAfter: _toDouble(map['rating_after']),
-      ratingDelta: _toDouble(map['rating_delta']),
+      playedAt: DateTime.parse(map['played_at'] as String).toLocal(),
+      ratingAfter: _toDouble(participation['rating_after']),
+      ratingDelta: _toDouble(participation['rating_delta']),
     );
   }
 

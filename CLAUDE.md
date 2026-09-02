@@ -1729,6 +1729,18 @@ from the project-root `.env`.
   (`'a'::public.match_team`).
 - PostgREST coerces `""` to `NULL` for `uuid` params, so an empty string is
   not a validation error — it is a missing argument.
+- **`order` on a *referenced* table sorts rows inside the embed, not the rows
+  you get back**, and for a to-one embed (one row) it is a silent no-op.
+  `ProfileRepository.ratingHistory` read `match_players` and asked for
+  `.order('played_at', referencedTable: 'matches')`: the top-level rows came
+  back in physical order, `.limit(10)` then kept an arbitrary ten of them, and
+  the profile's trend chart drew a zigzag for a player on a 25-match win
+  streak. There is a spelling that orders the parent by an embedded column
+  (`order=matches(played_at).desc`), but the rule now is simpler — **query
+  the table that owns the column you sort by.** That method reads `matches`
+  with an inner-joined `match_players` filtered to the player, ordered
+  `played_at desc, id desc` (the same tuple `recalc_season_from` replays on),
+  and reverses the page into oldest-first for the chart.
 
 ### Two `.env` files — do not confuse them
 

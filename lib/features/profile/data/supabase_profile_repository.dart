@@ -18,18 +18,15 @@ class SupabaseProfileRepository implements ProfileRepository {
     int limit = 10,
   }) => guard(() async {
     final rows = await _client
-        .from('match_players')
-        .select('rating_after, rating_delta, matches!inner(played_at)')
-        .eq('player_id', playerId)
-        .eq('matches.season_id', seasonId)
-        .order('played_at', referencedTable: 'matches', ascending: false)
+        .from('matches')
+        .select('played_at, match_players!inner(rating_after, rating_delta)')
+        .eq('season_id', seasonId)
+        .eq('match_players.player_id', playerId)
+        .order('played_at', ascending: false)
+        .order('id', ascending: false)
         .limit(limit);
 
-    return rows
-        .map((row) => RatingPoint.fromMap(row))
-        .toList(growable: false)
-        .reversed
-        .toList(growable: false);
+    return [for (final row in rows.reversed) RatingPoint.fromMap(row)];
   });
 
   @override
