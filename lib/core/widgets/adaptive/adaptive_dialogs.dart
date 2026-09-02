@@ -104,7 +104,7 @@ Future<T?> showAdaptiveSheet<T>(
           color: AdaptiveColors.modalSurface(sheetContext),
           borderRadius: AppRadius.sheet,
         ),
-        child: builder(sheetContext),
+        child: SafeArea(top: false, child: builder(sheetContext)),
       ),
     ),
   );
