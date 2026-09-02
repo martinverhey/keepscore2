@@ -55,7 +55,7 @@ class _PlayersPageState extends State<PlayersPage> {
     return BlocBuilder<PlayersCubit, PlayersState>(
       builder: (context, state) => AdaptiveFloatingAction(
         glyph: AdaptiveGlyph.add,
-        semanticLabel: context.l10n.playersAddDummy,
+        semanticLabel: context.l10n.playersAddPlayer,
         busy: state is PlayersReady && state.busy,
         onPressed: () => addPlaceholderPlayer(context),
       ),

@@ -554,7 +554,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playersTitle => 'Manage Players';
 
   @override
-  String get playersAddDummy => 'Add a player';
+  String get playersAddPlayer => 'Add a player';
 
   @override
   String get playersDisplayNameLabel => 'Name';
@@ -569,7 +569,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playersOwner => 'Owner';
 
   @override
-  String get playersDummy => 'Unclaimed';
+  String get playersUnclaimed => 'Unclaimed';
 
   @override
   String get playersEdit => 'Edit';

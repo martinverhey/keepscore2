@@ -52,7 +52,7 @@ class ManagePlayersSheet extends StatelessWidget {
   AdaptiveButton _addPlayerButton(BuildContext context) {
     final state = context.watch<PlayersCubit>().state;
     return AdaptiveButton(
-      label: context.l10n.playersAddDummy,
+      label: context.l10n.playersAddPlayer,
       busy: state is PlayersReady && state.busy,
       onPressed: () => addPlaceholderPlayer(context),
     );

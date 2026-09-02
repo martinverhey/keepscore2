@@ -121,6 +121,21 @@ refreshes the list when either sheet closes — realtime does it.
   monthly / quarterly / yearly in the competition's timezone.
 - **Draws allowed**, scored 0.5.
 - **No match confirmation** — a submitted result counts immediately.
+- **A claimed player's name belongs to the person behind it.** The owner may
+  rename an *unclaimed* player and their own row, and may deactivate or
+  restore anyone; renaming a row somebody has claimed is that person's alone,
+  even for the owner. `Players._canRename`/`_canRemove` are the UI half —
+  `PlayerRow` shows its Edit button when either is true, so an owner still
+  reaches a claimed player's action sheet, it just holds no Rename.
+  Enforced by the `players_guard_rename` trigger (20260902110000), **not** by
+  RLS: `players_update_owner_or_self` still admits the owner's UPDATE, since
+  a policy sees either the existing row (`USING`) or the incoming one
+  (`WITH CHECK`) and never both, and this rule is a comparison between them.
+  So it is the one player write refused with a `P0001` exception rather than
+  by matching no rows — the silent-`maybeSingle()` premise the rest of
+  `players_check.sql` rests on does not apply to it. `auth.uid()` is null
+  outside a request, which makes the guard's condition `NULL` rather than
+  true, so psql and service-role renames deliberately still pass.
 - **Edits/deletes replay the season from the affected match forward** via
   `recalc_season_from`, not from scratch — see the note under Testing.
 - **Auth**: Apple, Google, email OTP code. No passwords.
@@ -1730,6 +1745,7 @@ flutter build apk --debug        # verified green
 ./scripts/db.sh -f supabase/seed.sql          # reseed + run assertions
 ./scripts/db.sh -f supabase/tests/rls_check.sql      # RLS verification, rolls back
 ./scripts/db.sh -f supabase/tests/players_check.sql  # players + settings writes
+./scripts/db.sh -f supabase/tests/player_rename_guard_check.sql  # claimed names, rolls back
 ./scripts/db.sh -f supabase/tests/no_op_recalc_check.sql  # no-op write guards, rolls back
 ./scripts/db.sh -f supabase/tests/incremental_recalc_check.sql  # boundary-scoped replay, rolls back
 ```

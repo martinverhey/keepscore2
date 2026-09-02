@@ -17,13 +17,15 @@ class PlayerRow extends StatelessWidget {
     required this.player,
     required this.isOwnerRow,
     required this.isMe,
-    required this.canEdit,
+    required this.canRename,
+    required this.canRemove,
   });
 
   final Player player;
   final bool isOwnerRow;
   final bool isMe;
-  final bool canEdit;
+  final bool canRename;
+  final bool canRemove;
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +43,7 @@ class PlayerRow extends StatelessWidget {
         child: Row(
           children: [
             Expanded(child: _nameRow(context)),
-            if (canEdit) _editButton(context),
+            if (canRename || canRemove) _editButton(context),
           ],
         ),
       ),
@@ -64,7 +66,7 @@ class PlayerRow extends StatelessWidget {
         ],
         if (player.isPlaceholder) ...[
           const SizedBox(width: AppSpacing.xs),
-          Tag(context.l10n.playersDummy, color: AppColors.neutral),
+          Tag(context.l10n.playersUnclaimed, color: AppColors.neutral),
         ],
       ],
     );
@@ -90,8 +92,11 @@ class PlayerRow extends StatelessWidget {
 
     final action = await showAdaptiveSheet<PlayerAction>(
       context,
-      builder: (sheetContext) =>
-          PlayerActionSheet(player: player, canRemove: !isMe),
+      builder: (sheetContext) => PlayerActionSheet(
+        player: player,
+        canRename: canRename,
+        canRemove: canRemove,
+      ),
     );
     if (action == null) return;
 

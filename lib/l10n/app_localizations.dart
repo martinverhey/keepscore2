@@ -1052,11 +1052,11 @@ abstract class AppLocalizations {
   /// **'Manage Players'**
   String get playersTitle;
 
-  /// No description provided for @playersAddDummy.
+  /// No description provided for @playersAddPlayer.
   ///
   /// In en, this message translates to:
   /// **'Add a player'**
-  String get playersAddDummy;
+  String get playersAddPlayer;
 
   /// No description provided for @playersDisplayNameLabel.
   ///
@@ -1082,11 +1082,11 @@ abstract class AppLocalizations {
   /// **'Owner'**
   String get playersOwner;
 
-  /// No description provided for @playersDummy.
+  /// No description provided for @playersUnclaimed.
   ///
   /// In en, this message translates to:
   /// **'Unclaimed'**
-  String get playersDummy;
+  String get playersUnclaimed;
 
   /// No description provided for @playersEdit.
   ///

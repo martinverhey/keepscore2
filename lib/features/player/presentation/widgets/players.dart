@@ -75,11 +75,13 @@ class Players extends StatelessWidget {
   }
 
   Widget _playerRow(Player player) {
+    final isMe = player.userId != null && player.userId == myUserId;
     return PlayerRow(
       player: player,
       isOwnerRow: player.userId != null && player.userId == ownerUserId,
-      isMe: player.userId != null && player.userId == myUserId,
-      canEdit: _canEdit(player),
+      isMe: isMe,
+      canRename: _canRename(player, isMe: isMe),
+      canRemove: _canRemove(isMe: isMe),
     );
   }
 
@@ -93,11 +95,13 @@ class Players extends StatelessWidget {
     );
   }
 
-  bool _canEdit(Player player) {
+  bool _canRename(Player player, {required bool isMe}) {
     if (!isRegistered) return false;
-    if (_isOwner) return true;
-    return player.userId != null && player.userId == myUserId;
+    if (isMe) return true;
+    return _isOwner && player.isPlaceholder;
   }
+
+  bool _canRemove({required bool isMe}) => isRegistered && _isOwner && !isMe;
 }
 
 Future<void> addPlaceholderPlayer(BuildContext context) async {
@@ -107,7 +111,7 @@ Future<void> addPlaceholderPlayer(BuildContext context) async {
     context,
     title: context.l10n.playersAddTitle,
     subtitle: context.l10n.playersAddSubtitle,
-    submitLabel: context.l10n.playersAddDummy,
+    submitLabel: context.l10n.playersAddPlayer,
   );
   if (name != null) await cubit.addPlaceholder(name);
 }
