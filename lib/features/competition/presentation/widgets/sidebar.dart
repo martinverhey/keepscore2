@@ -78,7 +78,6 @@ class Sidebar extends StatelessWidget {
             child: _navList(
               context,
               hasCompetition: competition != null,
-              isRegistered: isRegistered,
               canManageSettings: canManageSettings,
             ),
           ),
@@ -140,7 +139,6 @@ class Sidebar extends StatelessWidget {
   Widget _navList(
     BuildContext context, {
     required bool hasCompetition,
-    required bool isRegistered,
     required bool canManageSettings,
   }) {
     return SingleChildScrollView(
@@ -150,7 +148,6 @@ class Sidebar extends StatelessWidget {
           if (hasCompetition)
             ..._competitionNavItems(
               context,
-              isRegistered: isRegistered,
               canManageSettings: canManageSettings,
             ),
           SectionLabel(context.l10n.competitionSettingsSectionUser),
@@ -168,7 +165,6 @@ class Sidebar extends StatelessWidget {
 
   List<Widget> _competitionNavItems(
     BuildContext context, {
-    required bool isRegistered,
     required bool canManageSettings,
   }) {
     return [
@@ -204,7 +200,7 @@ class Sidebar extends StatelessWidget {
         selected: current == SidebarSection.history,
         onTap: () => _select(SidebarSection.history),
       ),
-      if (isRegistered)
+      if (canManageSettings)
         _navItem(
           context,
           glyph: AdaptiveGlyph.players,

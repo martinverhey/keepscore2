@@ -137,7 +137,16 @@ or moved:
 
 - **Create competition** — `competitions.page.dart`, `canCreate: session.canWrite`.
 - **Add/manage players, owner settings** — `players.page.dart` →
-  `widgets/players.dart`, `isRegistered: session.canWrite`.
+  `widgets/players.dart`, `isRegistered: session.canWrite`. **Every entry
+  point *into* player management is a step stricter than that: owner-only,
+  `session.canWrite && competition.isOwnedBySession(session)`** — the
+  Settings row and the sidebar's Players row (`canManageSettings`, the same
+  flag Configuration uses), the leaderboard's Manage players button
+  (`LeaderboardList.isOwner`), and the team picker's
+  (`TeamPickerSheet.canManagePlayers`). A registered non-owner reaching the
+  sheet another way still sees the roster and may rename themselves —
+  `Players` keeps its own finer-grained `_canRename`/`_canRemove`, and this
+  gate is about not advertising a screen whose actions are all owner-only.
 - **Create a match** — the "new match" bottom tab item is omitted entirely for
   guests in `competition_tab_bar.dart`; `matches.page.dart` shows
   `GuestNotice` instead of the log affordance.
@@ -146,7 +155,7 @@ or moved:
   owner only, not just registered).
 - **History** (`settings.page.dart`) is deliberately *outside*
   this gate — it's read-only historical data a guest may read. Competition
-  Settings and Manage players in the same menu stay gated.
+  Settings and Manage players in the same menu stay gated, both to the owner.
 
 ## Architecture
 

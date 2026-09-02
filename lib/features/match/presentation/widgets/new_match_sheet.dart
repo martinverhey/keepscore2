@@ -5,11 +5,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../app/dependency_injection/injector.dart';
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context.extension.dart';
+import '../../../../core/extensions/competition.extension.dart';
 import '../../../../core/extensions/text_editing_controller.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/sheet.dart';
 import '../../../../core/widgets/state_views.dart';
+import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
 import '../../../player/domain/player.model.dart';
 import '../../../player/presentation/widgets/manage_players_sheet.dart';
@@ -293,6 +295,8 @@ class _NewMatchSheetState extends State<NewMatchSheet> {
     String? myPlayerId,
   ) async {
     final cubit = context.read<MatchFormCubit>();
+    final session = context.read<AuthBloc>().state;
+    final competition = context.read<CompetitionCubit>().state.competition;
     final color = side == MatchTeam.a
         ? AdaptiveColors.teamA(context)
         : AdaptiveColors.teamB(context);
@@ -308,6 +312,8 @@ class _NewMatchSheetState extends State<NewMatchSheet> {
         players: _selectablePlayers(state, side),
         initiallySelected: state.team(side).map((player) => player.id).toSet(),
         onManagePlayers: () => _managePlayers(context, cubit, side),
+        canManagePlayers:
+            session.canWrite && competition.isOwnedBySession(session),
         myPlayerId: myPlayerId,
       ),
     );

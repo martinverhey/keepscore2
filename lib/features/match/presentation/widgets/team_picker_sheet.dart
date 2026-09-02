@@ -24,6 +24,7 @@ class TeamPickerSheet extends StatefulWidget {
     required this.players,
     required this.initiallySelected,
     required this.onManagePlayers,
+    required this.canManagePlayers,
     this.myPlayerId,
   });
 
@@ -32,6 +33,7 @@ class TeamPickerSheet extends StatefulWidget {
   final List<Player> players;
   final Set<String> initiallySelected;
   final Future<List<Player>> Function() onManagePlayers;
+  final bool canManagePlayers;
   final String? myPlayerId;
 
   @override
@@ -86,11 +88,12 @@ class _TeamPickerSheetState extends State<TeamPickerSheet> {
                       : null,
                 ),
               ),
-            AdaptiveButton(
-              label: context.l10n.playersManageTitle,
-              kind: AdaptiveButtonKind.tinted,
-              onPressed: _managePlayers,
-            ),
+            if (widget.canManagePlayers)
+              AdaptiveButton(
+                label: context.l10n.playersManageTitle,
+                kind: AdaptiveButtonKind.tinted,
+                onPressed: _managePlayers,
+              ),
           ],
         ),
         primaryButton: AdaptiveButton(
