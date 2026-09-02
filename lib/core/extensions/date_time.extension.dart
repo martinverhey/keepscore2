@@ -7,6 +7,11 @@ extension DateTimeDayOnly on DateTime {
   DateTime get dayOnly => DateTime(year, month, day);
 }
 
+extension DateTimeShortDayLabel on DateTime {
+  String shortDayLabel(BuildContext context) =>
+      DateFormat.MMMd(context.languageTag).format(this);
+}
+
 extension DateTimeMatchDayLabel on DateTime {
   String matchDayLabel(BuildContext context, {DateTime? now}) {
     final today = (now ?? DateTime.now()).dayOnly;

@@ -1,9 +1,9 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context.extension.dart';
+import '../../../../core/extensions/date_time.extension.dart';
 import '../../../../core/extensions/season.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
@@ -113,7 +113,7 @@ class LeaderboardList extends StatelessWidget {
     return ListHeader(
       title: season.label(context, seasonLength),
       subtitle: context.l10n.leaderboardSeasonEnds(
-        DateFormat.MMMd(context.languageTag).format(season.endsAt),
+        season.endsAt.shortDayLabel(context),
       ),
     );
   }
