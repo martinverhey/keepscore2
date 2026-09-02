@@ -641,7 +641,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileDrawsLabel => 'Draws';
 
   @override
-  String get profileWinRateLabel => 'W/L rate';
+  String get profileWinRateLabel => 'W/L ratio';
 
   @override
   String get profileWinStreakLabel => 'Win streak';
@@ -650,7 +650,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileLossStreakLabel => 'Loss streak';
 
   @override
-  String get profileBestWinStreakLabel => 'Win streak overall';
+  String get profileBestWinStreakLabel => 'Best win streak';
 
   @override
   String get profileBestLossStreakLabel => 'Worst loss streak';

@@ -1211,7 +1211,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileWinRateLabel.
   ///
   /// In en, this message translates to:
-  /// **'W/L rate'**
+  /// **'W/L ratio'**
   String get profileWinRateLabel;
 
   /// No description provided for @profileWinStreakLabel.
@@ -1229,7 +1229,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileBestWinStreakLabel.
   ///
   /// In en, this message translates to:
-  /// **'Win streak overall'**
+  /// **'Best win streak'**
   String get profileBestWinStreakLabel;
 
   /// No description provided for @profileBestLossStreakLabel.
