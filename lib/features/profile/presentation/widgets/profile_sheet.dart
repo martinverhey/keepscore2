@@ -11,7 +11,6 @@ import '../../../../core/extensions/streak_type.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/medal_chip.dart';
-import '../../../../core/widgets/rating_delta.dart';
 import '../../../../core/widgets/sheet.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../../core/widgets/today_delta_badge.dart';
@@ -191,11 +190,6 @@ class _ProfileSheetState extends State<ProfileSheet> {
             EmptyState(message: context.l10n.profileNotEnoughMatches)
           else ...[
             RatingTrendChart(points: state.history),
-            const SizedBox(height: AppSpacing.sm),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [RatingDelta(value: state.history.last.ratingDelta)],
-            ),
           ],
         ],
         if (state.recentMatches.isNotEmpty) ...[

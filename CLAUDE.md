@@ -1590,6 +1590,21 @@ Kept here because the code cannot express them and they cost real debugging:
   it would fail if either correction were dropped. The Leaderboard's own
   `Ends {date}` / `Loopt tot {date}` is deliberately *not* nudged: that string
   is phrased for the exclusive boundary.
+- **`RatingTrendChart` splits itself in two on purpose: the graph is painted,
+  the readout is a widget.** `_TrendGeometry` (points + size → the point
+  offsets, the two gridline positions and `indexAt(dx)`) is built by the
+  widget's `LayoutBuilder` and again inside `paint`, so the scrub hit-test,
+  the tooltip's anchor and the painted curve all agree without the painter
+  handing anything back. The curve is monotone-cubic (Fritsch–Carlson
+  tangents, `_tangentLimit`), not Catmull-Rom, so a spike between two matches
+  cannot overshoot into a rating the player never had. The tooltip is a real
+  widget positioned by a `CustomSingleChildLayout` rather than canvas text —
+  it reuses `RatingDelta`, and `find.text` can see it, which is what
+  `rating_trend_chart_test.dart` uses to pin oldest-left/newest-right (the
+  ordering bug above is invisible to any assertion the painter could make).
+  A tap toggles that readout and a drag scrubs it; neither clears on release,
+  since a readout that vanished with the finger could never be read.
+
 - **`AppTheme` uses `DynamicSchemeVariant.fidelity`** so the generated primary
   stays on the seed colour. The default variant pulls the saturated orange most
   of the way to brown.
