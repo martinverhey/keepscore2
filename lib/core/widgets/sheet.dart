@@ -41,13 +41,11 @@ class Sheet extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (_hasHeader) ...[
-                _header(),
-                const SizedBox(height: AppSpacing.lg),
-              ],
+              if (_hasHeader) _header(),
               Flexible(
                 child: SingleChildScrollView(
                   physics: ScrollDismissScope.physicsOf(context),
+                  padding: EdgeInsets.only(top: _hasHeader ? AppSpacing.lg : 0),
                   child: content,
                 ),
               ),

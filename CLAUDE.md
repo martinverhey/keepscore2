@@ -365,7 +365,13 @@ code; don't relitigate them.
   - **New modal sheets build on `core/widgets/sheet.dart`'s `Sheet`**, not ad
     hoc `Column`s: title/subtitle/avatar pinned at top, `content` scrolls in
     between (capped at 85% of screen height), primary/secondary buttons
-    pinned at bottom. For an action-sheet shape (a variable-length column of
+    pinned at bottom. **The `AppSpacing.lg` under the header is the scroll
+    view's own `padding`, not a `SizedBox` between the two**, so every sheet
+    gets it for free at rest and it scrolls away with the content instead of
+    holding a fixed band open under a pinned header. Nothing else in `Sheet`
+    may become scroll-view padding on that reasoning: the buttons' gaps
+    separate two pinned things, and a gap that scrolled out from under the
+    content would let it run into them. For an action-sheet shape (a variable-length column of
     choices plus Cancel), the choice column is `content` and only Cancel is
     `secondaryButton`.
   - **A raw `TextEditingController`'s text never lives in cubit state.**
@@ -1660,6 +1666,20 @@ Kept here because the code cannot express them and they cost real debugging:
   `gameType` parameter on `LeaderboardRepository`/`ProfileRepository`
   methods, or a second `game_type_*` sibling view, without deciding that
   scope is coming back on purpose.
+- **`ProfileSheet`'s tab switcher goes in `Sheet`'s `header` slot, not at the
+  top of `content`.** `Sheet` pins `header` above its `SingleChildScrollView`
+  and scrolls `content`, so a segmented control placed first in `content`
+  scrolled away with the tab body it switches. The header slot is already
+  exactly "the pinned top region", so the fix is where it is rendered, not a
+  second pinned slot on `Sheet` — one that behaved identically to `header`
+  would just be "`header` can be a `Column`". `_header` therefore returns
+  `_identity(state)` plus, once `ProfileOverviewReady`, the tabs; `_ready` is
+  the tab body alone. `profile_sheet_test.dart` pins it by dragging the sheet's
+  scroll view and asserting the segmented control's rect is unchanged while the
+  body's moved. The tabs being last in the header is also why `Sheet`'s header
+  gap moved inside the scroll view (see the `Sheet` bullet under Coding
+  conventions) — as a fixed `SizedBox` it held 24px of dead space open under a
+  pinned control.
 - **`ProfileSheet` has three cubits, one per tab, not one `ProfileCubit`.**
   Overview, Versus, and History are never visible at once, so only
   Overview (the default tab) loads eagerly, the same way the old single

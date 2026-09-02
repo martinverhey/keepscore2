@@ -83,7 +83,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
     return BlocBuilder<ProfileOverviewCubit, ProfileOverviewState>(
       builder: (context, state) {
         return Sheet(
-          header: _header(state),
+          header: _header(context, state),
           content: switch (state) {
             ProfileOverviewLoading() => const Padding(
               padding: EdgeInsets.all(AppSpacing.xl),
@@ -101,7 +101,21 @@ class _ProfileSheetState extends State<ProfileSheet> {
     );
   }
 
-  Widget _header(ProfileOverviewState state) {
+  Widget _header(BuildContext context, ProfileOverviewState state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _identity(state),
+        if (state is ProfileOverviewReady) ...[
+          const SizedBox(height: AppSpacing.lg),
+          _tabs(context, state),
+        ],
+      ],
+    );
+  }
+
+  Widget _identity(ProfileOverviewState state) {
     return Row(
       children: [
         InitialsCircle(displayName: widget.displayName, size: 48),
@@ -136,28 +150,24 @@ class _ProfileSheetState extends State<ProfileSheet> {
     return _medalRow(tally);
   }
 
-  Widget _ready(BuildContext context, ProfileOverviewReady state) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        AdaptiveSegmented<ProfileTab>(
-          value: _tab,
-          onChanged: (tab) => setState(() => _tab = tab),
-          segments: {
-            ProfileTab.overview: context.l10n.profileTabOverview,
-            if (state.hasOpponent)
-              ProfileTab.versus: context.l10n.profileTabVersus,
-            ProfileTab.history: context.l10n.profileTabHistory,
-          },
-        ),
-        const SizedBox(height: AppSpacing.lg),
-        switch (_tab) {
-          ProfileTab.overview => _overview(context, state),
-          ProfileTab.versus => _versusTab(context),
-          ProfileTab.history => _historyTab(context),
-        },
-      ],
+  Widget _tabs(BuildContext context, ProfileOverviewReady state) {
+    return AdaptiveSegmented<ProfileTab>(
+      value: _tab,
+      onChanged: (tab) => setState(() => _tab = tab),
+      segments: {
+        ProfileTab.overview: context.l10n.profileTabOverview,
+        if (state.hasOpponent) ProfileTab.versus: context.l10n.profileTabVersus,
+        ProfileTab.history: context.l10n.profileTabHistory,
+      },
     );
+  }
+
+  Widget _ready(BuildContext context, ProfileOverviewReady state) {
+    return switch (_tab) {
+      ProfileTab.overview => _overview(context, state),
+      ProfileTab.versus => _versusTab(context),
+      ProfileTab.history => _historyTab(context),
+    };
   }
 
   Widget _overview(BuildContext context, ProfileOverviewReady state) {

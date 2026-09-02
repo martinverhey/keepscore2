@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keepscore2/core/theme/app_tokens.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 import 'package:keepscore2/core/widgets/sheet.dart';
 
@@ -37,6 +38,32 @@ Future<void> _openGuardedSheet(WidgetTester tester) async {
               builder: (_) => const PopScope(
                 canPop: false,
                 child: Sheet(title: 'Sheet', content: SizedBox(height: 2000)),
+              ),
+            ),
+            child: const Text('open'),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  await tester.tap(find.text('open'));
+  await tester.pumpAndSettle();
+}
+
+Future<void> _openMeasuredSheet(WidgetTester tester, {String? title}) async {
+  await tester.pumpWidget(
+    MaterialApp(
+      home: Scaffold(
+        body: Builder(
+          builder: (context) => ElevatedButton(
+            onPressed: () => showAdaptiveSheet<void>(
+              context,
+              builder: (_) => Sheet(
+                title: title,
+                content: const Column(
+                  children: [Text('content top'), SizedBox(height: 2000)],
+                ),
               ),
             ),
             child: const Text('open'),
@@ -211,5 +238,41 @@ void main() {
         expect(find.byType(Sheet), findsOneWidget);
       },
     );
+  });
+
+  group('Sheet header gap', () {
+    testWidgets('sits under the header at rest and scrolls away with the '
+        'content', (tester) async {
+      AppPlatform.debugOverrideCupertino = false;
+      AppPlatform.debugOverrideWideWeb = false;
+      await _openMeasuredSheet(tester, title: 'Sheet');
+
+      final scrollView = find.byType(SingleChildScrollView);
+      final content = find.text('content top');
+
+      expect(
+        tester.getRect(content).top - tester.getRect(scrollView).top,
+        AppSpacing.lg,
+      );
+
+      await tester.drag(scrollView, const Offset(0, -200));
+      await tester.pumpAndSettle();
+
+      expect(
+        tester.getRect(content).top,
+        lessThan(tester.getRect(scrollView).top),
+      );
+    });
+
+    testWidgets('is absent from a sheet with no header', (tester) async {
+      AppPlatform.debugOverrideCupertino = false;
+      AppPlatform.debugOverrideWideWeb = false;
+      await _openMeasuredSheet(tester);
+
+      expect(
+        tester.getRect(find.text('content top')).top,
+        tester.getRect(find.byType(SingleChildScrollView)).top,
+      );
+    });
   });
 }

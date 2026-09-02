@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/app/dependency_injection/injector.dart';
+import 'package:keepscore2/core/widgets/adaptive/adaptive_segmented.dart';
 import 'package:keepscore2/core/widgets/medal_chip.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard.model.dart';
@@ -229,96 +230,93 @@ void main() {
     },
   );
 
-  testWidgets(
-    'the medals header subtitle does not overflow on a narrow phone '
-    'with a long name and large counts',
-    (tester) async {
-      tester.view.physicalSize = const Size(360, 800);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
+  testWidgets('the medals header subtitle does not overflow on a narrow phone '
+      'with a long name and large counts', (tester) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
 
-      const longName = 'Bartholomewski Alexandertononovich-Vandermeulen';
-      final mine = Leaderboard(
+    const longName = 'Bartholomewski Alexandertononovich-Vandermeulen';
+    final mine = Leaderboard(
+      seasonId: 's1',
+      competitionId: 'c1',
+      playerId: 'p1',
+      displayName: longName,
+      isClaimed: true,
+      isOwner: false,
+      rating: 1234,
+      played: 42,
+      wins: 20,
+      losses: 15,
+      draws: 7,
+      rank: 12,
+    );
+    final filler = List.generate(
+      86,
+      (i) => Leaderboard(
         seasonId: 's1',
         competitionId: 'c1',
-        playerId: 'p1',
-        displayName: longName,
+        playerId: 'p$i',
+        displayName: 'Player $i',
         isClaimed: true,
         isOwner: false,
-        rating: 1234,
-        played: 42,
-        wins: 20,
-        losses: 15,
-        draws: 7,
-        rank: 12,
-      );
-      final filler = List.generate(
-        86,
-        (i) => Leaderboard(
-          seasonId: 's1',
-          competitionId: 'c1',
-          playerId: 'p$i',
-          displayName: 'Player $i',
-          isClaimed: true,
-          isOwner: false,
-          rating: 1000,
-          played: 1,
-          wins: 1,
-          losses: 0,
-          draws: 0,
-          rank: i + 13,
-        ),
-      );
+        rating: 1000,
+        played: 1,
+        wins: 1,
+        losses: 0,
+        draws: 0,
+        rank: i + 13,
+      ),
+    );
 
-      when(() => leaderboardRepository.currentSeason('c1')).thenAnswer(
-        (_) async =>
-            SeasonWindow(id: 's1', startsAt: _august, endsAt: _september),
-      );
-      when(
-        () => leaderboardRepository.leaderboards(
-          competitionId: 'c1',
-          seasonId: 's1',
-        ),
-      ).thenAnswer((_) async => [mine, ...filler]);
-      when(
-        () => profileRepository.ratingHistory(seasonId: 's1', playerId: 'p1'),
-      ).thenAnswer((_) async => const []);
-      when(
-        () => profileRepository.profileStats(
-          playerId: 'p1',
-          seasonId: any(named: 'seasonId'),
-        ),
-      ).thenAnswer(
-        (_) async => const ProfileStats(
-          totalPlayed: 42,
-          bestStreaks: BestStreaks.zero(),
-          bestRating: 1234,
-          streak: Streak.none(),
-          recentPlayed: RecentPlayed.zero(),
-        ),
-      );
-      when(
-        () => matchRepository.recentForPlayer(playerId: 'p1'),
-      ).thenAnswer((_) async => const []);
-      when(() => leaderboardRepository.medals('c1')).thenAnswer(
-        (_) async => const [
-          Medals(playerId: 'p1', gold: 12, silver: 34, bronze: 56),
-        ],
-      );
+    when(() => leaderboardRepository.currentSeason('c1')).thenAnswer(
+      (_) async =>
+          SeasonWindow(id: 's1', startsAt: _august, endsAt: _september),
+    );
+    when(
+      () => leaderboardRepository.leaderboards(
+        competitionId: 'c1',
+        seasonId: 's1',
+      ),
+    ).thenAnswer((_) async => [mine, ...filler]);
+    when(
+      () => profileRepository.ratingHistory(seasonId: 's1', playerId: 'p1'),
+    ).thenAnswer((_) async => const []);
+    when(
+      () => profileRepository.profileStats(
+        playerId: 'p1',
+        seasonId: any(named: 'seasonId'),
+      ),
+    ).thenAnswer(
+      (_) async => const ProfileStats(
+        totalPlayed: 42,
+        bestStreaks: BestStreaks.zero(),
+        bestRating: 1234,
+        streak: Streak.none(),
+        recentPlayed: RecentPlayed.zero(),
+      ),
+    );
+    when(
+      () => matchRepository.recentForPlayer(playerId: 'p1'),
+    ).thenAnswer((_) async => const []);
+    when(() => leaderboardRepository.medals('c1')).thenAnswer(
+      (_) async => const [
+        Medals(playerId: 'p1', gold: 12, silver: 34, bronze: 56),
+      ],
+    );
 
-      final cubit = buildOverviewCubit()..load();
-      await cubit.stream.firstWhere((s) => s is ProfileOverviewReady);
-      await pumpSheet(tester, cubit, displayName: longName);
+    final cubit = buildOverviewCubit()..load();
+    await cubit.stream.firstWhere((s) => s is ProfileOverviewReady);
+    await pumpSheet(tester, cubit, displayName: longName);
 
-      expect(find.text('12'), findsOneWidget);
-      expect(find.text('34'), findsOneWidget);
-      expect(find.text('56'), findsOneWidget);
-      expect(tester.takeException(), isNull);
+    expect(find.text('12'), findsOneWidget);
+    expect(find.text('34'), findsOneWidget);
+    expect(find.text('56'), findsOneWidget);
+    expect(tester.takeException(), isNull);
 
-      await cubit.close();
-    },
-  );
+    await cubit.close();
+  });
 
   testWidgets("today's rating delta shows next to the season rating", (
     tester,
@@ -542,6 +540,71 @@ void main() {
     verify(
       () => leaderboardRepository.history(competitionId: 'c1', playerId: 'p1'),
     ).called(1);
+    expect(tester.takeException(), isNull);
+
+    await cubit.close();
+  });
+
+  testWidgets('the tabs stay put while the tab body scrolls under them', (
+    tester,
+  ) async {
+    when(() => leaderboardRepository.currentSeason('c1')).thenAnswer(
+      (_) async =>
+          SeasonWindow(id: 's1', startsAt: _august, endsAt: _september),
+    );
+    when(
+      () => leaderboardRepository.leaderboards(
+        competitionId: 'c1',
+        seasonId: 's1',
+      ),
+    ).thenAnswer(
+      (_) async => [
+        _leaderboard(rating: 1050, played: 5, wins: 3, losses: 1, draws: 1),
+      ],
+    );
+    when(
+      () => leaderboardRepository.medals('c1'),
+    ).thenAnswer((_) async => const []);
+    when(
+      () => profileRepository.ratingHistory(seasonId: 's1', playerId: 'p1'),
+    ).thenAnswer((_) async => const []);
+    when(
+      () => profileRepository.profileStats(
+        playerId: 'p1',
+        seasonId: any(named: 'seasonId'),
+      ),
+    ).thenAnswer(
+      (_) async => const ProfileStats(
+        totalPlayed: 20,
+        bestStreaks: BestStreaks.zero(),
+        bestRating: 1050,
+        streak: Streak.none(),
+        recentPlayed: RecentPlayed.zero(),
+      ),
+    );
+    when(() => matchRepository.recentForPlayer(playerId: 'p1')).thenAnswer(
+      (_) async => [for (var i = 0; i < 8; i++) _matchAgainstTheo()],
+    );
+
+    final cubit = buildOverviewCubit()..load();
+    await cubit.stream.firstWhere((s) => s is ProfileOverviewReady);
+    await pumpSheet(tester, cubit);
+
+    final l10n = AppLocalizations.of(tester.element(find.byType(ProfileSheet)));
+
+    final tabs = find.byType(AdaptiveSegmented<ProfileTab>);
+    final body = find.text(l10n.profileWinRateLabel);
+    final tabsBefore = tester.getRect(tabs);
+    final bodyBefore = tester.getRect(body);
+
+    await tester.drag(
+      find.byType(SingleChildScrollView),
+      const Offset(0, -200),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.getRect(body).top, lessThan(bodyBefore.top));
+    expect(tester.getRect(tabs), tabsBefore);
     expect(tester.takeException(), isNull);
 
     await cubit.close();
