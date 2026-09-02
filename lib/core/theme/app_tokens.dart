@@ -93,9 +93,10 @@ abstract final class AppGlass {
   static const double barMargin = AppSpacing.md;
   static const double barCornerRadius = barHeight / 2;
   static const double barIconSize = 24;
-  static const double topBarHeight = 52;
-  static const double topBarSubtitleHeight = 64;
   static const double barActionSize = 60;
+  static const double topBarHeight = barActionSize;
+  static const double topBarSubtitleHeight = 20;
+  static const double topBarSubtitleRise = 16;
   static const double rimIntensity = 0.25;
   static const double rimIntensityOnDark = 0.1;
   static const double rimAmbient = 1;
@@ -149,7 +150,7 @@ abstract final class AppTypography {
   );
   static const TextStyle barTitle = TextStyle(
     fontFamily: brandFontFamily,
-    fontSize: headlineMediumSize,
+    fontSize: headlineLargeSize,
     fontWeight: FontWeight.w400,
   );
   static const TextStyle sheetTitle = TextStyle(

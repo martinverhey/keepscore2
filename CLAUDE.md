@@ -1106,16 +1106,30 @@ deliberate: iOS under Increase Contrast falls back to the nav bar, so the day
 has to stay in the list as well (see below) or that user loses it, and
 `MatchCard` itself shows no date at all.
 
-The bar grows for it rather than squeezing: `AppGlass.topBarSubtitleHeight`
-(64) against `topBarHeight` (52), resolved by
-`AdaptiveTopBar.barHeightFor`/`insetFor(hasSubtitle:)`, which is why `inset`
-is no longer the only spelling of that number — `AdaptiveScaffold`'s pinned
-spacer asks `insetFor` too, so the reserved room and the bar agree. 52 was
-not enough by measurement, not by guess: Permanent Marker's own metrics
-(`asc 1136`, `desc -325`, `gap 31` over a 1024 em) put the 24px brand title's
-line box at **35.0px**, leaving ~14px for a 12px caption — it fit at text
-scale 1.0 and overflowed the moment Dynamic Type touched it. 64 tolerates
-about 1.28× before the two lines collide.
+**The bar grows downward for it; nothing above the subtitle may move.** The
+title and the actions share one fixed row of `AppGlass.topBarHeight`, and a
+subtitle adds a second band of `AppGlass.topBarSubtitleHeight` (20) *below*
+it, tucked back up into that row's slack by `AppGlass.topBarSubtitleRise` (16)
+— **that rise is the only knob for how close the caption sits to the title**,
+since the visible gap is otherwise just the leftover of centring a 40.8px line
+box in a 60px row. Raising it pulls the caption up and shortens the bar by the
+same amount; nothing above it moves, which is why the two live in a `Stack`
+rather than a `Column` — a column would have to grow the title's own box to
+place the caption. `barHeightFor(hasSubtitle:)` is that arithmetic, resolved
+once and asked for by `AdaptiveScaffold`'s pinned spacer through `insetFor` as
+well, so the reserved room and the bar agree. The bar was one centred `Column` of title-plus-subtitle
+until this: a taller bar re-centred that column, so Matches' title sat a few
+pixels off Leaderboard's, and — because the row's height also constrained its
+children — a `barActionSize` action on a subtitle-less page was squashed from
+a circle into a **60×52 ellipse**. Hence the two rules the layout now encodes:
+the title row is `topBarHeight` whatever else the bar carries, and
+**`topBarHeight` *is* `barActionSize`**, so an action fills its row exactly and
+stays round. `_row` is `crossAxisAlignment: start` for the same reason — the
+subtitle band must not drag the actions down with it.
+Room for the title was measured, not guessed: Permanent Marker's own metrics
+(`asc 1136`, `desc -325`, `gap 31` over a 1024 em) put the 28px brand title's
+line box at **40.8px**, so the 60px row tolerates about 1.47× Dynamic Type and
+the 20px band about 1.25× before either overflows.
 
 **Matches keeps its day headers on glass; they just stop pinning.**
 `_dayHeaderSlivers` returns a `PinnedHeaderSliver` off glass (unchanged) and a

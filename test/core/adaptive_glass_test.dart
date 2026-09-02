@@ -539,6 +539,34 @@ void main() {
       );
     });
 
+    testWidgets('parks the title and the action where a subtitle cannot move '
+        'them', (tester) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+      await pumpGlass(tester, _scaffold(onTrailingTap: () {}));
+      final bareTitle = tester.getRect(find.text('Leaderboard'));
+      final bareAction = tester.getRect(find.byType(LiquidGlassTabBarAction));
+
+      await pumpGlass(
+        tester,
+        _scaffold(onTrailingTap: () {}, subtitle: const Text('Saturday')),
+      );
+
+      expect(tester.getRect(find.text('Leaderboard')), bareTitle);
+      expect(tester.getRect(find.byType(LiquidGlassTabBarAction)), bareAction);
+    });
+
+    testWidgets('keeps the action a circle of its own size', (tester) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+      await pumpGlass(tester, _scaffold(onTrailingTap: () {}));
+
+      expect(
+        tester.getSize(find.byType(LiquidGlassTabBarAction)),
+        const Size(AppGlass.barActionSize, AppGlass.barActionSize),
+      );
+    });
+
     testWidgets('keeps the title off the glass', (tester) async {
       AppPlatform.debugOverrideCupertino = true;
       AppPlatform.debugOverrideLiquidGlass = true;

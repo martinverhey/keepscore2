@@ -18,13 +18,17 @@ class AdaptiveTopBar extends StatelessWidget {
   final Widget? leading;
   final Widget? trailing;
 
-  static const double inset = AppGlass.topBarHeight + AppGlass.barMargin;
+  static const double subtitleTop =
+      AppGlass.topBarHeight - AppGlass.topBarSubtitleRise;
 
   static double insetFor({required bool hasSubtitle}) =>
       barHeightFor(hasSubtitle: hasSubtitle) + AppGlass.barMargin;
 
   static double barHeightFor({required bool hasSubtitle}) =>
-      hasSubtitle ? AppGlass.topBarSubtitleHeight : AppGlass.topBarHeight;
+      AppGlass.topBarHeight +
+      (hasSubtitle
+          ? AppGlass.topBarSubtitleHeight - AppGlass.topBarSubtitleRise
+          : 0);
 
   static double bandHeightOf(
     BuildContext context, {
@@ -64,6 +68,7 @@ class AdaptiveTopBar extends StatelessWidget {
 
   Widget _row() {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       spacing: AppSpacing.sm,
       children: [
         ?leading,
@@ -74,11 +79,19 @@ class AdaptiveTopBar extends StatelessWidget {
   }
 
   Widget _titleColumn() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [_title(), ?subtitle],
+    return SizedBox(
+      height: barHeightFor(hasSubtitle: subtitle != null),
+      child: Stack(children: [_titleLine(), ?_subtitleLine()]),
+    );
+  }
+
+  Widget _titleLine() {
+    return Positioned(
+      left: 0,
+      right: 0,
+      top: 0,
+      height: AppGlass.topBarHeight,
+      child: Align(alignment: Alignment.centerLeft, child: _title()),
     );
   }
 
@@ -88,6 +101,17 @@ class AdaptiveTopBar extends StatelessWidget {
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
       style: AppTypography.barTitle,
+    );
+  }
+
+  Widget? _subtitleLine() {
+    if (subtitle == null) return null;
+    return Positioned(
+      left: 0,
+      right: 0,
+      top: subtitleTop,
+      height: AppGlass.topBarSubtitleHeight,
+      child: Align(alignment: Alignment.topLeft, child: subtitle),
     );
   }
 }
