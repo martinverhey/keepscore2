@@ -1,14 +1,13 @@
 import 'package:flutter/widgets.dart';
 
-import '../../../../core/extensions/season.extension.dart';
+import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
-import '../../../../core/widgets/pill_dropdown.dart';
 import '../../../competition/domain/competition.model.dart';
 import '../../domain/season.model.dart';
 import 'season_sheet.dart';
 
-class SeasonDropdown extends StatelessWidget {
-  const SeasonDropdown({
+class SeasonFilterButton extends StatelessWidget {
+  const SeasonFilterButton({
     super.key,
     required this.seasons,
     required this.selected,
@@ -23,9 +22,10 @@ class SeasonDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PillDropdown(
-      label: selected.label(context, seasonLength),
-      onTap: () => _pick(context),
+    return AdaptiveBarAction(
+      glyph: AdaptiveGlyph.filter,
+      semanticLabel: context.l10n.leaderboardPickSeason,
+      onPressed: () => _pick(context),
     );
   }
 

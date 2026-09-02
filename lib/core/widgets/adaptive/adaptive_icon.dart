@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import 'adaptive_colors.dart';
 import 'adaptive_glyph.enum.dart';
 import 'app_platform.dart';
 
@@ -20,6 +21,7 @@ class AdaptiveIcon extends StatelessWidget {
     AdaptiveGlyph.players => CupertinoIcons.person_2_fill,
     AdaptiveGlyph.history => CupertinoIcons.clock_fill,
     AdaptiveGlyph.settings => CupertinoIcons.gear,
+    AdaptiveGlyph.filter => CupertinoIcons.line_horizontal_3_decrease,
     AdaptiveGlyph.competitions => CupertinoIcons.square_grid_2x2_fill,
     AdaptiveGlyph.back => CupertinoIcons.chevron_back,
     AdaptiveGlyph.chevronRight => CupertinoIcons.chevron_right,
@@ -43,6 +45,7 @@ class AdaptiveIcon extends StatelessWidget {
     AdaptiveGlyph.players => Icons.groups,
     AdaptiveGlyph.history => Icons.history,
     AdaptiveGlyph.settings => Icons.settings,
+    AdaptiveGlyph.filter => Icons.filter_list,
     AdaptiveGlyph.competitions => Icons.grid_view,
     AdaptiveGlyph.back => Icons.arrow_back,
     AdaptiveGlyph.chevronRight => Icons.chevron_right,
@@ -75,28 +78,39 @@ class AdaptiveIconButton extends StatelessWidget {
     required this.glyph,
     required this.onPressed,
     this.semanticLabel,
+    this.active = false,
   });
 
   final AdaptiveGlyph glyph;
   final VoidCallback? onPressed;
   final String? semanticLabel;
+  final bool active;
 
   @override
   Widget build(BuildContext context) {
     return AppPlatform.useCupertino
         ? Semantics(
             button: true,
+            selected: active,
             label: semanticLabel,
             child: CupertinoButton(
               padding: EdgeInsets.zero,
               onPressed: onPressed,
-              child: AdaptiveIcon(glyph),
+              child: _icon(context),
             ),
           )
         : IconButton(
             onPressed: onPressed,
             tooltip: semanticLabel,
-            icon: AdaptiveIcon(glyph),
+            isSelected: active,
+            icon: _icon(context),
           );
+  }
+
+  Widget _icon(BuildContext context) {
+    return AdaptiveIcon(
+      glyph,
+      color: active ? AdaptiveColors.accent(context) : null,
+    );
   }
 }

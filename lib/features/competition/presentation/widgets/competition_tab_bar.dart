@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/router/app_router.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
-import '../../../match/presentation/widgets/new_match_sheet.dart';
 import 'competition_tab.enum.dart';
 
 class CompetitionTabBar extends StatelessWidget {
@@ -27,29 +26,18 @@ class CompetitionTabBar extends StatelessWidget {
           glyph: AdaptiveGlyph.leaderboard,
           label: context.l10n.leaderboardTitle,
         ),
-        if (isRegistered)
-          AdaptiveTabBarItem(
-            glyph: AdaptiveGlyph.newMatch,
-            label: context.l10n.matchNew,
-          ),
         AdaptiveTabBarItem(
           glyph: AdaptiveGlyph.matches,
           label: context.l10n.matchesTitle,
         ),
       ],
-      selectedIndex: current == CompetitionTab.leaderboard
-          ? 0
-          : (isRegistered ? 2 : 1),
+      selectedIndex: current == CompetitionTab.leaderboard ? 0 : 1,
       onTap: (index) => _select(context, index),
+      reservesTrailingAction: isRegistered,
     );
   }
 
   void _select(BuildContext context, int index) {
-    if (isRegistered && index == 1) {
-      showNewMatchSheet(context, competitionId: competitionId);
-      return;
-    }
-
     final tab = index == 0
         ? CompetitionTab.leaderboard
         : CompetitionTab.matches;

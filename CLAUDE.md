@@ -75,10 +75,15 @@ routes, not tabs" for why. The leaderboard tab always shows the
 current calendar window — which has no row until the first match lands in it.
 It has no season picker: that moved to
 `/competition/:id/settings/history` (`HistoryPage`), which shows one
-finished season at a time — `SeasonSheet` picks among `HistoryState.seasons`
-(the lean, already-loaded season list — id/starts_at/ends_at only, no
-leaderboards — so the picker itself needs no separate fetch), and selecting one
-fetches just that season's leaderboard. Neither tab filters by game type —
+finished season at a time — `SeasonFilterButton` in the app bar's `trailing`
+slot opens `SeasonSheet`, which picks among `HistoryState.seasons` (the lean,
+already-loaded season list — id/starts_at/ends_at only, no leaderboards — so
+the picker itself needs no separate fetch), selecting one fetches just that
+season's leaderboard, and the chosen season heads the list as a `ListHeader`
+— the same title-plus-subtitle block `LeaderboardList._seasonBar` uses, so
+both pages name their season identically; only the subtitle differs
+(`Ends <date>` for the running season, the finished season's date range in
+History). Neither tab filters by game type —
 that's Matches-only, see below.
 
 Logging a match, inspecting one, and joining a competition are all sheets, not
@@ -559,8 +564,10 @@ code; don't relitigate them.
   never a raw `TextStyle(fontSize: N, ...)` literal.** It's a fixed scale —
   `displayLarge`/`headlineLarge`/`headlineMedium`/`titleLarge`/`titleMedium`/
   `titleSmall`/`bodyLarge`/`bodyMedium`/`bodySmall`/`labelLarge`/`eyebrow`,
-  plus three colour-baked muted variants (`caption`/`captionSmall`/
-  `labelTiny`, all `AppColors.neutral`) for the "secondary text" role that
+  plus four colour-baked muted variants (`caption`/`captionStrong`/
+  `captionSmall`/`labelTiny`, all `AppColors.neutral`; `captionStrong` is
+  `caption` at `w700`, shared by Matches' `DayHeader` and the top bar's day
+  subtitle so the two always read as the same label) for the "secondary text" role that
   showed up identically in a dozen files before this existed. Each carries
   its own weight (`titleSmall` is bold, `bodyLarge` is semibold, etc.) since
   that pairing was already consistent across the app wherever a given size
@@ -650,8 +657,8 @@ the treatment below. Mirrors `debugOverrideCupertino` with
 
 - **Custom tappable rows get hover/cursor feedback everywhere, not just wide
   web.** Every hand-rolled `GestureDetector(behavior: opaque, onTap: …)` around
-  a row/tile (`LeaderboardRow`, `NavRow`, `SelectableRow`, `PillDropdown`,
-  `MatchTile`, `CompetitionTile`, `ProfileSection`, the team-picker tile, the
+  a row/tile (`LeaderboardRow`, `NavRow`, `SelectableRow`, `MatchTile`,
+  `CompetitionTile`, `ProfileSection`, the team-picker tile, the
   competition-name header) is `AdaptiveTappable` instead
   (`core/widgets/adaptive/adaptive_tappable.dart`): `InkWell` (hover cursor +
   ripple, clipped to the same `borderRadius` as the row's own decoration) on
@@ -704,8 +711,9 @@ the treatment below. Mirrors `debugOverrideCupertino` with
 - **Three widths are stacked on wide web, and only the middle one is 640.**
   The sidebar is a fixed `Sidebar._width = 232`, with the page `Expanded`
   beside it, so the *pane* — and with it the whole `AdaptiveScaffold`:
-  `Scaffold` background, `SliverAppBar`, `floatingAction`, `bottomBar` — is
-  `viewport - 232`. Inside that, `AdaptiveScaffold._content` centers **`body`
+  `Scaffold` background, `SliverAppBar`, `floatingAction` — is
+  `viewport - 232`. (Wide web has no bottom bar at all; the shell passes
+  `bar: null` and the sidebar is the navigation.) Inside that, `AdaptiveScaffold._content` centers **`body`
   alone** in a `ConstrainedBox(maxWidth: kContentMaxWidth)` (640,
   `core/theme/app_tokens.dart`). Pages then add their own `AppSpacing.md`
   horizontal padding inside that box, so the actual text/row width is 608.
@@ -867,6 +875,518 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   `fullscreenDialog` page (used by `match/new`), but on wide web it defers to
   `adaptivePage` instead, so New Match reads as an in-place page inside the
   sidebar rather than a modal takeover of the whole viewport.
+
+### Liquid glass is iOS-only (`AppPlatform.useLiquidGlass`)
+
+A third platform axis, independent of both `useCupertino` and `useWideWeb`:
+`!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS`, mirrored by
+`AppPlatform.debugOverrideLiquidGlass` for tests. **It is deliberately not
+derived from `useCupertino`** — that would hand glass to macOS (a different
+idiom, untested) and, worse, to the ~15 test files that pin
+`debugOverrideCupertino = true`. Because `defaultTargetPlatform` is forced to
+`android` whenever `FLUTTER_TEST` is set (`foundation/_platform_io.dart`),
+glass is off in every test that doesn't ask for it, and
+`test/core/adaptive_glass_test.dart` is the one file that asks — the same
+arrangement `sidebar_test.dart` has with `debugOverrideWideWeb`, and the same
+blind spot: nothing else in the suite renders a lens.
+
+**Exactly one file in `lib/**` may import `package:liquid_glass_easy`:**
+`core/widgets/adaptive/adaptive_glass.dart`. It re-exports the handful of
+package types the other adaptive widgets name, so every glass branch elsewhere
+imports the seam, never the package. `main()` calls `AdaptiveGlass.warmUp()`
+(a no-op off iOS) rather than `LiquidGlassShaders.ensureLoaded()` directly, so
+the first frame showing glass isn't the frame that compiles the shader. The
+package is pure Dart plus six fragment shaders declared in its own pubspec —
+no Podfile, no `IPHONEOS_DEPLOYMENT_TARGET` change, no native setup — and it is
+constrained `^4.2.0`: every widget rename in its history landed in a major, so
+the caret is what protects the call sites. Widening past `^4` means re-reading
+its changelog first.
+
+`AdaptiveGlass.isEnabled(context)` is the runtime check the widgets branch on,
+not the bare `AppPlatform.useLiquidGlass` getter: it also refuses glass under
+`MediaQuery.highContrastOf` (iOS "Increase Contrast"). Flutter exposes **no**
+reduce-transparency flag, so that setting alone cannot turn glass off — this
+is the closest proxy available. Colours come from
+`AdaptiveColors.glassTint`/`AppGlass` like every other themed value; the
+package's own defaults are never used raw.
+
+**Glass is chrome, never content.** The package's own guidance is that a lens
+belongs above scrolling content, not inside it — a lens placed as a list item
+fights the backdrop read and hits overscroll artefacts. So bars, floating
+buttons and panels may be glass; `LeaderboardRow`/`MatchCard` may not.
+
+**The glass tab bar floats; the opaque one takes layout space.** That is the
+whole structural difference, and it is what `AdaptiveBottomBarHost`
+(`core/widgets/adaptive/adaptive_bottom_bar_host.dart`) exists to express:
+given a `child` and an optional `bar`, the opaque path is a `SafeArea` +
+`Column` over the page background, the glass path is a `Stack` of the page
+under a `Positioned.fill` bar, because a lens with nothing painted behind it
+has nothing to refract. **`AdaptiveScaffold` has no `bottomBar` parameter** —
+it only reads `AdaptiveBottomBarHost.insetOf(context)`, the room the floating
+bar needs (`glassInset` = `AppGlass.barHeight + barMargin`, and `0` whenever
+the bar takes layout space instead), to inset its own body and lift its FAB.
+**How** that inset is applied depends on the body's shape — `_bodySliver`
+picks:
+- a `SliverPadding` for the `slivers` form (Matches), so the last card scrolls
+  clear of the bar;
+- a box `Padding` for both box forms, because a **trailing `SliverPadding`
+  does not shrink `SliverFillRemaining`** — `RenderSliverPadding` only takes
+  leading padding off the child's `remainingPaintExtent`, so a non-scrolling
+  body would still paint its full viewport height underneath the bar and only
+  gain scrollable slack below it. `test/core/adaptive_glass_test.dart`'s
+  "leaves room below the body for the bar" is what caught that.
+Both helpers return the child untouched at inset `0`, so every off-glass tree
+is byte-identical to what it was.
+
+`AdaptiveBottomTabBar`'s glass branch must use **`LiquidGlassTabBar.withImpeller`**,
+not the default constructor: the plain one expects to sit in a
+`LiquidGlassScaffold` that owns the capture pipeline, while `.withImpeller`
+renders the bodyless morph-pill overlay that samples the live backdrop — which
+is what we have. That overlay fills the whole stack rather than sitting at the
+bottom (it positions the capsule itself, safe area included, from `margin` /
+`alignment`), so it goes in as `Positioned.fill` and **taps still reach the
+content underneath it** — asserted, since a full-screen overlay swallowing
+hits would otherwise be a silent, total loss of interaction. Icons go through
+`iconBuilder` rather than `icon` so `AdaptiveIcon` stays the one source of
+glyph truth.
+
+**The rim is the one part of the glass look with a dark variant, and it needs
+one.** A lens's bright edge comes from `LiquidGlassShape`'s
+`lightColor`/`lightIntensity` plus `OpticalBorder.ambientIntensity` — all
+theme-independent in the package, tuned for glass over light content
+(`0xB2FFFFFF` at full intensity). Left at those defaults on a near-black
+surface they read as a hard white outline around the capsule, the action and
+the sheet, which is what shipped in the first TestFlight build.
+`AdaptiveGlass.shapeOf(context, cornerRadius:)` is now the single place a shape
+is built, and it resolves all three per brightness —
+`AdaptiveColors.glassRim` (white at `AppOpacity.glassRim`/`glassRimOnDark`),
+`AppGlass.rimIntensity`/`rimIntensityOnDark` and
+`AppGlass.rimAmbient`/`rimAmbientOnDark`. **Ambient is the one that matters
+most**: it brightens the rim uniformly all the way round, so it is what turns
+an edge highlight into an outline. The shipped values are far below the
+package's defaults on both themes — they were tuned against a real device, so
+treat them as measured, not as a starting guess.
+`AdaptiveFloatingAction` composes it as
+`LiquidGlassTabBarAction.defaultStyle.copyWith(shape: …)` so the action keeps
+its tuned appearance and refraction and changes only the rim — the pattern the
+`style`-replaces-wholesale note below describes.
+
+**A glass action on iOS is a FAB everywhere else — they are the same thing.**
+`AdaptiveFloatingAction` is the single widget for "the primary action on this
+screen": a `LiquidGlassTabBarAction` at `AppGlass.barHeight` on iOS, a Material
+`FloatingActionButton` or the Cupertino accent circle elsewhere. So every FAB
+in the app (competitions, players) reads as a glass action on iOS, and
+conversely **"New match" is a FAB on Android**, never a third tab. Do not add a
+`LiquidGlassFab`, a bespoke glass circle, or a tab-shaped action to one of
+these surfaces without the other — the mapping is the rule.
+
+**"New match" is an action beside the capsule, not a tab inside it.** The
+capsule groups the two destinations (Leaderboard, Matches); logging a match is
+a separate circular button at the right edge — the arrangement iOS 26 itself
+uses (a left-hugging pill plus a standalone button), and the package's own
+Photos showcase. That action belongs to `AdaptiveBottomBarHost`
+(`AdaptiveBottomBarAction`: glyph, label, callback), **not** to
+`AdaptiveBottomTabBar`, because only the host spans enough of the screen to
+place it: on glass it sits beside the capsule at the bar's own baseline, and
+without glass it floats above the bar inside the page area, where a Material
+FAB belongs. A bar-owned action could only paint outside its own strip, and
+Flutter rejects hit tests outside a render box — it would have been visible and
+dead. The bar still needs to know the action is there, to narrow the capsule
+and hug the left: that is `reservesTrailingAction`, the one deliberate
+redundancy, passed from the same `isRegistered` the host's `action` is. This
+arrangement is also what removed `CompetitionTabBar`'s old index juggling
+(`isRegistered ? 2 : 1`, plus an `index == 1` special case in `_select`).
+
+**Hosting a bar means taking the bottom padding off the page, the way
+`Scaffold` did.** `Scaffold` passes its body `removeBottomPadding:
+bottomNavigationBar != null` (`material/scaffold.dart`), so while the bar lived
+in the page's own `Scaffold` the body's `SliverSafeArea(top: false)` added
+nothing. Hoisting the bar out silently handed that padding back, and a
+scrolling list ended an inset-sized band *above* the bar — read on device as
+"the tab bar got taller", though the bar had not changed by a pixel.
+`AdaptiveBottomBarHost._stacked` therefore wraps the page in
+`MediaQuery.removePadding(removeBottom: true)`. The glass path deliberately
+does **not**: there the bar floats, and the page's own padding plus
+`glassInset` is exactly the bar's height above the screen edge.
+Note what hid this: a probe with a `SliverFillRemaining` body showed no
+difference at all, because trailing sliver padding does not shrink that sliver
+(see `_bodySliver` above). Only a *scrolling* body reveals it, which is why the
+test asserts the invariant directly — `MediaQuery.paddingOf` inside the hosted
+page has `bottom == 0` with a bar, and keeps the inset without one.
+
+**A hosted bar needs its top padding removed, or it inflates by the status
+bar.** Material's `NavigationBar` wraps its own content in a full `SafeArea`
+(`material/navigation_bar.dart`) — top included — and `Scaffold` compensates by
+handing its `bottomNavigationBar` slot `removeTopPadding: true`. Hosting the bar
+ourselves dropped that, so the bar reserved the *status bar / camera cutout*
+inset **above its own icons**: on a 480dpi emulator that measured 179dp against
+a `Scaffold`'s 114dp, with 65dp of dead bar-coloured space above the labels.
+`AdaptiveBottomBarHost._bar` therefore wraps the bar in
+`MediaQuery.removePadding(removeTop: true)`, mirroring what `Scaffold` did.
+This is the third distinct thing `Scaffold` was silently doing for the bar
+(the others: not removing the *bottom* padding from the bar, and removing it
+from the body). When a test harness says a hoisted widget is unchanged, check
+what the widget it came out of was passing it.
+**Every bar test must supply a top inset**, or it cannot see this: the first
+three harnesses set only `padding.bottom` and reported a perfect match while
+the device was visibly wrong.
+
+**Never wrap a bottom bar in `SafeArea`.** Both `CupertinoTabBar` and Material's
+`NavigationBar` add `MediaQuery.viewPaddingOf(context).bottom` to their own
+height, and `SafeArea` removes `padding`, **not** `viewPadding` — so wrapping
+one leaves the bar its full height *and* a dead inset-sized band beneath it,
+which reads as a taller bar. `AdaptiveBottomBarHost._stacked` is therefore a
+bare `Column`, exactly what `Scaffold.bottomNavigationBar` used to give it.
+`adaptive_glass_test.dart` measures the hosted bar against the same bar inside
+a plain `Scaffold` under a 34px inset; the wrapped version rendered 80 against
+the reference 114.
+**iOS sheets sit on a glass panel, at a much heavier tint than the bar.**
+`showAdaptiveSheet`'s Cupertino branch swaps its opaque `Container` for an
+`AdaptiveGlass` whose tint is `AdaptiveColors.glassSheetTint` — the modal
+surface at `AppOpacity.glassSheetFill` (0.75), where the bar uses 0.22/0.28.
+A sheet is a reading surface: at the bar's tint the leaderboard behind it
+shows through the text. The refraction and the edge still read as glass; the
+body stays legible. Only the Cupertino branch changes — the Material sheet and
+the wide-web dialog are unreachable on iOS. `AdaptiveGlass` grew a `tint`
+override for this, threaded into `styleOf`. The `ScrollDismissibleSheet` /
+`PopScope` / `confirmsDismissal` arrangement is untouched: the lens replaces
+the surface *inside* it, so the drag and barrier paths still route through
+`Navigator.maybePop`, and `adaptive_glass_test.dart` asserts a guarded glass
+sheet survives a barrier tap.
+
+**The scroll edge band is part of the host, not of any page.**
+`AdaptiveBottomBarHost._floating` stacks a `LiquidGlassScrollEdge` between the
+page and the bar — content fades into the page colour as it slides under the
+floating capsule, which is what keeps a dense list from showing through it as
+noise. It is tinted `AdaptiveColors.scrollEdgeTint` (the page background at
+`AppOpacity.scrollEdgeFill`), **not** the package's default 54%-black dim: a
+black band reads as a shadow in light mode, where the effect should look like
+content dissolving into the background. Its height covers the bar, the home
+indicator and `AppGlass.scrollEdgeFade` of extra ramp above them (currently
+`0` — the band stops at the bar). It is wrapped in
+`IgnorePointer` — it is decoration, and a full-width band that ate taps would
+silently kill the bottom of every list.
+
+**The top bar floats too, and the large title is the price.** A
+`LiquidGlassLens` refracts *what is painted behind it*, so anything meant to
+be glass has to have the content behind it — which rules out every
+arrangement that keeps `CupertinoSliverNavigationBar`. A lens behind the
+scroll view has nothing to refract (the page background paints over it); a
+lens `Positioned` over the scroll view refracts and blurs the nav bar's own
+title and buttons; and a top `LiquidGlassScrollEdge` cannot be slipped
+*between* the body slivers and the pinned nav bar from outside the scroll
+view at all. So on the glass path `AdaptiveScaffold._cupertinoGlass` drops the
+nav bar entirely and stacks `AdaptiveTopBar`
+(`core/widgets/adaptive/adaptive_top_bar.dart`) over the content. **iOS
+therefore has no large titles any more**, and no collapse-on-scroll; that was
+accepted deliberately in exchange for the lens. Off glass (and under Increase
+Contrast, since the gate is `AdaptiveGlass.isEnabled`) the
+`CupertinoSliverNavigationBar` branch is untouched, and a page with no `title`
+at all (Sign in, Upgrade) keeps `_bareBar` on both paths.
+
+**The title is not glass; the buttons are** — the iOS 26 Photos arrangement,
+and the one place the shape deliberately departs from the bottom bar. A
+capsule around the title was built first and rejected: a lens is a *control*
+surface, and wrapping a page's name in one reads as a button that cannot be
+pressed. So `AdaptiveTopBar` is a plain `Row` — bare title text in
+`AppTypography.barTitle`, `leading`/`trailing` beside it — over its own
+top-edge `LiquidGlassScrollEdge` band, which is what keeps that unglassed text
+legible as content passes beneath it (the same `Positioned.fill` +
+`IgnorePointer` shape `AdaptiveBottomBarHost._floating` uses at the bottom).
+The band is the only thing standing between the title and the list; do not
+remove it while the title is bare.
+
+**The bar carries a `subtitle`, and on Matches that subtitle is the day you
+are looking at.** `AdaptiveScaffold.subtitle` is a `Widget?` threaded to
+`AdaptiveTopBar` and read **only** by `_cupertinoGlass` — the
+`CupertinoSliverNavigationBar`, `SliverAppBar.large` and wide-web
+`SliverAppBar` branches ignore it entirely, so this is an iOS-glass-only
+affordance and every other platform is byte-identical to what it was. That is
+deliberate: iOS under Increase Contrast falls back to the nav bar, so the day
+has to stay in the list as well (see below) or that user loses it, and
+`MatchCard` itself shows no date at all.
+
+**The bar grows downward for it; nothing above the subtitle may move.** The
+title and the actions share one fixed row of `AppGlass.topBarHeight`, and a
+subtitle adds a second band of `AppGlass.topBarSubtitleHeight` (20) *below*
+it, tucked back up into that row's slack by `AppGlass.topBarSubtitleRise` (16)
+— **that rise is the only knob for how close the caption sits to the title**,
+since the visible gap is otherwise just the leftover of centring a 40.8px line
+box in a 60px row. Raising it pulls the caption up and shortens the bar by the
+same amount; nothing above it moves, which is why the two live in a `Stack`
+rather than a `Column` — a column would have to grow the title's own box to
+place the caption. `barHeightFor(hasSubtitle:)` is that arithmetic, resolved
+once and asked for by `AdaptiveScaffold`'s pinned spacer through `insetFor` as
+well, so the reserved room and the bar agree. The bar was one centred `Column` of title-plus-subtitle
+until this: a taller bar re-centred that column, so Matches' title sat a few
+pixels off Leaderboard's, and — because the row's height also constrained its
+children — a `barActionSize` action on a subtitle-less page was squashed from
+a circle into a **60×52 ellipse**. Hence the two rules the layout now encodes:
+the title row is `topBarHeight` whatever else the bar carries, and
+**`topBarHeight` *is* `barActionSize`**, so an action fills its row exactly and
+stays round. `_row` is `crossAxisAlignment: start` for the same reason — the
+subtitle band must not drag the actions down with it.
+Room for the title was measured, not guessed: Permanent Marker's own metrics
+(`asc 1136`, `desc -325`, `gap 31` over a 1024 em) put the 28px brand title's
+line box at **40.8px**, so the 60px row tolerates about 1.47× Dynamic Type and
+the 20px band about 1.25× before either overflows.
+
+**Matches keeps its day headers on glass; they just stop pinning.**
+`_dayHeaderSlivers` returns a `PinnedHeaderSliver` off glass (unchanged) and a
+plain `SliverToBoxAdapter` on it — a pinned header directly under the floating
+band guillotined whatever card was passing behind it, and with the day now
+named in the bar there is nothing left for it to pin *for*. Note this makes
+the pinned spacer sliver's original justification obsolete (nothing stacks
+under it on Matches any more) but **not** the spacer itself: it still has to
+be a `PinnedHeaderSliver` so `CupertinoSliverRefreshControl`, which follows
+it, lands below the bar rather than under it.
+
+**Which day is under the bar comes from the sliver protocol, not from
+probing render boxes.** Each day group is preceded by a zero-extent
+`SliverLayoutBuilder` marker that records `constraints.precedingScrollExtent`
+into `_dayHeaderStarts` — where that day's `DayHeader` begins, absolute and
+stable regardless of scroll position, and correct through both
+`SliverPadding` and `SliverMainAxisGroup` since each adds its own leading
+extent to what it passes down. A `NotificationListener<ScrollNotification>`
+around the scaffold then picks the last group whose start has passed the
+caption line, and writes it to a `ValueNotifier<DateTime?>` that only the
+subtitle's `ValueListenableBuilder` listens to, so a day change repaints the
+caption and nothing else.
+
+**The handover point is a geometric alignment, not a tuned number.** The day
+changes at exactly the scroll offset where the list's own day label lands on
+the row the bar's caption occupies — `_dayAtCaptionLine`'s threshold is
+`pixels + padding.top + AdaptiveTopBar.subtitleTop - DayHeader.textInset`,
+the two insets that separate each label from its own box's top. Both labels
+are `AppTypography.captionStrong`, so aligning their tops aligns them
+outright: the caption appears in the same pixel row the header label just
+vacated, and the list header dissolves into the scroll-edge band exactly as
+its copy lights up in the bar. `matches_page_test.dart` measures that
+directly — it scrolls to the caption line and asserts the two `getRect` tops
+match within half a pixel — with a second pair of tests pinning the flip to
+that same offset ±1px.
+
+Two earlier attempts at this, both rejected on device, are worth not
+repeating: `insetFor` (the bar's height *plus* `barMargin`) names a day whose
+header is still a margin's worth below the glass, and even `barHeightFor`
+(the painted bottom edge) fires while the header is fully readable. The two
+constants above are the knob — nothing else in the page needs a magic
+offset — but note that at any real scroll velocity the 200 ms
+`AnimatedSwitcher` fade moves the *perceived* moment far more than a few
+pixels of threshold do, which is why nudging the threshold by hand feels
+like it does almost nothing.
+
+The caption cross-fades through an `AnimatedSwitcher`, and that switcher
+needs `layoutBuilder: _startAlignedStack` — the default one stacks the
+outgoing child on the incoming one with `alignment: Alignment.center`, so a
+shorter day name visibly jumps sideways to sit centred over the longer one
+for the length of the fade. A start-aligned `Stack` is the whole fix, and
+`matches_page_test.dart` pins it by comparing both names' `left` mid-fade.
+
+**`null` is a real value here**: before the first header clears that edge
+nothing has scrolled behind the bar, so the subtitle is empty rather than
+naming the day the list happens to start with. The bar keeps its taller
+`hasSubtitle` height either way — `subtitle` is the always-present
+`ValueListenableBuilder`, so an empty caption is not a layout change.
+Three things this shape is deliberately avoiding:
+- **`GlobalKey`s per group with `localToGlobal` on every scroll do not
+  work here.** The group you want is usually the one that has just scrolled
+  *off* the top, and a lazy `SliverList`'s box children are collected once
+  they leave the cache extent — so it reports correctly for about 250px and
+  then silently names the wrong day. Marker *slivers* have no such problem:
+  every sliver in a viewport is laid out each frame, however far off-screen,
+  because the viewport needs its extent to place the next one.
+- **Recomputing `groupByDay` inside the scroll handler**, which would rebuild
+  the whole grouping on every scroll frame. The day list is memoized by
+  `_rememberDays` where the groups are already being computed for the build.
+- **Resolving from `MatchesPage.build`.** The list arrives through an inner
+  `BlocBuilder`, which rebuilds *without* rebuilding the page — a post-frame
+  hook registered in `build` therefore fires once, on the loading state, and
+  never again. `_rememberDays` is called from `_matchesSection`, the one place
+  that actually knows the content changed.
+
+**`AdaptiveBarAction` is the small sibling of `AdaptiveFloatingAction`**, and
+the two together are the whole glass-control vocabulary: an untinted
+`LiquidGlassTabBarAction` carrying `AdaptiveColors.glassGlyph`, at
+`AppGlass.barActionSize` (60) rather than `barHeight` (64), which is also the
+top bar's own row height, above. Every bar button
+goes through it — `CompetitionSettingsButton`, `GameTypeFilterButton`, and
+`AdaptiveScaffold._glassLeading`'s hand-built back button — so the top bar's
+controls, the tab action and the FAB are all the same untinted lens with the
+same black/white glyph. Off glass it is exactly the `AdaptiveIconButton` those
+call sites used before, which is what a bar button already is on every other
+platform; that is how it satisfies the "a glass action is a FAB everywhere
+else" pairing rule without inventing an Android affordance.
+**A page filter is an `AdaptiveBarAction` carrying `AdaptiveGlyph.filter` in
+the scaffold's `trailing` slot, opening a sheet, with the active value named
+by a `ListHeader` above the list rather than by the button — on every
+platform, glass or not — and the button itself marked `active` while a filter
+is on.** `SeasonFilterButton` (History) and
+`GameTypeFilterButton` (Matches) are both exactly that, and a third filter
+should be too. Each replaced a `PillDropdown` labelled with its own current
+value; that label is the heading now, so nothing was lost and `PillDropdown`
+itself is gone. (`SeasonFilterButton` was `SeasonDropdown`, and
+`GameTypeFilterButton` was `GameTypeFilterDropdown`, until each stopped being
+one.)
+Matches heads the list only when a game type is actually picked — "All" is
+the unfiltered list and heading it would be noise — which is why the
+game-type-specific empty message went away with the pill: the header names
+the filter, so the body says only `matchesEmpty`.
+`ListHeader` (`core/widgets/list_header.dart`) is the shared block: a
+`titleSmall` title over an optional `captionSmall` subtitle. History and the
+Leaderboard's running season pass both; Matches passes a title alone.
+Only Matches passes `active` — History always has a season selected, so
+"filtering" is not a state it can be out of.
+
+**`AdaptiveBarAction.active` is ours, not the package's.** No component in
+`liquid_glass_easy` that we use carries a selected state: `LiquidGlassTabBarAction`
+takes only `icon`/`child`, `onTap`, `foregroundColor`, `size`, `style`,
+`visibility` and `touch`, and `LiquidGlassButton`/`LiquidGlassFab` are the
+same. Selection exists there only in widgets whose whole job is selection
+(`LiquidGlassTabBar.selectedIndex`, the segmented controls, `LiquidGlassSwitch`)
+plus `LiquidGlassControlTile`, whose `active`/`activeColor` tint the lens.
+**That tint is deliberately not what `active` does here — the glass stays
+exactly as it is and only the glyph changes colour**, to
+`AdaptiveColors.accent`. Tinting the lens was built first and dropped: a
+filled accent lens is the same flat-orange-circle read that got the accent
+FAB rejected, and it makes the button louder than the heading naming the
+filter. So the lens keeps `LiquidGlassTabBarAction.defaultStyle` with only
+its shape swapped, and `active` is one line in `_glyphColor` — accent when
+on, `glassGlyph` (black on light, white on dark) when off. Off glass,
+`AdaptiveIconButton` does the identical thing plus Material's own
+`isSelected`; both paths mark `Semantics(selected:)`. One rule, both
+platforms. `test/core/adaptive_bar_action_test.dart` pins it, the untinted
+lens included, and is the second file in the suite to set
+`debugOverrideLiquidGlass`.
+
+**`AdaptiveSwitch` is the one glass control that is not chrome.** On the glass
+path it is the package's own `LiquidGlassSwitch` — the iOS-26 sliding switch,
+whose thumb is picked up and carried rather than snapped — so the dark-mode
+toggle in `SettingsPage`'s System section (and any future `AdaptiveSwitch`)
+reads as glass on iOS. Three things it does *not* do, each deliberate:
+- **It passes no `style`**, the same call as `AdaptiveFloatingAction` and for
+  the same reason — `LiquidGlassSwitch.defaultStyle` is a thumb-tuned clear
+  pill (near-zero blur, a tucked-in contact shadow tied to the morph, a
+  softened grey rim rather than the package's usual `0xB2FFFFFF`), and a
+  style handed in wholesale would drop all of it. The rim's light/dark split
+  that `AdaptiveGlass.shapeOf` exists for is not applied here: the thumb's
+  rim is already the soft grey, and it sits on its own coloured track rather
+  than over page content, so it does not read as the outline a bar-sized lens
+  did.
+- **It keeps the package's `activeColor`/`inactiveColor`/`thumbColor`
+  defaults**, which are the iOS system values `CupertinoSwitch` was already
+  painting — the switch does not change colour when it becomes glass, only
+  shape and behaviour.
+- **It drops the `SizedBox`/`OverflowBox`/`FittedBox` wrapper** the platform
+  branch scales a native switch with, and takes the layout's own 63×28 track
+  instead. `reserveSwellRoom` stays `false`: the held thumb swells past the
+  track on purpose, and no ancestor between it and the scroll viewport clips.
+A `null` `onChanged` falls back to the platform switch even under glass —
+`LiquidGlassSwitch.onChanged` is non-nullable and has no disabled rendering,
+where `CupertinoSwitch`/`Switch` both do.
+**The platform branch is scaled to sit beside it.** `CupertinoSwitch` renders
+59×39 and Material's `Switch` 60×40 (with `shrinkWrap`), and
+`AdaptiveSwitch`'s wrapper paints both at 51×34 inside a 52×28 footprint —
+`FittedBox` fits the native control into `_visualHeight`, and the shorter
+`_height` is what the row actually reserves, so the switch overflows its own
+footprint vertically into the row's padding and never horizontally into the
+label. It was 34×20 (painting ~36×24, overhanging the label by 2 px) until
+the glass switch's 63-wide track made every other platform look undersized
+next to it. Numbers measured, not derived: `Switch` returns 60×40 even under
+`MaterialTapTargetSize.shrinkWrap`.
+**Wide web runs one size down** — 44×29 painted in a 44×24 footprint — the
+one place a switch is driven by a mouse rather than a thumb. The gate is
+`AppPlatform.useWideWeb`, not `kIsWeb`, so a phone-width browser tab keeps
+the native size along with the rest of the native chrome; a tap target is
+the wrong thing to shrink where the pointer is a finger.
+`adaptive_widgets_test.dart` pins both pairs — it is the only thing watching
+them, and the wide-web half needs `debugOverrideWideWeb` to see anything at
+all (`kIsWeb` is always `false` under `flutter test`).
+
+**A tight parent breaks it**: the switch's internal `OverflowBox` asserts on
+non-normalized constraints if it is given a tight box larger than the track
+(a `min` above the track's own size), which is why
+`adaptive_glass_test.dart` pumps it inside a `Center`. In the app it is
+always a `Row` child, which is loose.
+
+**The spacer sliver that makes room for the band is `PinnedHeaderSliver`, not
+a plain `SliverToBoxAdapter`, and it has to be both things at once.** A
+scrolling spacer looks identical on the Leaderboard and is wrong on Matches:
+with nothing pinned above them, that page's `PinnedHeaderSliver` day headers
+pin at viewport `y = 0`, hidden behind the floating chrome.
+`PinnedHeaderSliver` reports `paintOrigin: constraints.overlap` and
+`maxScrollObstructionExtent: childExtent`, so a pinned spacer makes every
+later pinned header stack *below* it — while its `layoutExtent` still clamps
+to `0` as it scrolls, which is what lets content pass under the band and give
+the lenses something to refract. Take either property away and one of the two
+breaks. `CupertinoSliverRefreshControl` goes after the spacer, exactly where
+it already sat after the nav bar.
+
+**A floating bar has no `automaticallyImplyLeading`, so the back button is
+built by hand** — `AdaptiveScaffold._glassLeading` returns an explicit
+`AdaptiveBarAction` off `ModalRoute.of(context)?.canPop`, deferring to a
+page's own `leading` and to `SuppressedBackButtonScope` first, mirroring what
+the Cupertino nav bar did for free. Labelling it pulled `context.l10n` into
+`AdaptiveScaffold`, which means **any test pumping a glass scaffold on a
+poppable route needs `AppLocalizations.localizationsDelegates` on its
+`CupertinoApp`** or it throws a null check inside `AppLocalizations.of`.
+
+**One tab bar lives above both branches, not one per page.** `CompetitionShell`
+renders the single `CompetitionTabBar` through `AdaptiveBottomBarHost`, wrapping
+`navigationShell`, and derives `current` from `navigationShell.currentIndex`;
+`LeaderboardPage`/`MatchesPage` pass no `bottomBar` at all. This is load-bearing
+for the glass bar, not a tidy-up. `LiquidGlassTabBar`'s Impeller path is
+stateful (`LiquidGlassAnimatedNavBar`): a tap sets its own `_tabIndex`, and its
+`didUpdateWidget` resyncs **only when `selectedIndex` differs from the previous
+widget's**. With a bar per page that prop was a *constant* (`current:
+CompetitionTab.leaderboard` on one page, `.matches` on the other), so the
+resync could never fire — after tapping "Matches" on the leaderboard's bar that
+bar's pill sat on Matches forever, and returning to the page showed the wrong
+tab highlighted until you tapped it again. One shared bar whose prop actually
+changes 0↔1 fixes that at the source *and* is what earns the morph pill its
+travel animation, which no per-page arrangement can produce: the bar you tap
+would be the one leaving the screen.
+**`flutter test` cannot see the bug this fixes**:
+`ui.ImageFilter.isShaderFilterSupported` is false there, so the bar falls back
+to its *stateless* Skia path, which reads `selectedIndex` directly and was
+always right. `adaptive_glass_test.dart` pins the invariant that survives both
+paths — the highlight follows `selectedIndex` and the bar's element is *not*
+remounted, since a remount would kill the travel — and
+`competition_content_page_test.dart` asserts a single `CompetitionTabBar`
+across a tab switch.
+
+Geometry, on both render paths (`resolveBarPosition` on Impeller, the
+`Align`/`Padding` fallback on Skia): with an action the capsule takes
+`alignment: bottomLeft` and a left margin, sized
+`min(screen - 2 × barMargin - (barHeight + sm), 420)`, and the action is
+`Positioned` at `right: barMargin, bottom: viewPadding.bottom + barMargin`
+matching what `LiquidGlassScaffold` does for its own action slot. Without an
+action the capsule keeps `bottomCenter` and a bottom-only margin, which is the
+one shape that lets `resolveBarPosition` return `null` and leave the package's
+default centring untouched.
+
+The FAB and the tab action are **untinted glass with a label-coloured glyph**
+— no accent anywhere on them. A filled accent lens read as a flat orange
+circle rather than as glass, and an accent glyph on clear glass read as
+orange too; both were rejected on sight. `AdaptiveColors.glassGlyph` is black
+on light and white on dark (what iOS itself uses for a glass control's
+symbol), which is also why the package's own `foregroundColor` default of
+plain white is not enough — it vanishes over a light page.
+`AdaptiveFloatingAction` passes no `style` at all, so `LiquidGlassFab`'s tuned
+default (contact shadow and optical border included) applies as shipped. The
+tab action carries `AdaptiveGlyph.add`, the same bare `+` as the competitions
+and players FABs, rather than `newMatch`'s filled plus-in-a-circle.
+
+**A component's `style` replaces its tuned appearance and refraction
+wholesale — only `shape`/`adaptivity` fall back.** `LiquidGlassStyle.merge`
+takes `other.appearance`/`other.refraction` outright, so handing a component
+an `AdaptiveGlass.styleOf` style silently drops the contact shadow and tuned
+optical border it ships with. Pass no style to keep the component's own look
+(the FAB and the tab action do); to change one facet, compose from its
+`defaultStyle` with `copyWith` rather than building a style from scratch. The
+tab bar capsule is the one place we do override wholesale, because its tint
+has to follow our light/dark tokens.
+
 ### The sidebar is a shell, not a per-page wrapper
 
 `Sidebar` is rendered once, by `SidebarShell`
@@ -1001,14 +1521,19 @@ is what the `StatefulShellRoute`'s `builder` returns, wrapping
 `RecentCompetitionStore.set`/`PlayersCubit.load()` (from `initState` *and*
 `didUpdateWidget`, since for the reason above it is updated, not remounted,
 when the competition id changes — without the second call the freshly built
-`PlayersCubit` would sit in `PlayersLoading` forever) and a `BlocListener`
-bouncing to `Routes.home` on `CompetitionMissing`.
+`PlayersCubit` would sit in `PlayersLoading` forever), a `BlocListener`
+bouncing to `Routes.home` on `CompetitionMissing`, and the one
+`AdaptiveBottomBarHost`/`CompetitionTabBar` both branches share. It takes the
+`StatefulNavigationShell` itself, not a bare `child`, because the bar's
+`current` comes from `navigationShell.currentIndex`.
 `CompetitionTabBar` (`features/competition/presentation/widgets/competition_tab_bar.dart`)
-is the bottom tab bar both pages render: it takes only primitives
-(`competitionId`, `current`, `isRegistered`) and navigates itself via
-`context.go`/`push` rather than `onSelectTab`/`onNewMatch` callbacks — every
-call site would have passed the identical closure, the same reasoning that
-has `Sidebar` read `ThemeCubit` from context instead of a callback prop.
+is the bottom tab bar, rendered once by the shell rather than by either page
+(see "One tab bar lives above both branches" in the liquid glass section for
+why): it takes only primitives (`competitionId`, `current`, `isRegistered`) and
+navigates itself via `context.go`/`push` rather than `onSelectTab`/`onNewMatch`
+callbacks — every call site would have passed the identical closure, the same
+reasoning that has `Sidebar` read `ThemeCubit` from context instead of a
+callback prop.
 `CompetitionSettingsButton` is the same move for the settings icon both
 pages show in their (non-wide-web) app bar trailing slot.
 
@@ -1044,6 +1569,18 @@ Kept here because the code cannot express them and they cost real debugging:
 - **Derive a season's label from `Season.midpoint`, never from `startsAt`.**
   The boundaries are midnight in the *competition's* timezone, so on a device
   further west "August" starts on 31 July and a naive label is off by a month.
+  `SeasonRangeLabel.rangeLabel` (History's subtitle) has the same problem at
+  both ends and solves it the same way: it formats `startsAt + 12h` and
+  `endsAt - 12h`, never the boundaries themselves. Two separate things are
+  going on there. `seasons.ends_at` is **exclusive** — `functions.sql` sets it
+  to `v_start_local + v_step`, i.e. the next period's midnight — so a raw
+  format reads "Jul 1 – Aug 1" for July; and the device's own offset can drag
+  either boundary onto the neighbouring calendar day. Nudging half a day
+  inward fixes both at once, and `history_page_test.dart` pins the result
+  (`Jul 1 – Jul 31, 2026`) off UTC fixtures that are Amsterdam midnights, so
+  it would fail if either correction were dropped. The Leaderboard's own
+  `Ends {date}` / `Loopt tot {date}` is deliberately *not* nudged: that string
+  is phrased for the exclusive boundary.
 - **`AppTheme` uses `DynamicSchemeVariant.fidelity`** so the generated primary
   stays on the seed colour. The default variant pulls the saturated orange most
   of the way to brown.
@@ -1054,9 +1591,10 @@ Kept here because the code cannot express them and they cost real debugging:
   expanded app bar at once**, so a widget test finding a page's plain title
   text legitimately gets two matches (`findsWidgets`, not `findsOneWidget`) —
   `history_page_test.dart`'s season-picker test is the one that depends on
-  this: the dropdown that replaces the title in the picked state is the thing
-  actually asserted `findsOneWidget`, the plain title text is deliberately
-  `findsWidgets`.
+  this: `historyTitle` is deliberately asserted `findsWidgets`, while the
+  season label — body text, mounted once — stays `findsOneWidget`. An app bar
+  *action* is mounted once too, so a `trailing` widget is safe to assert
+  exactly.
 - **The current calendar season has no `seasons` row until its first match is
   created** (`season_window()` returns `season_id = null`), so the `leaderboard`
   view — inner-joined from `seasons` — cannot be queried for it. Before a
@@ -1124,7 +1662,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 247 tests at time of writing
+flutter test                    # 307 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 python3 scripts/generate_icon.py   # redraw assets/icon/*.png

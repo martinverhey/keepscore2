@@ -20,6 +20,28 @@ abstract final class AdaptiveColors {
     AppColors.modalSurfaceOnDark,
   );
 
+  static Color glassTint(BuildContext context) => _forBrightness(
+    context,
+    AppColors.glassTint,
+    AppColors.glassTintOnDark,
+  );
+
+  static Color glassRim(BuildContext context) =>
+      _forBrightness(context, AppColors.glassRim, AppColors.glassRimOnDark);
+
+  static bool isDark(BuildContext context) =>
+      _forBrightness(context, AppColors.white, AppColors.black) ==
+      AppColors.black;
+
+  static Color glassSheetTint(BuildContext context) =>
+      modalSurface(context).withValues(alpha: AppOpacity.glassSheetFill);
+
+  static Color scrollEdgeTint(BuildContext context) =>
+      pageBackground(context).withValues(alpha: AppOpacity.scrollEdgeFill);
+
+  static Color glassGlyph(BuildContext context) =>
+      _forBrightness(context, AppColors.black, AppColors.white);
+
   static Color pageBackground(BuildContext context) => AppPlatform.useCupertino
       ? CupertinoTheme.of(context).scaffoldBackgroundColor
       : Theme.of(context).scaffoldBackgroundColor;

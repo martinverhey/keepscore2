@@ -4,8 +4,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../extensions/box_constraints.extension.dart';
+import '../../extensions/build_context.extension.dart';
 import '../../extensions/double.extension.dart';
 import '../../theme/app_tokens.dart';
+import 'adaptive_bar_action.dart';
+import 'adaptive_bottom_bar_host.dart';
+import 'adaptive_glass.dart';
+import 'adaptive_top_bar.dart';
 import 'app_platform.dart';
 import 'suppressed_back_button_scope.dart';
 
@@ -13,12 +18,12 @@ class AdaptiveScaffold extends StatelessWidget {
   const AdaptiveScaffold({
     super.key,
     this.title,
+    this.subtitle,
     this.body,
     this.slivers,
     this.trailing,
     this.leading,
     this.floatingAction,
-    this.bottomBar,
     this.onRefresh,
     this.constrainWidth = true,
     this.hasScrollBody = false,
@@ -28,12 +33,12 @@ class AdaptiveScaffold extends StatelessWidget {
        );
 
   final String? title;
+  final Widget? subtitle;
   final Widget? body;
   final List<Widget>? slivers;
   final Widget? trailing;
   final Widget? leading;
   final Widget? floatingAction;
-  final Widget? bottomBar;
   final Future<void> Function()? onRefresh;
   final bool constrainWidth;
   final bool hasScrollBody;
@@ -42,35 +47,91 @@ class AdaptiveScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     final suppressBack = SuppressedBackButtonScope.of(context);
     if (AppPlatform.useCupertino) {
-      return _cupertino(_sliverBody(), suppressBack);
+      return _cupertino(context, suppressBack);
     }
     return LayoutBuilder(
       builder: (context, constraints) => _material(
         context,
-        _sliverBody(),
+        _sliverBody(AdaptiveBottomBarHost.insetOf(context)),
         suppressBack,
         AppPlatform.useWideWeb(context) ? constraints.contentGutter : 0,
       ),
     );
   }
 
-  Widget _cupertino(Widget sliverBody, bool suppressBack) {
+  Widget _cupertino(BuildContext context, bool suppressBack) {
+    final inset = AdaptiveBottomBarHost.insetOf(context);
+    if (_hasGlassTopBar(context)) {
+      return _cupertinoGlass(context, inset, suppressBack);
+    }
     return CupertinoPageScaffold(
-      child: bottomBar == null
-          ? _floated(_cupertinoScrollView(sliverBody, suppressBack))
-          : SafeArea(
-              top: false,
-              child: Column(
-                children: [
-                  Expanded(
-                    child: _floated(
-                      _cupertinoScrollView(sliverBody, suppressBack),
-                    ),
-                  ),
-                  bottomBar!,
-                ],
-              ),
+      child: _floated(
+        _cupertinoScrollView(_sliverBody(inset), suppressBack),
+        extraBottom: inset,
+      ),
+    );
+  }
+
+  bool _hasGlassTopBar(BuildContext context) =>
+      title != null && AdaptiveGlass.isEnabled(context);
+
+  Widget _cupertinoGlass(
+    BuildContext context,
+    double bottomInset,
+    bool suppressBack,
+  ) {
+    return CupertinoPageScaffold(
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: _floated(
+              _glassScrollView(context, bottomInset),
+              extraBottom: bottomInset,
             ),
+          ),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: AdaptiveTopBar(
+              title: title!,
+              subtitle: subtitle,
+              leading: _glassLeading(context, suppressBack),
+              trailing: trailing,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _glassScrollView(BuildContext context, double bottomInset) {
+    return CustomScrollView(
+      physics: const AlwaysScrollableScrollPhysics(
+        parent: BouncingScrollPhysics(),
+      ),
+      slivers: [
+        PinnedHeaderSliver(
+          child: SizedBox(
+            height:
+                MediaQuery.paddingOf(context).top +
+                AdaptiveTopBar.insetFor(hasSubtitle: subtitle != null),
+          ),
+        ),
+        if (onRefresh != null)
+          CupertinoSliverRefreshControl(onRefresh: onRefresh),
+        _sliverBody(bottomInset),
+      ],
+    );
+  }
+
+  Widget? _glassLeading(BuildContext context, bool suppressBack) {
+    if (leading != null) return leading;
+    if (suppressBack || !(ModalRoute.of(context)?.canPop ?? false)) return null;
+    return AdaptiveBarAction(
+      glyph: AdaptiveGlyph.back,
+      semanticLabel: context.l10n.commonBack,
+      onPressed: () => Navigator.maybePop(context),
     );
   }
 
@@ -115,7 +176,6 @@ class AdaptiveScaffold extends StatelessWidget {
               ),
             ),
       floatingActionButton: _floatingAction(gutter),
-      bottomNavigationBar: bottomBar,
     );
   }
 
@@ -177,14 +237,37 @@ class AdaptiveScaffold extends StatelessWidget {
     fontFamily: AppTypography.brandFontFamily,
   );
 
-  Widget _sliverBody() {
-    return SliverSafeArea(top: false, sliver: _bodySliver());
+  Widget _sliverBody(double bottomInset) {
+    return SliverSafeArea(top: false, sliver: _bodySliver(bottomInset));
   }
 
-  Widget _bodySliver() {
-    if (slivers case final slivers?) return _constrainedSlivers(slivers);
-    if (hasScrollBody) return _ownScrollSliver(_content());
-    return SliverFillRemaining(hasScrollBody: false, child: _content());
+  Widget _bodySliver(double bottomInset) {
+    if (slivers case final slivers?) {
+      return _sliverWithBottomInset(_constrainedSlivers(slivers), bottomInset);
+    }
+    if (hasScrollBody) {
+      return _ownScrollSliver(_withBottomInset(_content(), bottomInset));
+    }
+    return SliverFillRemaining(
+      hasScrollBody: false,
+      child: _withBottomInset(_content(), bottomInset),
+    );
+  }
+
+  Widget _sliverWithBottomInset(Widget sliver, double bottomInset) {
+    if (bottomInset == 0) return sliver;
+    return SliverPadding(
+      padding: EdgeInsets.only(bottom: bottomInset),
+      sliver: sliver,
+    );
+  }
+
+  Widget _withBottomInset(Widget child, double bottomInset) {
+    if (bottomInset == 0) return child;
+    return Padding(
+      padding: EdgeInsets.only(bottom: bottomInset),
+      child: child,
+    );
   }
 
   Widget _constrainedSlivers(List<Widget> slivers) {
@@ -263,14 +346,14 @@ class AdaptiveScaffold extends StatelessWidget {
           ];
   }
 
-  Widget _floated(Widget child) {
+  Widget _floated(Widget child, {double extraBottom = 0}) {
     if (floatingAction == null) return child;
     return Stack(
       children: [
         Positioned.fill(child: child),
         Positioned(
           right: AppSpacing.md,
-          bottom: AppSpacing.md,
+          bottom: AppSpacing.md + extraBottom,
           child: SafeArea(top: false, child: floatingAction!),
         ),
       ],

@@ -380,6 +380,11 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
+  String seasonRange(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
   String get leaderboardPickSeason => 'Kies een seizoen';
 
   @override
@@ -428,11 +433,6 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get matchesEmpty => 'Nog geen wedstrijden.';
-
-  @override
-  String matchesFilterEmpty(String gameType) {
-    return 'Nog geen $gameType-wedstrijden.';
-  }
 
   @override
   String get matchesCreateHintTabBar =>

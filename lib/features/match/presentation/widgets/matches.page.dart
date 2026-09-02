@@ -3,25 +3,26 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context.extension.dart';
+import '../../../../core/extensions/date_time.extension.dart';
 import '../../../../core/extensions/game_type.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/curved_arrow.dart';
 import '../../../../core/widgets/curved_arrow_direction.enum.dart';
+import '../../../../core/widgets/list_header.dart';
 import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../auth/presentation/widgets/guest_notice.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
 import '../../../competition/presentation/widgets/competition_settings_button.dart';
-import '../../../competition/presentation/widgets/competition_tab.enum.dart';
-import '../../../competition/presentation/widgets/competition_tab_bar.dart';
 import '../../../player/presentation/cubit/players_cubit.dart';
+import '../../domain/game_type.enum.dart';
 import '../../domain/match_entry.model.dart';
 import '../cubit/game_type_filter_cubit.dart';
 import '../cubit/match_list_cubit.dart';
 import 'day_header.dart';
-import 'game_type_filter_dropdown.dart';
+import 'game_type_filter_button.dart';
 import 'match_day_group.dart';
 import 'match_card.dart';
 import 'match_detail_sheet.dart';
@@ -36,10 +37,21 @@ class MatchesPage extends StatefulWidget {
 }
 
 class _MatchesPageState extends State<MatchesPage> {
+  final ValueNotifier<DateTime?> _currentDay = ValueNotifier(null);
+  final Map<DateTime, double> _dayHeaderStarts = {};
+  List<DateTime> _days = const [];
+  double _scrollOffset = 0;
+
   @override
   void initState() {
     super.initState();
     context.read<MatchListCubit>().load();
+  }
+
+  @override
+  void dispose() {
+    _currentDay.dispose();
+    super.dispose();
   }
 
   Future<void> _refresh() => Future.wait([
@@ -68,37 +80,91 @@ class _MatchesPageState extends State<MatchesPage> {
           : '${competition.name} · ${context.l10n.matchesTitle}',
     );
 
-    return AdaptiveScaffold(
-      title: context.l10n.matchesTitle,
-      onRefresh: _refresh,
-      trailing: _trailing(context, competitionId),
-      bottomBar: AppPlatform.useWideWeb(context)
-          ? null
-          : CompetitionTabBar(
-              competitionId: competitionId,
-              current: CompetitionTab.matches,
-              isRegistered: isRegistered,
+    return NotificationListener<ScrollNotification>(
+      onNotification: _trackDay,
+      child: AdaptiveScaffold(
+        title: context.l10n.matchesTitle,
+        subtitle: _daySubtitle(),
+        onRefresh: _refresh,
+        trailing: _trailing(context, competitionId),
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              AppSpacing.sm,
+              AppSpacing.md,
+              AppSpacing.xl,
             ),
-      slivers: [
-        SliverPadding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.md,
-            AppSpacing.sm,
-            AppSpacing.md,
-            AppSpacing.xl,
-          ),
-          sliver: BlocBuilder<MatchListCubit, MatchListState>(
-            builder: (context, state) => _body(
-              context,
-              state,
-              competitionId: competitionId,
-              isRegistered: isRegistered,
-              hasPlayers: hasPlayers,
-              myPlayerId: myPlayerId,
+            sliver: BlocBuilder<MatchListCubit, MatchListState>(
+              builder: (context, state) => _body(
+                context,
+                state,
+                competitionId: competitionId,
+                isRegistered: isRegistered,
+                hasPlayers: hasPlayers,
+                myPlayerId: myPlayerId,
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
+    );
+  }
+
+  bool _trackDay(ScrollNotification notification) {
+    if (notification.depth > 0) return false;
+    _scrollOffset = notification.metrics.pixels;
+    _resolveDay();
+    return false;
+  }
+
+  void _rememberDays(List<DateTime> days) {
+    _days = days;
+    _scheduleDayResolve();
+  }
+
+  void _scheduleDayResolve() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _resolveDay();
+    });
+  }
+
+  void _resolveDay() {
+    _currentDay.value = _dayAtCaptionLine();
+  }
+
+  DateTime? _dayAtCaptionLine() {
+    final captionLine =
+        _scrollOffset +
+        MediaQuery.paddingOf(context).top +
+        AdaptiveTopBar.subtitleTop -
+        DayHeader.textInset;
+
+    DateTime? handedOver;
+    for (final day in _days) {
+      final start = _dayHeaderStarts[day];
+      if (start == null || start > captionLine) break;
+      handedOver = day;
+    }
+    return handedOver;
+  }
+
+  Widget _daySubtitle() {
+    return ValueListenableBuilder<DateTime?>(
+      valueListenable: _currentDay,
+      builder: (context, day, _) => AnimatedSwitcher(
+        duration: const Duration(milliseconds: 200),
+        layoutBuilder: _startAlignedStack,
+        child: day == null
+            ? const SizedBox.shrink()
+            : Text(
+                day.matchDayLabel(context),
+                key: ValueKey(day),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTypography.captionStrong,
+              ),
+      ),
     );
   }
 
@@ -109,12 +175,12 @@ class _MatchesPageState extends State<MatchesPage> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          GameTypeFilterDropdown(
+          GameTypeFilterButton(
             selected: context.watch<GameTypeFilterCubit>().state,
             onSelected: context.read<GameTypeFilterCubit>().select,
           ),
           if (!AppPlatform.useWideWeb(context)) ...[
-            const SizedBox(width: AppSpacing.xs),
+            const SizedBox(width: AppSpacing.sm),
             CompetitionSettingsButton(competitionId: competitionId),
           ],
         ],
@@ -164,18 +230,16 @@ class _MatchesPageState extends State<MatchesPage> {
   }) {
     return SliverMainAxisGroup(
       slivers: [
-        if (!isRegistered)
-          SliverToBoxAdapter(
-            child: GuestNotice(message: context.l10n.matchGuestCannotLog),
-          ),
+        if (!isRegistered) SliverToBoxAdapter(child: _guestNotice(context)),
         if (isRegistered && !hasPlayers)
           SliverToBoxAdapter(child: _needsPlayersHint(context)),
+        if (state.selectedGameType case final gameType?)
+          SliverToBoxAdapter(child: _gameTypeHeader(context, gameType)),
         _matchesSection(
           context,
           state,
           competitionId: competitionId,
           isRegistered: isRegistered,
-          hasPlayers: hasPlayers,
           myPlayerId: myPlayerId,
         ),
         if (state.hasMore)
@@ -186,10 +250,24 @@ class _MatchesPageState extends State<MatchesPage> {
     );
   }
 
+  Widget _guestNotice(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: GuestNotice(message: context.l10n.matchGuestCannotLog),
+    );
+  }
+
   Widget _needsPlayersHint(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.sm, bottom: AppSpacing.lg),
       child: Text(context.l10n.matchNeedsPlayers, style: AppTypography.caption),
+    );
+  }
+
+  Widget _gameTypeHeader(BuildContext context, GameType gameType) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: ListHeader(title: gameType.label(context)),
     );
   }
 
@@ -198,25 +276,23 @@ class _MatchesPageState extends State<MatchesPage> {
     MatchListReady state, {
     required String competitionId,
     required bool isRegistered,
-    required bool hasPlayers,
     required String? myPlayerId,
   }) {
     if (state.busy) return _loader();
 
     if (state.matches.isEmpty) {
+      _rememberDays(const []);
       return SliverToBoxAdapter(
-        child: _emptyState(
-          context,
-          state,
-          isRegistered: isRegistered,
-          hasPlayers: hasPlayers,
-        ),
+        child: _emptyState(context, isRegistered: isRegistered),
       );
     }
 
+    final groups = groupByDay(state.matches);
+    _rememberDays([for (final group in groups) group.day]);
+
     return SliverMainAxisGroup(
       slivers: [
-        for (final group in groupByDay(state.matches))
+        for (final group in groups)
           _daySliver(
             context,
             group,
@@ -235,7 +311,7 @@ class _MatchesPageState extends State<MatchesPage> {
   }) {
     return SliverMainAxisGroup(
       slivers: [
-        PinnedHeaderSliver(child: DayHeader(day: group.day)),
+        ..._dayHeaderSlivers(context, group.day),
         SliverList.list(
           children: [
             for (final match in group.matches)
@@ -248,6 +324,26 @@ class _MatchesPageState extends State<MatchesPage> {
           ],
         ),
       ],
+    );
+  }
+
+  List<Widget> _dayHeaderSlivers(BuildContext context, DateTime day) {
+    if (!AdaptiveGlass.isEnabled(context)) {
+      return [PinnedHeaderSliver(child: DayHeader(day: day))];
+    }
+
+    return [
+      _dayHeaderMarker(day),
+      SliverToBoxAdapter(child: DayHeader(day: day)),
+    ];
+  }
+
+  Widget _dayHeaderMarker(DateTime day) {
+    return SliverLayoutBuilder(
+      builder: (context, constraints) {
+        _dayHeaderStarts[day] = constraints.precedingScrollExtent;
+        return const SliverToBoxAdapter(child: SizedBox.shrink());
+      },
     );
   }
 
@@ -269,22 +365,11 @@ class _MatchesPageState extends State<MatchesPage> {
     );
   }
 
-  Widget _emptyState(
-    BuildContext context,
-    MatchListReady state, {
-    required bool isRegistered,
-    required bool hasPlayers,
-  }) {
+  Widget _emptyState(BuildContext context, {required bool isRegistered}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        EmptyState(
-          message: state.selectedGameType == null
-              ? context.l10n.matchesEmpty
-              : context.l10n.matchesFilterEmpty(
-                  state.selectedGameType!.label(context),
-                ),
-        ),
+        EmptyState(message: context.l10n.matchesEmpty),
         if (isRegistered) _newMatchHint(context),
       ],
     );
@@ -370,4 +455,11 @@ class _MatchesPageState extends State<MatchesPage> {
       ),
     );
   }
+}
+
+Widget _startAlignedStack(Widget? current, List<Widget> previous) {
+  return Stack(
+    alignment: AlignmentDirectional.centerStart,
+    children: [...previous, ?current],
+  );
 }

@@ -1,9 +1,12 @@
 library;
 
+export 'adaptive_bar_action.dart';
+export 'adaptive_bottom_bar_host.dart';
 export 'adaptive_button.dart';
 export 'adaptive_colors.dart';
 export 'adaptive_dialogs.dart';
 export 'adaptive_floating_action.dart';
+export 'adaptive_glass.dart';
 export 'adaptive_icon.dart';
 export 'adaptive_loader.dart';
 export 'adaptive_material_scope.dart';
@@ -14,5 +17,6 @@ export 'adaptive_switch.dart';
 export 'adaptive_tab_bar.dart';
 export 'adaptive_tappable.dart';
 export 'adaptive_text_field.dart';
+export 'adaptive_top_bar.dart';
 export 'app_platform.dart';
 export 'suppressed_back_button_scope.dart';

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_tokens.dart';
 import '../scroll_dismissible_sheet.dart';
 import 'adaptive_colors.dart';
+import 'adaptive_glass.dart';
 import 'app_platform.dart';
 
 Future<bool> showAdaptiveConfirm(
@@ -75,13 +76,7 @@ Future<T?> showAdaptiveSheet<T>(
     return showCupertinoModalPopup<T>(
       context: context,
       builder: (sheetContext) => ScrollDismissibleSheet(
-        child: Container(
-          decoration: BoxDecoration(
-            color: CupertinoColors.systemBackground.resolveFrom(sheetContext),
-            borderRadius: AppRadius.sheet,
-          ),
-          child: SafeArea(top: false, child: builder(sheetContext)),
-        ),
+        child: _cupertinoSurface(sheetContext, builder),
       ),
     );
   }
@@ -113,4 +108,25 @@ Future<T?> showAdaptiveSheet<T>(
       ),
     ),
   );
+}
+
+Widget _cupertinoSurface(BuildContext context, WidgetBuilder builder) {
+  if (!AdaptiveGlass.isEnabled(context)) {
+    return Container(
+      decoration: BoxDecoration(
+        color: CupertinoColors.systemBackground.resolveFrom(context),
+        borderRadius: AppRadius.sheet,
+      ),
+      child: _cupertinoContent(context, builder),
+    );
+  }
+  return AdaptiveGlass(
+    cornerRadius: AppRadius.lg,
+    tint: AdaptiveColors.glassSheetTint(context),
+    child: _cupertinoContent(context, builder),
+  );
+}
+
+Widget _cupertinoContent(BuildContext context, WidgetBuilder builder) {
+  return SafeArea(top: false, child: builder(context));
 }

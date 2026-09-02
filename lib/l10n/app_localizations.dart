@@ -740,6 +740,12 @@ abstract class AppLocalizations {
   /// **'Ends {date}'**
   String leaderboardSeasonEnds(String date);
 
+  /// No description provided for @seasonRange.
+  ///
+  /// In en, this message translates to:
+  /// **'{start} – {end}'**
+  String seasonRange(String start, String end);
+
   /// No description provided for @leaderboardPickSeason.
   ///
   /// In en, this message translates to:
@@ -823,12 +829,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No matches yet.'**
   String get matchesEmpty;
-
-  /// No description provided for @matchesFilterEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'No {gameType} matches yet.'**
-  String matchesFilterEmpty(String gameType);
 
   /// No description provided for @matchesCreateHintTabBar.
   ///

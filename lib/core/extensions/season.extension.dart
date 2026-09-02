@@ -19,3 +19,15 @@ extension SeasonLabel on Season {
     };
   }
 }
+
+extension SeasonRangeLabel on Season {
+  String rangeLabel(BuildContext context) {
+    final tag = context.languageTag;
+    const insideTheDay = Duration(hours: 12);
+
+    return AppLocalizations.of(context).seasonRange(
+      DateFormat.MMMd(tag).format(startsAt.add(insideTheDay)),
+      DateFormat.yMMMd(tag).format(endsAt.subtract(insideTheDay)),
+    );
+  }
+}

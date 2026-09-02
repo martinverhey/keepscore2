@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'app/app.dart';
 import 'app/dependency_injection/injector.dart';
 import 'core/config/env.dart';
+import 'core/widgets/adaptive/adaptive_glass.dart';
 import 'features/match/presentation/cubit/game_type_filter_cubit.dart';
 import 'features/settings/presentation/cubit/language_cubit.dart';
 import 'features/settings/presentation/cubit/theme_cubit.dart';
@@ -22,6 +23,7 @@ Future<void> main() async {
   await getIt<ThemeCubit>().load();
   await getIt<LanguageCubit>().load();
   await getIt<GameTypeFilterCubit>().load();
+  await AdaptiveGlass.warmUp();
 
   runApp(const KeepScoreApp());
 }

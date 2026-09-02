@@ -13,6 +13,7 @@ import 'package:keepscore2/features/competition/domain/competition_repository.da
 import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/pages/competition_shell.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/competition_scope.dart';
+import 'package:keepscore2/features/competition/presentation/widgets/competition_tab_bar.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
 import 'package:keepscore2/features/leaderboard/domain/season_window.model.dart';
 import 'package:keepscore2/features/leaderboard/presentation/cubit/leaderboard_cubit.dart';
@@ -145,7 +146,7 @@ Future<GoRouter> _pumpHarness(
               StatefulShellRoute.indexedStack(
                 builder: (context, state, navigationShell) => CompetitionShell(
                   competitionId: state.pathParameters['id']!,
-                  child: navigationShell,
+                  navigationShell: navigationShell,
                 ),
                 branches: [
                   StatefulShellBranch(
@@ -232,6 +233,22 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('renders one shared tab bar across both tabs', (tester) async {
+    AppPlatform.debugOverrideCupertino = false;
+    await _pumpHarness(tester);
+
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(LeaderboardPage)),
+    );
+    expect(find.byType(CompetitionTabBar), findsOneWidget);
+
+    await tester.tap(find.text(l10n.matchesTitle).last);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(MatchesPage), findsOneWidget);
+    expect(find.byType(CompetitionTabBar), findsOneWidget);
+  });
 
   testWidgets('signing out while the leaderboard is open does not throw', (
     tester,

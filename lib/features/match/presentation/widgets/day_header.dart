@@ -9,21 +9,17 @@ class DayHeader extends StatelessWidget {
 
   final DateTime day;
 
+  static const double textInset = AppSpacing.xs;
+
   @override
   Widget build(BuildContext context) {
     return ColoredBox(
       color: AdaptiveColors.pageBackground(context),
       child: Padding(
-        padding: const EdgeInsets.only(
-          top: AppSpacing.xs,
-          bottom: AppSpacing.sm,
-        ),
+        padding: const EdgeInsets.only(top: textInset, bottom: AppSpacing.sm),
         child: Text(
           day.matchDayLabel(context),
-          style: AppTypography.labelLarge.copyWith(
-            fontWeight: FontWeight.w700,
-            color: AppColors.neutral,
-          ),
+          style: AppTypography.captionStrong,
         ),
       ),
     );
