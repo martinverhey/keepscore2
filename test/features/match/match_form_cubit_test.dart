@@ -210,6 +210,51 @@ void main() {
   );
 
   blocTest<MatchFormCubit, MatchFormState>(
+    'setting both teams at once replaces every assignment',
+    setUp: () => stubLoad(
+      playerList: [
+        _player('p1', 'Ada'),
+        _player('p2', 'Grace'),
+        _player('p3', 'Zoe'),
+      ],
+    ),
+    build: build,
+    act: (cubit) async {
+      await cubit.load();
+      cubit.setTeam(MatchTeam.a, ['p1', 'p2']);
+      cubit.setTeams(teamA: const ['p3'], teamB: const ['p1']);
+    },
+    verify: (cubit) {
+      expect(_ready(cubit).teamA.map((player) => player.id), ['p3']);
+      expect(_ready(cubit).teamB.map((player) => player.id), ['p1']);
+      expect(_ready(cubit).bench.map((player) => player.id), ['p2']);
+    },
+  );
+
+  blocTest<MatchFormCubit, MatchFormState>(
+    'switching to 1v1 keeps a side holding one player and clears a crowded one',
+    setUp: () => stubLoad(
+      playerList: [
+        _player('p1', 'Ada'),
+        _player('p2', 'Grace'),
+        _player('p3', 'Zoe'),
+      ],
+    ),
+    build: build,
+    act: (cubit) async {
+      await cubit.load();
+      cubit.setMode(MatchEntryMode.teams);
+      cubit.setTeams(teamA: const ['p1', 'p2'], teamB: const ['p3']);
+      cubit.setMode(MatchEntryMode.oneVsOne);
+    },
+    verify: (cubit) {
+      expect(_ready(cubit).mode, MatchEntryMode.oneVsOne);
+      expect(_ready(cubit).teamA, isEmpty);
+      expect(_ready(cubit).teamB.map((player) => player.id), ['p3']);
+    },
+  );
+
+  blocTest<MatchFormCubit, MatchFormState>(
     'a match needs a player on each side and two scores',
     setUp: stubLoad,
     build: build,

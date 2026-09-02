@@ -6,6 +6,7 @@ import '../../../../app/dependency_injection/injector.dart';
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/extensions/competition.extension.dart';
+import '../../../../core/extensions/match_team.extension.dart';
 import '../../../../core/extensions/text_editing_controller.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
@@ -45,11 +46,13 @@ class NewMatchSheet extends StatefulWidget {
 class _NewMatchSheetState extends State<NewMatchSheet> {
   final _scoreA = TextEditingController();
   final _scoreB = TextEditingController();
+  final _scoreAFocus = FocusNode();
 
   @override
   void dispose() {
     _scoreA.dispose();
     _scoreB.dispose();
+    _scoreAFocus.dispose();
     super.dispose();
   }
 
@@ -145,6 +148,8 @@ class _NewMatchSheetState extends State<NewMatchSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        _modeToggle(context, state),
+        const SizedBox(height: AppSpacing.lg),
         Text(context.l10n.matchPickTeamsTitle, style: AppTypography.titleSmall),
         const SizedBox(height: AppSpacing.md),
 
@@ -156,7 +161,7 @@ class _NewMatchSheetState extends State<NewMatchSheet> {
         const SizedBox(height: AppSpacing.lg),
         Text(context.l10n.matchScoreTitle, style: AppTypography.titleSmall),
         const SizedBox(height: AppSpacing.md),
-        _scoreFields(context),
+        _scoreFields(context, state),
 
         if (_hint(state, context) case final hint?) ...[
           const SizedBox(height: AppSpacing.md),
@@ -165,6 +170,18 @@ class _NewMatchSheetState extends State<NewMatchSheet> {
 
         if (state.submitFailure != null) _submitFailureText(context, state),
       ],
+    );
+  }
+
+  Widget _modeToggle(BuildContext context, MatchFormReady state) {
+    return AdaptiveSegmented<MatchEntryMode>(
+      key: const ValueKey(NewMatchKey.modeToggle),
+      segments: {
+        MatchEntryMode.oneVsOne: context.l10n.matchModeOneVsOne,
+        MatchEntryMode.teams: context.l10n.matchModeTeams,
+      },
+      value: state.mode,
+      onChanged: context.read<MatchFormCubit>().setMode,
     );
   }
 
@@ -179,11 +196,11 @@ class _NewMatchSheetState extends State<NewMatchSheet> {
         Expanded(
           child: TeamArea(
             key: const ValueKey(NewMatchKey.teamAreaA),
-            title: context.l10n.matchTeamA,
+            title: _sideLabel(context, state, MatchTeam.a),
             color: AdaptiveColors.teamA(context),
             members: _members(state, MatchTeam.a),
             rating: state.teamRating(MatchTeam.a),
-            placeholder: context.l10n.matchTapToSelectPlayers,
+            placeholder: _sidePlaceholder(context, state),
             myPlayerId: myPlayerId,
             onTap: () => _pickTeam(context, state, MatchTeam.a, myPlayerId),
           ),
@@ -192,17 +209,29 @@ class _NewMatchSheetState extends State<NewMatchSheet> {
         Expanded(
           child: TeamArea(
             key: const ValueKey(NewMatchKey.teamAreaB),
-            title: context.l10n.matchTeamB,
+            title: _sideLabel(context, state, MatchTeam.b),
             color: AdaptiveColors.teamB(context),
             members: _members(state, MatchTeam.b),
             rating: state.teamRating(MatchTeam.b),
-            placeholder: context.l10n.matchTapToSelectPlayers,
+            placeholder: _sidePlaceholder(context, state),
             myPlayerId: myPlayerId,
             onTap: () => _pickTeam(context, state, MatchTeam.b, myPlayerId),
           ),
         ),
       ],
     );
+  }
+
+  String _sideLabel(
+    BuildContext context,
+    MatchFormReady state,
+    MatchTeam side,
+  ) => side.label(context, isOneVsOne: state.isOneVsOne);
+
+  String _sidePlaceholder(BuildContext context, MatchFormReady state) {
+    return state.isOneVsOne
+        ? context.l10n.matchTapToSelectPlayer
+        : context.l10n.matchTapToSelectPlayers;
   }
 
   List<TeamAreaMember> _members(MatchFormReady state, MatchTeam team) {
@@ -218,14 +247,15 @@ class _NewMatchSheetState extends State<NewMatchSheet> {
         .toList(growable: false);
   }
 
-  Widget _scoreFields(BuildContext context) {
+  Widget _scoreFields(BuildContext context, MatchFormReady state) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
           child: AdaptiveTextField(
-            label: context.l10n.matchTeamA.toUpperCase(),
+            label: _sideLabel(context, state, MatchTeam.a),
             controller: _scoreA,
+            focusNode: _scoreAFocus,
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             maxLength: 3,
@@ -237,7 +267,7 @@ class _NewMatchSheetState extends State<NewMatchSheet> {
         const SizedBox(width: AppSpacing.md),
         Expanded(
           child: AdaptiveTextField(
-            label: context.l10n.matchTeamB.toUpperCase(),
+            label: _sideLabel(context, state, MatchTeam.b),
             controller: _scoreB,
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -297,21 +327,19 @@ class _NewMatchSheetState extends State<NewMatchSheet> {
     final cubit = context.read<MatchFormCubit>();
     final session = context.read<AuthBloc>().state;
     final competition = context.read<CompetitionCubit>().state.competition;
-    final color = side == MatchTeam.a
-        ? AdaptiveColors.teamA(context)
-        : AdaptiveColors.teamB(context);
 
-    final selected = await showAdaptiveSheet<Set<String>>(
+    final picked = await showAdaptiveSheet<TeamPickerResult>(
       context,
       builder: (_) => TeamPickerSheet(
         key: const ValueKey(NewMatchKey.teamPickerSheet),
-        title: side == MatchTeam.a
-            ? context.l10n.matchTeamA
-            : context.l10n.matchTeamB,
-        color: color,
-        players: _selectablePlayers(state, side),
-        initiallySelected: state.team(side).map((player) => player.id).toSet(),
-        onManagePlayers: () => _managePlayers(context, cubit, side),
+        titleA: _sideLabel(context, state, MatchTeam.a),
+        titleB: _sideLabel(context, state, MatchTeam.b),
+        players: state.players,
+        initialA: state.teamA.map((player) => player.id).toSet(),
+        initialB: state.teamB.map((player) => player.id).toSet(),
+        startSide: side,
+        singleSelect: state.isOneVsOne,
+        onManagePlayers: () => _managePlayers(context, cubit),
         canManagePlayers:
             session.canWrite && competition.isOwnedBySession(session),
         myPlayerId: myPlayerId,
@@ -319,25 +347,19 @@ class _NewMatchSheetState extends State<NewMatchSheet> {
     );
     if (!context.mounted) return;
     await cubit.refreshPlayers();
-    if (selected != null) cubit.setTeam(side, selected);
+    if (picked == null) return;
+    cubit.setTeams(teamA: picked.teamA, teamB: picked.teamB);
+    if (picked.isComplete) _scoreAFocus.requestFocus();
   }
 
   Future<List<Player>> _managePlayers(
     BuildContext context,
     MatchFormCubit cubit,
-    MatchTeam side,
   ) async {
     await showManagePlayersSheet(context, competitionId: cubit.competitionId);
     await cubit.refreshPlayers();
     final state = cubit.state;
     if (state is! MatchFormReady) return const [];
-    return _selectablePlayers(state, side);
+    return state.players;
   }
-}
-
-List<Player> _selectablePlayers(MatchFormReady state, MatchTeam side) {
-  final otherSide = side.opposite;
-  return state.players
-      .where((player) => state.assignments[player.id] != otherSide)
-      .toList(growable: false);
 }

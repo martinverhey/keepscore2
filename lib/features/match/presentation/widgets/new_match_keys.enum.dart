@@ -1,1 +1,1 @@
-enum NewMatchKey { teamAreaA, teamAreaB, teamPickerSheet }
+enum NewMatchKey { modeToggle, teamAreaA, teamAreaB, teamPickerSheet }

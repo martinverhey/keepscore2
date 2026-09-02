@@ -152,6 +152,18 @@ abstract class AppLocalizations {
   /// **'Done'**
   String get commonDone;
 
+  /// No description provided for @commonNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get commonNext;
+
+  /// No description provided for @commonPrevious.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous'**
+  String get commonPrevious;
+
   /// No description provided for @errorGeneric.
   ///
   /// In en, this message translates to:
@@ -869,13 +881,13 @@ abstract class AppLocalizations {
   /// No description provided for @matchTeamA.
   ///
   /// In en, this message translates to:
-  /// **'Team A'**
+  /// **'Team 1'**
   String get matchTeamA;
 
   /// No description provided for @matchTeamB.
   ///
   /// In en, this message translates to:
-  /// **'Team B'**
+  /// **'Team 2'**
   String get matchTeamB;
 
   /// No description provided for @matchScore.
@@ -908,17 +920,41 @@ abstract class AppLocalizations {
   /// **'Tap to add players'**
   String get matchTapToSelectPlayers;
 
+  /// No description provided for @matchTapToSelectPlayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to pick a player'**
+  String get matchTapToSelectPlayer;
+
+  /// No description provided for @matchModeOneVsOne.
+  ///
+  /// In en, this message translates to:
+  /// **'1v1'**
+  String get matchModeOneVsOne;
+
+  /// No description provided for @matchModeTeams.
+  ///
+  /// In en, this message translates to:
+  /// **'Teams'**
+  String get matchModeTeams;
+
+  /// No description provided for @matchPlayerA.
+  ///
+  /// In en, this message translates to:
+  /// **'Player 1'**
+  String get matchPlayerA;
+
+  /// No description provided for @matchPlayerB.
+  ///
+  /// In en, this message translates to:
+  /// **'Player 2'**
+  String get matchPlayerB;
+
   /// No description provided for @matchScoreTitle.
   ///
   /// In en, this message translates to:
   /// **'Final score'**
   String get matchScoreTitle;
-
-  /// No description provided for @matchTeamRating.
-  ///
-  /// In en, this message translates to:
-  /// **'Team rating {rating}'**
-  String matchTeamRating(String rating);
 
   /// No description provided for @matchNeedsBothTeams.
   ///

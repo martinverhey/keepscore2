@@ -10,6 +10,7 @@ import 'package:keepscore2/features/competition/presentation/cubit/competition_c
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
 import 'package:keepscore2/features/leaderboard/domain/season_window.model.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
+import 'package:keepscore2/core/widgets/selectable_row.dart';
 import 'package:keepscore2/features/match/domain/match_entry.model.dart';
 import 'package:keepscore2/features/match/domain/match_repository.dart';
 import 'package:keepscore2/features/match/presentation/cubit/match_form_cubit.dart';
@@ -149,6 +150,18 @@ Widget _sheetOpener() {
   );
 }
 
+MatchFormReady _ready(MatchFormCubit cubit) => cubit.state as MatchFormReady;
+
+Future<void> _pickTeamsMode(WidgetTester tester) async {
+  await tester.tap(find.text('Teams'));
+  await tester.pumpAndSettle();
+}
+
+bool _scoreAHasFocus(WidgetTester tester) => tester
+    .widget<EditableText>(find.byType(EditableText).first)
+    .focusNode
+    .hasFocus;
+
 void main() {
   testWidgets(
     'picking players from a team sheet renders them alphabetically inside that team',
@@ -162,6 +175,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      await _pickTeamsMode(tester);
 
       expect(find.byKey(const ValueKey(NewMatchKey.teamAreaA)), findsOneWidget);
       expect(find.byKey(const ValueKey(NewMatchKey.teamAreaB)), findsOneWidget);
@@ -274,6 +288,153 @@ void main() {
       );
     },
   );
+
+  testWidgets(
+    'a team match walks from Team A to Team B and lands in the score field',
+    (tester) async {
+      final blocs = _blocs();
+
+      await tester.pumpWidget(
+        _app(blocs: blocs, home: const Material(child: NewMatchSheet())),
+      );
+      await tester.pumpAndSettle();
+      await _pickTeamsMode(tester);
+
+      await tester.tap(find.byKey(const ValueKey(NewMatchKey.teamAreaA)));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Ada'));
+      await tester.tap(find.text('Zoe'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Next'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey(NewMatchKey.teamPickerSheet)),
+          matching: find.text('Team 2'),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Ada'), findsNothing);
+      expect(find.text('Previous'), findsOneWidget);
+
+      await tester.tap(find.text('Mia'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Next'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey(NewMatchKey.teamPickerSheet)),
+        findsNothing,
+      );
+      expect(_ready(blocs.form).teamA.map((player) => player.id), [
+        'p1',
+        'p2',
+      ]);
+      expect(_ready(blocs.form).teamB.map((player) => player.id), ['p3']);
+      expect(_scoreAHasFocus(tester), isTrue);
+    },
+  );
+
+  testWidgets('going back from Team B keeps what Team A already holds', (
+    tester,
+  ) async {
+    final blocs = _blocs();
+
+    await tester.pumpWidget(
+      _app(blocs: blocs, home: const Material(child: NewMatchSheet())),
+    );
+    await tester.pumpAndSettle();
+    await _pickTeamsMode(tester);
+
+    await tester.tap(find.byKey(const ValueKey(NewMatchKey.teamAreaA)));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ada'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Next'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Previous'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey(NewMatchKey.teamPickerSheet)),
+        matching: find.text('Team 1'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      tester.widget<SelectableRow>(
+        find.ancestor(
+          of: find.text('Ada'),
+          matching: find.byType(SelectableRow),
+        ),
+      ),
+      isA<SelectableRow>().having(
+        (row) => row.selected,
+        'selected',
+        isTrue,
+      ),
+    );
+  });
+
+  testWidgets('1v1 picks one player a side and never asks for Next', (
+    tester,
+  ) async {
+    final blocs = _blocs();
+
+    await tester.pumpWidget(
+      _app(blocs: blocs, home: const Material(child: NewMatchSheet())),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('1v1'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Player 1'), findsWidgets);
+    expect(find.text('Player 2'), findsWidgets);
+    expect(find.text('Tap to pick a player'), findsNWidgets(2));
+
+    await tester.tap(find.byKey(const ValueKey(NewMatchKey.teamAreaA)));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey(NewMatchKey.teamPickerSheet)),
+        matching: find.text('Player 1'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Next'), findsNothing);
+
+    await tester.tap(find.text('Ada'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey(NewMatchKey.teamPickerSheet)),
+        matching: find.text('Player 2'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Previous'), findsOneWidget);
+    expect(find.text('Next'), findsNothing);
+
+    await tester.tap(find.text('Zoe'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey(NewMatchKey.teamPickerSheet)),
+      findsNothing,
+    );
+    expect(_ready(blocs.form).teamA.map((player) => player.id), ['p2']);
+    expect(_ready(blocs.form).teamB.map((player) => player.id), ['p1']);
+    expect(_scoreAHasFocus(tester), isTrue);
+  });
 
   testWidgets('dismissing an untouched sheet closes it without a prompt', (
     tester,

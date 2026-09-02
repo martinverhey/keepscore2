@@ -36,6 +36,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonDone => 'Done';
 
   @override
+  String get commonNext => 'Next';
+
+  @override
+  String get commonPrevious => 'Previous';
+
+  @override
   String get errorGeneric => 'Something went wrong. Please try again.';
 
   @override
@@ -453,10 +459,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get matchNewTitle => 'New Match';
 
   @override
-  String get matchTeamA => 'Team A';
+  String get matchTeamA => 'Team 1';
 
   @override
-  String get matchTeamB => 'Team B';
+  String get matchTeamB => 'Team 2';
 
   @override
   String get matchScore => 'Score';
@@ -475,12 +481,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get matchTapToSelectPlayers => 'Tap to add players';
 
   @override
-  String get matchScoreTitle => 'Final score';
+  String get matchTapToSelectPlayer => 'Tap to pick a player';
 
   @override
-  String matchTeamRating(String rating) {
-    return 'Team rating $rating';
-  }
+  String get matchModeOneVsOne => '1v1';
+
+  @override
+  String get matchModeTeams => 'Teams';
+
+  @override
+  String get matchPlayerA => 'Player 1';
+
+  @override
+  String get matchPlayerB => 'Player 2';
+
+  @override
+  String get matchScoreTitle => 'Final score';
 
   @override
   String get matchNeedsBothTeams => 'Put at least one player on each side.';

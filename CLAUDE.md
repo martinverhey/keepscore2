@@ -98,9 +98,48 @@ competition — the sheet itself never navigates. `showNewMatchSheet` builds the
 rather than popping and pushing `Routes.players` — the sheet builds its own
 `PlayersCubit` via `getIt` (a nested sheet route inherits no providers from the
 route underneath it), and `NewMatchSheet._managePlayers` refreshes
-`MatchFormCubit` afterwards and hands the picker back its freshly filtered
-player list through `TeamPickerSheet.onManagePlayers`, so a player added there
-is selectable without closing anything.
+`MatchFormCubit` afterwards and hands the picker back the refreshed player
+list through `TeamPickerSheet.onManagePlayers`, so a player added there
+is selectable without closing anything (the picker does its own
+already-on-the-other-side filtering now, so what it gets back is every active
+player, not one side's selectable subset).
+
+**The new match sheet opens on a `1v1` / `Teams` toggle
+(`AdaptiveSegmented<MatchEntryMode>`), and that mode drives the whole form.**
+`MatchEntryMode` (`presentation/cubit/match_entry_mode.enum.dart`, exported
+through `match_form_state.dart`) lives on `MatchFormReady`; it defaults to
+`oneVsOne`. In `oneVsOne` the two `TeamArea`s are titled Player 1 / Player 2 and
+say `matchTapToSelectPlayer`, and the score fields' labels follow the same
+`_sideLabel` — in the form the mode is never re-derived from how many players
+happen to be on a side. Switching to `oneVsOne` clears any side already holding
+more than one player (`MatchFormCubit.setMode` → `_withoutCrowdedSides`); a side
+holding exactly one survives.
+**The sides are numbered, not lettered** — `Team 1`/`Team 2`, `Player 1`/
+`Speler 1` — while the l10n *keys* still read `matchTeamA`/`matchPlayerB`, so
+don't read a letter off a key name and assume it reaches the screen.
+
+**`TeamPickerSheet` is one sheet with two steps, not one sheet per side.** It
+takes both sides' initial selections plus a `startSide`, keeps `_selected` for
+both, slides between them inside its own `AnimatedSwitcher` (start-aligned
+`Stack` layout builder, direction from `_forward` — the transition builder
+compares each child's `ValueKey<MatchTeam>` against the current side so the
+outgoing step leaves by the opposite edge, which `AnimatedSwitcher` cannot
+work out on its own), and pops a single `TeamPickerResult(teamA, teamB,
+isComplete)` that `NewMatchSheet` applies in one `MatchFormCubit.setTeams`.
+Because both sides live in the sheet, "a player already on the other side is
+not offered here" is now a live check against `_selected`, not a list filtered
+once at open time. In `teams` the steps are advanced by the buttons — `Next`
+on A, `Previous`/`Next` side by side on B, where B's `Next` finishes; in
+`oneVsOne` picking a name *is* the advance, so step A has no button at all and
+step B carries only `Previous`. `isComplete` distinguishes finishing from
+dismissing: both keep the selections, only finishing pulls focus into the
+Team A score field (`_scoreAFocus`, hence `AdaptiveTextField.focusNode`). One
+consequence of the spec: on `oneVsOne`'s step B with a selection already
+made, re-tapping that same name is what confirms it, since there is no `Next`
+there.
+`Sheet.primaryButton`/`secondaryButton` are `Widget?` rather than
+`AdaptiveButton?` for this — B's step needs a `Row` of two — and every other
+call site still passes a plain `AdaptiveButton`.
 `showMatchDetailSheet` (`match/presentation/widgets/match_detail_sheet.dart`)
 renders the same `MatchCard` the list does, then a "Player rank" card (each
 player's rating going in, Team A left / Team B right, divided off from the two
@@ -1751,7 +1790,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 325 tests at time of writing
+flutter test                    # 330 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 python3 scripts/generate_icon.py   # redraw assets/icon/*.png

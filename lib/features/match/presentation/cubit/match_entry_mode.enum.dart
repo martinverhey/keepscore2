@@ -1,0 +1,1 @@
+enum MatchEntryMode { oneVsOne, teams }

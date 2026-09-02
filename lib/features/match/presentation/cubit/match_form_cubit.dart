@@ -106,6 +106,37 @@ class MatchFormCubit extends Cubit<MatchFormState> {
     emit(ready.copyWith(assignments: assignments, clearSubmitFailure: true));
   }
 
+  void setTeams({
+    required Iterable<String> teamA,
+    required Iterable<String> teamB,
+  }) {
+    final ready = _ready;
+    if (ready == null) return;
+    emit(
+      ready.copyWith(
+        assignments: {
+          for (final playerId in teamA) playerId: MatchTeam.a,
+          for (final playerId in teamB) playerId: MatchTeam.b,
+        },
+        clearSubmitFailure: true,
+      ),
+    );
+  }
+
+  void setMode(MatchEntryMode mode) {
+    final ready = _ready;
+    if (ready == null || ready.mode == mode) return;
+    emit(
+      ready.copyWith(
+        mode: mode,
+        assignments: mode == MatchEntryMode.oneVsOne
+            ? _withoutCrowdedSides(ready.assignments)
+            : ready.assignments,
+        clearSubmitFailure: true,
+      ),
+    );
+  }
+
   Future<String?> submit({required int scoreA, required int scoreB}) async {
     final ready = _ready;
     if (ready == null) return null;
@@ -134,4 +165,16 @@ class MatchFormCubit extends Cubit<MatchFormState> {
       return null;
     }
   }
+}
+
+Map<String, MatchTeam> _withoutCrowdedSides(
+  Map<String, MatchTeam> assignments,
+) {
+  final crowded = MatchTeam.values.where(
+    (side) => assignments.values.where((team) => team == side).length > 1,
+  );
+  return {
+    for (final entry in assignments.entries)
+      if (!crowded.contains(entry.value)) entry.key: entry.value,
+  };
 }

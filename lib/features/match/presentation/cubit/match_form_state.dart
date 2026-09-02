@@ -5,6 +5,9 @@ import '../../../competition/domain/competition.model.dart';
 import '../../../player/domain/player.model.dart';
 import '../../domain/elo_calculator.dart';
 import '../../domain/match_entry.model.dart';
+import 'match_entry_mode.enum.dart';
+
+export 'match_entry_mode.enum.dart';
 
 sealed class MatchFormState extends Equatable {
   const MatchFormState();
@@ -39,6 +42,7 @@ class MatchFormReady extends MatchFormState {
     this.players = const [],
     this.ratings = const {},
     this.assignments = const {},
+    this.mode = MatchEntryMode.oneVsOne,
     this.busy = false,
     this.submitFailure,
   });
@@ -47,8 +51,11 @@ class MatchFormReady extends MatchFormState {
   final List<Player> players;
   final Map<String, double> ratings;
   final Map<String, MatchTeam> assignments;
+  final MatchEntryMode mode;
   final bool busy;
   final Failure? submitFailure;
+
+  bool get isOneVsOne => mode == MatchEntryMode.oneVsOne;
 
   List<Player> team(MatchTeam side) => players
       .where((player) => assignments[player.id] == side)
@@ -99,6 +106,7 @@ class MatchFormReady extends MatchFormState {
     List<Player>? players,
     Map<String, double>? ratings,
     Map<String, MatchTeam>? assignments,
+    MatchEntryMode? mode,
     bool? busy,
     Failure? submitFailure,
     bool clearSubmitFailure = false,
@@ -108,6 +116,7 @@ class MatchFormReady extends MatchFormState {
       players: players ?? this.players,
       ratings: ratings ?? this.ratings,
       assignments: assignments ?? this.assignments,
+      mode: mode ?? this.mode,
       busy: busy ?? this.busy,
       submitFailure: clearSubmitFailure
           ? null
@@ -121,6 +130,7 @@ class MatchFormReady extends MatchFormState {
     players,
     ratings,
     assignments,
+    mode,
     busy,
     submitFailure,
   ];
