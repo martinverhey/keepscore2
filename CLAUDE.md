@@ -1144,14 +1144,50 @@ it, lands below the bar rather than under it.
 **Which day is under the bar comes from the sliver protocol, not from
 probing render boxes.** Each day group is preceded by a zero-extent
 `SliverLayoutBuilder` marker that records `constraints.precedingScrollExtent`
-into `_dayStarts` — the group's absolute start offset, stable regardless of
-scroll position, and correct through both `SliverPadding` and
-`SliverMainAxisGroup` since each adds its own leading extent to what it
-passes down. A `NotificationListener<ScrollNotification>` around the scaffold
-then picks the last group whose start is at or above
-`pixels + padding.top + insetFor(hasSubtitle: true)`, and writes it to a
-`ValueNotifier<DateTime?>` that only the subtitle's `ValueListenableBuilder`
-listens to, so a day change repaints the caption and nothing else.
+into `_dayHeaderStarts` — where that day's `DayHeader` begins, absolute and
+stable regardless of scroll position, and correct through both
+`SliverPadding` and `SliverMainAxisGroup` since each adds its own leading
+extent to what it passes down. A `NotificationListener<ScrollNotification>`
+around the scaffold then picks the last group whose start has passed the
+caption line, and writes it to a `ValueNotifier<DateTime?>` that only the
+subtitle's `ValueListenableBuilder` listens to, so a day change repaints the
+caption and nothing else.
+
+**The handover point is a geometric alignment, not a tuned number.** The day
+changes at exactly the scroll offset where the list's own day label lands on
+the row the bar's caption occupies — `_dayAtCaptionLine`'s threshold is
+`pixels + padding.top + AdaptiveTopBar.subtitleTop - DayHeader.textInset`,
+the two insets that separate each label from its own box's top. Both labels
+are `AppTypography.captionStrong`, so aligning their tops aligns them
+outright: the caption appears in the same pixel row the header label just
+vacated, and the list header dissolves into the scroll-edge band exactly as
+its copy lights up in the bar. `matches_page_test.dart` measures that
+directly — it scrolls to the caption line and asserts the two `getRect` tops
+match within half a pixel — with a second pair of tests pinning the flip to
+that same offset ±1px.
+
+Two earlier attempts at this, both rejected on device, are worth not
+repeating: `insetFor` (the bar's height *plus* `barMargin`) names a day whose
+header is still a margin's worth below the glass, and even `barHeightFor`
+(the painted bottom edge) fires while the header is fully readable. The two
+constants above are the knob — nothing else in the page needs a magic
+offset — but note that at any real scroll velocity the 200 ms
+`AnimatedSwitcher` fade moves the *perceived* moment far more than a few
+pixels of threshold do, which is why nudging the threshold by hand feels
+like it does almost nothing.
+
+The caption cross-fades through an `AnimatedSwitcher`, and that switcher
+needs `layoutBuilder: _startAlignedStack` — the default one stacks the
+outgoing child on the incoming one with `alignment: Alignment.center`, so a
+shorter day name visibly jumps sideways to sit centred over the longer one
+for the length of the fade. A start-aligned `Stack` is the whole fix, and
+`matches_page_test.dart` pins it by comparing both names' `left` mid-fade.
+
+**`null` is a real value here**: before the first header clears that edge
+nothing has scrolled behind the bar, so the subtitle is empty rather than
+naming the day the list happens to start with. The bar keeps its taller
+`hasSubtitle` height either way — `subtitle` is the always-present
+`ValueListenableBuilder`, so an empty caption is not a layout change.
 Three things this shape is deliberately avoiding:
 - **`GlobalKey`s per group with `localToGlobal` on every scroll do not
   work here.** The group you want is usually the one that has just scrolled
@@ -1172,7 +1208,8 @@ Three things this shape is deliberately avoiding:
 **`AdaptiveBarAction` is the small sibling of `AdaptiveFloatingAction`**, and
 the two together are the whole glass-control vocabulary: an untinted
 `LiquidGlassTabBarAction` carrying `AdaptiveColors.glassGlyph`, at
-`AppGlass.barActionSize` (44) rather than `barHeight` (64). Every bar button
+`AppGlass.barActionSize` (60) rather than `barHeight` (64), which is also the
+top bar's own row height, above. Every bar button
 goes through it — `CompetitionSettingsButton`, `GameTypeFilterButton`, and
 `AdaptiveScaffold._glassLeading`'s hand-built back button — so the top bar's
 controls, the tab action and the FAB are all the same untinted lens with the
@@ -1625,7 +1662,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 302 tests at time of writing
+flutter test                    # 307 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 python3 scripts/generate_icon.py   # redraw assets/icon/*.png

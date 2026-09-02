@@ -38,7 +38,7 @@ class MatchesPage extends StatefulWidget {
 
 class _MatchesPageState extends State<MatchesPage> {
   final ValueNotifier<DateTime?> _currentDay = ValueNotifier(null);
-  final Map<DateTime, double> _dayStarts = {};
+  final Map<DateTime, double> _dayHeaderStarts = {};
   List<DateTime> _days = const [];
   double _scrollOffset = 0;
 
@@ -130,23 +130,23 @@ class _MatchesPageState extends State<MatchesPage> {
   }
 
   void _resolveDay() {
-    if (_days.isEmpty) {
-      _currentDay.value = null;
-      return;
-    }
+    _currentDay.value = _dayAtCaptionLine();
+  }
 
-    final threshold =
+  DateTime? _dayAtCaptionLine() {
+    final captionLine =
         _scrollOffset +
         MediaQuery.paddingOf(context).top +
-        AdaptiveTopBar.insetFor(hasSubtitle: true);
+        AdaptiveTopBar.subtitleTop -
+        DayHeader.textInset;
 
-    var topmost = _days.first;
+    DateTime? handedOver;
     for (final day in _days) {
-      final start = _dayStarts[day];
-      if (start == null || start > threshold) break;
-      topmost = day;
+      final start = _dayHeaderStarts[day];
+      if (start == null || start > captionLine) break;
+      handedOver = day;
     }
-    _currentDay.value = topmost;
+    return handedOver;
   }
 
   Widget _daySubtitle() {
@@ -154,6 +154,7 @@ class _MatchesPageState extends State<MatchesPage> {
       valueListenable: _currentDay,
       builder: (context, day, _) => AnimatedSwitcher(
         duration: const Duration(milliseconds: 200),
+        layoutBuilder: _startAlignedStack,
         child: day == null
             ? const SizedBox.shrink()
             : Text(
@@ -332,15 +333,15 @@ class _MatchesPageState extends State<MatchesPage> {
     }
 
     return [
-      _dayStartMarker(day),
+      _dayHeaderMarker(day),
       SliverToBoxAdapter(child: DayHeader(day: day)),
     ];
   }
 
-  Widget _dayStartMarker(DateTime day) {
+  Widget _dayHeaderMarker(DateTime day) {
     return SliverLayoutBuilder(
       builder: (context, constraints) {
-        _dayStarts[day] = constraints.precedingScrollExtent;
+        _dayHeaderStarts[day] = constraints.precedingScrollExtent;
         return const SliverToBoxAdapter(child: SizedBox.shrink());
       },
     );
@@ -454,4 +455,11 @@ class _MatchesPageState extends State<MatchesPage> {
       ),
     );
   }
+}
+
+Widget _startAlignedStack(Widget? current, List<Widget> previous) {
+  return Stack(
+    alignment: AlignmentDirectional.centerStart,
+    children: [...previous, ?current],
+  );
 }

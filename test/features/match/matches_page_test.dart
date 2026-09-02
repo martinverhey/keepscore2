@@ -115,11 +115,13 @@ Future<GameTypeFilterCubit> _pumpMatchesPage(WidgetTester tester) async {
   return gameTypeFilterCubit;
 }
 
+void _jumpTo(WidgetTester tester, double offset) => tester
+    .state<ScrollableState>(find.byType(Scrollable).first)
+    .position
+    .jumpTo(offset);
+
 Future<void> _scrollTo(WidgetTester tester, double offset) async {
-  tester
-      .state<ScrollableState>(find.byType(Scrollable).first)
-      .position
-      .jumpTo(offset);
+  _jumpTo(tester, offset);
   await tester.pumpAndSettle();
 }
 
@@ -127,10 +129,24 @@ Finder _dayHeader(int day) => find.byWidgetPredicate(
   (widget) => widget is DayHeader && widget.day == DateTime(2026, 8, day),
 );
 
+Finder _dayHeaderLabel(int day) => find.descendant(
+  of: _dayHeader(day),
+  matching: find.byType(Text),
+);
+
 Finder _barDay(int day) => find.descendant(
   of: find.byType(AdaptiveTopBar),
   matching: find.text(DateFormat.MMMMEEEEd('en').format(DateTime(2026, 8, day))),
 );
+
+double _scrollOntoCaptionLine(WidgetTester tester, int day) {
+  final bar = find.byType(AdaptiveTopBar);
+  final captionLine =
+      tester.getRect(bar).top +
+      MediaQuery.paddingOf(tester.element(bar)).top +
+      AdaptiveTopBar.subtitleTop;
+  return tester.getRect(_dayHeaderLabel(day)).top - captionLine;
+}
 
 Finder _matchCard(String id) => find.byWidgetPredicate(
   (widget) => widget is MatchCard && widget.match.id == id,
@@ -202,12 +218,27 @@ void main() {
     );
   });
 
-  testWidgets('the glass bar names the day at the top of the list', (
+  testWidgets('the glass bar names no day while the first header is still '
+      'readable', (tester) async {
+    AppPlatform.debugOverrideCupertino = true;
+    AppPlatform.debugOverrideLiquidGlass = true;
+    await _pumpMatchesPage(tester);
+
+    expect(_barDay(5), findsNothing);
+
+    await _scrollTo(tester, _scrollOntoCaptionLine(tester, 5) - 1);
+
+    expect(_barDay(5), findsNothing);
+  });
+
+  testWidgets('the glass bar names the day scrolled behind it', (
     tester,
   ) async {
     AppPlatform.debugOverrideCupertino = true;
     AppPlatform.debugOverrideLiquidGlass = true;
     await _pumpMatchesPage(tester);
+
+    await _scrollTo(tester, _scrollOntoCaptionLine(tester, 5) + 1);
 
     expect(_barDay(5), findsOneWidget);
 
@@ -215,6 +246,37 @@ void main() {
 
     expect(_barDay(4), findsOneWidget);
     expect(_barDay(5), findsNothing);
+  });
+
+  testWidgets('the bar picks the day up where the list header left it', (
+    tester,
+  ) async {
+    AppPlatform.debugOverrideCupertino = true;
+    AppPlatform.debugOverrideLiquidGlass = true;
+    await _pumpMatchesPage(tester);
+
+    await _scrollTo(tester, _scrollOntoCaptionLine(tester, 5));
+
+    expect(
+      tester.getRect(_barDay(5)).top,
+      moreOrLessEquals(tester.getRect(_dayHeaderLabel(5)).top, epsilon: 0.5),
+    );
+  });
+
+  testWidgets('one day name replaces the other without shifting sideways', (
+    tester,
+  ) async {
+    AppPlatform.debugOverrideCupertino = true;
+    AppPlatform.debugOverrideLiquidGlass = true;
+    await _pumpMatchesPage(tester);
+
+    await _scrollTo(tester, _scrollOntoCaptionLine(tester, 5) + 1);
+
+    _jumpTo(tester, 400);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(tester.getRect(_barDay(4)).left, tester.getRect(_barDay(5)).left);
   });
 
   testWidgets('a filtered list is headed by the game type it is filtered to', (
