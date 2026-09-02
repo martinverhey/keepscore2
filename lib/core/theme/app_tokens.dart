@@ -189,7 +189,6 @@ abstract final class AppTypography {
   static const TextStyle eyebrow = TextStyle(
     fontSize: bodyMediumSize,
     fontWeight: FontWeight.w700,
-    letterSpacing: 1.2,
   );
   static const TextStyle caption = TextStyle(
     fontSize: labelLargeSize,

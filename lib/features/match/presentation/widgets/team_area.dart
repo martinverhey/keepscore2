@@ -74,7 +74,7 @@ class TeamArea extends StatelessWidget {
           child: Transform.translate(
             offset: const Offset(0, 4),
             child: Text(
-              title.toUpperCase(),
+              title,
               style: AppTypography.eyebrow.copyWith(color: color),
             ),
           ),
