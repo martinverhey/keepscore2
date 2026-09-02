@@ -9,6 +9,8 @@ abstract interface class MatchRepository {
     int offset = 0,
   });
 
+  Future<Set<GameType>> seasonGameTypes(String competitionId);
+
   Future<MatchEntry?> byId(String matchId);
 
   Future<List<MatchEntry>> recentForPlayer({

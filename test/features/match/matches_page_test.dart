@@ -61,7 +61,10 @@ MatchEntry _match(int day, int index) => MatchEntry(
   ],
 );
 
-Future<GameTypeFilterCubit> _pumpMatchesPage(WidgetTester tester) async {
+Future<GameTypeFilterCubit> _pumpMatchesPage(
+  WidgetTester tester, {
+  Set<GameType> played = const {GameType.oneVOne, GameType.twoVTwo},
+}) async {
   final auth = MockAuthRepository();
   final competitions = MockCompetitionRepository();
   final players = MockPlayerRepository();
@@ -73,6 +76,9 @@ Future<GameTypeFilterCubit> _pumpMatchesPage(WidgetTester tester) async {
   when(() => auth.watchUser()).thenAnswer((_) => const Stream.empty());
   when(() => players.currentPlayers(_competitionId)).thenAnswer((_) async => []);
   when(() => matches.watch(_competitionId)).thenAnswer((_) => Stream.value(null));
+  when(
+    () => matches.seasonGameTypes(_competitionId),
+  ).thenAnswer((_) async => played);
   when(
     () => matches.feed(
       competitionId: any(named: 'competitionId'),
@@ -124,6 +130,11 @@ Future<void> _scrollTo(WidgetTester tester, double offset) async {
   _jumpTo(tester, offset);
   await tester.pumpAndSettle();
 }
+
+Finder _sheetOption(String label) => find.descendant(
+  of: find.byType(GameTypeFilterSheet),
+  matching: find.text(label),
+);
 
 Finder _dayHeader(int day) => find.byWidgetPredicate(
   (widget) => widget is DayHeader && widget.day == DateTime(2026, 8, day),
@@ -277,6 +288,46 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
 
     expect(tester.getRect(_barDay(4)).left, tester.getRect(_barDay(5)).left);
+  });
+
+  testWidgets('the filter offers only the game types played this season', (
+    tester,
+  ) async {
+    AppPlatform.debugOverrideCupertino = false;
+    await _pumpMatchesPage(
+      tester,
+      played: const {GameType.oneVOne, GameType.twoVTwo},
+    );
+
+    await tester.tap(find.byType(GameTypeFilterButton));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(GameTypeFilterSheet), findsOneWidget);
+    expect(_sheetOption('All'), findsOneWidget);
+    expect(_sheetOption('1v1'), findsOneWidget);
+    expect(_sheetOption('2v2'), findsOneWidget);
+    expect(_sheetOption('3v3'), findsNothing);
+    expect(_sheetOption('4v4'), findsNothing);
+    expect(_sheetOption('Mixed'), findsNothing);
+  });
+
+  testWidgets('a filter on a game type nobody has played yet stays offered', (
+    tester,
+  ) async {
+    AppPlatform.debugOverrideCupertino = false;
+    final filter = await _pumpMatchesPage(
+      tester,
+      played: const {GameType.oneVOne},
+    );
+    await filter.select(GameType.fourVFour);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(GameTypeFilterButton));
+    await tester.pumpAndSettle();
+
+    expect(_sheetOption('4v4'), findsOneWidget);
+    expect(_sheetOption('1v1'), findsOneWidget);
+    expect(_sheetOption('2v2'), findsNothing);
   });
 
   testWidgets('a filtered list is headed by the game type it is filtered to', (

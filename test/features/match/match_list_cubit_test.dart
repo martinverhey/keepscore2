@@ -48,6 +48,9 @@ void main() {
     gameTypeFilterCubit = GameTypeFilterCubit();
     ticks = StreamController<void>();
     when(() => repository.watch('c1')).thenAnswer((_) => ticks.stream);
+    when(
+      () => repository.seasonGameTypes('c1'),
+    ).thenAnswer((_) async => const <GameType>{});
   });
 
   tearDown(() {
@@ -209,6 +212,44 @@ void main() {
     verify: (cubit) {
       expect(cubit.state, isA<MatchListReady>());
       expect(_ready(cubit).matches, hasLength(2));
+    },
+  );
+
+  blocTest<MatchListCubit, MatchListState>(
+    'loading also reports which game types the season has seen',
+    setUp: () {
+      stubPage(_page(3));
+      when(() => repository.seasonGameTypes('c1')).thenAnswer(
+        (_) async => const {GameType.oneVOne, GameType.threeVThree},
+      );
+    },
+    build: build,
+    act: (cubit) => cubit.load(),
+    verify: (cubit) {
+      expect(_ready(cubit).seasonGameTypes, {
+        GameType.oneVOne,
+        GameType.threeVThree,
+      });
+    },
+  );
+
+  blocTest<MatchListCubit, MatchListState>(
+    'switching filter keeps the season\'s game types',
+    setUp: () {
+      stubPage(_page(3));
+      stubGameTypePage(GameType.oneVOne, _page(1, from: 100));
+      when(
+        () => repository.seasonGameTypes('c1'),
+      ).thenAnswer((_) async => const {GameType.oneVOne});
+    },
+    build: build,
+    act: (cubit) async {
+      await cubit.load();
+      await cubit.selectGameTypeFilter(GameType.oneVOne);
+      await _settle();
+    },
+    verify: (cubit) {
+      expect(_ready(cubit).seasonGameTypes, {GameType.oneVOne});
     },
   );
 

@@ -46,6 +46,9 @@ language. For the actual SQL, see `migrations/20260809100000_schema.sql`,
 - **season_window** — Tells the app what the *current* season is, even
   before it technically exists (no match played in it yet, so no row for
   it).
+- **season_game_types** — Lists which game types (1v1, 2v2, …) have actually
+  been played in the current season, so the Matches filter only offers the
+  ones there is something to filter to.
 
 ## Joining a competition
 

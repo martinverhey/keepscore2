@@ -44,15 +44,20 @@ class MatchListCubit extends Cubit<MatchListState> {
     final limit = currentLength > pageSize ? currentLength : pageSize;
 
     try {
-      final matches = await _repository.feed(
+      final feed = _repository.feed(
         competitionId: competitionId,
         gameType: gameType,
         limit: limit,
       );
+      final seasonGameTypes = _repository.seasonGameTypes(competitionId);
+
+      final matches = await feed;
+      final playedGameTypes = await seasonGameTypes;
       if (isClosed) return;
       emit(
         MatchListReady(
           selectedGameType: gameType,
+          seasonGameTypes: playedGameTypes,
           matches: matches,
           hasMore: matches.length == limit,
         ),

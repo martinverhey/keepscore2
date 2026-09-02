@@ -1665,7 +1665,17 @@ Kept here because the code cannot express them and they cost real debugging:
   per-match snapshot plus the Matches-list filter. Don't reintroduce a
   `gameType` parameter on `LeaderboardRepository`/`ProfileRepository`
   methods, or a second `game_type_*` sibling view, without deciding that
-  scope is coming back on purpose.
+  scope is coming back on purpose. **The filter sheet only lists the game
+  types actually played in the current season** — `season_game_types`
+  (20260902100000) answers that in one call, scoped by `season_window`'s
+  computed bounds rather than by `matches.season_id` so it is also correct
+  before the season's first match exists; `MatchListCubit.load` fetches it
+  alongside the feed and parks it on `MatchListReady.seasonGameTypes` (a
+  virtual getter on the sealed base, since `MatchesPage`'s app bar reads it
+  whatever phase the list is in). "All" is always offered, and so is the
+  currently selected type even when nobody has played it this season —
+  otherwise a filter remembered from last season would be invisible in the
+  sheet that is the only way to clear it.
 - **`ProfileSheet`'s tab switcher goes in `Sheet`'s `header` slot, not at the
   top of `content`.** `Sheet` pins `header` above its `SingleChildScrollView`
   and scrolls `content`, so a segmented control placed first in `content`

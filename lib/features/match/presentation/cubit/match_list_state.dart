@@ -6,6 +6,8 @@ import '../../domain/match_entry.model.dart';
 
 sealed class MatchListState extends Equatable {
   const MatchListState();
+
+  Set<GameType> get seasonGameTypes => const {};
 }
 
 class MatchListLoading extends MatchListState {
@@ -27,6 +29,7 @@ class MatchListFailed extends MatchListState {
 class MatchListReady extends MatchListState {
   const MatchListReady({
     this.selectedGameType,
+    this.seasonGameTypes = const {},
     this.matches = const [],
     this.hasMore = false,
     this.loadingMore = false,
@@ -35,6 +38,10 @@ class MatchListReady extends MatchListState {
   });
 
   final GameType? selectedGameType;
+
+  @override
+  final Set<GameType> seasonGameTypes;
+
   final List<MatchEntry> matches;
   final bool hasMore;
   final bool loadingMore;
@@ -43,6 +50,7 @@ class MatchListReady extends MatchListState {
 
   MatchListReady copyWith({
     GameType? selectedGameType,
+    Set<GameType>? seasonGameTypes,
     List<MatchEntry>? matches,
     bool? hasMore,
     bool? loadingMore,
@@ -55,6 +63,7 @@ class MatchListReady extends MatchListState {
       selectedGameType: clearGameType
           ? null
           : (selectedGameType ?? this.selectedGameType),
+      seasonGameTypes: seasonGameTypes ?? this.seasonGameTypes,
       matches: matches ?? this.matches,
       hasMore: hasMore ?? this.hasMore,
       loadingMore: loadingMore ?? this.loadingMore,
@@ -68,6 +77,7 @@ class MatchListReady extends MatchListState {
   @override
   List<Object?> get props => [
     selectedGameType,
+    seasonGameTypes,
     matches,
     hasMore,
     loadingMore,

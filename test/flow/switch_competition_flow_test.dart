@@ -16,6 +16,7 @@ import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.da
 import 'package:keepscore2/features/leaderboard/domain/season_window.model.dart';
 import 'package:keepscore2/features/leaderboard/presentation/cubit/leaderboard_cubit.dart';
 import 'package:keepscore2/features/leaderboard/presentation/widgets/leaderboard.page.dart';
+import 'package:keepscore2/features/match/domain/game_type.enum.dart';
 import 'package:keepscore2/features/match/domain/match_repository.dart';
 import 'package:keepscore2/features/match/presentation/cubit/game_type_filter_cubit.dart';
 import 'package:keepscore2/features/match/presentation/cubit/match_list_cubit.dart';
@@ -115,6 +116,9 @@ void main() {
       when(
         () => matches.feed(competitionId: id, limit: 20),
       ).thenAnswer((_) async => []);
+      when(
+        () => matches.seasonGameTypes(id),
+      ).thenAnswer((_) async => const <GameType>{});
       when(() => matches.watch(id)).thenAnswer((_) => const Stream.empty());
       when(() => leaderboard.currentSeason(id)).thenAnswer(
         (_) async => SeasonWindow(

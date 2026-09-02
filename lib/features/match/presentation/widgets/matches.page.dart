@@ -175,15 +175,22 @@ class _MatchesPageState extends State<MatchesPage> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          GameTypeFilterButton(
-            selected: context.watch<GameTypeFilterCubit>().state,
-            onSelected: context.read<GameTypeFilterCubit>().select,
-          ),
+          _gameTypeFilterButton(context),
           if (!AppPlatform.useWideWeb(context)) ...[
             const SizedBox(width: AppSpacing.sm),
             CompetitionSettingsButton(competitionId: competitionId),
           ],
         ],
+      ),
+    );
+  }
+
+  Widget _gameTypeFilterButton(BuildContext context) {
+    return BlocBuilder<MatchListCubit, MatchListState>(
+      builder: (context, state) => GameTypeFilterButton(
+        selected: context.watch<GameTypeFilterCubit>().state,
+        played: state.seasonGameTypes,
+        onSelected: context.read<GameTypeFilterCubit>().select,
       ),
     );
   }
