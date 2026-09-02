@@ -54,6 +54,24 @@ void main() {
     expect(MatchEntry.fromMap(_row()).teamB.single.ratingDelta, -8.4);
   });
 
+  test('a match is 1v1 only when both sides hold exactly one player', () {
+    expect(MatchEntry.fromMap(_row()).isOneVsOne, isFalse);
+
+    final singles = MatchEntry.fromMap({
+      ..._row(),
+      'team_a': [
+        {
+          'player_id': 'p1',
+          'display_name': 'Ada',
+          'rating_before': 1005,
+          'rating_delta': 8.4,
+        },
+      ],
+    });
+
+    expect(singles.isOneVsOne, isTrue);
+  });
+
   test('equal scores are a draw with no winner', () {
     final match = MatchEntry.fromMap({
       ..._row(),

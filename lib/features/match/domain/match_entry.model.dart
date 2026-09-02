@@ -49,6 +49,8 @@ class MatchEntry extends Equatable {
 
   bool get isDraw => teamAScore == teamBScore;
 
+  bool get isOneVsOne => teamA.length == 1 && teamB.length == 1;
+
   MatchTeam? get winner => isDraw
       ? null
       : teamAScore > teamBScore

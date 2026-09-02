@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../../app/dependency_injection/injector.dart';
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context.extension.dart';
+import '../../../../core/extensions/match_team.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/sheet.dart';
@@ -111,9 +112,7 @@ class MatchDetailSheet extends StatelessWidget {
 
   Widget _teamArea(BuildContext context, MatchEntry match, MatchTeam team) {
     return TeamArea(
-      title: team == MatchTeam.a
-          ? context.l10n.matchTeamA
-          : context.l10n.matchTeamB,
+      title: team.label(context, isOneVsOne: match.isOneVsOne),
       color: _teamColor(context, team),
       members: _members(match, team),
       rating: team == MatchTeam.a ? match.teamARating : match.teamBRating,

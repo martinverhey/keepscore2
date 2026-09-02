@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../../../core/extensions/build_context.extension.dart';
+import '../../../../core/extensions/match_team.extension.dart';
 import '../../../../core/extensions/text_editing_controller.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
@@ -45,7 +46,7 @@ class _MatchScoreSheetState extends State<MatchScoreSheet> {
         children: [
           Expanded(
             child: AdaptiveTextField(
-              label: context.l10n.matchTeamA,
+              label: _sideLabel(context, MatchTeam.a),
               controller: _scoreA,
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -57,7 +58,7 @@ class _MatchScoreSheetState extends State<MatchScoreSheet> {
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: AdaptiveTextField(
-              label: context.l10n.matchTeamB,
+              label: _sideLabel(context, MatchTeam.b),
               controller: _scoreB,
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -80,4 +81,7 @@ class _MatchScoreSheetState extends State<MatchScoreSheet> {
       ),
     );
   }
+
+  String _sideLabel(BuildContext context, MatchTeam side) =>
+      side.label(context, isOneVsOne: widget.match.isOneVsOne);
 }

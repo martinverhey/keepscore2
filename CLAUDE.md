@@ -118,6 +118,15 @@ holding exactly one survives.
 `Speler 1` — while the l10n *keys* still read `matchTeamA`/`matchPlayerB`, so
 don't read a letter off a key name and assume it reaches the screen.
 
+**Everywhere else that names a side asks the match, not a mode.**
+`MatchTeam.label(context, isOneVsOne:)`
+(`core/extensions/match_team.extension.dart`) is the single mapping from side +
+one-v-one-ness to a string; `MatchDetailSheet._teamArea` and `MatchScoreSheet`
+pass `MatchEntry.isOneVsOne` (both sides hold exactly one player) where the new
+match form passes `MatchFormReady.isOneVsOne` (the toggle). So a 1v1 logged in
+the form still reads Player 1 / Player 2 when it is opened again from the feed,
+without the match row having to store which mode it was entered in.
+
 **`TeamPickerSheet` is one sheet with two steps, not one sheet per side.** It
 takes both sides' initial selections plus a `startSide`, keeps `_selected` for
 both, slides between them inside its own `AnimatedSwitcher` (start-aligned
