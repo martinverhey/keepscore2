@@ -683,17 +683,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String profileStreakMilestoneWins(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count wins',
-      one: '1 win',
-    );
-    return '$_temp0';
-  }
-
-  @override
   String profileStreakLoss(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

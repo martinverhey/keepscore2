@@ -1274,12 +1274,6 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 win in a row} other{{count} wins in a row}}'**
   String profileStreakWin(int count);
 
-  /// No description provided for @profileStreakMilestoneWins.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 win} other{{count} wins}}'**
-  String profileStreakMilestoneWins(int count);
-
   /// No description provided for @profileStreakLoss.
   ///
   /// In en, this message translates to:

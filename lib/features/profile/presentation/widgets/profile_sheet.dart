@@ -5,6 +5,7 @@ import '../../../../app/dependency_injection/injector.dart';
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/extensions/double.extension.dart';
+import '../../../../core/extensions/int.extension.dart';
 import '../../../../core/extensions/medal.extension.dart';
 import '../../../../core/extensions/season.extension.dart';
 import '../../../../core/extensions/streak_type.extension.dart';
@@ -419,12 +420,12 @@ class _ProfileSheetState extends State<ProfileSheet> {
           ),
         ]),
         const SizedBox(height: AppSpacing.sm),
-        _streakMilestoneRow(context),
+        _streakMilestoneRow(),
       ],
     );
   }
 
-  Widget _tierFirePill(int flameCount) {
+  Widget _tierFirePill(int tier) {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.sm,
@@ -432,51 +433,41 @@ class _ProfileSheetState extends State<ProfileSheet> {
       ),
       decoration: BoxDecoration(
         borderRadius: AppRadius.pill,
-        color: AppColors.fireBadgeFill,
+        color: tier.flameBadgeFill,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          for (var i = 0; i < flameCount; i++) ...[
+          for (var i = 0; i < tier.flameCount; i++) ...[
             if (i > 0) const SizedBox(width: 2),
-            const AdaptiveIcon(
-              AdaptiveGlyph.fire,
-              color: AppColors.fireCore,
-              size: 13,
-            ),
+            AdaptiveIcon(AdaptiveGlyph.fire, color: tier.flameColor, size: 13),
           ],
         ],
       ),
     );
   }
 
-  Widget _streakMilestoneRow(BuildContext context) {
-    return Row(
+  Widget _streakMilestoneRow() {
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: AppSpacing.sm,
+      runSpacing: AppSpacing.xs,
       children: [
-        Expanded(child: _streakMilestoneItem(context, flameCount: 1, wins: 3)),
-        Expanded(child: _streakMilestoneItem(context, flameCount: 2, wins: 5)),
-        Expanded(child: _streakMilestoneItem(context, flameCount: 3, wins: 10)),
+        _streakMilestoneItem(tier: 1, wins: 3),
+        _streakMilestoneItem(tier: 2, wins: 5),
+        _streakMilestoneItem(tier: 3, wins: 10),
+        _streakMilestoneItem(tier: 4, wins: 25),
       ],
     );
   }
 
-  Widget _streakMilestoneItem(
-    BuildContext context, {
-    required int flameCount,
-    required int wins,
-  }) {
+  Widget _streakMilestoneItem({required int tier, required int wins}) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        _tierFirePill(flameCount),
+        _tierFirePill(tier),
         const SizedBox(width: AppSpacing.xs),
-        Flexible(
-          child: Text(
-            '= ${context.l10n.profileStreakMilestoneWins(wins)}',
-            style: AppTypography.labelTiny,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
+        Text('$wins+', style: AppTypography.labelTiny),
       ],
     );
   }

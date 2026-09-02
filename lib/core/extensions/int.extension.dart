@@ -10,3 +10,13 @@ extension IntRankColor on int {
     _ => null,
   };
 }
+
+extension IntFlameTier on int {
+  int get flameCount => this >= 4 ? 1 : this;
+
+  Color get flameColor =>
+      this >= 4 ? AppColors.fireEliteCore : AppColors.fireCore;
+
+  Color get flameBadgeFill =>
+      this >= 4 ? AppColors.fireEliteBadgeFill : AppColors.fireBadgeFill;
+}

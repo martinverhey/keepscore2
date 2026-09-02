@@ -275,10 +275,6 @@
   "@profileStreakWin": {
     "placeholders": { "count": { "type": "int" } }
   },
-  "profileStreakMilestoneWins": "{count, plural, =1{1 win} other{{count} wins}}",
-  "@profileStreakMilestoneWins": {
-    "placeholders": { "count": { "type": "int" } }
-  },
   "profileStreakLoss": "{count, plural, =1{1 loss in a row} other{{count} losses in a row}}",
   "@profileStreakLoss": {
     "placeholders": { "count": { "type": "int" } }

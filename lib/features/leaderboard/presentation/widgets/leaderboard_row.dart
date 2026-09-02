@@ -194,16 +194,16 @@ class LeaderboardRow extends StatelessWidget {
           ),
           decoration: BoxDecoration(
             borderRadius: AppRadius.pill,
-            color: AppColors.fireBadgeFill,
+            color: tier.flameBadgeFill,
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              for (var i = 0; i < tier; i++) ...[
+              for (var i = 0; i < tier.flameCount; i++) ...[
                 if (i > 0) const SizedBox(width: 2),
                 AdaptiveIcon(
                   AdaptiveGlyph.fire,
-                  color: AppColors.fireCore,
+                  color: tier.flameColor,
                   size: 13,
                 ),
               ],
