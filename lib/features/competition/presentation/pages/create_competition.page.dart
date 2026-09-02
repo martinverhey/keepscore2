@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/app_router.dart';
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
@@ -35,8 +36,7 @@ class _CreateCompetitionPageState extends State<CreateCompetitionPage> {
       listener: (context, state) {
         final created = state as CreateCompetitionCreated;
         context.read<CompetitionListCubit>().refresh();
-        context.pop();
-        context.push('/competition/${created.competition.id}');
+        context.go(Routes.competition(created.competition.id));
       },
       builder: (context, state) {
         setPageTitle(context, context.l10n.competitionsCreate);

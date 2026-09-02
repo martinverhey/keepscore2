@@ -482,6 +482,6 @@ class _HomeStub extends StatelessWidget {
     final competitionId = await showJoinCompetitionSheet(context);
     if (competitionId == null || !context.mounted) return;
 
-    context.push('/competition/$competitionId');
+    context.go('/competition/$competitionId');
   }
 }

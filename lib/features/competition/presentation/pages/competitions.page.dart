@@ -199,7 +199,7 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
     if (competitionId == null || !context.mounted) return;
 
     context.read<CompetitionListCubit>().refresh();
-    context.push(Routes.competition(competitionId));
+    context.go(Routes.competition(competitionId));
   }
 
   Future<void> _manage(

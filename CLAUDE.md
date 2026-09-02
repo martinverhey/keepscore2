@@ -1544,6 +1544,26 @@ else in the suite:
   `test/flow/switch_competition_flow_test.dart` walks the real mobile path
   (leaderboard → `push('/')` → `go('/competition/c2')`) and asserts both
   cubits and the player list actually followed.
+- **Entering a competition is always `go`, never `push`** — from the
+  competition tile, after joining (`CompetitionsPage._join`) and after
+  creating (`CreateCompetitionPage`'s success listener) alike. `push` keeps
+  the existing stack and mounts the *whole* new match chain on top of it, so
+  a second competition route mounts the competition `ShellRoute`'s
+  `navigatorKey`, both `StatefulShellBranch.navigatorKey`s and
+  `StatefulShellRoute`'s `_shellStateKey` a second time — the same
+  once-per-route-config `GlobalKey`s the bullet above turns on. The framework
+  tears the loser down and **nothing is left to paint: a black screen, no
+  crash and no error widget** (release's `RenderErrorBox` is light grey, so a
+  thrown exception looks nothing like this). It only bites when a competition
+  route is already below — launch → recent-competition redirect into A → the
+  leaderboard's competition-name button or Settings' "All competitions", both
+  `push(Routes.home)` → join → black. A fresh launch with no recent
+  competition has only `/` beneath, so the identical tap works, which is what
+  made it look intermittent and kept it off the simulator.
+  `test/flow/join_competition_from_competition_flow_test.dart` drives the real
+  `CompetitionsPage` and join sheet from inside competition c1 and is the only
+  thing watching this; `guest_join_competition_flow_test.dart` starts from a
+  bare `/home` stub and cannot see it.
 
 `CompetitionShell` (`features/competition/presentation/pages/competition_shell.dart`)
 is what the `StatefulShellRoute`'s `builder` returns, wrapping
@@ -1731,7 +1751,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 324 tests at time of writing
+flutter test                    # 325 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 python3 scripts/generate_icon.py   # redraw assets/icon/*.png
