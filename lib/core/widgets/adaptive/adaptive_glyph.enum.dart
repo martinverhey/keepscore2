@@ -17,7 +17,6 @@ enum AdaptiveGlyph {
   medal,
   fire,
   ice,
-  signOut,
   light,
   dark,
 }

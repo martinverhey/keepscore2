@@ -320,6 +320,18 @@ abstract class AppLocalizations {
   /// **'You\'re not in any competition yet.'**
   String get competitionsEmpty;
 
+  /// No description provided for @competitionsActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active competition'**
+  String get competitionsActive;
+
+  /// No description provided for @competitionsOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other competitions'**
+  String get competitionsOther;
+
   /// No description provided for @competitionsAdd.
   ///
   /// In en, this message translates to:
@@ -341,14 +353,20 @@ abstract class AppLocalizations {
   /// No description provided for @competitionsAddHint.
   ///
   /// In en, this message translates to:
-  /// **'Use + to create or join your first competition.'**
+  /// **'Use the buttons above to create or join your first competition.'**
   String get competitionsAddHint;
 
   /// No description provided for @competitionsJoinHint.
   ///
   /// In en, this message translates to:
-  /// **'Use + to join your first competition.'**
+  /// **'Use the button above to join your first competition.'**
   String get competitionsJoinHint;
+
+  /// No description provided for @competitionsJoinShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Join'**
+  String get competitionsJoinShort;
 
   /// No description provided for @competitionNameLabel.
   ///
@@ -445,6 +463,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Point a camera at this code — no typing required.'**
   String get competitionQrHelp;
+
+  /// No description provided for @competitionQrScan.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan to join'**
+  String get competitionQrScan;
 
   /// No description provided for @competitionInviteTitle.
   ///

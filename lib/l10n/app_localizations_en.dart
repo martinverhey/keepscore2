@@ -125,6 +125,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get competitionsEmpty => 'You\'re not in any competition yet.';
 
   @override
+  String get competitionsActive => 'Active competition';
+
+  @override
+  String get competitionsOther => 'Other competitions';
+
+  @override
   String get competitionsAdd => 'Add competition';
 
   @override
@@ -135,10 +141,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get competitionsAddHint =>
-      'Use + to create or join your first competition.';
+      'Use the buttons above to create or join your first competition.';
 
   @override
-  String get competitionsJoinHint => 'Use + to join your first competition.';
+  String get competitionsJoinHint =>
+      'Use the button above to join your first competition.';
+
+  @override
+  String get competitionsJoinShort => 'Join';
 
   @override
   String get competitionNameLabel => 'Competition name';
@@ -209,6 +219,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get competitionQrHelp =>
       'Point a camera at this code — no typing required.';
+
+  @override
+  String get competitionQrScan => 'Scan to join';
 
   @override
   String get competitionInviteTitle => 'Invite players';

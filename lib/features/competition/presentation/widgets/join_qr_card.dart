@@ -1,9 +1,9 @@
 import 'package:flutter/widgets.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
+import 'join_qr_image.dart';
 
 class JoinQrCard extends StatelessWidget {
   const JoinQrCard({super.key, required this.code});
@@ -27,24 +27,7 @@ class JoinQrCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.sm),
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(AppRadius.md),
-            ),
-            child: SizedBox(
-              width: _qrSize,
-              height: _qrSize,
-              child: QrImageView(
-                data: code,
-                size: _qrSize,
-                padding: EdgeInsets.zero,
-                backgroundColor: AppColors.white,
-                semanticsLabel: code,
-              ),
-            ),
-          ),
+          JoinQrImage(code: code, size: _qrSize),
           const SizedBox(height: AppSpacing.md),
           Text(
             context.l10n.competitionQrInvite,

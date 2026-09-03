@@ -9,6 +9,7 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/curved_arrow.dart';
 import '../../../../core/widgets/curved_arrow_direction.enum.dart';
+import '../../../../core/widgets/list_header.dart';
 import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../../core/widgets/text_entry_sheet.dart';
@@ -17,12 +18,11 @@ import '../../../auth/presentation/widgets/guest_notice.dart';
 import '../../domain/competition.model.dart';
 import '../cubit/competition_cubit.dart';
 import '../cubit/competition_list_cubit.dart';
+import '../widgets/active_competition_card.dart';
 import '../widgets/competition_action.enum.dart';
 import '../widgets/competition_action_sheet.dart';
-import '../widgets/competition_add_action.enum.dart';
-import '../widgets/competition_add_sheet.dart';
 import '../widgets/join_competition_sheet.dart';
-import '../widgets/competition_tile.dart';
+import '../widgets/competition_card.dart';
 
 class CompetitionsPage extends StatefulWidget {
   const CompetitionsPage({super.key});
@@ -45,13 +45,7 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
 
     return AdaptiveScaffold(
       title: context.l10n.competitionsTitle,
-      trailing: !AppPlatform.useWideWeb(context) && !context.canPop()
-          ? _signOutButton(context)
-          : null,
-      floatingAction: _addCompetitionButton(
-        context,
-        canCreate: session.canWrite,
-      ),
+      trailing: _actions(context, canCreate: session.canWrite),
       onRefresh: context.read<CompetitionListCubit>().refresh,
       body: BlocBuilder<CompetitionListCubit, CompetitionListState>(
         builder: (context, state) => _body(context, state, session),
@@ -59,23 +53,25 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
     );
   }
 
-  Widget _addCompetitionButton(
-    BuildContext context, {
-    required bool canCreate,
-  }) {
-    return AdaptiveFloatingAction(
-      glyph: AdaptiveGlyph.add,
-      semanticLabel: canCreate
-          ? context.l10n.competitionsAdd
-          : context.l10n.competitionsJoin,
-      onPressed: () => _add(context, canCreate: canCreate),
+  Widget _actions(BuildContext context, {required bool canCreate}) {
+    return AdaptiveBarActionGroup(
+      actions: [
+        if (canCreate) _createButton(context),
+        _joinButton(context),
+      ],
     );
   }
 
-  Widget _signOutButton(BuildContext context) => AdaptiveIconButton(
-    glyph: AdaptiveGlyph.signOut,
-    semanticLabel: context.l10n.authSignOut,
-    onPressed: () => context.read<AuthBloc>().add(const AuthSignOutRequested()),
+  Widget _createButton(BuildContext context) => AdaptiveBarAction(
+    glyph: AdaptiveGlyph.add,
+    semanticLabel: context.l10n.competitionsAdd,
+    onPressed: () => context.push(Routes.createCompetition),
+  );
+
+  Widget _joinButton(BuildContext context) => AdaptiveBarAction(
+    label: context.l10n.competitionsJoinShort,
+    semanticLabel: context.l10n.competitionsJoin,
+    onPressed: () => _join(context),
   );
 
   Widget _body(
@@ -105,13 +101,13 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
     required bool canCreate,
     required String? myUserId,
   }) {
+    final active = _active(context, state);
+    final others = state.competitions
+        .where((overview) => overview.id != active?.id)
+        .toList();
+
     return Padding(
-      padding: const EdgeInsets.only(
-        left: AppSpacing.md,
-        right: AppSpacing.md,
-        top: AppSpacing.md,
-        bottom: _floatingActionInset,
-      ),
+      padding: const EdgeInsets.all(AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -120,13 +116,25 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
             const SizedBox(height: AppSpacing.md),
           ],
 
+          if (active case final active?) ...[
+            _activeSection(
+              context,
+              active,
+              myUserId: myUserId,
+              hasOthers: others.isNotEmpty,
+            ),
+            const SizedBox(height: AppSpacing.md),
+          ],
+
           if (state.competitions.isEmpty) ...[
-            EmptyState(message: context.l10n.competitionsEmpty),
-            const SizedBox(height: AppSpacing.xxl),
             _addHint(context, canCreate: canCreate),
+            const SizedBox(height: AppSpacing.xxl),
+            EmptyState(message: context.l10n.competitionsEmpty),
+            const SizedBox(height: AppSpacing.lg),
+            _signOutButton(context),
           ] else
-            for (final overview in state.competitions) ...[
-              CompetitionTile(
+            for (final overview in others) ...[
+              CompetitionCard(
                 overview: overview,
                 onTap: () => context.go(Routes.competition(overview.id)),
                 onManage: () => _manage(context, overview, myUserId: myUserId),
@@ -140,10 +148,44 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
     );
   }
 
+  CompetitionOverview? _active(
+    BuildContext context,
+    CompetitionListReady state,
+  ) {
+    final activeId = context.watch<CompetitionCubit>().state.competition?.id;
+    if (activeId == null) return null;
+    for (final overview in state.competitions) {
+      if (overview.id == activeId) return overview;
+    }
+    return null;
+  }
+
+  Widget _activeSection(
+    BuildContext context,
+    CompetitionOverview active, {
+    required String? myUserId,
+    required bool hasOthers,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ActiveCompetitionCard(
+          overview: active,
+          onOpen: () => context.go(Routes.competition(active.id)),
+          onManage: () => _manage(context, active, myUserId: myUserId),
+        ),
+        if (hasOthers) ...[
+          const SizedBox(height: AppSpacing.lg),
+          ListHeader(title: context.l10n.competitionsOther),
+        ],
+      ],
+    );
+  }
+
   Widget _addHint(BuildContext context, {required bool canCreate}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Flexible(
           child: Text(
@@ -156,11 +198,20 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
         ),
         const SizedBox(width: AppSpacing.sm),
         CurvedArrow(
-          direction: CurvedArrowDirection.down,
+          direction: CurvedArrowDirection.up,
           color: AdaptiveColors.accent(context),
           size: const Size(50, 200),
         ),
       ],
+    );
+  }
+
+  Widget _signOutButton(BuildContext context) {
+    return AdaptiveButton(
+      label: context.l10n.authSignOut,
+      kind: AdaptiveButtonKind.plain,
+      onPressed: () =>
+          context.read<AuthBloc>().add(const AuthSignOutRequested()),
     );
   }
 
@@ -172,26 +223,6 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
         style: const TextStyle(color: AppColors.negative),
       ),
     );
-  }
-
-  Future<void> _add(BuildContext context, {required bool canCreate}) async {
-    if (!canCreate) {
-      await _join(context);
-      return;
-    }
-
-    final action = await showAdaptiveSheet<CompetitionAddAction>(
-      context,
-      builder: (_) => const CompetitionAddSheet(),
-    );
-    if (action == null || !context.mounted) return;
-
-    switch (action) {
-      case CompetitionAddAction.create:
-        context.push(Routes.createCompetition);
-      case CompetitionAddAction.join:
-        await _join(context);
-    }
   }
 
   Future<void> _join(BuildContext context) async {
@@ -267,7 +298,4 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
         }
     }
   }
-
-  static const double _floatingActionInset =
-      AdaptiveFloatingAction.diameter + AppSpacing.lg;
 }

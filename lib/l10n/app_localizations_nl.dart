@@ -126,6 +126,12 @@ class AppLocalizationsNl extends AppLocalizations {
   String get competitionsEmpty => 'Je zit nog niet in een competitie.';
 
   @override
+  String get competitionsActive => 'Actieve competitie';
+
+  @override
+  String get competitionsOther => 'Andere competities';
+
+  @override
   String get competitionsAdd => 'Competitie toevoegen';
 
   @override
@@ -136,11 +142,14 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get competitionsAddHint =>
-      'Gebruik + om je eerste competitie te maken of eraan deel te nemen.';
+      'Gebruik de knoppen hierboven om je eerste competitie te maken of eraan deel te nemen.';
 
   @override
   String get competitionsJoinHint =>
-      'Gebruik + om deel te nemen aan je eerste competitie.';
+      'Gebruik de knop hierboven om deel te nemen aan je eerste competitie.';
+
+  @override
+  String get competitionsJoinShort => 'Deelnemen';
 
   @override
   String get competitionNameLabel => 'Naam van de competitie';
@@ -211,6 +220,9 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get competitionQrHelp =>
       'Richt een camera op deze code — typen hoeft niet.';
+
+  @override
+  String get competitionQrScan => 'Scan om mee te doen';
 
   @override
   String get competitionInviteTitle => 'Spelers uitnodigen';
