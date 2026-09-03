@@ -97,8 +97,8 @@ abstract final class AppGlass {
   static const double barMargin = AppSpacing.md;
   static const double barCornerRadius = barHeight / 2;
   static const double barIconSize = 24;
-  static const double barActionSize = 60;
-  static const double topBarHeight = barActionSize;
+  static const double barActionSize = 52;
+  static const double topBarHeight = 60;
   static const double topBarSubtitleHeight = 20;
   static const double topBarSubtitleRise = 16;
   static const double rimIntensity = 0.25;

@@ -567,6 +567,24 @@ void main() {
       );
     });
 
+    testWidgets('centres an action smaller than the title row on it', (
+      tester,
+    ) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+      await pumpGlass(tester, _scaffold(onTrailingTap: () {}));
+
+      final action = tester.getRect(find.byType(LiquidGlassTabBarAction));
+      final barTop =
+          tester.getRect(find.byType(AdaptiveTopBar)).top +
+          tester.view.padding.top / tester.view.devicePixelRatio;
+
+      expect(
+        action.center.dy,
+        moreOrLessEquals(barTop + AppGlass.topBarHeight / 2, epsilon: 0.5),
+      );
+    });
+
     testWidgets('keeps the title off the glass', (tester) async {
       AppPlatform.debugOverrideCupertino = true;
       AppPlatform.debugOverrideLiquidGlass = true;

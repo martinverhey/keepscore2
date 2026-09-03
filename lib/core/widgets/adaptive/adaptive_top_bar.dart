@@ -71,10 +71,18 @@ class AdaptiveTopBar extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       spacing: AppSpacing.sm,
       children: [
-        ?leading,
+        ?_actionSlot(leading),
         Expanded(child: _titleColumn()),
-        ?trailing,
+        ?_actionSlot(trailing),
       ],
+    );
+  }
+
+  Widget? _actionSlot(Widget? action) {
+    if (action == null) return null;
+    return SizedBox(
+      height: AppGlass.topBarHeight,
+      child: Center(child: action),
     );
   }
 

@@ -63,6 +63,12 @@ class AdaptiveGlass extends StatelessWidget {
     );
   }
 
+  static LiquidGlassStyle barActionStyle(BuildContext context) {
+    return LiquidGlassTabBarAction.defaultStyle.copyWith(
+      shape: shapeOf(context, cornerRadius: AppGlass.barActionSize / 2),
+    );
+  }
+
   static LiquidGlassStyle styleOf(
     BuildContext context, {
     double cornerRadius = AppGlass.cornerRadius,

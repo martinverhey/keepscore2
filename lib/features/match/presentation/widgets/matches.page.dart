@@ -172,14 +172,11 @@ class _MatchesPageState extends State<MatchesPage> {
     return FittedBox(
       fit: BoxFit.scaleDown,
       alignment: Alignment.centerRight,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
+      child: AdaptiveBarActionGroup(
+        actions: [
           _gameTypeFilterButton(context),
-          if (!AppPlatform.useWideWeb(context)) ...[
-            const SizedBox(width: AppSpacing.sm),
+          if (!AppPlatform.useWideWeb(context))
             CompetitionSettingsButton(competitionId: competitionId),
-          ],
         ],
       ),
     );

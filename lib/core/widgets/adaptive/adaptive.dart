@@ -1,6 +1,7 @@
 library;
 
 export 'adaptive_bar_action.dart';
+export 'adaptive_bar_action_group.dart';
 export 'adaptive_bottom_bar_host.dart';
 export 'adaptive_button.dart';
 export 'adaptive_colors.dart';
@@ -19,4 +20,5 @@ export 'adaptive_tappable.dart';
 export 'adaptive_text_field.dart';
 export 'adaptive_top_bar.dart';
 export 'app_platform.dart';
+export 'grouped_bar_action_scope.dart';
 export 'suppressed_back_button_scope.dart';
