@@ -65,8 +65,36 @@ class LeaderboardList extends StatelessWidget {
         _seasonBar(context, state.season),
         const SizedBox(height: AppSpacing.md),
         _players(context, state),
-        if (isOwner) _manageButton(context),
       ],
+    );
+  }
+
+  Widget _seasonBar(BuildContext context, Season season) {
+    if (!isOwner) return _seasonHeader(context, season);
+
+    return Row(
+      children: [
+        Expanded(child: _seasonHeader(context, season)),
+        _manageButton(context),
+      ],
+    );
+  }
+
+  Widget _seasonHeader(BuildContext context, Season season) {
+    return ListHeader(
+      title: season.label(context, seasonLength),
+      subtitle: context.l10n.leaderboardSeasonEnds(
+        season.endsAt.shortDayLabel(context),
+      ),
+    );
+  }
+
+  Widget _manageButton(BuildContext context) {
+    return AdaptiveButton(
+      label: context.l10n.leaderboardManage,
+      kind: AdaptiveButtonKind.plain,
+      expand: false,
+      onPressed: onManagePlayers,
     );
   }
 
@@ -95,26 +123,6 @@ class LeaderboardList extends StatelessWidget {
             medals: state.medals[leaderboard.playerId],
           ),
       ],
-    );
-  }
-
-  Widget _manageButton(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.md),
-      child: AdaptiveButton(
-        label: context.l10n.playersManageTitle,
-        kind: AdaptiveButtonKind.tinted,
-        onPressed: onManagePlayers,
-      ),
-    );
-  }
-
-  Widget _seasonBar(BuildContext context, Season season) {
-    return ListHeader(
-      title: season.label(context, seasonLength),
-      subtitle: context.l10n.leaderboardSeasonEnds(
-        season.endsAt.shortDayLabel(context),
-      ),
     );
   }
 }

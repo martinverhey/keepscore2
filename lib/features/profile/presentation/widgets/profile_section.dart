@@ -33,9 +33,12 @@ class ProfileSection extends StatelessWidget {
   final Leaderboard? leaderboard;
   final Medals? medals;
 
+  static const BorderRadius _radius = BorderRadius.all(
+    Radius.circular(AppRadius.lg),
+  );
+
   @override
   Widget build(BuildContext context) {
-    final accent = AdaptiveColors.accent(context);
     final leaderboard = this.leaderboard;
     final hasStats = leaderboard != null && leaderboard.played > 0;
 
@@ -54,14 +57,16 @@ class ProfileSection extends StatelessWidget {
           ),
         ),
       ),
-      borderRadius: AppRadius.card,
+      borderRadius: _radius,
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: accent.withValues(alpha: AppOpacity.cardFillFaint),
-          borderRadius: AppRadius.card,
+          borderRadius: _radius,
+          color: AdaptiveColors.modalSurface(context),
           border: Border.all(
-            color: accent.withValues(alpha: AppOpacity.badgeFill),
+            color: AppColors.neutral.withValues(
+              alpha: AppOpacity.controlBorder,
+            ),
           ),
         ),
         child: Column(

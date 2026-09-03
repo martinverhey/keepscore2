@@ -30,6 +30,9 @@ class LeaderboardRow extends StatelessWidget {
     this.opensProfile = true,
   });
 
+  static const double _minHeight = 60;
+  static const double _secondaryLineGap = 2;
+
   final String competitionId;
   final Leaderboard leaderboard;
   final bool isMe;
@@ -68,11 +71,8 @@ class LeaderboardRow extends StatelessWidget {
   }
 
   Widget _card(BuildContext context) {
-    final hasStreak =
-        leaderboard.streakType == StreakType.win &&
-        leaderboard.streakType.tier(leaderboard.streakCount) > 0;
-
     return Container(
+      constraints: const BoxConstraints(minHeight: _minHeight),
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
         vertical: AppSpacing.sm,
@@ -90,7 +90,7 @@ class LeaderboardRow extends StatelessWidget {
           _rank(),
           Expanded(child: _nameColumn(context)),
           const SizedBox(width: AppSpacing.sm),
-          _ratingColumn(context, hasStreak),
+          _ratingColumn(context),
         ],
       ),
     );
@@ -108,75 +108,94 @@ class LeaderboardRow extends StatelessWidget {
     ),
   );
 
-  Widget _nameColumn(BuildContext context) {
-    final hasMedals = medals != null && medals!.hasAny;
+  Widget _nameColumn(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    mainAxisSize: MainAxisSize.min,
+    spacing: _secondaryLineGap,
+    children: [_nameRow(context), ?_medalsRow()],
+  );
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _nameRow(BuildContext context) => Row(
+    children: [
+      Flexible(
+        child: Text(
+          leaderboard.displayName,
+          style: AppTypography.bodyLarge.copyWith(
+            color: isMe ? AdaptiveColors.accent(context) : null,
+          ),
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+      if (leaderboard.isOwner) ...[
+        const SizedBox(width: AppSpacing.xs),
+        Tag(context.l10n.playersOwner, color: AppColors.gold),
+      ],
+    ],
+  );
+
+  Widget? _medalsRow() {
+    final tally = medals;
+    if (tally == null || !tally.hasAny) return null;
+
+    return Row(children: _medalChips(tally));
+  }
+
+  List<Widget> _medalChips(Medals medals) {
+    final chips = [
+      if (medals.gold > 0) MedalChip(color: AppColors.gold, count: medals.gold),
+      if (medals.silver > 0)
+        MedalChip(color: AppColors.silver, count: medals.silver),
+      if (medals.bronze > 0)
+        MedalChip(color: AppColors.bronze, count: medals.bronze),
+    ];
+    return [
+      for (var i = 0; i < chips.length; i++) ...[
+        if (i > 0) const SizedBox(width: AppSpacing.xs),
+        chips[i],
+      ],
+    ];
+  }
+
+  Widget _ratingColumn(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.end,
+    mainAxisSize: MainAxisSize.min,
+    spacing: _secondaryLineGap,
+    children: [_ratingRow(), ?_badgesRow(context)],
+  );
+
+  Widget _ratingRow() {
+    final medal = leaderboard.medal;
+
+    return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Row(
-          children: [
-            Flexible(
-              child: Text(
-                leaderboard.displayName,
-                style: AppTypography.bodyLarge.copyWith(
-                  color: isMe ? AdaptiveColors.accent(context) : null,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            if (leaderboard.isOwner) ...[
-              const SizedBox(width: AppSpacing.xs),
-              Tag(context.l10n.playersOwner, color: AppColors.gold),
-            ],
-          ],
-        ),
-        if (hasMedals) ...[
-          const SizedBox(height: 2),
-          Row(children: _medalChips(medals!)),
+        if (medal != null) ...[
+          AdaptiveIcon(AdaptiveGlyph.medal, color: medal.color, size: 16),
+          const SizedBox(width: AppSpacing.xs),
         ],
+        Text(
+          leaderboard.rating.ratingLabel,
+          style: AppTypography.titleSmall.copyWith(
+            fontFeatures: AppTypography.tabularFigures,
+          ),
+        ),
       ],
     );
   }
 
-  Widget _ratingColumn(BuildContext context, bool hasStreak) {
-    final medal = leaderboard.medal;
+  Widget? _badgesRow(BuildContext context) {
+    final hasStreak =
+        leaderboard.streakType == StreakType.win &&
+        leaderboard.streakType.tier(leaderboard.streakCount) > 0;
+    final hasTodayDelta = leaderboard.todayDelta != 0;
+    if (!hasStreak && !hasTodayDelta) return null;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
+    return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (medal != null) ...[
-              AdaptiveIcon(AdaptiveGlyph.medal, color: medal.color, size: 16),
-              const SizedBox(width: AppSpacing.xs),
-            ],
-            Text(
-              leaderboard.rating.ratingLabel,
-              style: AppTypography.titleSmall.copyWith(
-                fontFeatures: AppTypography.tabularFigures,
-              ),
-            ),
-          ],
-        ),
-        if (hasStreak || leaderboard.todayDelta != 0) ...[
-          const SizedBox(height: 2),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (hasStreak) ...[
-                _streakBadge(context),
-                if (leaderboard.todayDelta != 0)
-                  const SizedBox(width: AppSpacing.xs),
-              ],
-              if (leaderboard.todayDelta != 0)
-                TodayDeltaBadge(delta: leaderboard.todayDelta),
-            ],
-          ),
-        ],
+        if (hasStreak) _streakBadge(context),
+        if (hasStreak && hasTodayDelta) const SizedBox(width: AppSpacing.xs),
+        if (hasTodayDelta) TodayDeltaBadge(delta: leaderboard.todayDelta),
       ],
     );
   }
@@ -212,21 +231,5 @@ class LeaderboardRow extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  List<Widget> _medalChips(Medals medals) {
-    final chips = [
-      if (medals.gold > 0) MedalChip(color: AppColors.gold, count: medals.gold),
-      if (medals.silver > 0)
-        MedalChip(color: AppColors.silver, count: medals.silver),
-      if (medals.bronze > 0)
-        MedalChip(color: AppColors.bronze, count: medals.bronze),
-    ];
-    return [
-      for (var i = 0; i < chips.length; i++) ...[
-        if (i > 0) const SizedBox(width: AppSpacing.xs),
-        chips[i],
-      ],
-    ];
   }
 }

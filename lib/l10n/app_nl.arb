@@ -141,6 +141,7 @@
   "leaderboardTitle": "Klassement",
   "leaderboardNoPlayers": "Nog geen spelers. Voeg er een paar toe en leg een wedstrijd vast.",
   "leaderboardCurrentSeason": "Huidig seizoen",
+  "leaderboardManage": "Beheren",
   "leaderboardSeasonEnds": "Loopt tot {date}",
   "@leaderboardSeasonEnds": {
     "placeholders": { "date": { "type": "String" } }

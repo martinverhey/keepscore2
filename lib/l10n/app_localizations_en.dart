@@ -389,6 +389,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get leaderboardCurrentSeason => 'Current season';
 
   @override
+  String get leaderboardManage => 'Manage';
+
+  @override
   String leaderboardSeasonEnds(String date) {
     return 'Ends $date';
   }

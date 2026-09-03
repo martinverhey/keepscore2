@@ -141,6 +141,7 @@
   "leaderboardTitle": "Leaderboard",
   "leaderboardNoPlayers": "No players yet. Add a few and log a match.",
   "leaderboardCurrentSeason": "Current season",
+  "leaderboardManage": "Manage",
   "leaderboardSeasonEnds": "Ends {date}",
   "@leaderboardSeasonEnds": {
     "placeholders": { "date": { "type": "String" } }

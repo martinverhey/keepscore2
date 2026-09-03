@@ -390,6 +390,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get leaderboardCurrentSeason => 'Huidig seizoen';
 
   @override
+  String get leaderboardManage => 'Beheren';
+
+  @override
   String leaderboardSeasonEnds(String date) {
     return 'Loopt tot $date';
   }

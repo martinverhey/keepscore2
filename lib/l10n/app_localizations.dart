@@ -764,6 +764,12 @@ abstract class AppLocalizations {
   /// **'Current season'**
   String get leaderboardCurrentSeason;
 
+  /// No description provided for @leaderboardManage.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage'**
+  String get leaderboardManage;
+
   /// No description provided for @leaderboardSeasonEnds.
   ///
   /// In en, this message translates to:
