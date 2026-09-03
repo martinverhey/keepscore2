@@ -246,11 +246,16 @@ class AdaptiveScaffold extends StatelessWidget {
       return _sliverWithBottomInset(_constrainedSlivers(slivers), bottomInset);
     }
     if (hasScrollBody) {
-      return _ownScrollSliver(_withBottomInset(_content(), bottomInset));
+      return _ownScrollSliver(_withBottomInset(body!, bottomInset));
     }
-    return SliverFillRemaining(
-      hasScrollBody: false,
-      child: _withBottomInset(_content(), bottomInset),
+    return SliverLayoutBuilder(
+      builder: (context, constraints) => SliverFillRemaining(
+        hasScrollBody: false,
+        child: _withBottomInset(
+          _content(constraints.crossAxisExtent.contentGutter),
+          bottomInset,
+        ),
+      ),
     );
   }
 
@@ -286,15 +291,14 @@ class AdaptiveScaffold extends StatelessWidget {
     return SliverMainAxisGroup(slivers: slivers);
   }
 
-  Widget _content() {
-    return constrainWidth && !hasScrollBody
-        ? Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: kContentMaxWidth),
-              child: body,
-            ),
-          )
-        : body!;
+  Widget _content(double gutter) {
+    if (!constrainWidth) return body!;
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: gutter),
+        child: body,
+      ),
+    );
   }
 
   Widget _ownScrollSliver(Widget child) {
