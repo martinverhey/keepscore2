@@ -103,12 +103,6 @@ class _SettingsPageState extends State<SettingsPage> {
               onTap: () => context.push(Routes.players(widget.competitionId)),
             ),
           const SizedBox(height: AppSpacing.md),
-          SectionLabel(context.l10n.competitionSettingsSectionUser),
-          NavRow(
-            label: context.l10n.competitionsTitle,
-            onTap: () => context.push(Routes.home),
-          ),
-          const SizedBox(height: AppSpacing.md),
           SectionLabel(context.l10n.competitionSettingsSectionSystem),
           _themeRow(context),
           NavRow(

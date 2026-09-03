@@ -244,9 +244,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String get competitionSettingsSectionCompetition => 'Competitie';
 
   @override
-  String get competitionSettingsSectionUser => 'Gebruiker';
-
-  @override
   String get competitionSettingsSectionSystem => 'Systeem';
 
   @override

@@ -67,9 +67,7 @@ class _CompetitionShellState extends State<CompetitionShell> {
     if (AppPlatform.useWideWeb(context)) return null;
     return CompetitionTabBar(
       competitionId: widget.competitionId,
-      current: widget.navigationShell.currentIndex == 0
-          ? CompetitionTab.leaderboard
-          : CompetitionTab.matches,
+      current: _current,
       isRegistered: _canWrite(context),
     );
   }
@@ -83,6 +81,9 @@ class _CompetitionShellState extends State<CompetitionShell> {
           showNewMatchSheet(context, competitionId: widget.competitionId),
     );
   }
+
+  CompetitionTab get _current =>
+      CompetitionTab.values[widget.navigationShell.currentIndex];
 
   bool _canWrite(BuildContext context) =>
       context.watch<AuthBloc>().state.canWrite;

@@ -30,22 +30,23 @@ class CompetitionTabBar extends StatelessWidget {
           glyph: AdaptiveGlyph.matches,
           label: context.l10n.matchesTitle,
         ),
+        AdaptiveTabBarItem(
+          glyph: AdaptiveGlyph.competitions,
+          label: context.l10n.competitionsTitle,
+        ),
       ],
-      selectedIndex: current == CompetitionTab.leaderboard ? 0 : 1,
-      onTap: (index) => _select(context, index),
+      selectedIndex: current.index,
+      onTap: (index) => _select(context, CompetitionTab.values[index]),
       reservesTrailingAction: isRegistered,
     );
   }
 
-  void _select(BuildContext context, int index) {
-    final tab = index == 0
-        ? CompetitionTab.leaderboard
-        : CompetitionTab.matches;
+  void _select(BuildContext context, CompetitionTab tab) {
     if (tab == current) return;
-    context.go(
-      tab == CompetitionTab.leaderboard
-          ? Routes.leaderboard(competitionId)
-          : Routes.matches(competitionId),
-    );
+    context.go(switch (tab) {
+      CompetitionTab.leaderboard => Routes.leaderboard(competitionId),
+      CompetitionTab.matches => Routes.matches(competitionId),
+      CompetitionTab.competitions => Routes.competitions(competitionId),
+    });
   }
 }

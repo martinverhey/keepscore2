@@ -243,9 +243,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get competitionSettingsSectionCompetition => 'Competition';
 
   @override
-  String get competitionSettingsSectionUser => 'User';
-
-  @override
   String get competitionSettingsSectionSystem => 'System';
 
   @override

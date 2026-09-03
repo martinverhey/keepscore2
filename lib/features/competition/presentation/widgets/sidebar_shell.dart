@@ -34,6 +34,9 @@ class SidebarShell extends StatelessWidget {
     if (location.contains('/match/')) return SidebarSection.matches;
     if (location.endsWith('/matches')) return SidebarSection.matches;
     if (location.endsWith('/leaderboard')) return SidebarSection.leaderboard;
+    if (location.endsWith('/competitions')) {
+      return SidebarSection.competitions;
+    }
 
     return null;
   }

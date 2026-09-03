@@ -506,12 +506,6 @@ abstract class AppLocalizations {
   /// **'Competition'**
   String get competitionSettingsSectionCompetition;
 
-  /// No description provided for @competitionSettingsSectionUser.
-  ///
-  /// In en, this message translates to:
-  /// **'User'**
-  String get competitionSettingsSectionUser;
-
   /// No description provided for @competitionSettingsSectionSystem.
   ///
   /// In en, this message translates to:

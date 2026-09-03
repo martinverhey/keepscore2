@@ -149,15 +149,9 @@ class Sidebar extends StatelessWidget {
             ..._competitionNavItems(
               context,
               canManageSettings: canManageSettings,
-            ),
-          SectionLabel(context.l10n.competitionSettingsSectionUser),
-          _navItem(
-            context,
-            glyph: AdaptiveGlyph.competitions,
-            label: context.l10n.competitionsTitle,
-            selected: current == SidebarSection.competitions,
-            onTap: () => _select(SidebarSection.competitions),
-          ),
+            )
+          else
+            _competitionsItem(context),
         ],
       ),
     );
@@ -182,6 +176,7 @@ class Sidebar extends StatelessWidget {
         selected: current == SidebarSection.matches,
         onTap: () => _select(SidebarSection.matches),
       ),
+      _competitionsItem(context),
       const SizedBox(height: AppSpacing.lg),
       const HorizontalDivider(),
       SectionLabel(context.l10n.competitionSettingsSectionCompetition),
@@ -210,6 +205,16 @@ class Sidebar extends StatelessWidget {
         ),
       const SizedBox(height: AppSpacing.md),
     ];
+  }
+
+  Widget _competitionsItem(BuildContext context) {
+    return _navItem(
+      context,
+      glyph: AdaptiveGlyph.competitions,
+      label: context.l10n.competitionsTitle,
+      selected: current == SidebarSection.competitions,
+      onTap: () => _select(SidebarSection.competitions),
+    );
   }
 
   Widget _themeItem(BuildContext context) {

@@ -143,13 +143,22 @@ void main() {
       expect(find.text(l10n.configurationTitle), findsOneWidget);
       expect(find.text(l10n.historyTitle), findsOneWidget);
       expect(find.text(l10n.playersManageTitle), findsOneWidget);
-      expect(find.text(l10n.competitionSettingsSectionUser), findsOneWidget);
       expect(find.text(l10n.matchNew), findsOneWidget);
       expect(find.text(l10n.competitionsTitle), findsOneWidget);
       expect(find.text(l10n.settingsDarkModeTitle), findsOneWidget);
       expect(find.text(l10n.settingsLanguageTitle), findsOneWidget);
       expect(find.text(l10n.authSignOut), findsOneWidget);
       expect(find.text('body content'), findsOneWidget);
+
+      expect(
+        tester.getRect(find.text(l10n.competitionsTitle)).top,
+        inExclusiveRange(
+          tester.getRect(find.text(l10n.matchesTitle)).top,
+          tester
+              .getRect(find.text(l10n.competitionSettingsSectionCompetition))
+              .top,
+        ),
+      );
 
       await tester.tap(find.text(l10n.matchesTitle));
       expect(selected, SidebarSection.matches);

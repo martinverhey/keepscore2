@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:keepscore2/core/widgets/adaptive/adaptive_floating_action.dart';
 import 'package:keepscore2/core/widgets/adaptive/app_platform.dart';
 import 'package:keepscore2/features/auth/domain/auth_repository.dart';
 import 'package:keepscore2/features/auth/domain/auth_user.model.dart';
@@ -11,8 +12,11 @@ import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
+import 'package:keepscore2/features/competition/presentation/cubit/competition_list_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/pages/competition_shell.dart';
+import 'package:keepscore2/features/competition/presentation/pages/competitions.page.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/competition_scope.dart';
+import 'package:keepscore2/features/competition/presentation/widgets/competition_tab.enum.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/competition_tab_bar.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
 import 'package:keepscore2/features/leaderboard/domain/season_window.model.dart';
@@ -83,6 +87,7 @@ Future<GoRouter> _pumpHarness(
       myPlayerId: 'p-ada',
     ),
   );
+  when(() => competitions.myCompetitions()).thenAnswer((_) async => []);
   when(
     () => players.currentPlayers(_competitionId),
   ).thenAnswer((_) async => []);
@@ -186,6 +191,14 @@ Future<GoRouter> _pumpHarness(
                       ),
                     ],
                   ),
+                  StatefulShellBranch(
+                    routes: [
+                      GoRoute(
+                        path: 'competitions',
+                        builder: (_, _) => const CompetitionsPage(),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ],
@@ -202,6 +215,9 @@ Future<GoRouter> _pumpHarness(
         BlocProvider<GameTypeFilterCubit>.value(value: gameTypeFilterCubit),
         BlocProvider<ThemeCubit>(create: (_) => ThemeCubit()),
         BlocProvider(create: (_) => CompetitionCubit(competitions, authBloc)),
+        BlocProvider(
+          create: (_) => CompetitionListCubit(competitions, authBloc),
+        ),
       ],
       child: MaterialApp.router(
         routerConfig: router,
@@ -254,6 +270,29 @@ void main() {
     expect(find.byType(CompetitionTabBar), findsOneWidget);
   });
 
+  testWidgets('the competitions tab keeps the tab bar and the new match action', (
+    tester,
+  ) async {
+    AppPlatform.debugOverrideCupertino = false;
+    await _pumpHarness(tester);
+
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(LeaderboardPage)),
+    );
+    expect(_floatingActionLabel(tester), l10n.matchNew);
+
+    await tester.tap(find.text(l10n.competitionsTitle).last);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(CompetitionsPage), findsOneWidget);
+    expect(find.byType(CompetitionTabBar), findsOneWidget);
+    expect(
+      tester.widget<CompetitionTabBar>(find.byType(CompetitionTabBar)).current,
+      CompetitionTab.competitions,
+    );
+    expect(_floatingActionLabel(tester), l10n.matchNew);
+  });
+
   testWidgets('signing out while the leaderboard is open does not throw', (
     tester,
   ) async {
@@ -270,6 +309,12 @@ void main() {
 
     expect(tester.takeException(), isNull);
   });
+}
+
+String _floatingActionLabel(WidgetTester tester) {
+  return tester
+      .widget<AdaptiveFloatingAction>(find.byType(AdaptiveFloatingAction))
+      .semanticLabel;
 }
 
 class _CompetitionsStub extends StatelessWidget {

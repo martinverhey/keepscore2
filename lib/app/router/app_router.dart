@@ -42,6 +42,7 @@ abstract final class Routes {
   static String competition(String id) => '/competition/$id';
   static String leaderboard(String id) => '/competition/$id/leaderboard';
   static String matches(String id) => '/competition/$id/matches';
+  static String competitions(String id) => '/competition/$id/competitions';
   static String settings(String id) => '/competition/$id/settings';
   static String configuration(String id) =>
       '/competition/$id/settings/configuration';
@@ -215,6 +216,15 @@ GoRouter createRouter(AuthBloc authBloc) {
                                 child: MatchesPage(competitionId: id),
                               );
                             },
+                          ),
+                        ],
+                      ),
+                      StatefulShellBranch(
+                        routes: [
+                          GoRoute(
+                            path: 'competitions',
+                            builder: (context, state) =>
+                                const CompetitionsPage(),
                           ),
                         ],
                       ),
