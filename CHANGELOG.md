@@ -3,6 +3,21 @@
 Newest first. Each heading is an annotated `vX.Y.Z` tag; pushing that tag ships
 the build to TestFlight and Play internal testing.
 
+## v0.3.0 — 2026-09-04
+
+### Added
+- The competition you're in heads the list, with a QR code big enough to scan
+- Competitions tab, reachable without leaving the competition you're in
+
+### Changed
+- Create and join sit in the toolbar instead of behind the + button
+- Toolbar buttons share one glass capsule on iOS
+- Manage players moved up next to the season heading
+- Leaderboard rows keep an even height whatever badges they carry
+
+### Fixed
+- Long pages clipped instead of scrolling in a wide browser window
+
 ## v0.2.1 — 2026-09-03
 
 ### Added
