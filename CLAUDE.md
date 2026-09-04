@@ -87,13 +87,21 @@ both pages name their season identically; only the subtitle differs
 History). Neither tab filters by game type —
 that's Matches-only, see below.
 
-Logging a match, inspecting one, and joining a competition are all sheets, not
-routes — there is no `match/*` route, no `Routes.match` and no
-`Routes.joinCompetition`, so none of them is deep-linkable, and each builds its
-own cubit inside the `showAdaptiveSheet` builder rather than in a `GoRoute`.
-`showJoinCompetitionSheet` returns the joined competition's id (or null), and
-`CompetitionsPage` is what refreshes `CompetitionListCubit` and pushes the
-competition — the sheet itself never navigates. `showNewMatchSheet` builds the teams and submits.
+Logging a match, inspecting one, and joining or creating a competition are all
+sheets, not routes — there is no `match/*` route, no `Routes.match`, no
+`Routes.joinCompetition` and no `Routes.createCompetition`, so none of them is
+deep-linkable, and each builds its own cubit inside the `showAdaptiveSheet`
+builder rather than in a `GoRoute`. `showJoinCompetitionSheet` and
+`showCreateCompetitionSheet` each return the competition's id (or null), and
+`CompetitionsPage` is what refreshes `CompetitionListCubit` and goes to the
+competition — neither sheet navigates. `CreateCompetitionSheet`
+(`competition/presentation/widgets/create_competition_sheet.dart`) replaced
+`CreateCompetitionPage` and the `/create` route outright: same
+`CreateCompetitionCubit`, same name field and season-length segmented control,
+with the submit button in `Sheet.primaryButton` (labelled
+`competitionsCreateShort` — the sheet's own title already says "Create
+competition", which is what retired the `competitionCreateSubmit` key) and
+Cancel beside it. `showNewMatchSheet` builds the teams and submits.
 `TeamPickerSheet`'s "Manage players" button opens `showManagePlayersSheet`
 (`player/presentation/widgets/manage_players_sheet.dart`) on top of the picker
 rather than popping and pushing `Routes.players` — the sheet builds its own
@@ -291,6 +299,32 @@ discipline, and these three rules are what replace it — all four covered in
   side of that, but not the in-memory copy. `CompetitionsPage` calls
   `clearIfSelected(id)` after a successful leave/delete for the same reason.
 
+**Leaving or deleting a competition resets two things, and deliberately
+navigates nowhere.** `CompetitionsPage._forget` is that reset, shared by both
+actions: `CompetitionCubit.clearIfSelected(id)` and
+`RecentCompetitionStore.clearIfRecent(id)`. The list itself needs nothing,
+since `CompetitionListCubit._mutate` already refreshes. Clearing the recent id
+here rather than leaving it to the router's launch-time `isMember` check
+matters because that check deliberately keeps the stored id when the list load
+*fails* — a network blip must not wipe it — so "we actually know it is gone"
+has to be recorded at the moment we know.
+
+**The page stays put afterwards, including when you delete the competition
+whose shell you are standing in.** Both delete entry points are on the
+competitions list itself — the spotlight card's Manage button, reachable at
+`/` and at the in-shell `/competition/:id/competitions` branch — and that list
+is still exactly the right thing to be looking at once the competition is
+gone, so a `go(Routes.home)` there is a page change nobody asked for. It was
+tried and removed. The known cost: after deleting the competition you were in,
+the shell around you still renders `CompetitionTabBar` for that id, so
+Leaderboard and Matches remain one tap away and serve their branch cubits'
+stale pre-delete data over a dead realtime channel. Nothing bounces you out of
+that — `CompetitionShell` only reacts to `CompetitionMissing`, which
+`clearIfSelected` never emits (it emits `CompetitionLoading`), and
+`CompetitionScope` cannot re-`select` because the route's id never changed. If
+that becomes a real problem, fix it in the shell (drop or disable the dead
+tabs), not by navigating away from the list.
+
 "No competition selected" is deliberately **not** a fifth state: it is never
 rendered. Only pages inside the competition subtree switch on
 `CompetitionState`, and `CompetitionScope` has always called `select` before
@@ -317,8 +351,11 @@ that a long name gets the whole card to wrap into instead of a column beside a
 badge; `competitions_page_test.dart` pins that by asserting the name's row
 reaches past the code's left edge. So
 "which competition am I in" and "how does someone else get in" are both
-answered without opening anything; tapping the QR still opens `InviteSheet`,
-which is where copy-to-clipboard lives. Which competition that is comes from
+answered without opening anything. **The QR carries no tap of its own** — it
+is a thing to scan, not a button, and a nested tap target inside a card that
+is itself one tap only made the card's own destination ambiguous;
+`InviteSheet` (where copy-to-clipboard lives) is still reached from every
+`CompetitionCard`'s invite button. Which competition that is comes from
 `CompetitionCubit`, the same app-wide answer the sidebar reads, matched
 against the already-loaded `CompetitionListReady.competitions` for the counts
 and ownership — so the page makes no extra request, and renders no hero at all
@@ -327,17 +364,18 @@ holds a competition the user has since left. That competition is then
 **dropped from the list below**, with the rest headed by a
 `ListHeader(competitionsOther)`; the card carries its own Manage button so
 rename/leave/delete stay reachable for it. Tapping the card is
-`go(Routes.competition(id))` exactly like a `CompetitionCard`, and tapping
-the QR opens the same `showInviteSheet` a card's invite button does.
+`go(Routes.competition(id))` exactly like a `CompetitionCard`, anywhere on it.
 `JoinQrImage` is the white quiet-zone box `JoinQrCard` was built around,
 split out so the hero can render the same code at its own size.
 
 **The competitions page's two actions live in the bar, and it has no floating
 action and no sign out.** `trailing` is a `Row` of two `AdaptiveBarAction`s —
-create (`AdaptiveGlyph.add`, straight to `Routes.createCompetition`, rendered
-only when `session.canWrite`) and **join, which is the word `Join` rather than
-a glyph** (`competitionsJoinShort`; `competitionsJoin`, "Join competition",
-stays as its `semanticLabel`), always rendered. Three icons were tried for
+create (`AdaptiveGlyph.add`, opening
+`showCreateCompetitionSheet`, rendered only when `session.canWrite`) and **join,
+which is the word `Join` rather than a glyph** (`competitionsJoinShort`;
+`competitionsJoin`, "Join competition", stays as its `semanticLabel`), always
+rendered. That order is mirrored by the tail insets below — swap one and the
+other has to follow. Three icons were tried for
 join and none read — `#` for the six-character code, an arrow entering a wall,
 a person with a plus badge — which is what the label variant on
 `AdaptiveBarAction` below exists for. Note `competitionsJoinShort` and
@@ -345,20 +383,56 @@ a person with a plus badge — which is what the label variant on
 widget test that has the join sheet open must scope its `find.text` to the
 sheet — `join_competition_from_competition_flow_test.dart` does. It replaced an `AdaptiveFloatingAction`
 that opened a `CompetitionAddSheet` chooser; that sheet existed only to split
-one button into two, so it and `CompetitionAddAction` were deleted with it,
-and the empty state's `CurvedArrow` flipped to the new
-`CurvedArrowDirection.up` and moved above `EmptyState` to point at the bar
-instead of down at the vacated corner. Unlike every other page's `trailing`,
+one button into two, so it and `CompetitionAddAction` were deleted with it.
+Unlike every other page's `trailing`,
 this one is **not** gated on `AppPlatform.useWideWeb` — the sidebar has no
 create or join row, so the bar is the only way in at every width.
-**Sign out left the bar and became a plain `AdaptiveButton` at the foot of the
-empty state**, the same `AdaptiveButtonKind.plain` row `SettingsPage` ends
-with, rendered only while `state.competitions.isEmpty`. That is precisely the
-case the other two surfaces cannot reach — the wide-web sidebar and
-`SettingsPage` both sit inside a competition — so a user with nothing to open
-keeps a way out, and everyone else is not offered one on a list page.
-`AdaptiveGlyph.signOut` is gone regardless: no surface draws sign out as an
-icon any more.
+
+**The empty state is two speech bubbles hanging off the bar, over a
+placeholder line.** `_emptySection` is `_joinBubble` / `_createBubble` at the
+top, then `Spacer`/`EmptyState(competitionsPlaceholder)`/`Spacer`, then
+`_signOutButton`; the empty branch is `Expanded` so those spacers have height
+to take — the body is a non-scrolling `SliverFillRemaining`, which gives the
+column the viewport's remaining extent as its minimum, so the line sits
+centred and sign out is pinned to the bottom of the screen. Each bubble is a
+`SpeechBubble` (`core/widgets/speech_bubble.dart`) carrying an accent
+`AppTypography.eyebrow` header naming the action and a `caption` body saying
+what to press. **The header of the join bubble is `competitionsJoinShort`,
+literally the same key the bar button renders**, so the two can never drift
+apart — which also means `find.text('Join')` now matches twice on this page,
+and `competitions_page_test.dart`'s `_barAction` helper scopes to
+`AdaptiveBarActionGroup` for that reason (this is the third collision on that
+word, after `joinConfirm`).
+
+**The tail is the pointer, and its inset is what aims it.**
+`SpeechBubble.tailInset` is measured from the bubble's *right* edge, so
+`_joinTailInset` (10) lands under the rightmost bar action, `Join`, and
+`_createTailInset` (90) under the `+` beside it, and the two bubbles read as
+speech from two different buttons rather than as a stack of cards. **The
+smaller inset always belongs to whichever action the bar renders last**, so
+reordering `_actions` means swapping these two constants with it. The path is
+one `Path` — an `RRect` plus the triangle, filled once — because
+`AppColors.neutralSurface` is translucent and two overlapping opaque shapes
+would seam along the join. `_bubblePath` clamps the tail inside the corner
+radii so a narrow bubble cannot grow a tail out of its own rounded corner —
+**that clamp floors the effective inset at `AppRadius.lg + _tailWidth` (38)**,
+so any smaller value, `_joinTailInset`'s 10 included, renders at 38 and
+tuning below that does nothing.
+Aiming is approximate by nature: the bar actions differ in size between glass,
+Material and wide web, so the headers are what actually disambiguate and the
+tails carry direction.
+
+`competitionsEmpty` ("You're not in any competition yet") is gone — a
+first-time user already knows the list is empty, and the screen's one chance to
+teach was being spent restating it. Three earlier shapes were built here and
+rejected, so don't rebuild any of them: copies of the create/join actions *in*
+the empty state (a filled Join over a tinted Create); a `CurvedArrow` per bar
+action with the action's name as its caption (which is why
+`CurvedArrowDirection` briefly had an `up` member — it does not any more, and
+`CurvedArrow` now exists solely for Matches' `down`/`left` hints); and a single
+explanatory paragraph naming both buttons in prose. Nothing here persists a
+"has seen it" flag and nothing needs to — the empty state *is* the first-run
+state, and it disappears the moment the user joins.
 
 ### The competition list is a cache, not a fetch-on-open
 
@@ -377,12 +451,11 @@ holds a list. A failure is not cached — `CompetitionListFailed` is not
 `Ready`, so the next `ensureLoaded()` retries.
 
 Because the list is now cached, **every write to it has to say so**. `rename`/
-`leave`/`delete` already refreshed through `_mutate`; `CreateCompetitionPage`
-and `JoinCompetitionPage` now call `CompetitionListCubit.refresh()` in their
-success listeners. Both `context.push` the new competition on top of `/`, so
-the home page's `State` survives and `initState` never re-runs — without that
-explicit refresh the new competition would be missing from the list on the
-way back. (It already was, before the cache: nothing but pull-to-refresh ever
+`leave`/`delete` already refreshed through `_mutate`; `CompetitionsPage`
+calls `CompetitionListCubit.refresh()` itself when either the create or the
+join sheet comes back with an id. The page's `State` survives that — a sheet
+is not a route change, and `initState` never re-runs — so without that
+explicit refresh the new competition would be missing from the list. (It already was, before the cache: nothing but pull-to-refresh ever
 refetched it.)
 
 The cubit subscribes to `AuthBloc` and resets to `CompetitionListLoading` when
@@ -1128,10 +1201,27 @@ most**: it brightens the rim uniformly all the way round, so it is what turns
 an edge highlight into an outline. The shipped values are far below the
 package's defaults on both themes — they were tuned against a real device, so
 treat them as measured, not as a starting guess.
-`AdaptiveFloatingAction` composes it as
-`LiquidGlassTabBarAction.defaultStyle.copyWith(shape: …)` so the action keeps
-its tuned appearance and refraction and changes only the rim — the pattern the
-`style`-replaces-wholesale note below describes.
+`AdaptiveGlass.actionStyle(context, cornerRadius:)` is the one composition
+every glass button goes through — `LiquidGlassTabBarAction.defaultStyle` with
+its shape swapped for that themed rim and its body filled per brightness, so
+the action keeps its tuned refraction and changes only those two facets, the
+pattern the `style`-replaces-wholesale note below describes.
+`AdaptiveGlass.barActionStyle` is that call at the bar action's own radius,
+and `AdaptiveFloatingAction` makes it at `AppGlass.barHeight / 2`.
+
+**The body of a glass button is white in light mode and clear in dark.**
+`LiquidGlassTabBarAction.defaultStyle` ships a fully transparent body — the
+refraction alone — which over a light page leaves the button all but
+invisible; every control the eye is meant to find (the bar actions, the
+capsule they group into, the labelled action's lens, the FAB and the tab
+action) sits on `AdaptiveColors.glassActionTint`, white at
+`AppOpacity.glassActionFill` (0.45), well above the `glassFill` (0.22) the
+tab bar capsule's *surface* uses — a button has to out-read the bar it sits
+next to. `glassActionTintOnDark` is `AppColors.transparent`, i.e. the
+package default left exactly as it was: over a near-black page the rim and
+the refraction already carry the shape, and a white body there reads as a
+grey blob. It is the one `AdaptiveColors` pair whose dark half is a
+deliberate no-op.
 
 **A glass action on iOS is a FAB everywhere else — they are the same thing.**
 `AdaptiveFloatingAction` is the single widget for "the primary action on this
@@ -1372,18 +1462,27 @@ Three things this shape is deliberately avoiding:
   never again. `_rememberDays` is called from `_matchesSection`, the one place
   that actually knows the content changed.
 
-**Two or more bar actions share one capsule, via `AdaptiveBarActionGroup`.**
+**Two or more *glyph* bar actions share one capsule, via
+`AdaptiveBarActionGroup`.**
 On glass it wraps the row in a single `LiquidGlassLens` and a
 `GroupedBarActionScope`; each `AdaptiveBarAction` reads that scope and renders
 as a bare tappable slot instead of its own lens, so two lenses never sit
-edge to edge. Below two actions, or off glass, it is just the `Row`. The
+edge to edge. Below two actions, off glass, or as soon as **any** member is a
+labelled action (`_isLabelled`, the private top-level check below the class),
+it is just the `Row` and each member keeps its own lens. That check reads the
+`label` off an `AdaptiveBarAction` in the list itself, so a member wrapped in
+anything else (a `BlocBuilder`, `CompetitionSettingsButton`,
+`GameTypeFilterButton`) counts as a glyph — which is what every wrapper in the
+app is. **Build a labelled action inline in the `actions` list**, the way
+`CompetitionsPage._joinButton` does; hidden behind a wrapper it would be
+capsuled anyway. The
 capsule's style is `AdaptiveGlass.barActionStyle(context)` —
-`LiquidGlassTabBarAction.defaultStyle` with only its shape swapped for the
-themed rim — which is the one expression the group, the lone lens and the
-labelled lens all share.
+`LiquidGlassTabBarAction.defaultStyle` with its shape swapped for the themed
+rim and its body for the themed fill — which is the one expression the group,
+the lone lens and the labelled lens all share.
 
 **`AdaptiveBarAction` is the small sibling of `AdaptiveFloatingAction`**, and
-the two together are the whole glass-control vocabulary: an untinted
+the two together are the whole glass-control vocabulary: an accent-free
 `LiquidGlassTabBarAction` carrying `AdaptiveColors.glassGlyph`, at
 `AppGlass.barActionSize` (52) rather than `barHeight` (64) — smaller than the
 top bar's own 60px row, which is what `_actionSlot` centres it in, above.
@@ -1398,19 +1497,37 @@ platform; that is how it satisfies the "a glass action is a FAB everywhere
 else" pairing rule without inventing an Android affordance.
 **It takes either a `glyph` or a `label`, never both** (asserted, the same
 shape `AdaptiveScaffold` uses for `body`/`slivers`) — a bar action whose
-meaning no icon carries says the word instead. The label variant is the same
-widget throughout, so it groups exactly like a glyph one: a bare padded text
-slot at `AppGlass.barActionSize` tall inside a shared capsule, its own
-`LiquidGlassLens` when alone, and off glass an `AdaptiveButton(kind: plain,
+meaning no icon carries says the word instead. The label variant is a bare
+padded text slot at `AppGlass.barActionSize` tall inside its own
+`LiquidGlassLens`, and off glass an `AdaptiveButton(kind: plain,
 expand: false)` — a `TextButton` on Material, a medium `CupertinoButton` on
 Cupertino, which is what a bar text button already is on both. It is a
-`LiquidGlassLens` rather than a `LiquidGlassTabBarAction` on the lone-glass
-path because that component takes a single `size` and paints a circle, which
+`LiquidGlassLens` rather than a `LiquidGlassTabBarAction` on the glass path
+because that component takes a single `size` and paints a circle, which
 no word fits.
 
+**Every glass slot the lens does not tap for itself brings its own ink.**
+`LiquidGlassTabBarAction` wraps its child in a transparent `Material` plus a
+circle-clipped `InkWell`, so a lone glyph action splashes on press for free —
+but the labelled action and every member of a capsule are bare slots inside a
+lens we built, and those used to be an `AdaptiveTappable`, which is a plain
+`GestureDetector` on Cupertino and therefore on every glass path. They pressed
+dead next to a `+` that did not. `AdaptiveBarAction._grouped` is now the same
+`Material`/`InkWell` pair the package uses, clipped by `_inkShape()` — a
+`CircleBorder` for a glyph slot, a `StadiumBorder` for a labelled one, which
+at `barActionSize` tall is exactly the lens's own `barActionSize / 2` corner.
+`adaptive_bar_action_test.dart` pins both borders. **A labelled action never joins a capsule** — it is always that
+lone lens, and its presence is what drops the whole group back to a plain
+`Row` (see the group above). A pill-shaped word stretched into a capsule
+beside a circular glyph reads as one wide button with a stray icon in it
+rather than as two controls, and `CompetitionsPage`'s create/join pair is
+where that showed: the glyph keeps its circle, the word keeps its pill, and
+`AppSpacing.xs` sits between them.
+
 **Two or more bar actions go in one `AdaptiveBarActionGroup`, never a bare
-`Row` — one capsule-shaped lens with the glyphs inside it, the iOS 26 toolbar
-grouping.** The capsule is a plain `LiquidGlassLens` carrying the same
+`Row` — which is one capsule-shaped lens with the glyphs inside it, the iOS 26
+toolbar grouping, whenever every one of them is a glyph, and the plain `Row`
+of individual lenses otherwise.** The capsule is a plain `LiquidGlassLens` carrying the same
 `LiquidGlassTabBarAction.defaultStyle.copyWith(shape: AdaptiveGlass.shapeOf(…,
 cornerRadius: barActionSize / 2))` a lone `AdaptiveBarAction` gives its own
 lens, so a group is exactly one bar action stretched over both glyphs — same
@@ -1419,7 +1536,9 @@ of their own, which is what `GroupedBarActionScope` says: `AdaptiveBarAction`
 reads it and renders a bare `barActionSize` square of glyph over the shared
 lens instead of its own `LiquidGlassTabBarAction`. Below two actions there is
 nothing to group and the widget is the plain `Row` — as it is off glass, where
-the call sites' old `Row` is all this ever was.
+the call sites' old `Row` is all this ever was, and as it is for any set
+carrying a labelled action. The group still owns every one of those cases, so
+call sites keep handing it the actions and never branch themselves.
 
 **`LiquidGlassGroup`/`LiquidGlassBlender` is the road not taken here, and it
 was tried first.** It is the package's own answer for this (its docs point it
@@ -1473,13 +1592,13 @@ exactly as it is and only the glyph changes colour**, to
 `AdaptiveColors.accent`. Tinting the lens was built first and dropped: a
 filled accent lens is the same flat-orange-circle read that got the accent
 FAB rejected, and it makes the button louder than the heading naming the
-filter. So the lens keeps `LiquidGlassTabBarAction.defaultStyle` with only
-its shape swapped, and `active` is one line in `_glyphColor` — accent when
+filter. So the lens keeps whatever `AdaptiveGlass.barActionStyle` gives it,
+active or not, and `active` is one line in `_glyphColor` — accent when
 on, `glassGlyph` (black on light, white on dark) when off. Off glass,
 `AdaptiveIconButton` does the identical thing plus Material's own
 `isSelected`; both paths mark `Semantics(selected:)`. One rule, both
-platforms. `test/core/adaptive_bar_action_test.dart` pins it, the untinted
-lens included, and is the second file in the suite to set
+platforms. `test/core/adaptive_bar_action_test.dart` pins it, the unchanged
+lens body included, and is the second file in the suite to set
 `debugOverrideLiquidGlass`.
 
 **`AdaptiveSwitch` is the one glass control that is not chrome.** On the glass
@@ -1487,8 +1606,8 @@ path it is the package's own `LiquidGlassSwitch` — the iOS-26 sliding switch,
 whose thumb is picked up and carried rather than snapped — so the dark-mode
 toggle in `SettingsPage`'s System section (and any future `AdaptiveSwitch`)
 reads as glass on iOS. Three things it does *not* do, each deliberate:
-- **It passes no `style`**, the same call as `AdaptiveFloatingAction` and for
-  the same reason — `LiquidGlassSwitch.defaultStyle` is a thumb-tuned clear
+- **It passes no `style`** — alone among the glass controls, since
+  `LiquidGlassSwitch.defaultStyle` is a thumb-tuned clear
   pill (near-zero blur, a tucked-in contact shadow tied to the morph, a
   softened grey rim rather than the package's usual `0xB2FFFFFF`), and a
   style handed in wholesale would drop all of it. The rim's light/dark split
@@ -1588,16 +1707,16 @@ action the capsule keeps `bottomCenter` and a bottom-only margin, which is the
 one shape that lets `resolveBarPosition` return `null` and leave the package's
 default centring untouched.
 
-The FAB and the tab action are **untinted glass with a label-coloured glyph**
-— no accent anywhere on them. A filled accent lens read as a flat orange
+The FAB and the tab action are **accent-free glass with a label-coloured
+glyph** — a white body in light mode, no accent anywhere on them. A filled accent lens read as a flat orange
 circle rather than as glass, and an accent glyph on clear glass read as
 orange too; both were rejected on sight. `AdaptiveColors.glassGlyph` is black
 on light and white on dark (what iOS itself uses for a glass control's
 symbol), which is also why the package's own `foregroundColor` default of
 plain white is not enough — it vanishes over a light page.
-`AdaptiveFloatingAction` passes no `style` at all, so `LiquidGlassFab`'s tuned
-default (contact shadow and optical border included) applies as shipped. The
-tab action carries `AdaptiveGlyph.add`, the same bare `+` as the competitions
+`AdaptiveFloatingAction` changes only the rim and the body fill, through
+`AdaptiveGlass.actionStyle`, so the package's tuned refraction applies as
+shipped. The tab action carries `AdaptiveGlyph.add`, the same bare `+` as the competitions
 and players FABs, rather than `newMatch`'s filled plus-in-a-circle.
 
 **A component's `style` replaces its tuned appearance and refraction
@@ -1605,7 +1724,7 @@ wholesale — only `shape`/`adaptivity` fall back.** `LiquidGlassStyle.merge`
 takes `other.appearance`/`other.refraction` outright, so handing a component
 an `AdaptiveGlass.styleOf` style silently drops the contact shadow and tuned
 optical border it ships with. Pass no style to keep the component's own look
-(the FAB and the tab action do); to change one facet, compose from its
+(`AdaptiveSwitch` does); to change one facet, compose from its
 `defaultStyle` with `copyWith` rather than building a style from scratch. The
 tab bar capsule is the one place we do override wholesale, because its tint
 has to follow our light/dark tokens.
@@ -1614,20 +1733,22 @@ has to follow our light/dark tokens.
 
 `Sidebar` is rendered once, by `SidebarShell`
 (`features/competition/presentation/widgets/sidebar_shell.dart`) from a
-go_router `ShellRoute` that wraps `/`, `/settings/language`, `/create`,
-`/upgrade`, and the whole `/competition/:id` subtree. Only `/splash` and
+go_router `ShellRoute` that wraps `/`, `/settings/language`, `/upgrade`, and
+the whole `/competition/:id` subtree. Only `/splash` and
 `/sign-in` stay outside it and have no sidebar. Pages therefore
 compose only their own `AdaptiveScaffold`; none of them mention `Sidebar`.
 A page that is a *task* rather than a destination has to carry its own way
 back, since the shell's `SuppressedBackButtonScope` kills the implied one:
-`CreateCompetitionPage._backButton` returns an `AdaptiveIconButton` only when
-`SuppressedBackButtonScope.of(context)` is true, so native and narrow web keep
-the platform's own arrow untouched; `UpgradeAccountPage` already passes an
-explicit `leading` on every step, and an explicit `leading` bypasses the
-suppression outright. Highlighting a sidebar section for such a page is *not*
-the alternative — `Sidebar._select` early-returns on `section == current`, so
-marking `/create` as `SidebarSection.competitions` would make the row that
-leads back out unclickable.
+`UpgradeAccountPage` passes an explicit `leading` on every step, and an
+explicit `leading` bypasses the suppression outright. A page may also read
+`SuppressedBackButtonScope.of(context)` and render its own
+`AdaptiveIconButton` only when it is true, leaving native and narrow web the
+platform's own arrow — `CreateCompetitionPage` did that until it became a
+sheet, and nothing does now. Highlighting a sidebar section for such a page is
+*not* the alternative — `Sidebar._select` early-returns on
+`section == current`, so marking a task route as
+`SidebarSection.competitions` would make the row that leads back out
+unclickable.
 `SettingsPage` and `MatchDetailPage` gain a sidebar on wide web as a
 side effect of living in that subtree — `SettingsPage` is unreachable there
 anyway (its rows are sidebar items), and a full-viewport match detail next to
@@ -1740,7 +1861,7 @@ else in the suite:
   cubits and the player list actually followed.
 - **Entering a competition is always `go`, never `push`** — from the
   competition card, after joining (`CompetitionsPage._join`) and after
-  creating (`CreateCompetitionPage`'s success listener) alike. `push` keeps
+  creating (`CompetitionsPage._create`) alike. `push` keeps
   the existing stack and mounts the *whole* new match chain on top of it, so
   a second competition route mounts the competition `ShellRoute`'s
   `navigatorKey`, both `StatefulShellBranch.navigatorKey`s and
@@ -1749,9 +1870,10 @@ else in the suite:
   tears the loser down and **nothing is left to paint: a black screen, no
   crash and no error widget** (release's `RenderErrorBox` is light grey, so a
   thrown exception looks nothing like this). It only bites when a competition
-  route is already below — launch → recent-competition redirect into A → the
-  leaderboard's competition-name button or Settings' "All competitions", both
-  `push(Routes.home)` → join → black. A fresh launch with no recent
+  route is already below — launch → recent-competition redirect into A → any
+  `push(Routes.home)` (Settings' "All competitions"; the leaderboard's
+  competition-name button used to be the other one, see the Competitions
+  branch below) → join → black. A fresh launch with no recent
   competition has only `/` beneath, so the identical tap works, which is what
   made it look intermittent and kept it off the simulator.
   `test/flow/join_competition_from_competition_flow_test.dart` drives the real
@@ -1778,8 +1900,10 @@ navigates itself via `context.go`/`push` rather than `onSelectTab`/`onNewMatch`
 callbacks — every call site would have passed the identical closure, the same
 reasoning that has `Sidebar` read `ThemeCubit` from context instead of a
 callback prop.
-`CompetitionSettingsButton` is the same move for the settings icon both
-pages show in their (non-wide-web) app bar trailing slot.
+`CompetitionSettingsButton` is the same move for the settings icon, which
+only the Leaderboard shows (in its non-wide-web app bar trailing slot) —
+Matches carries the game type filter alone, so the settings action is offered
+once per competition rather than on every tab.
 
 **The third branch is Competitions, and it renders the same `CompetitionsPage`
 that `/` does — deliberately, so the tab bar survives the tap.** It used to be
@@ -1788,7 +1912,12 @@ gone, and so is that section's `SectionLabel`. A tab item that navigated to `/` 
 behind on arrival, since `/` sits outside the competition `ShellRoute`
 entirely; a branch at `/competition/:id/competitions` keeps the user inside
 competition `:id`'s shell, so Leaderboard and Matches are still one tap away
-without picking anything. Picking a tile from there is the usual
+without picking anything. **The leaderboard's competition-name button leads
+here too** — `LeaderboardPage._competitionButton` is
+`go(Routes.competitions(competitionId))`, not a `push(Routes.home)`, for
+exactly the reason the branch exists: sending it to `/` dropped the tab bar
+on arrival, and pushing a second competition-adjacent stack is what the
+black-screen bullet above is about. Picking a tile from there is the usual
 `context.go(Routes.competition(id))` and lands on that competition's
 leaderboard. **`CompetitionShell._newMatch` is live on this branch like every
 other one**, because `CompetitionsPage` no longer has a floating action of its
@@ -1977,7 +2106,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 354 tests at time of writing
+flutter test                    # 360 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 python3 scripts/generate_icon.py   # redraw assets/icon/*.png
