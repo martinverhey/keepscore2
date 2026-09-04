@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
+import 'package:keepscore2/core/theme/app_tokens.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 import 'package:keepscore2/core/widgets/list_header.dart';
+import 'package:keepscore2/core/widgets/speech_bubble.dart';
+import 'package:keepscore2/core/widgets/state_views.dart';
 import 'package:keepscore2/features/auth/domain/auth_repository.dart';
 import 'package:keepscore2/features/auth/domain/auth_user.model.dart';
 import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
@@ -64,6 +67,8 @@ MatchEntry _match(int day, int index) => MatchEntry(
 Future<GameTypeFilterCubit> _pumpMatchesPage(
   WidgetTester tester, {
   Set<GameType> played = const {GameType.oneVOne, GameType.twoVTwo},
+  List<MatchEntry>? feed,
+  bool hostsBar = false,
 }) async {
   final auth = MockAuthRepository();
   final competitions = MockCompetitionRepository();
@@ -74,8 +79,13 @@ Future<GameTypeFilterCubit> _pumpMatchesPage(
     () => auth.currentUser,
   ).thenReturn(const AuthUser(id: 'u-ada', displayName: 'Ada', isGuest: false));
   when(() => auth.watchUser()).thenAnswer((_) => const Stream.empty());
-  when(() => players.currentPlayers(_competitionId)).thenAnswer((_) async => []);
-  when(() => matches.watch(_competitionId)).thenAnswer((_) => Stream.value(null));
+  when(
+    () => players.currentPlayers(_competitionId),
+  ).thenAnswer((_) async => []);
+  when(() => players.watch(any())).thenAnswer((_) => const Stream.empty());
+  when(
+    () => matches.watch(_competitionId),
+  ).thenAnswer((_) => Stream.value(null));
   when(
     () => matches.seasonGameTypes(_competitionId),
   ).thenAnswer((_) async => played);
@@ -86,10 +96,12 @@ Future<GameTypeFilterCubit> _pumpMatchesPage(
       limit: any(named: 'limit'),
     ),
   ).thenAnswer(
-    (_) async => [
-      for (var day = 5; day >= 1; day--)
-        for (var index = 0; index < 3; index++) _match(day, index),
-    ],
+    (_) async =>
+        feed ??
+        [
+          for (var day = 5; day >= 1; day--)
+            for (var index = 0; index < 3; index++) _match(day, index),
+        ],
   );
 
   final authBloc = AuthBloc(auth);
@@ -112,13 +124,30 @@ Future<GameTypeFilterCubit> _pumpMatchesPage(
       child: MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: const MatchesPage(competitionId: _competitionId),
+        home: hostsBar
+            ? _hostedPage()
+            : const MatchesPage(competitionId: _competitionId),
       ),
     ),
   );
   await tester.pumpAndSettle();
 
   return gameTypeFilterCubit;
+}
+
+Widget _hostedPage() {
+  return MediaQuery(
+    data: const MediaQueryData(padding: EdgeInsets.only(bottom: 34)),
+    child: AdaptiveBottomBarHost(
+      bar: const SizedBox(height: AppGlass.barHeight),
+      action: AdaptiveBottomBarAction(
+        glyph: AdaptiveGlyph.add,
+        label: 'New match',
+        onPressed: () {},
+      ),
+      child: const MatchesPage(competitionId: _competitionId),
+    ),
+  );
 }
 
 void _jumpTo(WidgetTester tester, double offset) => tester
@@ -140,14 +169,14 @@ Finder _dayHeader(int day) => find.byWidgetPredicate(
   (widget) => widget is DayHeader && widget.day == DateTime(2026, 8, day),
 );
 
-Finder _dayHeaderLabel(int day) => find.descendant(
-  of: _dayHeader(day),
-  matching: find.byType(Text),
-);
+Finder _dayHeaderLabel(int day) =>
+    find.descendant(of: _dayHeader(day), matching: find.byType(Text));
 
 Finder _barDay(int day) => find.descendant(
   of: find.byType(AdaptiveTopBar),
-  matching: find.text(DateFormat.MMMMEEEEd('en').format(DateTime(2026, 8, day))),
+  matching: find.text(
+    DateFormat.MMMMEEEEd('en').format(DateTime(2026, 8, day)),
+  ),
 );
 
 double _scrollOntoCaptionLine(WidgetTester tester, int day) {
@@ -172,31 +201,80 @@ void main() {
     AppPlatform.debugOverrideLiquidGlass = null;
   });
 
-  for (final useCupertino in [false, true]) {
-    testWidgets(
-      'the day header stays put while its matches scroll under it '
-      '(cupertino: $useCupertino)',
-      (tester) async {
-        AppPlatform.debugOverrideCupertino = useCupertino;
-        await _pumpMatchesPage(tester);
+  testWidgets('centres the empty message and hangs the new match bubble '
+      'above the action', (tester) async {
+    await _pumpMatchesPage(tester, feed: const []);
 
-        final headerBefore = tester.getRect(_dayHeader(5));
-        final cardBefore = tester.getRect(_matchCard('m5-2'));
-
-        await tester.drag(find.byType(CustomScrollView), const Offset(0, -250));
-        await tester.pumpAndSettle();
-
-        final headerAfter = tester.getRect(_dayHeader(5));
-        final cardAfter = tester.getRect(_matchCard('m5-2'));
-
-        expect(headerAfter.top, greaterThanOrEqualTo(0));
-        expect(
-          cardBefore.top - cardAfter.top,
-          greaterThan(headerBefore.top - headerAfter.top),
-        );
-        expect(tester.takeException(), isNull);
-      },
+    final region = tester.getRect(
+      find
+          .ancestor(of: find.byType(EmptyState), matching: find.byType(Center))
+          .first,
     );
+    final viewport = tester.getRect(find.byType(CustomScrollView));
+
+    expect(region.height, greaterThan(viewport.height / 2));
+    expect(
+      tester.getRect(find.text('Matches will show up here.')).center.dy,
+      closeTo(region.center.dy, 1),
+    );
+
+    expect(
+      region.bottom,
+      lessThanOrEqualTo(viewport.bottom - AdaptiveFloatingAction.diameter),
+    );
+
+    final bubble = tester.getRect(find.byType(SpeechBubble));
+    expect(bubble.width, region.width);
+    expect(bubble.height, lessThan(region.height / 4));
+    expect(bubble.top, greaterThan(region.center.dy));
+    expect(bubble.bottom, region.bottom);
+    expect(find.text('Press the + below to create a new match.'), findsOne);
+  });
+
+  testWidgets('the empty state clears the glass bar it is hosted above', (
+    tester,
+  ) async {
+    AppPlatform.debugOverrideCupertino = true;
+    AppPlatform.debugOverrideLiquidGlass = true;
+    await _pumpMatchesPage(tester, feed: const [], hostsBar: true);
+
+    final region = tester.getRect(
+      find
+          .ancestor(of: find.byType(EmptyState), matching: find.byType(Center))
+          .first,
+    );
+    final action = tester.getRect(find.byType(AdaptiveFloatingAction));
+
+    expect(region.bottom, lessThanOrEqualTo(action.top));
+    expect(region.bottom, greaterThan(action.top - AppSpacing.lg));
+    expect(
+      tester.getRect(find.byType(SpeechBubble)).bottom,
+      lessThanOrEqualTo(action.top),
+    );
+  });
+
+  for (final useCupertino in [false, true]) {
+    testWidgets('the day header stays put while its matches scroll under it '
+        '(cupertino: $useCupertino)', (tester) async {
+      AppPlatform.debugOverrideCupertino = useCupertino;
+      await _pumpMatchesPage(tester);
+
+      final headerBefore = tester.getRect(_dayHeader(5));
+      final cardBefore = tester.getRect(_matchCard('m5-2'));
+
+      await tester.drag(find.byType(CustomScrollView), const Offset(0, -250));
+      await tester.pumpAndSettle();
+
+      final headerAfter = tester.getRect(_dayHeader(5));
+      final cardAfter = tester.getRect(_matchCard('m5-2'));
+
+      expect(headerAfter.top, greaterThanOrEqualTo(0));
+      expect(
+        cardBefore.top - cardAfter.top,
+        greaterThan(headerBefore.top - headerAfter.top),
+      );
+      expect(tester.takeException(), isNull);
+    });
   }
 
   testWidgets('each day takes over the pinned slot as it reaches the top', (
@@ -213,7 +291,9 @@ void main() {
     expect(tester.getRect(_dayHeader(4)).top, pinnedTop);
   });
 
-  testWidgets('the day headers scroll away under the glass bar', (tester) async {
+  testWidgets('the day headers scroll away under the glass bar', (
+    tester,
+  ) async {
     AppPlatform.debugOverrideCupertino = true;
     AppPlatform.debugOverrideLiquidGlass = true;
     await _pumpMatchesPage(tester);
@@ -221,7 +301,7 @@ void main() {
     final headerBefore = tester.getRect(_dayHeader(5));
     final cardBefore = tester.getRect(_matchCard('m5-2'));
 
-    await _scrollTo(tester, 150);
+    await _scrollTo(tester, 100);
 
     expect(
       headerBefore.top - tester.getRect(_dayHeader(5)).top,
@@ -242,9 +322,7 @@ void main() {
     expect(_barDay(5), findsNothing);
   });
 
-  testWidgets('the glass bar names the day scrolled behind it', (
-    tester,
-  ) async {
+  testWidgets('the glass bar names the day scrolled behind it', (tester) async {
     AppPlatform.debugOverrideCupertino = true;
     AppPlatform.debugOverrideLiquidGlass = true;
     await _pumpMatchesPage(tester);
@@ -342,10 +420,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.descendant(
-        of: find.byType(ListHeader),
-        matching: find.text('2v2'),
-      ),
+      find.descendant(of: find.byType(ListHeader), matching: find.text('2v2')),
       findsOneWidget,
     );
   });
@@ -370,26 +445,55 @@ void main() {
   });
 
   for (final useCupertino in [false, true]) {
-    testWidgets(
-      'the filter button carries no label of its own '
-      '(cupertino: $useCupertino)',
-      (tester) async {
-        AppPlatform.debugOverrideCupertino = useCupertino;
-        final filter = await _pumpMatchesPage(tester);
-        await filter.select(GameType.twoVTwo);
-        await tester.pumpAndSettle();
+    testWidgets('the filter button carries no label of its own '
+        '(cupertino: $useCupertino)', (tester) async {
+      AppPlatform.debugOverrideCupertino = useCupertino;
+      final filter = await _pumpMatchesPage(tester);
+      await filter.select(GameType.twoVTwo);
+      await tester.pumpAndSettle();
 
-        expect(find.byType(GameTypeFilterButton), findsOneWidget);
-        expect(
-          find.descendant(
-            of: find.byType(GameTypeFilterButton),
-            matching: find.byType(Text),
-          ),
-          findsNothing,
-        );
-      },
-    );
+      expect(find.byType(GameTypeFilterButton), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(GameTypeFilterButton),
+          matching: find.byType(Text),
+        ),
+        findsNothing,
+      );
+    });
   }
+
+  testWidgets('the empty state points its bubble at the sidebar on wide web', (
+    tester,
+  ) async {
+    AppPlatform.debugOverrideCupertino = false;
+    AppPlatform.debugOverrideWideWeb = true;
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await _pumpMatchesPage(tester, feed: const []);
+
+    final region = tester.getRect(
+      find
+          .ancestor(of: find.byType(EmptyState), matching: find.byType(Center))
+          .first,
+    );
+    final bubble = tester.getRect(find.byType(SpeechBubble));
+
+    expect(
+      tester.widget<SpeechBubble>(find.byType(SpeechBubble)).tail,
+      SpeechBubbleTail.left,
+    );
+    expect(bubble.top, region.top);
+    expect(bubble.bottom, lessThan(region.center.dy));
+    expect(
+      tester.getRect(find.text('Matches will show up here.')).center.dy,
+      closeTo(region.center.dy, 1),
+    );
+    expect(region.bottom, tester.getRect(find.byType(CustomScrollView)).bottom);
+  });
 
   testWidgets('the list keeps to the centered content column on wide web', (
     tester,

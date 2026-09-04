@@ -90,7 +90,7 @@
   "configurationTitle": "Configuratie",
   "playersManageTitle": "Spelers beheren",
   "historyTitle": "Geschiedenis",
-  "historyEmpty": "Er zijn nog geen seizoenen afgelopen.",
+  "historyEmpty": "Afgelopen seizoenen verschijnen hier.",
   "configurationSave": "Wijzigingen opslaan",
   "configurationSaved": "Wijzigingen opgeslagen.",
   "configurationOwnerOnly": "Alleen de beheerder kan deze instellingen wijzigen.",
@@ -139,7 +139,7 @@
   "joinNewPlayerNameTitle": "Wat is je naam?",
 
   "leaderboardTitle": "Klassement",
-  "leaderboardNoPlayers": "Nog geen spelers. Voeg er een paar toe en leg een wedstrijd vast.",
+  "leaderboardNoPlayers": "Nog geen spelers. Voeg er een paar toe en maak een wedstrijd aan.",
   "leaderboardCurrentSeason": "Huidig seizoen",
   "leaderboardManage": "Beheren",
   "leaderboardSeasonEnds": "Loopt tot {date}",
@@ -183,9 +183,9 @@
   "gameTypeFilterPick": "Filter op speltype",
 
   "matchesTitle": "Wedstrijden",
-  "matchesEmpty": "Nog geen wedstrijden.",
-  "matchesCreateHintTabBar": "Tik hieronder op Nieuwe wedstrijd om je eerste wedstrijd aan te maken.",
-  "matchesCreateHintSidebar": "Gebruik Nieuwe wedstrijd om je eerste wedstrijd aan te maken.",
+  "matchesEmpty": "Wedstrijden verschijnen hier.",
+  "matchesCreateTip": "Druk op de +-knop hieronder om een wedstrijd aan te maken.",
+  "matchesCreateTipSidebar": "Druk op de +-knop hiernaast om een wedstrijd aan te maken.",
   "matchDayToday": "Vandaag",
   "matchDayYesterday": "Gisteren",
   "matchNew": "Nieuwe wedstrijd",
@@ -206,7 +206,7 @@
   "matchNeedsBothTeams": "Zet minstens één speler aan elke kant.",
   "matchScoreMissing": "Vul beide scores in.",
   "matchDrawNotAllowed": "Deze competitie staat geen gelijkspel toe.",
-  "matchGuestCannotLog": "Als gast kun je rondkijken, maar voor het vastleggen van wedstrijden heb je een account nodig.",
+  "matchGuestCannotCreate": "Als gast kun je rondkijken, maar voor het aanmaken van wedstrijden heb je een account nodig.",
   "matchNeedsPlayers": "Voeg spelers toe en maak wedstrijden aan.",
   "matchDiscardTitle": "Wedstrijd weggooien?",
   "matchDiscardConfirm": "De ingevulde spelers en score gaan verloren.",
@@ -231,7 +231,7 @@
   "playersTitle": "Spelers beheren",
   "playersAddPlayer": "Speler toevoegen",
   "playersDisplayNameLabel": "Naam",
-  "playersEmpty": "Nog geen spelers.",
+  "playersEmpty": "Spelers verschijnen hier.",
   "playersYou": "Jij",
   "playersOwner": "Beheerder",
   "playersUnclaimed": "Niet geclaimd",
@@ -290,7 +290,7 @@
   "@profileHeadToHeadTitle": {
     "placeholders": { "name": { "type": "String" } }
   },
-  "profileVersusEmpty": "Nog geen wedstrijden tegen {name}.",
+  "profileVersusEmpty": "Wedstrijden tegen {name} verschijnen hier.",
   "@profileVersusEmpty": {
     "placeholders": { "name": { "type": "String" } }
   },
@@ -300,7 +300,7 @@
   "profileSeasonGamesLabel": "Seizoen",
   "profileTotalGamesLabel": "Totaal",
   "profileRecentMatchesTitle": "Recente wedstrijden",
-  "profileHistoryEmpty": "Nog geen eerdere seizoenen.",
+  "profileHistoryEmpty": "Eerdere seizoenen verschijnen hier.",
 
   "settingsDarkModeTitle": "Donkere modus",
   "themeOptionLight": "Licht",

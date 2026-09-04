@@ -533,7 +533,7 @@ abstract class AppLocalizations {
   /// No description provided for @historyEmpty.
   ///
   /// In en, this message translates to:
-  /// **'No seasons have finished yet.'**
+  /// **'Finished seasons will show up here.'**
   String get historyEmpty;
 
   /// No description provided for @configurationSave.
@@ -755,7 +755,7 @@ abstract class AppLocalizations {
   /// No description provided for @leaderboardNoPlayers.
   ///
   /// In en, this message translates to:
-  /// **'No players yet. Add a few and log a match.'**
+  /// **'No players yet. Add a few and create a match.'**
   String get leaderboardNoPlayers;
 
   /// No description provided for @leaderboardCurrentSeason.
@@ -863,20 +863,20 @@ abstract class AppLocalizations {
   /// No description provided for @matchesEmpty.
   ///
   /// In en, this message translates to:
-  /// **'No matches yet.'**
+  /// **'Matches will show up here.'**
   String get matchesEmpty;
 
-  /// No description provided for @matchesCreateHintTabBar.
+  /// No description provided for @matchesCreateTip.
   ///
   /// In en, this message translates to:
-  /// **'Tap New match below to create your first one.'**
-  String get matchesCreateHintTabBar;
+  /// **'Press the + below to create a new match.'**
+  String get matchesCreateTip;
 
-  /// No description provided for @matchesCreateHintSidebar.
+  /// No description provided for @matchesCreateTipSidebar.
   ///
   /// In en, this message translates to:
-  /// **'Use New match to create your first one.'**
-  String get matchesCreateHintSidebar;
+  /// **'Press the + on the left to create a new match.'**
+  String get matchesCreateTipSidebar;
 
   /// No description provided for @matchDayToday.
   ///
@@ -998,11 +998,11 @@ abstract class AppLocalizations {
   /// **'This competition doesn\'t allow draws.'**
   String get matchDrawNotAllowed;
 
-  /// No description provided for @matchGuestCannotLog.
+  /// No description provided for @matchGuestCannotCreate.
   ///
   /// In en, this message translates to:
-  /// **'Guests can look around, but logging a match needs an account.'**
-  String get matchGuestCannotLog;
+  /// **'Guests can look around, but creating a match needs an account.'**
+  String get matchGuestCannotCreate;
 
   /// No description provided for @matchNeedsPlayers.
   ///
@@ -1127,7 +1127,7 @@ abstract class AppLocalizations {
   /// No description provided for @playersEmpty.
   ///
   /// In en, this message translates to:
-  /// **'No players yet.'**
+  /// **'Players will show up here.'**
   String get playersEmpty;
 
   /// No description provided for @playersYou.
@@ -1349,7 +1349,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileVersusEmpty.
   ///
   /// In en, this message translates to:
-  /// **'No matches against {name} yet.'**
+  /// **'Matches against {name} will show up here.'**
   String profileVersusEmpty(String name);
 
   /// No description provided for @profileGamesTitle.
@@ -1391,7 +1391,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileHistoryEmpty.
   ///
   /// In en, this message translates to:
-  /// **'No past seasons yet.'**
+  /// **'Past seasons will show up here.'**
   String get profileHistoryEmpty;
 
   /// No description provided for @settingsDarkModeTitle.

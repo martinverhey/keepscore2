@@ -7,10 +7,9 @@ import '../../../../core/extensions/date_time.extension.dart';
 import '../../../../core/extensions/game_type.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
-import '../../../../core/widgets/curved_arrow.dart';
-import '../../../../core/widgets/curved_arrow_direction.enum.dart';
 import '../../../../core/widgets/list_header.dart';
 import '../../../../core/widgets/page_title.dart';
+import '../../../../core/widgets/speech_bubble.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../auth/presentation/widgets/guest_notice.dart';
@@ -22,9 +21,12 @@ import '../cubit/game_type_filter_cubit.dart';
 import '../cubit/match_list_cubit.dart';
 import 'day_header.dart';
 import 'game_type_filter_button.dart';
-import 'match_day_group.dart';
 import 'match_card.dart';
+import 'match_day_group.dart';
 import 'match_detail_sheet.dart';
+
+const double _newMatchTailInset = 32;
+const double _sidebarTailInset = 38;
 
 class MatchesPage extends StatefulWidget {
   const MatchesPage({super.key, required this.competitionId});
@@ -66,11 +68,9 @@ class _MatchesPageState extends State<MatchesPage> {
     final competition = competitionState.competition;
     final competitionId = widget.competitionId;
     final session = context.watch<AuthBloc>().state;
-    final playersState = context.watch<PlayersCubit>().state;
     final isRegistered = session.canWrite;
-    final hasPlayers =
-        playersState is PlayersReady && playersState.active.length >= 2;
     final myPlayerId = competitionState.myPlayerId;
+    final bottomInset = _bottomInset(context);
 
     setPageTitle(
       context,
@@ -100,14 +100,23 @@ class _MatchesPageState extends State<MatchesPage> {
                 state,
                 competitionId: competitionId,
                 isRegistered: isRegistered,
-                hasPlayers: hasPlayers,
                 myPlayerId: myPlayerId,
+                bottomInset: bottomInset,
               ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  double _bottomInset(BuildContext context) {
+    if (AppPlatform.useWideWeb(context)) return 0;
+    final barInset = AdaptiveBottomBarHost.insetOf(context);
+    if (barInset > 0) {
+      return MediaQuery.paddingOf(context).bottom + barInset + AppSpacing.sm;
+    }
+    return AdaptiveFloatingAction.diameter + AppSpacing.md + AppSpacing.sm;
   }
 
   bool _trackDay(ScrollNotification notification) {
@@ -182,8 +191,8 @@ class _MatchesPageState extends State<MatchesPage> {
     MatchListState state, {
     required String competitionId,
     required bool isRegistered,
-    required bool hasPlayers,
     required String? myPlayerId,
+    required double bottomInset,
   }) {
     final cubit = context.read<MatchListCubit>();
 
@@ -202,8 +211,8 @@ class _MatchesPageState extends State<MatchesPage> {
         cubit,
         competitionId: competitionId,
         isRegistered: isRegistered,
-        hasPlayers: hasPlayers,
         myPlayerId: myPlayerId,
+        bottomInset: bottomInset,
       ),
     };
   }
@@ -214,14 +223,12 @@ class _MatchesPageState extends State<MatchesPage> {
     MatchListCubit cubit, {
     required String competitionId,
     required bool isRegistered,
-    required bool hasPlayers,
     required String? myPlayerId,
+    required double bottomInset,
   }) {
     return SliverMainAxisGroup(
       slivers: [
         if (!isRegistered) SliverToBoxAdapter(child: _guestNotice(context)),
-        if (isRegistered && !hasPlayers)
-          SliverToBoxAdapter(child: _needsPlayersHint(context)),
         if (state.selectedGameType case final gameType?)
           SliverToBoxAdapter(child: _gameTypeHeader(context, gameType)),
         _matchesSection(
@@ -230,6 +237,7 @@ class _MatchesPageState extends State<MatchesPage> {
           competitionId: competitionId,
           isRegistered: isRegistered,
           myPlayerId: myPlayerId,
+          bottomInset: bottomInset,
         ),
         if (state.hasMore)
           SliverToBoxAdapter(child: _loadMoreButton(context, state, cubit)),
@@ -242,14 +250,7 @@ class _MatchesPageState extends State<MatchesPage> {
   Widget _guestNotice(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.md),
-      child: GuestNotice(message: context.l10n.matchGuestCannotLog),
-    );
-  }
-
-  Widget _needsPlayersHint(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.sm, bottom: AppSpacing.lg),
-      child: Text(context.l10n.matchNeedsPlayers, style: AppTypography.caption),
+      child: GuestNotice(message: context.l10n.matchGuestCannotCreate),
     );
   }
 
@@ -266,13 +267,19 @@ class _MatchesPageState extends State<MatchesPage> {
     required String competitionId,
     required bool isRegistered,
     required String? myPlayerId,
+    required double bottomInset,
   }) {
     if (state.busy) return _loader();
 
     if (state.matches.isEmpty) {
       _rememberDays(const []);
-      return SliverToBoxAdapter(
-        child: _emptyState(context, isRegistered: isRegistered),
+      return SliverFillRemaining(
+        hasScrollBody: false,
+        child: _emptyState(
+          context,
+          isRegistered: isRegistered,
+          bottomInset: bottomInset,
+        ),
       );
     }
 
@@ -354,59 +361,55 @@ class _MatchesPageState extends State<MatchesPage> {
     );
   }
 
-  Widget _emptyState(BuildContext context, {required bool isRegistered}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        EmptyState(message: context.l10n.matchesEmpty),
-        if (isRegistered) _newMatchHint(context),
-      ],
+  Widget _emptyState(
+    BuildContext context, {
+    required bool isRegistered,
+    required double bottomInset,
+  }) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: bottomInset),
+      child: Stack(
+        children: [
+          Center(child: EmptyState(message: context.l10n.matchesEmpty)),
+          if (isRegistered) _newMatchBubble(context),
+        ],
+      ),
     );
   }
 
-  Widget _newMatchHint(BuildContext context) {
-    return AppPlatform.useWideWeb(context)
-        ? _sidebarHint(context)
-        : _tabBarHint(context);
-  }
-
-  Widget _tabBarHint(BuildContext context) {
-    return Column(
-      children: [
-        const SizedBox(height: AppSpacing.xxl),
-        Text(
-          context.l10n.matchesCreateHintTabBar,
-          style: AppTypography.caption,
-          textAlign: TextAlign.center,
+  Widget _newMatchBubble(BuildContext context) {
+    final pointsAtSidebar = AppPlatform.useWideWeb(context);
+    return Positioned(
+      left: 0,
+      right: 0,
+      top: pointsAtSidebar ? 0 : null,
+      bottom: pointsAtSidebar ? null : 0,
+      child: SpeechBubble(
+        color: AppColors.neutralSurface,
+        tail: pointsAtSidebar
+            ? SpeechBubbleTail.left
+            : SpeechBubbleTail.bottom,
+        tailInset: pointsAtSidebar ? _sidebarTailInset : _newMatchTailInset,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              context.l10n.matchNew,
+              style: AppTypography.eyebrow.copyWith(
+                color: AdaptiveColors.accent(context),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              pointsAtSidebar
+                  ? context.l10n.matchesCreateTipSidebar
+                  : context.l10n.matchesCreateTip,
+              style: AppTypography.caption,
+            ),
+          ],
         ),
-        const SizedBox(height: AppSpacing.lg),
-        CurvedArrow(
-          direction: CurvedArrowDirection.down,
-          color: AdaptiveColors.accent(context),
-          size: const Size(150, 300),
-        ),
-      ],
-    );
-  }
-
-  Widget _sidebarHint(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        CurvedArrow(
-          direction: CurvedArrowDirection.left,
-          color: AdaptiveColors.accent(context),
-          size: const Size(150, 50),
-        ),
-        const SizedBox(width: AppSpacing.sm),
-        Flexible(
-          child: Text(
-            context.l10n.matchesCreateHintSidebar,
-            style: AppTypography.caption,
-          ),
-        ),
-      ],
+      ),
     );
   }
 

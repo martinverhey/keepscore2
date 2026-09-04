@@ -90,7 +90,7 @@
   "configurationTitle": "Configuration",
   "playersManageTitle": "Manage players",
   "historyTitle": "History",
-  "historyEmpty": "No seasons have finished yet.",
+  "historyEmpty": "Finished seasons will show up here.",
   "configurationSave": "Save changes",
   "configurationSaved": "Changes saved.",
   "configurationOwnerOnly": "Only the owner can change these settings.",
@@ -139,7 +139,7 @@
   "joinNewPlayerNameTitle": "What's your name?",
 
   "leaderboardTitle": "Leaderboard",
-  "leaderboardNoPlayers": "No players yet. Add a few and log a match.",
+  "leaderboardNoPlayers": "No players yet. Add a few and create a match.",
   "leaderboardCurrentSeason": "Current season",
   "leaderboardManage": "Manage",
   "leaderboardSeasonEnds": "Ends {date}",
@@ -183,9 +183,9 @@
   "gameTypeFilterPick": "Filter by game type",
 
   "matchesTitle": "Matches",
-  "matchesEmpty": "No matches yet.",
-  "matchesCreateHintTabBar": "Tap New match below to create your first one.",
-  "matchesCreateHintSidebar": "Use New match to create your first one.",
+  "matchesEmpty": "Matches will show up here.",
+  "matchesCreateTip": "Press the + below to create a new match.",
+  "matchesCreateTipSidebar": "Press the + on the left to create a new match.",
   "matchDayToday": "Today",
   "matchDayYesterday": "Yesterday",
   "matchNew": "New match",
@@ -206,7 +206,7 @@
   "matchNeedsBothTeams": "Put at least one player on each side.",
   "matchScoreMissing": "Enter both scores.",
   "matchDrawNotAllowed": "This competition doesn't allow draws.",
-  "matchGuestCannotLog": "Guests can look around, but logging a match needs an account.",
+  "matchGuestCannotCreate": "Guests can look around, but creating a match needs an account.",
   "matchNeedsPlayers": "Add players and start creating matches.",
   "matchDiscardTitle": "Discard this match?",
   "matchDiscardConfirm": "The players and score you entered will be lost.",
@@ -231,7 +231,7 @@
   "playersTitle": "Manage Players",
   "playersAddPlayer": "Add a player",
   "playersDisplayNameLabel": "Name",
-  "playersEmpty": "No players yet.",
+  "playersEmpty": "Players will show up here.",
   "playersYou": "You",
   "playersOwner": "Owner",
   "playersUnclaimed": "Unclaimed",
@@ -290,7 +290,7 @@
   "@profileHeadToHeadTitle": {
     "placeholders": { "name": { "type": "String" } }
   },
-  "profileVersusEmpty": "No matches against {name} yet.",
+  "profileVersusEmpty": "Matches against {name} will show up here.",
   "@profileVersusEmpty": {
     "placeholders": { "name": { "type": "String" } }
   },
@@ -300,7 +300,7 @@
   "profileSeasonGamesLabel": "Season",
   "profileTotalGamesLabel": "Total",
   "profileRecentMatchesTitle": "Recent matches",
-  "profileHistoryEmpty": "No past seasons yet.",
+  "profileHistoryEmpty": "Past seasons will show up here.",
 
   "settingsDarkModeTitle": "Dark mode",
   "themeOptionLight": "Light",

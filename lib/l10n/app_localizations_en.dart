@@ -255,7 +255,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get historyTitle => 'History';
 
   @override
-  String get historyEmpty => 'No seasons have finished yet.';
+  String get historyEmpty => 'Finished seasons will show up here.';
 
   @override
   String get configurationSave => 'Save changes';
@@ -383,7 +383,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get leaderboardNoPlayers =>
-      'No players yet. Add a few and log a match.';
+      'No players yet. Add a few and create a match.';
 
   @override
   String get leaderboardCurrentSeason => 'Current season';
@@ -449,15 +449,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get matchesTitle => 'Matches';
 
   @override
-  String get matchesEmpty => 'No matches yet.';
+  String get matchesEmpty => 'Matches will show up here.';
 
   @override
-  String get matchesCreateHintTabBar =>
-      'Tap New match below to create your first one.';
+  String get matchesCreateTip => 'Press the + below to create a new match.';
 
   @override
-  String get matchesCreateHintSidebar =>
-      'Use New match to create your first one.';
+  String get matchesCreateTipSidebar =>
+      'Press the + on the left to create a new match.';
 
   @override
   String get matchDayToday => 'Today';
@@ -521,8 +520,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get matchDrawNotAllowed => 'This competition doesn\'t allow draws.';
 
   @override
-  String get matchGuestCannotLog =>
-      'Guests can look around, but logging a match needs an account.';
+  String get matchGuestCannotCreate =>
+      'Guests can look around, but creating a match needs an account.';
 
   @override
   String get matchNeedsPlayers => 'Add players and start creating matches.';
@@ -589,7 +588,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playersDisplayNameLabel => 'Name';
 
   @override
-  String get playersEmpty => 'No players yet.';
+  String get playersEmpty => 'Players will show up here.';
 
   @override
   String get playersYou => 'You';
@@ -729,7 +728,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String profileVersusEmpty(String name) {
-    return 'No matches against $name yet.';
+    return 'Matches against $name will show up here.';
   }
 
   @override
@@ -751,7 +750,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileRecentMatchesTitle => 'Recent matches';
 
   @override
-  String get profileHistoryEmpty => 'No past seasons yet.';
+  String get profileHistoryEmpty => 'Past seasons will show up here.';
 
   @override
   String get settingsDarkModeTitle => 'Dark mode';

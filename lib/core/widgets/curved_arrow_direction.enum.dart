@@ -1,1 +1,0 @@
-enum CurvedArrowDirection { down, left }

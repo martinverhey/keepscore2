@@ -255,7 +255,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get historyTitle => 'Geschiedenis';
 
   @override
-  String get historyEmpty => 'Er zijn nog geen seizoenen afgelopen.';
+  String get historyEmpty => 'Afgelopen seizoenen verschijnen hier.';
 
   @override
   String get configurationSave => 'Wijzigingen opslaan';
@@ -383,7 +383,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get leaderboardNoPlayers =>
-      'Nog geen spelers. Voeg er een paar toe en leg een wedstrijd vast.';
+      'Nog geen spelers. Voeg er een paar toe en maak een wedstrijd aan.';
 
   @override
   String get leaderboardCurrentSeason => 'Huidig seizoen';
@@ -449,15 +449,15 @@ class AppLocalizationsNl extends AppLocalizations {
   String get matchesTitle => 'Wedstrijden';
 
   @override
-  String get matchesEmpty => 'Nog geen wedstrijden.';
+  String get matchesEmpty => 'Wedstrijden verschijnen hier.';
 
   @override
-  String get matchesCreateHintTabBar =>
-      'Tik hieronder op Nieuwe wedstrijd om je eerste wedstrijd aan te maken.';
+  String get matchesCreateTip =>
+      'Druk op de +-knop hieronder om een wedstrijd aan te maken.';
 
   @override
-  String get matchesCreateHintSidebar =>
-      'Gebruik Nieuwe wedstrijd om je eerste wedstrijd aan te maken.';
+  String get matchesCreateTipSidebar =>
+      'Druk op de +-knop hiernaast om een wedstrijd aan te maken.';
 
   @override
   String get matchDayToday => 'Vandaag';
@@ -522,8 +522,8 @@ class AppLocalizationsNl extends AppLocalizations {
       'Deze competitie staat geen gelijkspel toe.';
 
   @override
-  String get matchGuestCannotLog =>
-      'Als gast kun je rondkijken, maar voor het vastleggen van wedstrijden heb je een account nodig.';
+  String get matchGuestCannotCreate =>
+      'Als gast kun je rondkijken, maar voor het aanmaken van wedstrijden heb je een account nodig.';
 
   @override
   String get matchNeedsPlayers => 'Voeg spelers toe en maak wedstrijden aan.';
@@ -590,7 +590,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get playersDisplayNameLabel => 'Naam';
 
   @override
-  String get playersEmpty => 'Nog geen spelers.';
+  String get playersEmpty => 'Spelers verschijnen hier.';
 
   @override
   String get playersYou => 'Jij';
@@ -730,7 +730,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String profileVersusEmpty(String name) {
-    return 'Nog geen wedstrijden tegen $name.';
+    return 'Wedstrijden tegen $name verschijnen hier.';
   }
 
   @override
@@ -752,7 +752,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get profileRecentMatchesTitle => 'Recente wedstrijden';
 
   @override
-  String get profileHistoryEmpty => 'Nog geen eerdere seizoenen.';
+  String get profileHistoryEmpty => 'Eerdere seizoenen verschijnen hier.';
 
   @override
   String get settingsDarkModeTitle => 'Donkere modus';
