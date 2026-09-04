@@ -314,11 +314,29 @@ abstract class AppLocalizations {
   /// **'Competitions'**
   String get competitionsTitle;
 
-  /// No description provided for @competitionsEmpty.
+  /// No description provided for @competitionsPlaceholder.
   ///
   /// In en, this message translates to:
-  /// **'You\'re not in any competition yet.'**
-  String get competitionsEmpty;
+  /// **'Your competitions will show up here.'**
+  String get competitionsPlaceholder;
+
+  /// No description provided for @competitionsCreateShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get competitionsCreateShort;
+
+  /// No description provided for @competitionsJoinTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Press \'Join\' to join an existing competition.'**
+  String get competitionsJoinTip;
+
+  /// No description provided for @competitionsCreateTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your own competition with the + button.'**
+  String get competitionsCreateTip;
 
   /// No description provided for @competitionsActive.
   ///
@@ -349,18 +367,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Join competition'**
   String get competitionsJoin;
-
-  /// No description provided for @competitionsAddHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Use the buttons above to create or join your first competition.'**
-  String get competitionsAddHint;
-
-  /// No description provided for @competitionsJoinHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Use the button above to join your first competition.'**
-  String get competitionsJoinHint;
 
   /// No description provided for @competitionsJoinShort.
   ///
@@ -415,12 +421,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Give the competition a name of at least 2 characters.'**
   String get competitionNameTooShort;
-
-  /// No description provided for @competitionCreateSubmit.
-  ///
-  /// In en, this message translates to:
-  /// **'Create competition'**
-  String get competitionCreateSubmit;
 
   /// No description provided for @competitionSeasonExplainer.
   ///

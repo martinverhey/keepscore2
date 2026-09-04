@@ -123,7 +123,17 @@ class AppLocalizationsNl extends AppLocalizations {
   String get competitionsTitle => 'Competities';
 
   @override
-  String get competitionsEmpty => 'Je zit nog niet in een competitie.';
+  String get competitionsPlaceholder => 'Je competities verschijnen hier.';
+
+  @override
+  String get competitionsCreateShort => 'Maken';
+
+  @override
+  String get competitionsJoinTip =>
+      'Druk op \'Deelnemen\' om deel te nemen aan een bestaande competitie.';
+
+  @override
+  String get competitionsCreateTip => 'Maak je eigen competitie met de +-knop.';
 
   @override
   String get competitionsActive => 'Actieve competitie';
@@ -139,14 +149,6 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get competitionsJoin => 'Deelnemen aan competitie';
-
-  @override
-  String get competitionsAddHint =>
-      'Gebruik de knoppen hierboven om je eerste competitie te maken of eraan deel te nemen.';
-
-  @override
-  String get competitionsJoinHint =>
-      'Gebruik de knop hierboven om deel te nemen aan je eerste competitie.';
 
   @override
   String get competitionsJoinShort => 'Deelnemen';
@@ -175,9 +177,6 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get competitionNameTooShort =>
       'Geef de competitie een naam van minstens 2 tekens.';
-
-  @override
-  String get competitionCreateSubmit => 'Competitie maken';
 
   @override
   String competitionSeasonExplainer(int rating) {

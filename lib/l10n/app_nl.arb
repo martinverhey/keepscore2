@@ -44,14 +44,15 @@
   "authUpgradeBody": "Als gast kun je rondkijken, maar je hebt een account nodig om competities te maken en wedstrijden vast te leggen. Je geschiedenis blijft behouden.",
 
   "competitionsTitle": "Competities",
-  "competitionsEmpty": "Je zit nog niet in een competitie.",
+  "competitionsPlaceholder": "Je competities verschijnen hier.",
+  "competitionsCreateShort": "Maken",
+  "competitionsJoinTip": "Druk op 'Deelnemen' om deel te nemen aan een bestaande competitie.",
+  "competitionsCreateTip": "Maak je eigen competitie met de +-knop.",
   "competitionsActive": "Actieve competitie",
   "competitionsOther": "Andere competities",
   "competitionsAdd": "Competitie toevoegen",
   "competitionsCreate": "Competitie maken",
   "competitionsJoin": "Deelnemen aan competitie",
-  "competitionsAddHint": "Gebruik de knoppen hierboven om je eerste competitie te maken of eraan deel te nemen.",
-  "competitionsJoinHint": "Gebruik de knop hierboven om deel te nemen aan je eerste competitie.",
   "competitionsJoinShort": "Deelnemen",
   "competitionNameLabel": "Naam van de competitie",
   "competitionSeasonLengthLabel": "Lengte van het seizoen",
@@ -61,7 +62,6 @@
   "competitionJoinCodeLabel": "Competitiecode",
   "competitionCodeCopied": "Gekopieerd",
   "competitionNameTooShort": "Geef de competitie een naam van minstens 2 tekens.",
-  "competitionCreateSubmit": "Competitie maken",
   "competitionSeasonExplainer": "Aan het begin van elk seizoen gaan alle ratings terug naar {rating}.",
   "@competitionSeasonExplainer": {
     "placeholders": { "rating": { "type": "int" } }

@@ -3,14 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/app_router.dart';
+import '../../../../core/data/recent_competition_store.dart';
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
-import '../../../../core/widgets/curved_arrow.dart';
-import '../../../../core/widgets/curved_arrow_direction.enum.dart';
 import '../../../../core/widgets/list_header.dart';
 import '../../../../core/widgets/page_title.dart';
+import '../../../../core/widgets/speech_bubble.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../../core/widgets/text_entry_sheet.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
@@ -21,8 +21,12 @@ import '../cubit/competition_list_cubit.dart';
 import '../widgets/active_competition_card.dart';
 import '../widgets/competition_action.enum.dart';
 import '../widgets/competition_action_sheet.dart';
+import '../widgets/create_competition_sheet.dart';
 import '../widgets/join_competition_sheet.dart';
 import '../widgets/competition_card.dart';
+
+const double _joinTailInset = 10;
+const double _createTailInset = 90;
 
 class CompetitionsPage extends StatefulWidget {
   const CompetitionsPage({super.key});
@@ -55,17 +59,14 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
 
   Widget _actions(BuildContext context, {required bool canCreate}) {
     return AdaptiveBarActionGroup(
-      actions: [
-        if (canCreate) _createButton(context),
-        _joinButton(context),
-      ],
+      actions: [if (canCreate) _createButton(context), _joinButton(context)],
     );
   }
 
   Widget _createButton(BuildContext context) => AdaptiveBarAction(
     glyph: AdaptiveGlyph.add,
     semanticLabel: context.l10n.competitionsAdd,
-    onPressed: () => context.push(Routes.createCompetition),
+    onPressed: () => _create(context),
   );
 
   Widget _joinButton(BuildContext context) => AdaptiveBarAction(
@@ -126,13 +127,9 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
             const SizedBox(height: AppSpacing.md),
           ],
 
-          if (state.competitions.isEmpty) ...[
-            _addHint(context, canCreate: canCreate),
-            const SizedBox(height: AppSpacing.xxl),
-            EmptyState(message: context.l10n.competitionsEmpty),
-            const SizedBox(height: AppSpacing.lg),
-            _signOutButton(context),
-          ] else
+          if (state.competitions.isEmpty)
+            Expanded(child: _emptySection(context, canCreate: canCreate))
+          else
             for (final overview in others) ...[
               CompetitionCard(
                 overview: overview,
@@ -182,27 +179,60 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
     );
   }
 
-  Widget _addHint(BuildContext context, {required bool canCreate}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      crossAxisAlignment: CrossAxisAlignment.end,
+  Widget _emptySection(BuildContext context, {required bool canCreate}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Flexible(
-          child: Text(
-            canCreate
-                ? context.l10n.competitionsAddHint
-                : context.l10n.competitionsJoinHint,
-            style: AppTypography.caption,
-            textAlign: TextAlign.end,
-          ),
-        ),
-        const SizedBox(width: AppSpacing.sm),
-        CurvedArrow(
-          direction: CurvedArrowDirection.up,
-          color: AdaptiveColors.accent(context),
-          size: const Size(50, 200),
-        ),
+        _joinBubble(context),
+        if (canCreate) ...[
+          const SizedBox(height: AppSpacing.sm),
+          _createBubble(context),
+        ],
+        const Spacer(),
+        EmptyState(message: context.l10n.competitionsPlaceholder),
+        const Spacer(),
+        _signOutButton(context),
+        const SizedBox(height: AppSpacing.xxl),
       ],
+    );
+  }
+
+  Widget _joinBubble(BuildContext context) => _tipBubble(
+    context,
+    title: context.l10n.competitionsJoinShort,
+    body: context.l10n.competitionsJoinTip,
+    tailInset: _joinTailInset,
+  );
+
+  Widget _createBubble(BuildContext context) => _tipBubble(
+    context,
+    title: context.l10n.competitionsCreateShort,
+    body: context.l10n.competitionsCreateTip,
+    tailInset: _createTailInset,
+  );
+
+  Widget _tipBubble(
+    BuildContext context, {
+    required String title,
+    required String body,
+    required double tailInset,
+  }) {
+    return SpeechBubble(
+      color: AppColors.neutralSurface,
+      tailInset: tailInset,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: AppTypography.eyebrow.copyWith(
+              color: AdaptiveColors.accent(context),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(body, style: AppTypography.caption),
+        ],
+      ),
     );
   }
 
@@ -223,6 +253,14 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
         style: const TextStyle(color: AppColors.negative),
       ),
     );
+  }
+
+  Future<void> _create(BuildContext context) async {
+    final competitionId = await showCreateCompetitionSheet(context);
+    if (competitionId == null || !context.mounted) return;
+
+    context.read<CompetitionListCubit>().refresh();
+    context.go(Routes.competition(competitionId));
   }
 
   Future<void> _join(BuildContext context) async {
@@ -278,7 +316,7 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
           destructive: true,
         );
         if (confirmed && await cubit.leave(overview.id)) {
-          competitionCubit.clearIfSelected(overview.id);
+          await _forget(competitionCubit, overview.id);
         }
 
       case CompetitionAction.delete:
@@ -294,8 +332,16 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
           destructive: true,
         );
         if (confirmed && await cubit.delete(overview.id)) {
-          competitionCubit.clearIfSelected(overview.id);
+          await _forget(competitionCubit, overview.id);
         }
     }
+  }
+
+  Future<void> _forget(
+    CompetitionCubit competitionCubit,
+    String competitionId,
+  ) async {
+    competitionCubit.clearIfSelected(competitionId);
+    await RecentCompetitionStore.clearIfRecent(competitionId);
   }
 }

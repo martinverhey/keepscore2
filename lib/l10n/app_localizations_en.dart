@@ -122,7 +122,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get competitionsTitle => 'Competitions';
 
   @override
-  String get competitionsEmpty => 'You\'re not in any competition yet.';
+  String get competitionsPlaceholder => 'Your competitions will show up here.';
+
+  @override
+  String get competitionsCreateShort => 'Create';
+
+  @override
+  String get competitionsJoinTip =>
+      'Press \'Join\' to join an existing competition.';
+
+  @override
+  String get competitionsCreateTip =>
+      'Create your own competition with the + button.';
 
   @override
   String get competitionsActive => 'Active competition';
@@ -138,14 +149,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get competitionsJoin => 'Join competition';
-
-  @override
-  String get competitionsAddHint =>
-      'Use the buttons above to create or join your first competition.';
-
-  @override
-  String get competitionsJoinHint =>
-      'Use the button above to join your first competition.';
 
   @override
   String get competitionsJoinShort => 'Join';
@@ -174,9 +177,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get competitionNameTooShort =>
       'Give the competition a name of at least 2 characters.';
-
-  @override
-  String get competitionCreateSubmit => 'Create competition';
 
   @override
   String competitionSeasonExplainer(int rating) {

@@ -44,14 +44,15 @@
   "authUpgradeBody": "Guests can look around, but you need an account to create competitions and create matches. Your history stays with you.",
 
   "competitionsTitle": "Competitions",
-  "competitionsEmpty": "You're not in any competition yet.",
+  "competitionsPlaceholder": "Your competitions will show up here.",
+  "competitionsCreateShort": "Create",
+  "competitionsJoinTip": "Press 'Join' to join an existing competition.",
+  "competitionsCreateTip": "Create your own competition with the + button.",
   "competitionsActive": "Active competition",
   "competitionsOther": "Other competitions",
   "competitionsAdd": "Add competition",
   "competitionsCreate": "Create competition",
   "competitionsJoin": "Join competition",
-  "competitionsAddHint": "Use the buttons above to create or join your first competition.",
-  "competitionsJoinHint": "Use the button above to join your first competition.",
   "competitionsJoinShort": "Join",
   "competitionNameLabel": "Competition name",
   "competitionSeasonLengthLabel": "Season length",
@@ -61,7 +62,6 @@
   "competitionJoinCodeLabel": "Competition code",
   "competitionCodeCopied": "Copied",
   "competitionNameTooShort": "Give the competition a name of at least 2 characters.",
-  "competitionCreateSubmit": "Create competition",
   "competitionSeasonExplainer": "At the start of every season all ratings reset to {rating}.",
   "@competitionSeasonExplainer": {
     "placeholders": { "rating": { "type": "int" } }

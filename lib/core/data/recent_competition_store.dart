@@ -17,4 +17,10 @@ abstract final class RecentCompetitionStore {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_key);
   }
+
+  static Future<void> clearIfRecent(String competitionId) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getString(_key) != competitionId) return;
+    await prefs.remove(_key);
+  }
 }

@@ -9,10 +9,8 @@ import '../../features/auth/presentation/cubit/sign_in_cubit.dart';
 import '../../features/auth/presentation/pages/sign_in.page.dart';
 import '../../features/auth/presentation/pages/upgrade_account.page.dart';
 import '../../features/competition/presentation/cubit/competition_list_cubit.dart';
-import '../../features/competition/presentation/cubit/create_competition_cubit.dart';
 import '../../features/competition/presentation/pages/competition_shell.dart';
 import '../../features/competition/presentation/pages/competitions.page.dart';
-import '../../features/competition/presentation/pages/create_competition.page.dart';
 import '../../features/competition/presentation/widgets/competition_scope.dart';
 import '../../features/competition/presentation/widgets/sidebar_shell.dart';
 import '../../features/leaderboard/presentation/cubit/leaderboard_cubit.dart';
@@ -36,7 +34,6 @@ abstract final class Routes {
   static const signIn = '/sign-in';
   static const upgradeAccount = '/upgrade';
   static const home = '/';
-  static const createCompetition = '/create';
   static const language = '/settings/language';
 
   static String competition(String id) => '/competition/$id';
@@ -132,16 +129,6 @@ GoRouter createRouter(AuthBloc authBloc) {
             path: Routes.language,
             pageBuilder: (context, state) =>
                 adaptivePage(context, child: const LanguagePage()),
-          ),
-          GoRoute(
-            path: Routes.createCompetition,
-            pageBuilder: (context, state) => adaptivePage(
-              context,
-              child: BlocProvider(
-                create: (_) => getIt<CreateCompetitionCubit>(),
-                child: const CreateCompetitionPage(),
-              ),
-            ),
           ),
           GoRoute(
             path: Routes.upgradeAccount,

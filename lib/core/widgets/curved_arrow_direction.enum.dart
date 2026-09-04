@@ -1,1 +1,1 @@
-enum CurvedArrowDirection { down, up, left }
+enum CurvedArrowDirection { down, left }

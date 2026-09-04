@@ -80,17 +80,6 @@ Path _tailPath(Size size, CurvedArrowDirection direction) {
           width * 0.65,
           height,
         ),
-    CurvedArrowDirection.up =>
-      Path()
-        ..moveTo(width * 0.06, height)
-        ..cubicTo(
-          0,
-          height * 0.54,
-          width * 0.88,
-          height * 0.58,
-          width * 0.65,
-          0,
-        ),
     CurvedArrowDirection.left =>
       Path()
         ..moveTo(width, height * 0.4)
