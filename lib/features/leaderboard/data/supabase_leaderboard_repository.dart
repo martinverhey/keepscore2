@@ -77,6 +77,17 @@ class SupabaseLeaderboardRepository implements LeaderboardRepository {
   }
 
   @override
+  Stream<void> watchPlayers({required String competitionId}) {
+    return realtimeTicks(
+      _client,
+      topic: 'leaderboard_players:$competitionId',
+      table: 'players',
+      column: 'competition_id',
+      value: competitionId,
+    );
+  }
+
+  @override
   Future<List<Season>> finishedSeasons(String competitionId) => guard(() async {
     final rows = await _client
         .from('finished_seasons')

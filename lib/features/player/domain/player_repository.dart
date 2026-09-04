@@ -14,4 +14,6 @@ abstract interface class PlayerRepository {
   });
 
   Future<Player> setActive({required String playerId, required bool isActive});
+
+  Stream<void> watch(String competitionId);
 }

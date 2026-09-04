@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/data/realtime.dart';
 import '../../../core/error/failure.dart';
 import '../domain/player.model.dart';
 import '../domain/player_repository.dart';
@@ -46,6 +47,15 @@ class SupabasePlayerRepository implements PlayerRepository {
     required String playerId,
     required bool isActive,
   }) => _update(playerId, {'is_active': isActive});
+
+  @override
+  Stream<void> watch(String competitionId) => realtimeTicks(
+    _client,
+    topic: 'players:$competitionId',
+    table: 'players',
+    column: 'competition_id',
+    value: competitionId,
+  );
 
   Future<Player> _update(String playerId, Map<String, Object?> values) =>
       guard(() async {

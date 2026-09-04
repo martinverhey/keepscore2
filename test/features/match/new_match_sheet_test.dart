@@ -78,6 +78,7 @@ _Blocs _blocs() {
       matchCount: 0,
     ),
   );
+  when(() => players.watch(any())).thenAnswer((_) => const Stream.empty());
   when(() => players.currentPlayers('c1')).thenAnswer(
     (_) async => [
       _player('p1', 'Zoe'),

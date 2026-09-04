@@ -17,6 +17,8 @@ abstract interface class LeaderboardRepository {
     required String? seasonId,
   });
 
+  Stream<void> watchPlayers({required String competitionId});
+
   Future<List<Season>> finishedSeasons(String competitionId);
 
   Future<List<SeasonLeaderboard>> history({

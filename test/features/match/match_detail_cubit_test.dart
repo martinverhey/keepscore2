@@ -97,6 +97,7 @@ void main() {
     when(
       () => players.currentPlayers('c1'),
     ).thenAnswer((_) async => _players());
+    when(() => players.watch(any())).thenAnswer((_) => const Stream.empty());
   });
 
   blocTest<MatchDetailCubit, MatchDetailState>(

@@ -91,6 +91,7 @@ Future<GoRouter> _pumpHarness(
   when(
     () => players.currentPlayers(_competitionId),
   ).thenAnswer((_) async => []);
+  when(() => players.watch(any())).thenAnswer((_) => const Stream.empty());
   when(
     () => matches.feed(competitionId: _competitionId, limit: 20),
   ).thenAnswer((_) async => []);
@@ -116,6 +117,9 @@ Future<GoRouter> _pumpHarness(
       competitionId: _competitionId,
       seasonId: 's1',
     ),
+  ).thenAnswer((_) => const Stream.empty());
+  when(
+    () => leaderboard.watchPlayers(competitionId: _competitionId),
   ).thenAnswer((_) => const Stream.empty());
   when(() => leaderboard.medals(_competitionId)).thenAnswer((_) async => []);
 

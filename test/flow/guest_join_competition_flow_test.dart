@@ -134,6 +134,9 @@ void main() {
         ),
       );
 
+      when(
+        () => players.watch(_competitionId),
+      ).thenAnswer((_) => const Stream.empty());
       when(() => players.currentPlayers(_competitionId)).thenAnswer(
         (_) async => const [
           Player(
@@ -240,6 +243,9 @@ void main() {
           competitionId: _competitionId,
           seasonId: 's1',
         ),
+      ).thenAnswer((_) => const Stream.empty());
+      when(
+        () => leaderboard.watchPlayers(competitionId: _competitionId),
       ).thenAnswer((_) => const Stream.empty());
       when(
         () => leaderboard.medals(_competitionId),

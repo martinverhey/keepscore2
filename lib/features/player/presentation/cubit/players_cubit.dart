@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 
+import '../../../../core/data/realtime.dart';
 import '../../../../core/error/failure.dart';
 import '../../domain/player.model.dart';
 import '../../domain/player_repository.dart';
@@ -14,6 +15,8 @@ class PlayersCubit extends Cubit<PlayersState> {
   final PlayerRepository _repository;
   final String competitionId;
 
+  DebouncedTicks? _watcher;
+
   PlayersReady? get _ready => switch (state) {
     PlayersReady ready => ready,
     _ => null,
@@ -26,6 +29,7 @@ class PlayersCubit extends Cubit<PlayersState> {
       final players = await _repository.currentPlayers(competitionId);
       if (isClosed) return;
       emit(PlayersReady(players: _sortedByName(players)));
+      _watch();
     } on Failure catch (failure) {
       if (isClosed) return;
       if (silent && ready != null) return;
@@ -34,6 +38,13 @@ class PlayersCubit extends Cubit<PlayersState> {
   }
 
   Future<void> refresh() => load(silent: true);
+
+  void _watch() {
+    if (_watcher != null) return;
+    _watcher = DebouncedTicks(_repository.watch(competitionId), () {
+      if (!isClosed) refresh();
+    });
+  }
 
   Future<bool> addPlaceholder(String displayName) => _mutate(
     () => _repository.addPlaceholder(
@@ -81,6 +92,12 @@ class PlayersCubit extends Cubit<PlayersState> {
       players.add(player);
     }
     return _sortedByName(players);
+  }
+
+  @override
+  Future<void> close() {
+    _watcher?.cancel();
+    return super.close();
   }
 }
 

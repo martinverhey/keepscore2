@@ -16,6 +16,7 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
   final String competitionId;
 
   DebouncedTicks? _watcher;
+  DebouncedTicks? _playersWatcher;
   String? _watchedSeasonId;
 
   LeaderboardReady? get _ready => switch (state) {
@@ -56,6 +57,7 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
         ),
       );
       _watch(season.id);
+      _watchPlayers();
     } on Failure catch (failure) {
       if (isClosed) return;
       if (silent && ready != null) return;
@@ -80,9 +82,20 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
     );
   }
 
+  void _watchPlayers() {
+    if (_playersWatcher != null) return;
+    _playersWatcher = DebouncedTicks(
+      _repository.watchPlayers(competitionId: competitionId),
+      () {
+        if (!isClosed) refresh();
+      },
+    );
+  }
+
   @override
   Future<void> close() {
     _watcher?.cancel();
+    _playersWatcher?.cancel();
     return super.close();
   }
 }

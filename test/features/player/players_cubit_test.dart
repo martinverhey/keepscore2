@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/error/failure.dart';
@@ -25,8 +27,15 @@ PlayersReady _ready(PlayersCubit cubit) => cubit.state as PlayersReady;
 
 void main() {
   late MockPlayerRepository repository;
+  late StreamController<void> ticks;
 
-  setUp(() => repository = MockPlayerRepository());
+  setUp(() {
+    repository = MockPlayerRepository();
+    ticks = StreamController<void>.broadcast();
+    when(() => repository.watch(any())).thenAnswer((_) => ticks.stream);
+  });
+
+  tearDown(() => ticks.close());
 
   void stubPlayers(List<Player> players) {
     when(
@@ -168,6 +177,21 @@ void main() {
     verify: (cubit) {
       expect(_ready(cubit).active.map((player) => player.id), ['p1']);
       expect(_ready(cubit).inactive.map((player) => player.id), ['p2']);
+    },
+  );
+
+  blocTest<PlayersCubit, PlayersState>(
+    'a player who joins arrives without a gesture',
+    setUp: () => stubPlayers([_player('p1', 'Ada')]),
+    build: () => PlayersCubit(repository, 'c1'),
+    act: (cubit) async {
+      await cubit.load();
+      stubPlayers([_player('p1', 'Ada'), _player('p2', 'Grace')]);
+      ticks.add(null);
+    },
+    wait: const Duration(milliseconds: 600),
+    verify: (cubit) {
+      expect(_ready(cubit).players.map((player) => player.id), ['p1', 'p2']);
     },
   );
 

@@ -37,6 +37,7 @@ LeaderboardReady _ready(LeaderboardCubit cubit) =>
 void main() {
   late MockLeaderboardRepository repository;
   late StreamController<void> ticks;
+  late StreamController<void> playerTicks;
 
   LeaderboardCubit build() => LeaderboardCubit(repository, 'c1');
 
@@ -55,17 +56,22 @@ void main() {
   setUp(() {
     repository = MockLeaderboardRepository();
     ticks = StreamController<void>.broadcast();
+    playerTicks = StreamController<void>.broadcast();
     when(
       () => repository.watchLeaderboards(
         competitionId: any(named: 'competitionId'),
         seasonId: any(named: 'seasonId'),
       ),
     ).thenAnswer((_) => ticks.stream);
+    when(
+      () => repository.watchPlayers(competitionId: any(named: 'competitionId')),
+    ).thenAnswer((_) => playerTicks.stream);
     when(() => repository.medals('c1')).thenAnswer((_) async => const []);
   });
 
   tearDown(() {
     ticks.close();
+    playerTicks.close();
   });
 
   blocTest<LeaderboardCubit, LeaderboardState>(
@@ -156,6 +162,51 @@ void main() {
           seasonId: 's-august',
         ),
       ).called(1);
+    },
+  );
+
+  blocTest<LeaderboardCubit, LeaderboardState>(
+    'a player who joins arrives without a gesture',
+    setUp: () {
+      stubSeason();
+      stubLeaderboards('s-august', [_leaderboard('p1', 1000, 1)]);
+    },
+    build: build,
+    act: (cubit) async {
+      await cubit.load();
+      stubLeaderboards('s-august', [
+        _leaderboard('p1', 1000, 1),
+        _leaderboard('p2', 1000, 2),
+      ]);
+      playerTicks.add(null);
+    },
+    wait: const Duration(milliseconds: 600),
+    verify: (cubit) {
+      expect(_ready(cubit).leaderboards, hasLength(2));
+    },
+  );
+
+  blocTest<LeaderboardCubit, LeaderboardState>(
+    'the players subscription outlives a season change',
+    setUp: () {
+      stubSeason(id: null);
+      stubLeaderboards(null, [_leaderboard('p1', 1000, 1)]);
+    },
+    build: build,
+    act: (cubit) async {
+      await cubit.load();
+      stubSeason();
+      stubLeaderboards('s-august', [_leaderboard('p1', 1040, 1)]);
+      await cubit.refresh();
+    },
+    verify: (cubit) {
+      verify(
+        () => repository.watchLeaderboards(
+          competitionId: 'c1',
+          seasonId: any(named: 'seasonId'),
+        ),
+      ).called(2);
+      verify(() => repository.watchPlayers(competitionId: 'c1')).called(1);
     },
   );
 

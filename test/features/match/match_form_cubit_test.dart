@@ -77,6 +77,7 @@ void main() {
         matchCount: 0,
       ),
     );
+    when(() => players.watch(any())).thenAnswer((_) => const Stream.empty());
     when(() => players.currentPlayers('c1')).thenAnswer(
       (_) async => playerList ?? [_player('p1', 'Ada'), _player('p2', 'Grace')],
     );

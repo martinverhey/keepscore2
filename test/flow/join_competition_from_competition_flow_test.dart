@@ -142,6 +142,7 @@ void main() {
     );
 
     for (final id in ['c1', 'c2']) {
+      when(() => players.watch(id)).thenAnswer((_) => const Stream.empty());
       when(() => players.currentPlayers(id)).thenAnswer(
         (_) async => [
           Player(
@@ -178,6 +179,9 @@ void main() {
           competitionId: id,
           seasonId: 'season-$id',
         ),
+      ).thenAnswer((_) => const Stream.empty());
+      when(
+        () => leaderboard.watchPlayers(competitionId: id),
       ).thenAnswer((_) => const Stream.empty());
       when(() => leaderboard.medals(id)).thenAnswer((_) async => []);
     }
