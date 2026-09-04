@@ -77,6 +77,43 @@ Future<void> _openMeasuredSheet(WidgetTester tester, {String? title}) async {
   await tester.pumpAndSettle();
 }
 
+Future<void> _openSheetAboveABar(WidgetTester tester) async {
+  await tester.pumpWidget(
+    MaterialApp(
+      home: Column(
+        children: [
+          Expanded(
+            child: Navigator(
+              onGenerateRoute: (settings) => MaterialPageRoute<void>(
+                settings: settings,
+                builder: (context) => Scaffold(
+                  body: ElevatedButton(
+                    onPressed: () => showAdaptiveSheet<void>(
+                      context,
+                      builder: (_) => const Sheet(
+                        title: 'Sheet',
+                        content: SizedBox(height: 200),
+                      ),
+                    ),
+                    child: const Text('open'),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(
+            height: 80,
+            child: ColoredBox(color: Color(0xFF000000)),
+          ),
+        ],
+      ),
+    ),
+  );
+
+  await tester.tap(find.text('open'));
+  await tester.pumpAndSettle();
+}
+
 void main() {
   tearDown(() {
     AppPlatform.debugOverrideCupertino = null;
@@ -272,6 +309,21 @@ void main() {
       expect(
         tester.getRect(find.text('content top')).top,
         tester.getRect(find.byType(SingleChildScrollView)).top,
+      );
+    });
+  });
+
+  group('Sheet host navigator', () {
+    testWidgets('covers a bottom bar that sits outside the nested navigator', (
+      tester,
+    ) async {
+      AppPlatform.debugOverrideCupertino = false;
+      AppPlatform.debugOverrideWideWeb = false;
+      await _openSheetAboveABar(tester);
+
+      expect(
+        tester.getRect(find.byType(Sheet)).bottom,
+        tester.getSize(find.byType(MaterialApp)).height,
       );
     });
   });

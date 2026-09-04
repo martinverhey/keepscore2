@@ -93,6 +93,7 @@ Future<T?> showAdaptiveSheet<T>(
   }
   return showModalBottomSheet<T>(
     context: context,
+    useRootNavigator: true,
     isScrollControlled: true,
     useSafeArea: true,
     enableDrag: !confirmsDismissal,
