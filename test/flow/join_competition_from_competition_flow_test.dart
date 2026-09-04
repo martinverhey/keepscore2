@@ -342,6 +342,14 @@ GoRouter _buildRouter({
                       ),
                     ],
                   ),
+                  StatefulShellBranch(
+                    routes: [
+                      GoRoute(
+                        path: 'competitions',
+                        builder: (_, _) => const CompetitionsPage(),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ],

@@ -234,25 +234,30 @@ Future<GoRouter> _pumpHarness(
 void main() {
   tearDown(() => AppPlatform.debugOverrideCupertino = null);
 
-  testWidgets(
-    'tapping the competition name goes to the competitions list, not settings',
-    (tester) async {
-      AppPlatform.debugOverrideCupertino = false;
-      await _pumpHarness(tester);
+  testWidgets('tapping the competition name switches to the competitions tab', (
+    tester,
+  ) async {
+    AppPlatform.debugOverrideCupertino = false;
+    await _pumpHarness(tester);
 
-      final l10n = AppLocalizations.of(
-        tester.element(find.byType(LeaderboardPage)),
-      );
-      expect(find.text(l10n.competitionSettings), findsNothing);
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(LeaderboardPage)),
+    );
+    expect(find.text(l10n.competitionSettings), findsNothing);
 
-      await tester.tap(find.text('Office Table Tennis'));
-      await tester.pumpAndSettle();
+    await tester.tap(find.text('Office Table Tennis'));
+    await tester.pumpAndSettle();
 
-      expect(find.byType(_CompetitionsStub), findsOneWidget);
-      expect(find.text(l10n.competitionSettings), findsNothing);
-      expect(tester.takeException(), isNull);
-    },
-  );
+    expect(find.byType(CompetitionsPage), findsOneWidget);
+    expect(find.byType(_CompetitionsStub), findsNothing);
+    expect(find.byType(CompetitionTabBar), findsOneWidget);
+    expect(
+      tester.widget<CompetitionTabBar>(find.byType(CompetitionTabBar)).current,
+      CompetitionTab.competitions,
+    );
+    expect(find.text(l10n.competitionSettings), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('renders one shared tab bar across both tabs', (tester) async {
     AppPlatform.debugOverrideCupertino = false;
@@ -270,28 +275,31 @@ void main() {
     expect(find.byType(CompetitionTabBar), findsOneWidget);
   });
 
-  testWidgets('the competitions tab keeps the tab bar and the new match action', (
-    tester,
-  ) async {
-    AppPlatform.debugOverrideCupertino = false;
-    await _pumpHarness(tester);
+  testWidgets(
+    'the competitions tab keeps the tab bar and the new match action',
+    (tester) async {
+      AppPlatform.debugOverrideCupertino = false;
+      await _pumpHarness(tester);
 
-    final l10n = AppLocalizations.of(
-      tester.element(find.byType(LeaderboardPage)),
-    );
-    expect(_floatingActionLabel(tester), l10n.matchNew);
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(LeaderboardPage)),
+      );
+      expect(_floatingActionLabel(tester), l10n.matchNew);
 
-    await tester.tap(find.text(l10n.competitionsTitle).last);
-    await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.competitionsTitle).last);
+      await tester.pumpAndSettle();
 
-    expect(find.byType(CompetitionsPage), findsOneWidget);
-    expect(find.byType(CompetitionTabBar), findsOneWidget);
-    expect(
-      tester.widget<CompetitionTabBar>(find.byType(CompetitionTabBar)).current,
-      CompetitionTab.competitions,
-    );
-    expect(_floatingActionLabel(tester), l10n.matchNew);
-  });
+      expect(find.byType(CompetitionsPage), findsOneWidget);
+      expect(find.byType(CompetitionTabBar), findsOneWidget);
+      expect(
+        tester
+            .widget<CompetitionTabBar>(find.byType(CompetitionTabBar))
+            .current,
+        CompetitionTab.competitions,
+      );
+      expect(_floatingActionLabel(tester), l10n.matchNew);
+    },
+  );
 
   testWidgets('signing out while the leaderboard is open does not throw', (
     tester,

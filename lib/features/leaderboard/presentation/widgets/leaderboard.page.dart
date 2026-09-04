@@ -116,7 +116,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _competitionHeader(context, competition),
+        _competitionHeader(context, competition, competitionId),
         const SizedBox(height: AppSpacing.sm),
         if (myPlayerId != null && myDisplayName != null)
           ProfileSection(
@@ -140,13 +140,17 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
     );
   }
 
-  Widget _competitionHeader(BuildContext context, Competition competition) {
+  Widget _competitionHeader(
+    BuildContext context,
+    Competition competition,
+    String competitionId,
+  ) {
     return Row(
       children: [
         Expanded(
           child: Align(
             alignment: Alignment.centerLeft,
-            child: _competitionButton(context, competition),
+            child: _competitionButton(context, competition, competitionId),
           ),
         ),
         _inviteButton(context, competition.joinCode),
@@ -160,9 +164,13 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
     );
   }
 
-  Widget _competitionButton(BuildContext context, Competition competition) {
+  Widget _competitionButton(
+    BuildContext context,
+    Competition competition,
+    String competitionId,
+  ) {
     return AdaptiveTappable(
-      onTap: () => context.push<Object?>(Routes.home),
+      onTap: () => context.go(Routes.competitions(competitionId)),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
