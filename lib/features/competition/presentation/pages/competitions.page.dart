@@ -191,8 +191,10 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
         const Spacer(),
         EmptyState(message: context.l10n.competitionsPlaceholder),
         const Spacer(),
-        _signOutButton(context),
-        const SizedBox(height: AppSpacing.xxl),
+        if (!AppPlatform.useWideWeb(context)) ...[
+          _signOutButton(context),
+          const SizedBox(height: AppSpacing.xxl),
+        ],
       ],
     );
   }
