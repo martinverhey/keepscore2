@@ -3,6 +3,27 @@
 Newest first. Each heading is an annotated `vX.Y.Z` tag; pushing that tag ships
 the build to TestFlight and Play internal testing.
 
+## v0.3.1 — 2026-09-05
+
+### Added
+- New app icon, with the Liquid Glass appearance on iOS 26
+- Players who join show up without a refresh
+- Create a competition in a sheet instead of a full page
+- The empty Matches list points at the button that fills it
+- The empty competitions list points at Create and Join
+- Streaks carry their own glyph on the profile
+
+### Changed
+- Glass buttons on iOS have a visible body, press feedback and their own shape
+- Matches' toolbar drops the settings button
+- The spotlight QR is a code to scan, not a button
+- Sign out is left to the sidebar in a wide browser window
+
+### Fixed
+- Leaving the competition you were in stranded you inside it
+- Sheets stopped at the top of the bottom bar on Android
+- Tapping the competition name lost the tab bar
+
 ## v0.3.0 — 2026-09-04
 
 ### Added
