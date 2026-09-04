@@ -15,7 +15,6 @@ import '../../../../core/widgets/state_views.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../auth/presentation/widgets/guest_notice.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
-import '../../../competition/presentation/widgets/competition_settings_button.dart';
 import '../../../player/presentation/cubit/players_cubit.dart';
 import '../../domain/game_type.enum.dart';
 import '../../domain/match_entry.model.dart';
@@ -86,7 +85,7 @@ class _MatchesPageState extends State<MatchesPage> {
         title: context.l10n.matchesTitle,
         subtitle: _daySubtitle(),
         onRefresh: _refresh,
-        trailing: _trailing(context, competitionId),
+        trailing: _gameTypeFilterButton(context),
         slivers: [
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(
@@ -164,20 +163,6 @@ class _MatchesPageState extends State<MatchesPage> {
                 overflow: TextOverflow.ellipsis,
                 style: AppTypography.captionStrong,
               ),
-      ),
-    );
-  }
-
-  Widget _trailing(BuildContext context, String competitionId) {
-    return FittedBox(
-      fit: BoxFit.scaleDown,
-      alignment: Alignment.centerRight,
-      child: AdaptiveBarActionGroup(
-        actions: [
-          _gameTypeFilterButton(context),
-          if (!AppPlatform.useWideWeb(context))
-            CompetitionSettingsButton(competitionId: competitionId),
-        ],
       ),
     );
   }
