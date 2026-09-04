@@ -5,7 +5,6 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/tag.dart';
 import '../../domain/competition.model.dart';
-import 'invite_sheet.dart';
 import 'join_qr_image.dart';
 
 class ActiveCompetitionCard extends StatelessWidget {
@@ -117,25 +116,20 @@ class ActiveCompetitionCard extends StatelessWidget {
 
   Widget _qr(BuildContext context) {
     return Center(
-      child: AdaptiveTappable(
-        onTap: () =>
-            showInviteSheet(context, code: overview.competition.joinCode),
-        borderRadius: AppRadius.card,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            JoinQrImage(code: overview.competition.joinCode, size: _qrSize),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              context.l10n.competitionQrScan,
-              textAlign: TextAlign.center,
-              style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.neutral,
-                fontWeight: FontWeight.w400,
-              ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          JoinQrImage(code: overview.competition.joinCode, size: _qrSize),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            context.l10n.competitionQrScan,
+            textAlign: TextAlign.center,
+            style: AppTypography.bodyMedium.copyWith(
+              color: AppColors.neutral,
+              fontWeight: FontWeight.w400,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
