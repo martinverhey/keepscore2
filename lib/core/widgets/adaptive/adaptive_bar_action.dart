@@ -1,11 +1,10 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
 import '../../theme/app_tokens.dart';
 import 'adaptive_button.dart';
 import 'adaptive_colors.dart';
 import 'adaptive_glass.dart';
 import 'adaptive_icon.dart';
-import 'adaptive_tappable.dart';
 import 'grouped_bar_action_scope.dart';
 
 export 'adaptive_glyph.enum.dart';
@@ -62,7 +61,15 @@ class AdaptiveBarAction extends StatelessWidget {
   Widget _grouped(BuildContext context) {
     final onTap = onPressed;
     if (onTap == null) return _slot(context);
-    return AdaptiveTappable(onTap: onTap, child: _slot(context));
+    return Material(
+      color: AppColors.transparent,
+      shape: _inkShape(),
+      child: InkWell(
+        customBorder: _inkShape(),
+        onTap: onTap,
+        child: _slot(context),
+      ),
+    );
   }
 
   Widget _slot(BuildContext context) {
@@ -110,6 +117,9 @@ class AdaptiveBarAction extends StatelessWidget {
       child: AdaptiveIcon(glyph!, color: _glyphColor(context)),
     );
   }
+
+  ShapeBorder _inkShape() =>
+      label == null ? const CircleBorder() : const StadiumBorder();
 
   Color _glyphColor(BuildContext context) => active
       ? AdaptiveColors.accent(context)

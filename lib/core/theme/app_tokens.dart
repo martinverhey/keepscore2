@@ -35,8 +35,9 @@ abstract final class AppOpacity {
   static const double shadow = 0.18;
   static const double glassFill = 0.22;
   static const double glassFillOnDark = 0.28;
+  static const double glassActionFill = 0.15;
   static const double scrollEdgeFill = 0.9;
-  static const double glassSheetFill = 0.75;
+  static const double glassSheetFill = 1;
   static const double glassRim = 0.7;
   static const double glassRimOnDark = 0.32;
 }
@@ -84,6 +85,10 @@ abstract final class AppColors {
   static final Color glassTintOnDark = modalSurfaceOnDark.withValues(
     alpha: AppOpacity.glassFillOnDark,
   );
+  static final Color glassActionTint = white.withValues(
+    alpha: AppOpacity.glassActionFill,
+  );
+  static const Color glassActionTintOnDark = transparent;
   static final Color glassRim = white.withValues(alpha: AppOpacity.glassRim);
   static final Color glassRimOnDark = white.withValues(
     alpha: AppOpacity.glassRimOnDark,

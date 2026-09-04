@@ -26,6 +26,12 @@ abstract final class AdaptiveColors {
     AppColors.glassTintOnDark,
   );
 
+  static Color glassActionTint(BuildContext context) => _forBrightness(
+    context,
+    AppColors.glassActionTint,
+    AppColors.glassActionTintOnDark,
+  );
+
   static Color glassRim(BuildContext context) =>
       _forBrightness(context, AppColors.glassRim, AppColors.glassRimOnDark);
 

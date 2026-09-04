@@ -99,7 +99,7 @@ void main() {
     expect(_glyphColor(tester), AppColors.black);
   });
 
-  testWidgets('an active glass action leaves the lens itself untinted', (
+  testWidgets('an active glass action leaves the lens body unchanged', (
     tester,
   ) async {
     await _pumpGlassAction(tester, active: true);
@@ -108,7 +108,7 @@ void main() {
     await _pumpGlassAction(tester, active: false);
 
     expect(active, _lensTint(tester));
-    expect(active, LiquidGlassTabBarAction.defaultStyle.appearance.color);
+    expect(active, AppColors.glassActionTint);
   });
 
   testWidgets('two glass actions share one capsule', (tester) async {
@@ -162,6 +162,36 @@ void main() {
     expect(find.byType(LiquidGlassTabBarAction), findsNothing);
   });
 
+  testWidgets('a labelled glass action splashes like a glyph one', (
+    tester,
+  ) async {
+    AppPlatform.debugOverrideLiquidGlass = true;
+    await tester.pumpWidget(
+      CupertinoApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        home: AdaptiveBarAction(label: 'Join', onPressed: () {}),
+      ),
+    );
+
+    expect(
+      tester.widget<InkWell>(find.byType(InkWell)).customBorder,
+      const StadiumBorder(),
+    );
+  });
+
+  testWidgets('a capsuled glyph splashes inside its own circle', (
+    tester,
+  ) async {
+    await _pumpGroup(tester, glass: true, actionCount: 2);
+
+    expect(
+      tester.widgetList<InkWell>(find.byType(InkWell)).map(
+        (action) => action.customBorder,
+      ),
+      everyElement(const CircleBorder()),
+    );
+  });
+
   testWidgets('a labelled action off glass is a plain text button', (
     tester,
   ) async {
@@ -185,7 +215,7 @@ void main() {
     expect(taps, 1);
   });
 
-  testWidgets('a labelled action shares the capsule with a glyph one', (
+  testWidgets('a labelled action is not capsuled with a glyph one', (
     tester,
   ) async {
     AppPlatform.debugOverrideLiquidGlass = true;
@@ -201,7 +231,7 @@ void main() {
       ),
     );
 
-    expect(find.byType(LiquidGlassLens), findsOneWidget);
+    expect(find.byType(LiquidGlassTabBarAction), findsOneWidget);
     expect(find.byType(Icon), findsOneWidget);
     expect(find.text('Join'), findsOneWidget);
   });

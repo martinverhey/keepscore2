@@ -5,6 +5,13 @@ import 'package:keepscore2/core/theme/app_tokens.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 
+LiquidGlassAppearance _appearanceOf(WidgetTester tester) {
+  return tester
+      .widget<LiquidGlassTabBarAction>(find.byType(LiquidGlassTabBarAction))
+      .style!
+      .appearance;
+}
+
 LiquidGlassShape _rimOf(WidgetTester tester) {
   return tester
       .widget<LiquidGlassTabBarAction>(find.byType(LiquidGlassTabBarAction))
@@ -210,19 +217,24 @@ void main() {
       expect(find.byType(CupertinoButton), findsOneWidget);
     });
 
-    testWidgets('keeps the untinted package appearance', (tester) async {
+    testWidgets('whitens its body in light mode and clears it in dark', (
+      tester,
+    ) async {
       AppPlatform.debugOverrideCupertino = true;
       AppPlatform.debugOverrideLiquidGlass = true;
-      await pumpGlass(tester, _floatingAction(() {}));
 
+      await pumpGlass(tester, _floatingAction(() {}));
+      final light = _appearanceOf(tester);
+
+      await pumpGlass(tester, _floatingAction(() {}), dark: true);
+      final dark = _appearanceOf(tester);
+
+      expect(light.color, AppColors.glassActionTint);
+      expect(dark.color, AppColors.glassActionTintOnDark);
+      expect(light.blur, LiquidGlassTabBarAction.defaultStyle.appearance.blur);
       expect(
-        tester
-            .widget<LiquidGlassTabBarAction>(
-              find.byType(LiquidGlassTabBarAction),
-            )
-            .style
-            ?.appearance,
-        LiquidGlassTabBarAction.defaultStyle.appearance,
+        light.shadow,
+        LiquidGlassTabBarAction.defaultStyle.appearance.shadow,
       );
     });
 

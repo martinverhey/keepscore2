@@ -39,11 +39,9 @@ class AdaptiveFloatingAction extends StatelessWidget {
       child: LiquidGlassTabBarAction(
         onTap: busy ? null : onPressed,
         size: AppGlass.barHeight,
-        style: LiquidGlassTabBarAction.defaultStyle.copyWith(
-          shape: AdaptiveGlass.shapeOf(
-            context,
-            cornerRadius: AppGlass.barHeight / 2,
-          ),
+        style: AdaptiveGlass.actionStyle(
+          context,
+          cornerRadius: AppGlass.barHeight / 2,
         ),
         child: _child(AdaptiveColors.glassGlyph(context)),
       ),
