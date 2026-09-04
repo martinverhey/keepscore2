@@ -37,7 +37,8 @@ class CompetitionCubit extends Cubit<CompetitionState> {
 
   void clearIfSelected(String competitionId) {
     if (competitionId != _competitionId) return;
-    _clear();
+    _competitionId = null;
+    emit(const CompetitionMissing());
   }
 
   Future<void> load({bool silent = false}) async {
@@ -65,10 +66,6 @@ class CompetitionCubit extends Cubit<CompetitionState> {
 
   void _onSession(AuthSessionState session) {
     if (session.isAuthenticated) return;
-    _clear();
-  }
-
-  void _clear() {
     _competitionId = null;
     emit(const CompetitionLoading());
   }

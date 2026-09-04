@@ -196,7 +196,7 @@ void main() {
 
       cubit.clearIfSelected('c1');
       expect(cubit.competitionId, isNull);
-      expect(cubit.state.competition, isNull);
+      expect(cubit.state, isA<CompetitionMissing>());
     },
   );
 }
