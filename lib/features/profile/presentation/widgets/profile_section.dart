@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../app/dependency_injection/injector.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/extensions/double.extension.dart';
+import '../../../../core/extensions/int.extension.dart';
 import '../../../../core/extensions/streak_type.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
@@ -39,9 +40,6 @@ class ProfileSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final leaderboard = this.leaderboard;
-    final hasStats = leaderboard != null && leaderboard.played > 0;
-
     return AdaptiveTappable(
       onTap: () => showAdaptiveSheet<void>(
         context,
@@ -69,17 +67,35 @@ class ProfileSection extends StatelessWidget {
             ),
           ),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: Row(
           children: [
-            _header(context),
-            if (hasStats) ...[
-              const SizedBox(height: AppSpacing.md),
-              _statRow(context, leaderboard),
-            ],
+            Expanded(child: _details(context)),
+            const SizedBox(width: AppSpacing.sm),
+            const AdaptiveIcon(
+              AdaptiveGlyph.chevronRight,
+              size: 18,
+              color: AppColors.neutral,
+            ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _details(BuildContext context) {
+    final leaderboard = this.leaderboard;
+    final hasStats = leaderboard != null && leaderboard.played > 0;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _header(context),
+        if (hasStats) ...[
+          const SizedBox(height: AppSpacing.md),
+          _statRow(context, leaderboard),
+        ],
+      ],
     );
   }
 
@@ -109,12 +125,6 @@ class ProfileSection extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(width: AppSpacing.sm),
-        const AdaptiveIcon(
-          AdaptiveGlyph.chevronRight,
-          size: 18,
-          color: AppColors.neutral,
-        ),
       ],
     );
   }
@@ -142,6 +152,7 @@ class ProfileSection extends StatelessWidget {
     final hasStreak = leaderboard.streakType.tier(leaderboard.streakCount) > 0;
 
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         _statBlock(
           leaderboard.rating.ratingLabel,
@@ -156,20 +167,27 @@ class ProfileSection extends StatelessWidget {
 
   Widget _streakBlock(BuildContext context, Leaderboard leaderboard) {
     final isWin = leaderboard.streakType == StreakType.win;
+    final tier = leaderboard.streakType.tier(leaderboard.streakCount);
 
     return _statBlock(
       '${leaderboard.streakCount}',
       isWin
           ? context.l10n.profileWinStreakLabel
           : context.l10n.profileLossStreakLabel,
+      icon: AdaptiveIcon(
+        isWin ? AdaptiveGlyph.fire : AdaptiveGlyph.ice,
+        color: isWin ? tier.flameColor : AppColors.iceCore,
+        size: 16,
+      ),
     );
   }
 
-  Widget _statBlock(String value, String label) {
+  Widget _statBlock(String value, String label, {Widget? icon}) {
     return Expanded(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (icon != null) ...[icon, const SizedBox(height: 2)],
           Text(
             value,
             style: AppTypography.bodyMedium.copyWith(
