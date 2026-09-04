@@ -223,7 +223,7 @@ or moved:
   gate is about not advertising a screen whose actions are all owner-only.
 - **Create a match** — the "new match" bottom tab item is omitted entirely for
   guests in `competition_tab_bar.dart`; `matches.page.dart` shows
-  `GuestNotice` instead of the log affordance.
+  `GuestNotice` instead of the new-match affordance.
 - **Edit/delete a match** — `match_detail_sheet.dart`,
   `session.canWrite && state.isManageableBy(session.user?.id)` (creator or
   owner only, not just registered).
@@ -297,11 +297,13 @@ discipline, and these three rules are what replace it — all four covered in
   back in as someone else leaves the previous user's competition in the
   sidebar — the router's recent-competition redirect catches the *routing*
   side of that, but not the in-memory copy. `CompetitionsPage` calls
-  `clearIfSelected(id)` after a successful leave/delete for the same reason.
+  `clearIfSelected(id)` after a successful leave/delete for the same reason,
+  though that one emits `CompetitionMissing` rather than `CompetitionLoading`
+  — see below.
 
-**Leaving or deleting a competition resets two things, and deliberately
-navigates nowhere.** `CompetitionsPage._forget` is that reset, shared by both
-actions: `CompetitionCubit.clearIfSelected(id)` and
+**Leaving or deleting a competition resets two things.**
+`CompetitionsPage._forget` is that reset, shared by both actions:
+`CompetitionCubit.clearIfSelected(id)` and
 `RecentCompetitionStore.clearIfRecent(id)`. The list itself needs nothing,
 since `CompetitionListCubit._mutate` already refreshes. Clearing the recent id
 here rather than leaving it to the router's launch-time `isMember` check
@@ -309,27 +311,43 @@ matters because that check deliberately keeps the stored id when the list load
 *fails* — a network blip must not wipe it — so "we actually know it is gone"
 has to be recorded at the moment we know.
 
-**The page stays put afterwards, including when you delete the competition
-whose shell you are standing in.** Both delete entry points are on the
-competitions list itself — the spotlight card's Manage button, reachable at
-`/` and at the in-shell `/competition/:id/competitions` branch — and that list
-is still exactly the right thing to be looking at once the competition is
-gone, so a `go(Routes.home)` there is a page change nobody asked for. It was
-tried and removed. The known cost: after deleting the competition you were in,
-the shell around you still renders `CompetitionTabBar` for that id, so
-Leaderboard and Matches remain one tap away and serve their branch cubits'
-stale pre-delete data over a dead realtime channel. Nothing bounces you out of
-that — `CompetitionShell` only reacts to `CompetitionMissing`, which
-`clearIfSelected` never emits (it emits `CompetitionLoading`), and
-`CompetitionScope` cannot re-`select` because the route's id never changed. If
-that becomes a real problem, fix it in the shell (drop or disable the dead
-tabs), not by navigating away from the list.
+**Leaving or deleting the competition whose shell you are standing in drops
+you out of that shell, and `clearIfSelected` emitting `CompetitionMissing` is
+the whole mechanism.** Both entry points are on the competitions list itself —
+the spotlight card's Manage button, reachable at `/` and at the in-shell
+`/competition/:id/competitions` branch — so the page you land on is the list
+you were already looking at, minus the tab bar. Nothing in `CompetitionsPage`
+navigates: it clears the cubit, and `CompetitionShell`'s existing
+`BlocListener` on `CompetitionMissing` (which already handles a competition
+that vanished server-side) clears the recent id and `go`es to `Routes.home`.
+`Missing` is the honest state — `overview()` would return null for a
+competition you are no longer a member of — and routing the departure through
+it is what avoids a second, parallel "the competition went away" path.
+
+`clearIfSelected` used to emit `CompetitionLoading` instead, and the shell was
+deliberately left to stay put. The cost was not survivable: the shell kept
+rendering `CompetitionTabBar` for the dead id, so Leaderboard and Matches
+stayed one tap away serving their branch cubits' stale pre-departure data over
+a dead realtime channel, `CompetitionScope` could not re-`select` because the
+route's id never changed, and `CompetitionCubit` sat in `CompetitionLoading`
+with a null `_competitionId` — so `load()` early-returned forever and every
+page reading it spun. The same thing happened on wide web, where the sidebar
+kept the departed competition's group.
+
+**Sign-out is the one clear that must *not* go through `Missing`.**
+`_onSession` resets to `CompetitionLoading` on its own rather than reusing
+`clearIfSelected`'s emit, because the shell's listener would otherwise race
+`go(Routes.home)` against the router's own redirect to `/sign-in`. The two
+paths are spelled out separately in the cubit for that reason; the shared
+`_clear()` helper they used to call was hiding the distinction.
+`test/flow/leave_competition_flow_test.dart` walks the real path (leaderboard
+→ Competitions branch → Manage → Leave) and is the only thing watching it.
 
 "No competition selected" is deliberately **not** a fifth state: it is never
 rendered. Only pages inside the competition subtree switch on
 `CompetitionState`, and `CompetitionScope` has always called `select` before
-they build, so `CompetitionLoading` is the honest initial (and post-`clear`)
-value. The sidebar reads `state.competition` opportunistically and treats
+they build, so `CompetitionLoading` is the honest initial (and post-sign-out)
+value; leaving or deleting lands on `CompetitionMissing` instead, per above. The sidebar reads `state.competition` opportunistically and treats
 `null` as "hide the competition group".
 
 **The competitions page spotlights the active competition above the list.**
@@ -422,14 +440,31 @@ Aiming is approximate by nature: the bar actions differ in size between glass,
 Material and wide web, so the headers are what actually disambiguate and the
 tails carry direction.
 
+**A bubble may hang the other way up, or off the side.** `SpeechBubble.tail`
+(`SpeechBubbleTail.top`/`bottom`/`left`, defaulting to `top`) moves the
+triangle to another edge and flips which side of the padding makes room for
+it. **`tailInset` is always measured from the corner nearest whatever the
+bubble points at** — from the *right* edge for a `top`/`bottom` tail, since
+both of those hang under a bar action at the top right, and from the *top*
+edge for `left`, which points at the sidebar's New match button near the top
+of the screen. `_verticalTailPath` and `_sideTailPath` are separate paths
+rather than one generalized one; each clamps its tail inside the corner radii
+along its own axis, so the `AppRadius.lg + _tailWidth` (38) floor described
+above applies to a `left` tail's distance from the *top*. Matches' empty
+state is the one call site for both `bottom` (native and narrow web) and
+`left` (wide web) — see "Matches' own empty state" below. There is no `right`
+member: nothing points that way, and the codebase does not keep unused
+enum members around (`CurvedArrowDirection` is the precedent).
+
 `competitionsEmpty` ("You're not in any competition yet") is gone — a
 first-time user already knows the list is empty, and the screen's one chance to
 teach was being spent restating it. Three earlier shapes were built here and
 rejected, so don't rebuild any of them: copies of the create/join actions *in*
 the empty state (a filled Join over a tinted Create); a `CurvedArrow` per bar
 action with the action's name as its caption (which is why
-`CurvedArrowDirection` briefly had an `up` member — it does not any more, and
-`CurvedArrow` now exists solely for Matches' `down`/`left` hints); and a single
+`CurvedArrowDirection` briefly had an `up` member, then a `down` one, and the
+enum went entirely — and `CurvedArrow` itself is now gone too, deleted with
+Matches' sidebar hint, its last call site); and a single
 explanatory paragraph naming both buttons in prose. Nothing here persists a
 "has seen it" flag and nothing needs to — the empty state *is* the first-run
 state, and it disappears the moment the user joins.
@@ -831,6 +866,17 @@ code; don't relitigate them.
   matches'`) are written for humans and pass through to the UI unchanged.
 - **Every user-facing string goes through `AppLocalizations`.** Add to both
   ARB files, then `flutter gen-l10n`.
+- **An empty state names what will appear there, never what is missing.**
+  "Matches will show up here", not "No matches yet" — the user can already
+  see that the list is empty, so a line restating it spends the screen's one
+  sentence saying nothing. Every one of them is phrased that way now, in both
+  languages, and on the same pattern: `<subject> will show up here.` /
+  `<subject> verschijnen hier.` — `competitionsPlaceholder`, `matchesEmpty`,
+  `playersEmpty`, `historyEmpty`, `profileVersusEmpty` (which keeps its
+  `{name}` placeholder) and `profileHistoryEmpty`. Match it when adding a
+  sixth. The same reasoning is what retired `competitionsEmpty` outright —
+  see "The empty state is two speech bubbles" above, where the teaching moved
+  into the bubbles instead.
 - Blocs that hold form state are `registerFactory`; session-wide ones are
   `registerLazySingleton`; ones scoped to a single competition are
   `registerFactoryParam<T, String, void>` and take the id as a constructor
@@ -853,6 +899,44 @@ code; don't relitigate them.
   rebuilt per season on every edit/delete (see the comment on
   `recalc_season_from`), so every player in the season still gets a fresh
   event on every write, back-dated or not.
+- **Three tables are watched, and `players` is one of them.** `matches`
+  (filtered by `competition_id`, feeding `MatchListCubit`), `player_ratings`
+  (by `season_id`, or unfiltered before the season has a row, feeding
+  `LeaderboardCubit`), and `players` (by `competition_id`, feeding both
+  `PlayersCubit` and `LeaderboardCubit`). The third one was missing for a
+  long time and the gap was invisible from the leaderboard's own data:
+  `join_competition` writes **only** a `players` row — it creates no
+  `player_ratings` row, since that table is written exclusively by
+  `apply_match_ratings`/`recalc_season_from` — so a second person joining
+  produced no event on either of the other two channels, and the first
+  player's leaderboard sat on one row until pull-to-refresh. A tab switch
+  did not fix it either: `LeaderboardCubit` lives in its own
+  `StatefulShellBranch` leaf route and survives one. The refetch was always
+  correct — `public.leaderboard` is deliberately driven *from* `players`
+  with a `left join player_ratings`, so a joiner appears at
+  `starting_rating` — it was purely the trigger that was absent. The same
+  channel also covers a rename, a deactivate/restore and a leave (which is
+  an `update … set is_active = false`, not a delete, so `players` needs no
+  `replica identity full` the way `matches` did).
+- **`LeaderboardCubit` keeps two watchers, not one.** `_watcher` is keyed on
+  `_watchedSeasonId` and is torn down and rebuilt whenever the season id
+  changes (notably null → real, when the season's first match lands);
+  `_playersWatcher` is started once and never re-keyed, because the roster
+  channel has nothing to do with the season and rebuilding it on every
+  season change would drop and re-subscribe for no reason.
+  `leaderboard_cubit_test.dart` pins both halves — a players tick refetches,
+  and a season change calls `watchLeaderboards` twice against
+  `watchPlayers`' once.
+- **The leaderboard and the roster subscribe to `players` separately, on
+  purpose.** `LeaderboardRepository.watchPlayers` and
+  `PlayerRepository.watch` are two channels on the same table with the same
+  filter, which is one more than strictly necessary. Folding them into one
+  would mean either `LeaderboardCubit` taking a `PlayerRepository`
+  dependency, or it listening to `PlayersCubit` — and `PlayersCubit` is a
+  `registerFactoryParam`, so asking `getIt` for one inside the leaderboard's
+  factory yields a *different* instance from the shared one on the
+  competition `ShellRoute`, not the one that is actually loaded. Each cubit
+  owning its own trigger is the cheaper trade.
 - **A write blocked by an RLS policy is not an error.** `update … where`
   simply matches no rows, so repositories end those calls with
   `.select().maybeSingle()` and raise `PermissionFailure` on null. Getting
@@ -1574,6 +1658,70 @@ Matches heads the list only when a game type is actually picked — "All" is
 the unfiltered list and heading it would be noise — which is why the
 game-type-specific empty message went away with the pill: the header names
 the filter, so the body says only `matchesEmpty`.
+
+**Matches' own empty state centres that line and hangs a bubble off the edge
+the new-match action is on.** `_matchesSection` returns a non-scrolling
+`SliverFillRemaining` when the list is empty, and `_emptyState` is a `Stack` of
+a `Center`ed `EmptyState` under a `Positioned` `SpeechBubble` whose header is
+`matchNew` — the same key the
+new-match action itself renders, the way the competitions page's join bubble
+reuses `competitionsJoinShort`. The old `matchesCreateHintTabBar` line and its
+downward `CurvedArrow` are gone; the bubble's tail is what points now.
+**Which edge is the one thing `_newMatchBubble` branches on.** Native and
+narrow web put the action at the bottom right, so the bubble is
+`bottom: 0` with a `SpeechBubbleTail.bottom` at `_newMatchTailInset` (32 from
+the right). Wide web has no bottom bar at all — the action is the button near
+the *top of the sidebar* — so the same bubble goes `top: 0` with a
+`SpeechBubbleTail.left` at `_sidebarTailInset` (38 from the top, which is the
+clamp floor: as high up the bubble's left edge as the corner radius allows).
+Both are `left: 0, right: 0`, so only the vertical anchor, the tail, the
+inset and the body's one line of copy differ, and one bubble serves every
+platform. The `CurvedArrow`-plus-caption `_sidebarHint` it replaced is gone,
+along with the old `matchesCreateHintSidebar`. **The body names the direction
+the tail points**, so it is the same `pointsAtSidebar` branch:
+`matchesCreateTipSidebar` ("Press the + on the left" / "de +-knop hiernaast")
+on wide web, `matchesCreateTip` ("below" / "hieronder") everywhere else — a
+bubble hanging off the sidebar cannot tell the user to press the button
+below it.
+**`_bottomInset` is the one number the page has to compute itself, and it
+insets the whole empty state — the centring as well as the bubble.** A
+`SliverFillRemaining` sizes itself from `viewportMainAxisExtent -
+precedingScrollExtent`, so it always runs to the *viewport's* bottom edge:
+neither `AdaptiveScaffold`'s trailing bottom-inset `SliverPadding` nor its
+`SliverSafeArea` shrinks it (see `_bodySliver`), and the bottom bar is not in
+the page's tree at all. Left uncorrected the glass capsule covered the bubble,
+and `Center` centred the line in a region a bar and a home indicator taller
+than what the user can see — visibly low, which is how both were found. The
+two cases: on glass, `AdaptiveBottomBarHost.insetOf` plus the safe area; off
+glass the action floats *over* the page at `AppSpacing.md`, so it is
+`AdaptiveFloatingAction.diameter` plus that margin.
+**It has to be read in `build`, not in the empty state itself**, and that is
+why it is threaded down through `_body`/`_list`/`_matchesSection` rather than
+resolved where it is used: `SliverSafeArea` wraps its sliver in
+`MediaQuery.removePadding`, and `removePadding` takes the removed inset off
+`viewPadding` as well as `padding`, so *both* read as `0` from anywhere
+inside the slivers. `MatchesPage.build` sits above the scaffold, where they
+are still the device's own.
+**On wide web `_bottomInset` is `0`, and that is a real branch rather than a
+value that happens to fall out.** The `barInset > 0` test is false there
+because the shell passes `bar: null`, so without the explicit
+`useWideWeb` early return the FAB fallback applied a floating action's worth
+of bottom padding to a page that has no floating action — the centred line sat
+~80px high for no reason. Every other platform is untouched.
+**Both of the bubble's dimensions have to be forced here, unlike on the
+competitions page.** Its `Column` needs `MainAxisSize.min` because the `Stack`
+hands it a bounded height to expand into, where the competitions page's
+`Column` child had an unbounded one; and it is `Positioned` across the full
+width rather than `Align`ed, because a shrink-wrapped bubble moves its own
+right edge — which is the edge `tailInset` is measured from on the `bottom`
+tail, so the tail would no longer point at the action. (The `left` tail is
+measured from the top instead and would survive shrink-wrapping, but the two
+share one `Positioned` and full width is what makes them read as the same
+bubble.) `matches_page_test.dart` pins the width, the
+height and the clearance together, a second test pumps the page inside a
+real `AdaptiveBottomBarHost` under a 34px bottom inset — the only way to see
+either overlap, since a bare `MatchesPage` hosts no bar — and a third pumps
+the empty state under `debugOverrideWideWeb` for the tail flip.
 `ListHeader` (`core/widgets/list_header.dart`) is the shared block: a
 `titleSmall` title over an optional `captionSmall` subtitle. History and the
 Leaderboard's running season pass both; Matches passes a title alone.
@@ -1783,12 +1931,13 @@ Two things had to move for `go` to be safe here:
   sub-page shares one instance rather than building its own. `go` keeps that
   `ShellRoute` mounted underneath whatever page it navigates to, so without
   this `PlayersCubit` would still be holding the player list from before you
-  opened the Players page — it has no realtime subscription to save it,
-  unlike `MatchListCubit`/`LeaderboardCubit` (which didn't need the same
-  hoist; see "Leaderboard and Matches are routes, not tabs" for why). Sharing
-  removes the staleness at the source, which is why there is no
-  refresh-on-return machinery for it: nothing refetches `PlayersCubit` after
-  a navigation, only pull-to-refresh does. The one thing outside that shared
+  opened the Players page — at the time it had no realtime subscription to
+  save it, unlike `MatchListCubit`/`LeaderboardCubit` (which didn't need the
+  same hoist; see "Leaderboard and Matches are routes, not tabs" for why).
+  Sharing removes the staleness at the source, and that is still the reason
+  there is no refresh-on-return machinery for it. It does watch `players`
+  now (see "Three tables are watched" above), but that covers somebody
+  *else's* write, not a stale instance of your own. The one thing outside that shared
   instance is the competition itself (a rename in Configuration), so
   `SidebarShell._select` calls `CompetitionCubit.refresh()` on every hop.
 
@@ -1967,6 +2116,82 @@ is still rendered when there is *no* competition (the `else` branch of
   fill there blends against the page canvas rather than the app's actual
   surface colour and reads as stuck-in-light-mode regardless of theme.
 
+### Every app icon comes from `ios/Runner/AppIcon.icon`
+
+That Icon Composer document (copied in from `~/Documents/KeepScore 2.icon`) is
+the single source for all three platforms. **iOS renders it directly**:
+`flutter_launcher_icons` is set `ios: false`, there is no `AppIcon.appiconset`,
+and the `.icon` is wired into `project.pbxproj` as a `folder.iconcomposer.icon`
+file reference in the Runner group and in the Resources build phase, which is
+all `actool` needs. `ASSETCATALOG_COMPILER_APPICON_NAME` was already `AppIcon`.
+
+- **This is what makes the Clear (Liquid Glass) appearance possible, and it is
+  the only thing that does.** An `appiconset` has exactly three appearance slots
+  — any, dark, tinted. A `.icon` compiles to `IconImageStack`/`IconGroup`
+  renditions per appearance, the layered form iOS 26 composes at runtime.
+- **A `.icon` and an `appiconset` of the same name do not conflict; the `.icon`
+  silently wins.** `actool` reports no error and emits the `.icon`'s output, so
+  a stale `appiconset` would look live and be dead. Hence it was deleted.
+- **Nothing is lost on the iOS 15 deployment target.** The compile emits a
+  legacy loose `AppIcon60x60@2x.png` and a `CFBundleIconFiles` entry alongside
+  the `Assets.car` renditions.
+
+Verify iOS without a full build: `xcrun actool ios/Runner/Assets.xcassets
+ios/Runner/AppIcon.icon --compile <dir> --platform iphoneos
+--minimum-deployment-target 15.0 --app-icon AppIcon
+--output-partial-info-plist <plist>`, then `xcrun assetutil --info
+<dir>/Assets.car` — the `AppIcon` entries should include `IconImageStack` under
+`UIAppearanceLight`, `UIAppearanceDark` and `ISAppearanceTintable`.
+
+**Android and web were derived from that document's own layers, once, by hand.**
+`scripts/generate_icon.py` — which drew the whole icon analytically because
+there was no source image to start from — is gone, and the three
+`assets/icon/*.png` are committed outputs, not generated ones. The layers live
+in `AppIcon.icon/Assets` and `icon.json` carries their transforms on a 1024pt
+canvas: `App Icon-selection-4.png` is the white mark at scale 1, and `-5`/`-6`
+are plain white circles at 10% and 25% alpha, scaled 0.89/0.86 and translated
+`(180, -75)`/`(180, -92)` (positive y is down). To redo them:
+
+- `app_icon_foreground.png` is `App Icon-selection-4.png` copied verbatim. It is
+  already the mark alone on transparency at 1024, which is exactly the shape an
+  adaptive foreground wants.
+- `app_icon_background.png` is `#F45D01` full bleed with `-5` and `-6`
+  composited over it **at their own scale, not the foreground's**.
+- `app_icon.png` is all three layers over that same fill at their `icon.json`
+  transforms, flattened opaque.
+
+**Compose from the layers; do not convert the exported PNGs.** Icon Composer's
+appearance exports carry an iCCP Display P3 profile *and* have the squircle
+already cut out, so they need both a colour conversion and a corner fill. The
+layers are tagged sRGB and the mark is used at scale 1, so composing touches no
+crisp edge and needs no conversion at all. `#F45D01` is `icon.json`'s own
+`display-p3:0.88886,0.40482,0.16646` fill converted to sRGB; sampling an export
+instead gives `#E3672A`, the same colour still P3-encoded and much duller once
+treated as sRGB.
+
+**The mark is scaled by the adaptive inset; the background wash is not.** A
+launcher shows only the central 72 of 108dp, so `adaptive_icon_foreground_inset`
+is pinned at `16` — the mark lands at 0.68 and the whole logo survives any mask.
+Two things were tried and rejected, both visible only in a masked render:
+
+- **Full bleed (`inset: 0`), matching iOS exactly.** iOS masks a squircle
+  inscribed in the full canvas; a launcher's circle is far more aggressive, and
+  it cuts the trophy into something unrecognisable.
+- **Scaling the wash by 0.68 too, to keep it in register with the mark.** The
+  circles are finite, so shrinking them stops them bleeding off the canvas and
+  their complete edge floats inside the icon. Full bleed is what an adaptive
+  background is for.
+
+What survives is one inherited artifact: the trophy's right handle is cut off by
+the edge of the source artwork. At iOS scale it reads as bleeding off the icon;
+at 0.68 it is a detached white lozenge beside the cup. Fixing it means editing
+the artwork in Icon Composer, not the pipeline.
+
+`AppColors.seed` (`#BC4D08`) is deliberately **not** part of any of this. It is
+the app's accent, and the web manifest's `background_color`/`theme_color` track
+it rather than the icon, so they stay `#BC4D08` even though the icon ground is
+the brighter `#F45D01`.
+
 ### Things the source no longer says out loud
 
 Kept here because the code cannot express them and they cost real debugging:
@@ -2040,6 +2265,21 @@ Kept here because the code cannot express them and they cost real debugging:
   `_submit` pops with a bare `Navigator.pop`, which ignores `PopScope`, so a
   successful save never prompts.
 
+- **`showAdaptiveSheet`'s Material branch passes `useRootNavigator: true`, and
+  it is the only one of the three that has to say so.** `showModalBottomSheet`
+  is the one Flutter entry point here that defaults to `false`;
+  `showCupertinoModalPopup` and `showDialog` already default to `true`, which
+  is why leaving it out was an Android-only bug. Since the tab bar was hoisted
+  out of the pages into `CompetitionShell`, it sits *above* `navigationShell`
+  and therefore outside every `StatefulShellBranch` navigator — so a sheet
+  opened from a page went onto the branch's overlay, stopping at the top of
+  the bar with the bar left undimmed and tappable beside it. While the bar
+  still lived in each page's own `Scaffold.bottomNavigationBar` the nearest
+  navigator did cover it, which is why nothing had ever needed the flag.
+  `sheet_test.dart`'s "covers a bottom bar that sits outside the nested
+  navigator" pins it, and is the only thing watching it — no page-level test
+  pumps a bar outside a nested navigator.
+
 - **`GameTypeFilterCubit` is a `registerLazySingleton`, scoped to the
   Matches list alone.** It's the one thing in the app that still cares about
   `game_type` beyond storing it on the match row — `MatchListCubit` is its
@@ -2106,11 +2346,10 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 360 tests at time of writing
+flutter test                    # 368 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
-python3 scripts/generate_icon.py   # redraw assets/icon/*.png
-dart run flutter_launcher_icons     # then push them into ios/ android/ web/
+dart run flutter_launcher_icons     # assets/icon/*.png into android/ web/ (not ios/)
 flutter run -d chrome           # web
 flutter build web
 flutter build apk --debug        # verified green
