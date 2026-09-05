@@ -15,7 +15,7 @@ import 'package:keepscore2/features/competition/presentation/cubit/competition_l
 import 'package:keepscore2/features/competition/presentation/cubit/join_competition_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/pages/competition_shell.dart';
 import 'package:keepscore2/features/competition/presentation/pages/competitions.page.dart';
-import 'package:keepscore2/features/competition/presentation/widgets/join_competition_sheet.dart';
+import 'package:keepscore2/features/competition/presentation/pages/join_competition_sheet.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/competition_scope.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';

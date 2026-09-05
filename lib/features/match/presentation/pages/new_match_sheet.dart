@@ -16,11 +16,11 @@ import '../../../../core/widgets/state_views.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
 import '../../../player/domain/player.model.dart';
-import '../../../player/presentation/widgets/manage_players_sheet.dart';
+import '../../../player/presentation/pages/manage_players_sheet.dart';
 import '../../domain/match_entry.model.dart';
 import '../cubit/match_form_cubit.dart';
-import 'new_match_keys.enum.dart';
-import 'team_area.dart';
+import '../widgets/new_match_keys.enum.dart';
+import '../widgets/team_area.dart';
 import 'team_picker_sheet.dart';
 
 Future<void> showNewMatchSheet(

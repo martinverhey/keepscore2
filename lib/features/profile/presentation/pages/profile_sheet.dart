@@ -24,8 +24,8 @@ import '../../../match/presentation/widgets/match_card.dart';
 import '../cubit/profile_history_cubit.dart';
 import '../cubit/profile_overview_cubit.dart';
 import '../cubit/profile_versus_cubit.dart';
-import 'initials_circle.dart';
-import 'rating_trend_chart.dart';
+import '../widgets/initials_circle.dart';
+import '../widgets/rating_trend_chart.dart';
 
 enum ProfileTab { overview, versus, history }
 

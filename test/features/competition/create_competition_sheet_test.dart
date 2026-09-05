@@ -5,7 +5,7 @@ import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/create_competition_cubit.dart';
-import 'package:keepscore2/features/competition/presentation/widgets/create_competition_sheet.dart';
+import 'package:keepscore2/features/competition/presentation/pages/create_competition_sheet.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
 

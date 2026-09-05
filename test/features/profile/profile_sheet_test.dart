@@ -20,7 +20,7 @@ import 'package:keepscore2/features/profile/domain/streak.model.dart';
 import 'package:keepscore2/features/profile/presentation/cubit/profile_history_cubit.dart';
 import 'package:keepscore2/features/profile/presentation/cubit/profile_overview_cubit.dart';
 import 'package:keepscore2/features/profile/presentation/cubit/profile_versus_cubit.dart';
-import 'package:keepscore2/features/profile/presentation/widgets/profile_sheet.dart';
+import 'package:keepscore2/features/profile/presentation/pages/profile_sheet.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
 

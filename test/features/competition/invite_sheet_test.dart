@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
-import 'package:keepscore2/features/competition/presentation/widgets/invite_sheet.dart';
+import 'package:keepscore2/features/competition/presentation/pages/invite_sheet.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/join_code_card.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/join_qr_card.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';

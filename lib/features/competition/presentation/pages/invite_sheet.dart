@@ -4,8 +4,8 @@ import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/sheet.dart';
-import 'join_code_card.dart';
-import 'join_qr_card.dart';
+import '../widgets/join_code_card.dart';
+import '../widgets/join_qr_card.dart';
 
 Future<void> showInviteSheet(BuildContext context, {required String code}) {
   return showAdaptiveSheet<void>(

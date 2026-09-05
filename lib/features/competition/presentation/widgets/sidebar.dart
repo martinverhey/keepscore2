@@ -8,7 +8,7 @@ import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/horizontal_divider.dart';
 import '../../../../core/widgets/section_label.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
-import '../../../match/presentation/widgets/new_match_sheet.dart';
+import '../../../match/presentation/pages/new_match_sheet.dart';
 import '../../../settings/domain/theme_preference.enum.dart';
 import '../../../settings/presentation/cubit/theme_cubit.dart';
 import '../cubit/competition_cubit.dart';

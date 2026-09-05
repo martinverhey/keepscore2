@@ -7,9 +7,9 @@ import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/failure_text.dart';
 import '../../../../core/widgets/selectable_row.dart';
 import '../../../../core/widgets/sheet.dart';
-import '../../../player/presentation/widgets/player_name_sheet.dart';
+import '../../../player/presentation/pages/player_name_sheet.dart';
 import '../cubit/join_competition_cubit.dart';
-import 'join_result.dart';
+import '../widgets/join_result.dart';
 
 class JoinConfirmSheet extends StatelessWidget {
   const JoinConfirmSheet({

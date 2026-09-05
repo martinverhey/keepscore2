@@ -16,9 +16,9 @@ import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../domain/elo_calculator.dart';
 import '../../domain/match_entry.model.dart';
 import '../cubit/match_detail_cubit.dart';
-import 'match_card.dart';
+import '../widgets/match_card.dart';
 import 'match_score_sheet.dart';
-import 'team_area.dart';
+import '../widgets/team_area.dart';
 
 Future<void> showMatchDetailSheet(
   BuildContext context, {

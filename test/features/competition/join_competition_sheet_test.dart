@@ -6,7 +6,7 @@ import 'package:keepscore2/core/widgets/adaptive/app_platform.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/domain/join_preview.model.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/join_competition_cubit.dart';
-import 'package:keepscore2/features/competition/presentation/widgets/join_competition_sheet.dart';
+import 'package:keepscore2/features/competition/presentation/pages/join_competition_sheet.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/join_result.dart';
 import 'package:keepscore2/features/player/domain/player.model.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';

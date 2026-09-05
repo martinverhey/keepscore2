@@ -24,7 +24,7 @@ import 'day_header.dart';
 import 'game_type_filter_button.dart';
 import 'match_card.dart';
 import 'match_day_group.dart';
-import 'match_detail_sheet.dart';
+import '../pages/match_detail_sheet.dart';
 
 const double _newMatchTailInset = 32;
 const double _sidebarTailInset = 38;

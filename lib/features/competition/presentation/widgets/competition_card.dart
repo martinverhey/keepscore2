@@ -5,7 +5,7 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/tag.dart';
 import '../../domain/competition.model.dart';
-import 'invite_sheet.dart';
+import '../pages/invite_sheet.dart';
 
 class CompetitionCard extends StatelessWidget {
   const CompetitionCard({

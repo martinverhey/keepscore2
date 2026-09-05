@@ -14,7 +14,7 @@ import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../competition/domain/competition.model.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
 import '../../../competition/presentation/widgets/competition_settings_button.dart';
-import '../../../competition/presentation/widgets/invite_sheet.dart';
+import '../../../competition/presentation/pages/invite_sheet.dart';
 import '../../../player/presentation/cubit/players_cubit.dart';
 import '../../../profile/presentation/widgets/profile_section.dart';
 import '../../domain/leaderboard.model.dart';

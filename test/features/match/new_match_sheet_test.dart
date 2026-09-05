@@ -15,12 +15,12 @@ import 'package:keepscore2/features/match/domain/match_entry.model.dart';
 import 'package:keepscore2/features/match/domain/match_repository.dart';
 import 'package:keepscore2/features/match/presentation/cubit/match_form_cubit.dart';
 import 'package:keepscore2/features/match/presentation/widgets/new_match_keys.enum.dart';
-import 'package:keepscore2/features/match/presentation/widgets/new_match_sheet.dart';
+import 'package:keepscore2/features/match/presentation/pages/new_match_sheet.dart';
 import 'package:keepscore2/app/dependency_injection/injector.dart';
 import 'package:keepscore2/features/player/domain/player.model.dart';
 import 'package:keepscore2/features/player/domain/player_repository.dart';
 import 'package:keepscore2/features/player/presentation/cubit/players_cubit.dart';
-import 'package:keepscore2/features/player/presentation/widgets/manage_players_sheet.dart';
+import 'package:keepscore2/features/player/presentation/pages/manage_players_sheet.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
 

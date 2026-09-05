@@ -4,7 +4,7 @@ import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../competition/domain/competition.model.dart';
 import '../../domain/season.model.dart';
-import 'season_sheet.dart';
+import '../pages/season_sheet.dart';
 
 class SeasonFilterButton extends StatelessWidget {
   const SeasonFilterButton({

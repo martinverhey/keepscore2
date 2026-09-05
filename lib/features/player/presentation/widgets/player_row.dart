@@ -8,8 +8,8 @@ import '../../../../core/widgets/tag.dart';
 import '../../domain/player.model.dart';
 import '../cubit/players_cubit.dart';
 import 'player_action.enum.dart';
-import 'player_action_sheet.dart';
-import 'player_name_sheet.dart';
+import '../pages/player_action_sheet.dart';
+import '../pages/player_name_sheet.dart';
 
 class PlayerRow extends StatelessWidget {
   const PlayerRow({

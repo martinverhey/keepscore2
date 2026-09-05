@@ -95,7 +95,7 @@ builder rather than in a `GoRoute`. `showJoinCompetitionSheet` and
 `showCreateCompetitionSheet` each return the competition's id (or null), and
 `CompetitionsPage` is what refreshes `CompetitionListCubit` and goes to the
 competition — neither sheet navigates. `CreateCompetitionSheet`
-(`competition/presentation/widgets/create_competition_sheet.dart`) replaced
+(`competition/presentation/pages/create_competition_sheet.dart`) replaced
 `CreateCompetitionPage` and the `/create` route outright: same
 `CreateCompetitionCubit`, same name field and season-length segmented control,
 with the submit button in `Sheet.primaryButton` (labelled
@@ -105,7 +105,7 @@ Cancel beside it. `showNewMatchSheet` builds the teams and submits.
 
 **Join opens the camera first, and the code field is the way out of it.**
 `CompetitionsPage._join` shows `showJoinScannerSheet`
-(`competition/presentation/widgets/join_scanner_sheet.dart`) and only then
+(`competition/presentation/pages/join_scanner_sheet.dart`) and only then
 `showJoinCompetitionSheet`, so the six-character code is the fallback rather
 than the front door — the QR a competition already shows off every
 `CompetitionCard`, `InviteSheet` and `ActiveCompetitionCard` encodes nothing
@@ -173,7 +173,7 @@ bundled ML Kit model is left bundled — `dev.steenbakker.mobile_scanner.useUnbu
 would cut ~3-10 MB off the APK at the price of a Play-Services download before
 the first scan works.
 `TeamPickerSheet`'s "Manage players" button opens `showManagePlayersSheet`
-(`player/presentation/widgets/manage_players_sheet.dart`) on top of the picker
+(`player/presentation/pages/manage_players_sheet.dart`) on top of the picker
 rather than popping and pushing `Routes.players` — the sheet builds its own
 `PlayersCubit` via `getIt` (a nested sheet route inherits no providers from the
 route underneath it), and `NewMatchSheet._managePlayers` refreshes
@@ -228,7 +228,7 @@ there.
 `Sheet.primaryButton`/`secondaryButton` are `Widget?` rather than
 `AdaptiveButton?` for this — B's step needs a `Row` of two — and every other
 call site still passes a plain `AdaptiveButton`.
-`showMatchDetailSheet` (`match/presentation/widgets/match_detail_sheet.dart`)
+`showMatchDetailSheet` (`match/presentation/pages/match_detail_sheet.dart`)
 renders the same `MatchCard` the list does, then a "Player rank" card (each
 player's rating going in, Team A left / Team B right, divided off from the two
 team averages) and a "Win chance" card (`EloCalculator.winChance`, the expected
@@ -310,7 +310,7 @@ lib/
   features/<name>/
     domain/     entities + abstract repository
     data/       Supabase-backed repository implementation
-    presentation/ cubit/ (state) + pages + widgets
+    presentation/ cubit/ (state) + pages (routed pages and sheets) + widgets
   l10n/         app_en.arb, app_nl.arb (+ generated app_localizations*.dart)
 ```
 
@@ -679,6 +679,21 @@ code; don't relitigate them.
     theirs. `AuthFailureText` stays a widget of its own on top of it: it
     `context.select`s the failure off `SignInCubit` rather than being handed
     one, which is what lets three sign-in steps render it as a `const`.
+  - **A feature's own sheets live in its `presentation/pages/`, not
+    `presentation/widgets/`.** A sheet is a destination — it has a title, it
+    is what the user is looking at, and it is opened rather than composed —
+    so `join_confirm_sheet.dart`, `new_match_sheet.dart`, `profile_sheet.dart`
+    and the rest sit beside the routed `*.page.dart` files, while
+    `presentation/widgets/` keeps the pieces those screens are built from
+    (cards, rows, bar buttons, result types, enums). They keep the
+    `_sheet.dart` suffix rather than taking `.page.dart` — that one is for a
+    routed destination, and a sheet is not routed. The generic sheet
+    machinery stays in core: `core/widgets/sheet.dart`'s `Sheet`,
+    `text_entry_sheet.dart` and `showAdaptiveSheet` are widgets, not pages.
+    A button that opens a sheet stays in `widgets/` with the other chrome
+    (`GameTypeFilterButton`, `SeasonFilterButton`), which is why
+    `GameTypeFilterSheet` moved out of `game_type_filter_button.dart` into
+    its own file and took `GameTypeFilterOption` out with it.
   - **New modal sheets build on `core/widgets/sheet.dart`'s `Sheet`**, not ad
     hoc `Column`s: title/subtitle/avatar pinned at top, `content` scrolls in
     between (capped at 85% of screen height), primary/secondary buttons

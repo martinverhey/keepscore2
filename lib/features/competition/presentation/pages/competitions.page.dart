@@ -21,10 +21,10 @@ import '../cubit/competition_cubit.dart';
 import '../cubit/competition_list_cubit.dart';
 import '../widgets/active_competition_card.dart';
 import '../widgets/competition_action.enum.dart';
-import '../widgets/competition_action_sheet.dart';
-import '../widgets/create_competition_sheet.dart';
-import '../widgets/join_competition_sheet.dart';
-import '../widgets/join_scanner_sheet.dart';
+import 'competition_action_sheet.dart';
+import 'create_competition_sheet.dart';
+import 'join_competition_sheet.dart';
+import 'join_scanner_sheet.dart';
 import '../widgets/competition_card.dart';
 
 const double _joinTailInset = 10;

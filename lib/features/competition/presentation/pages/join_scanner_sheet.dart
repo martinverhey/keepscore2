@@ -5,7 +5,7 @@ import '../../../../core/extensions/string.extension.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/qr_scanner_view.dart';
 import '../../../../core/widgets/sheet.dart';
-import 'join_scan_result.dart';
+import '../widgets/join_scan_result.dart';
 
 Future<JoinScanResult?> showJoinScannerSheet(BuildContext context) {
   return showAdaptiveSheet<JoinScanResult>(

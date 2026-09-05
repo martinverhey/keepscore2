@@ -23,9 +23,9 @@ import 'package:keepscore2/features/competition/presentation/cubit/join_competit
 import 'package:keepscore2/features/competition/presentation/pages/competitions.page.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/active_competition_card.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/competition_card.dart';
-import 'package:keepscore2/features/competition/presentation/widgets/create_competition_sheet.dart';
-import 'package:keepscore2/features/competition/presentation/widgets/join_competition_sheet.dart';
-import 'package:keepscore2/features/competition/presentation/widgets/join_scanner_sheet.dart';
+import 'package:keepscore2/features/competition/presentation/pages/create_competition_sheet.dart';
+import 'package:keepscore2/features/competition/presentation/pages/join_competition_sheet.dart';
+import 'package:keepscore2/features/competition/presentation/pages/join_scanner_sheet.dart';
 import 'package:keepscore2/features/settings/presentation/cubit/theme_cubit.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';

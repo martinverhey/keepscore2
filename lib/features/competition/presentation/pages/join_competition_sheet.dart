@@ -7,7 +7,7 @@ import '../cubit/join_competition_cubit.dart';
 import 'join_code_sheet.dart';
 import 'join_confirm_sheet.dart';
 import 'join_look_up_sheet.dart';
-import 'join_result.dart';
+import '../widgets/join_result.dart';
 
 Future<JoinResult?> showJoinCompetitionSheet(
   BuildContext context, {

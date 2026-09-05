@@ -11,7 +11,7 @@ import '../../../../core/widgets/state_views.dart';
 import '../../../auth/presentation/widgets/guest_notice.dart';
 import '../../domain/player.model.dart';
 import '../cubit/players_cubit.dart';
-import 'player_name_sheet.dart';
+import '../pages/player_name_sheet.dart';
 import 'player_row.dart';
 
 class Players extends StatelessWidget {

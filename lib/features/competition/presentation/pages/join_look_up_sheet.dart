@@ -5,7 +5,7 @@ import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/failure_text.dart';
 import '../../../../core/widgets/sheet.dart';
 import '../cubit/join_competition_cubit.dart';
-import 'join_result.dart';
+import '../widgets/join_result.dart';
 
 class JoinLookUpSheet extends StatelessWidget {
   const JoinLookUpSheet({super.key, required this.state});

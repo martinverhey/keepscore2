@@ -14,7 +14,7 @@ import '../../../leaderboard/domain/leaderboard.model.dart';
 import '../../../leaderboard/domain/medals.model.dart';
 import '../cubit/profile_overview_cubit.dart';
 import 'initials_circle.dart';
-import 'profile_sheet.dart';
+import '../pages/profile_sheet.dart';
 
 class ProfileSection extends StatelessWidget {
   const ProfileSection({

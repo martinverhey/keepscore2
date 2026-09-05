@@ -9,7 +9,7 @@ import '../../../../core/widgets/sheet.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
 import '../cubit/players_cubit.dart';
-import 'players.dart';
+import '../widgets/players.dart';
 
 Future<void> showManagePlayersSheet(
   BuildContext context, {

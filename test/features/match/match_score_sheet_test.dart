@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/features/match/domain/match_entry.model.dart';
-import 'package:keepscore2/features/match/presentation/widgets/match_score_sheet.dart';
+import 'package:keepscore2/features/match/presentation/pages/match_score_sheet.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 
 MatchEntry _match({required bool oneVsOne}) => MatchEntry(

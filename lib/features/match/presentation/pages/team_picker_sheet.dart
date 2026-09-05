@@ -7,9 +7,9 @@ import '../../../../core/widgets/selectable_row.dart';
 import '../../../../core/widgets/sheet.dart';
 import '../../../player/domain/player.model.dart';
 import '../../domain/match_entry.model.dart';
-import 'team_picker_result.model.dart';
+import '../widgets/team_picker_result.model.dart';
 
-export 'team_picker_result.model.dart';
+export '../widgets/team_picker_result.model.dart';
 
 class TeamPickerSheet extends StatefulWidget {
   const TeamPickerSheet({

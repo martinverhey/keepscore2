@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/widgets/adaptive/app_platform.dart';
 import 'package:keepscore2/core/widgets/qr_scanner_view.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/join_scan_result.dart';
-import 'package:keepscore2/features/competition/presentation/widgets/join_scanner_sheet.dart';
+import 'package:keepscore2/features/competition/presentation/pages/join_scanner_sheet.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 
 Future<void> _pumpHarness(WidgetTester tester) async {

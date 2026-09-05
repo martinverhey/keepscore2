@@ -7,7 +7,7 @@ import '../../../../core/data/recent_competition_store.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
-import '../../../match/presentation/widgets/new_match_sheet.dart';
+import '../../../match/presentation/pages/new_match_sheet.dart';
 import '../../../player/presentation/cubit/players_cubit.dart';
 import '../cubit/competition_cubit.dart';
 import '../widgets/competition_tab.enum.dart';
