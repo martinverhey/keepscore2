@@ -668,15 +668,17 @@ code; don't relitigate them.
     and isn't tied to one screen's layout gets promoted to its own public file
     under `core/widgets/` (or `core/widgets/adaptive/` for a Cupertino/Material
     split) and imported back. Keep it private otherwise.
-  - **`core/widgets/failure_text.dart`'s `FailureText` is the error line under
-    a form or a sheet's content** — the `AppSpacing.md`-topped
-    `failure.localized(l10n)` in `AppColors.negative` that a dozen files used
-    to hand-roll as their own `_failureText`/`_actionFailureText` helper. The
-    join sheets go through it; the older screens (`players.dart`,
-    `configuration.page.dart`, `match_detail_sheet.dart`,
-    `new_match_sheet.dart`, `matches.page.dart`, `create_competition_sheet.dart`,
-    `competitions.page.dart`, `auth_form_parts.dart`) still carry their own
-    copy and should adopt it the next time they are touched.
+  - **`core/widgets/failure_text.dart`'s `FailureText` is the one error line
+    under a form or a sheet's content** — the `AppSpacing.md`-topped
+    `failure.localized(l10n)` in `AppColors.negative` that a dozen files each
+    hand-rolled as their own `_failureText`/`_actionFailureText`/
+    `_submitFailureText` helper. Every one of them now renders it, as
+    `if (state.actionFailure case final failure?) FailureText(failure)`, so
+    the null check sits at the call site and the widget itself always has a
+    failure. `textAlign` is its only parameter, for the two sheets that centre
+    theirs. `AuthFailureText` stays a widget of its own on top of it: it
+    `context.select`s the failure off `SignInCubit` rather than being handed
+    one, which is what lets three sign-in steps render it as a `const`.
   - **New modal sheets build on `core/widgets/sheet.dart`'s `Sheet`**, not ad
     hoc `Column`s: title/subtitle/avatar pinned at top, `content` scrolls in
     between (capped at 85% of screen height), primary/secondary buttons

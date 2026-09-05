@@ -6,6 +6,7 @@ import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
+import '../../../../core/widgets/failure_text.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../auth/presentation/widgets/guest_notice.dart';
 import '../../domain/player.model.dart';
@@ -69,7 +70,7 @@ class Players extends StatelessWidget {
           SectionLabel(context.l10n.playersRemoved),
           for (final player in state.inactive) _playerRow(player),
         ],
-        if (state.actionFailure != null) _actionFailureText(context, state),
+        if (state.actionFailure case final failure?) FailureText(failure),
       ],
     );
   }
@@ -82,16 +83,6 @@ class Players extends StatelessWidget {
       isMe: isMe,
       canRename: _canRename(player, isMe: isMe),
       canRemove: _canRemove(isMe: isMe),
-    );
-  }
-
-  Widget _actionFailureText(BuildContext context, PlayersReady state) {
-    return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.md),
-      child: Text(
-        state.actionFailure!.localized(context.l10n),
-        style: const TextStyle(color: AppColors.negative),
-      ),
     );
   }
 

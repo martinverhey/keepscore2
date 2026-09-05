@@ -6,6 +6,7 @@ import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
+import '../../../../core/widgets/failure_text.dart';
 import '../../../../core/widgets/help_text.dart';
 import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/section_label.dart';
@@ -201,14 +202,7 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
               ),
             ),
 
-          if (state.failure != null)
-            Padding(
-              padding: const EdgeInsets.only(top: AppSpacing.md),
-              child: Text(
-                state.failure!.localized(context.l10n),
-                style: const TextStyle(color: AppColors.negative),
-              ),
-            ),
+          if (state.failure case final failure?) FailureText(failure),
         ],
       ),
     );

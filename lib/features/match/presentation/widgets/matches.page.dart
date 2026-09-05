@@ -7,6 +7,7 @@ import '../../../../core/extensions/date_time.extension.dart';
 import '../../../../core/extensions/game_type.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
+import '../../../../core/widgets/failure_text.dart';
 import '../../../../core/widgets/list_header.dart';
 import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/speech_bubble.dart';
@@ -241,8 +242,8 @@ class _MatchesPageState extends State<MatchesPage> {
         ),
         if (state.hasMore)
           SliverToBoxAdapter(child: _loadMoreButton(context, state, cubit)),
-        if (state.actionFailure != null)
-          SliverToBoxAdapter(child: _actionFailureText(context, state)),
+        if (state.actionFailure case final failure?)
+          SliverToBoxAdapter(child: FailureText(failure)),
       ],
     );
   }
@@ -434,16 +435,6 @@ class _MatchesPageState extends State<MatchesPage> {
       child: Padding(
         padding: EdgeInsets.all(AppSpacing.xl),
         child: AdaptiveLoader(),
-      ),
-    );
-  }
-
-  Widget _actionFailureText(BuildContext context, MatchListReady state) {
-    return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.md),
-      child: Text(
-        state.actionFailure!.localized(context.l10n),
-        style: const TextStyle(color: AppColors.negative),
       ),
     );
   }

@@ -2,10 +2,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
+import '../../../../core/widgets/failure_text.dart';
 import '../cubit/sign_in_cubit.dart';
 
 class AuthHeading extends StatelessWidget {
@@ -35,13 +35,7 @@ class AuthFailureText extends StatelessWidget {
     final failure = context.select((SignInCubit cubit) => cubit.state.failure);
     if (failure == null) return const SizedBox.shrink();
 
-    return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.md),
-      child: Text(
-        failure.localized(context.l10n),
-        style: const TextStyle(color: AppColors.negative),
-      ),
-    );
+    return FailureText(failure);
   }
 }
 

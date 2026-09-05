@@ -3,11 +3,10 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../app/dependency_injection/injector.dart';
-import '../../../../core/error/failure.dart';
-import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
+import '../../../../core/widgets/failure_text.dart';
 import '../../../../core/widgets/sheet.dart';
 import '../../domain/competition.model.dart';
 import '../cubit/create_competition_cubit.dart';
@@ -113,20 +112,8 @@ class _CreateCompetitionSheetState extends State<CreateCompetitionSheet> {
           context.l10n.competitionSeasonExplainer(1000),
           style: AppTypography.caption,
         ),
-        ?_failureText(context, state.failure),
+        if (state.failure case final failure?) FailureText(failure),
       ],
-    );
-  }
-
-  Widget? _failureText(BuildContext context, Failure? failure) {
-    if (failure == null) return null;
-
-    return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.md),
-      child: Text(
-        failure.localized(context.l10n),
-        style: const TextStyle(color: AppColors.negative),
-      ),
     );
   }
 

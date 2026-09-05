@@ -8,6 +8,7 @@ import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
+import '../../../../core/widgets/failure_text.dart';
 import '../../../../core/widgets/list_header.dart';
 import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/speech_bubble.dart';
@@ -140,7 +141,7 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
               const SizedBox(height: AppSpacing.sm),
             ],
 
-          if (state.actionFailure != null) _actionFailureText(context, state),
+          if (state.actionFailure case final failure?) FailureText(failure),
         ],
       ),
     );
@@ -245,16 +246,6 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
       kind: AdaptiveButtonKind.plain,
       onPressed: () =>
           context.read<AuthBloc>().add(const AuthSignOutRequested()),
-    );
-  }
-
-  Widget _actionFailureText(BuildContext context, CompetitionListReady state) {
-    return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.md),
-      child: Text(
-        state.actionFailure!.localized(context.l10n),
-        style: const TextStyle(color: AppColors.negative),
-      ),
     );
   }
 

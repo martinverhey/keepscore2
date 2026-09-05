@@ -8,6 +8,7 @@ import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/extensions/match_team.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
+import '../../../../core/widgets/failure_text.dart';
 import '../../../../core/widgets/sheet.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../../core/widgets/titled_card.dart';
@@ -98,7 +99,8 @@ class MatchDetailSheet extends StatelessWidget {
         _winChanceCard(context, state.match),
         const SizedBox(height: AppSpacing.md),
         _addedByText(context, state),
-        if (state.actionFailure != null) _actionFailureText(context, state),
+        if (state.actionFailure case final failure?)
+          FailureText(failure, textAlign: TextAlign.center),
       ],
     );
   }
@@ -176,17 +178,6 @@ class MatchDetailSheet extends StatelessWidget {
         const SizedBox(width: AppSpacing.md),
         Expanded(child: teamB),
       ],
-    );
-  }
-
-  Widget _actionFailureText(BuildContext context, MatchDetailReady state) {
-    return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.md),
-      child: Text(
-        state.actionFailure!.localized(context.l10n),
-        textAlign: TextAlign.center,
-        style: const TextStyle(color: AppColors.negative),
-      ),
     );
   }
 

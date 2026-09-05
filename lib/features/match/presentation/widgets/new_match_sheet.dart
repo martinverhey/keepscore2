@@ -10,6 +10,7 @@ import '../../../../core/extensions/match_team.extension.dart';
 import '../../../../core/extensions/text_editing_controller.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
+import '../../../../core/widgets/failure_text.dart';
 import '../../../../core/widgets/sheet.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
@@ -168,7 +169,8 @@ class _NewMatchSheetState extends State<NewMatchSheet> {
           _hintText(hint),
         ],
 
-        if (state.submitFailure != null) _submitFailureText(context, state),
+        if (state.submitFailure case final failure?)
+          FailureText(failure, textAlign: TextAlign.center),
       ],
     );
   }
@@ -286,17 +288,6 @@ class _NewMatchSheetState extends State<NewMatchSheet> {
       hint,
       textAlign: TextAlign.center,
       style: AppTypography.caption,
-    );
-  }
-
-  Widget _submitFailureText(BuildContext context, MatchFormReady state) {
-    return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.md),
-      child: Text(
-        state.submitFailure!.localized(context.l10n),
-        textAlign: TextAlign.center,
-        style: const TextStyle(color: AppColors.negative),
-      ),
     );
   }
 
