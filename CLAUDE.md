@@ -2416,6 +2416,19 @@ from the project-root `.env`.
   with an inner-joined `match_players` filtered to the player, ordered
   `played_at desc, id desc` (the same tuple `recalc_season_from` replays on),
   and reverses the page into oldest-first for the chart.
+  **`MatchRepository.recentForPlayer` had the identical bug and is now the
+  same shape** — it read `match_players` with
+  `.order('played_at', referencedTable: 'matches')` and `.limit(3)`, so the
+  profile sheet's Recent matches were three arbitrary matches sorted by date
+  rather than the player's three most recent (on the live data: 15 Aug and
+  15 Jan for a player whose last three were all on 2 Sep). It now reads
+  `matches` with an inner-joined `match_players`, takes the ids, and fetches
+  those from `match_feed` — the two-step stays because `match_feed`
+  aggregates participants into `jsonb`, so there is no player column to
+  filter the view by. `recentBetweenPlayers` was never affected: its ids come
+  from the `head_to_head_match_ids` RPC, which orders in SQL.
+  **Nothing in `flutter test` can see any of this** — every caller mocks the
+  repository, so both bugs shipped green.
 
 ### Two `.env` files — do not confuse them
 

@@ -64,15 +64,16 @@ class SupabaseMatchRepository implements MatchRepository {
     int limit = 3,
   }) => guard(() async {
     final links = await _client
-        .from('match_players')
-        .select('match_id, matches!inner(played_at)')
-        .eq('player_id', playerId)
-        .order('played_at', referencedTable: 'matches', ascending: false)
+        .from('matches')
+        .select('id, match_players!inner(player_id)')
+        .eq('match_players.player_id', playerId)
+        .order('played_at', ascending: false)
+        .order('id', ascending: false)
         .limit(limit);
 
     if (links.isEmpty) return const <MatchEntry>[];
 
-    final ids = links.map((row) => row['match_id'] as String).toList();
+    final ids = links.map((row) => row['id'] as String).toList();
     final rows = await _client
         .from('match_feed')
         .select()
