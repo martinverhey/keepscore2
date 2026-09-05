@@ -4,6 +4,8 @@ import 'package:flutter/widgets.dart';
 
 import '../../../../core/extensions/date_time.extension.dart';
 import '../../../../core/extensions/double.extension.dart';
+import '../../../../core/extensions/offset_list.extension.dart';
+import '../../../../core/extensions/rating_point_list.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/rating_delta.dart';
@@ -73,7 +75,7 @@ class _RatingTrendChartState extends State<RatingTrendChart> {
         size: Size.infinite,
         painter: _RatingTrendPainter(
           points: widget.points,
-          trendColor: _trendColor(context),
+          trendColor: widget.points.trendColor(context),
           gridColor: AppColors.neutralSurface,
           guideColor: AppColors.neutral.withValues(
             alpha: AppOpacity.controlBorder,
@@ -107,9 +109,9 @@ class _RatingTrendChartState extends State<RatingTrendChart> {
         color: AdaptiveColors.modalSurface(context),
         borderRadius: AppRadius.card,
         border: Border.all(
-          color: _trendColor(
-            context,
-          ).withValues(alpha: AppOpacity.accentBorder),
+          color: widget.points
+              .trendColor(context)
+              .withValues(alpha: AppOpacity.accentBorder),
         ),
       ),
       child: Padding(
@@ -148,14 +150,6 @@ class _RatingTrendChartState extends State<RatingTrendChart> {
         ),
       ],
     );
-  }
-
-  Color _trendColor(BuildContext context) {
-    final change =
-        widget.points.last.ratingAfter - widget.points.first.ratingAfter;
-    if (change > 0) return AppColors.positive;
-    if (change < 0) return AppColors.negative;
-    return AdaptiveColors.accent(context);
   }
 
   void _toggleAt(_TrendGeometry geometry, double dx) {
@@ -227,7 +221,7 @@ class _RatingTrendPainter extends CustomPainter {
     _paintGrid(canvas, geometry);
     _paintDates(canvas, geometry);
 
-    final line = _smoothPath(geometry.offsets);
+    final line = geometry.offsets.smoothPath();
     final reveal = _sideInset + geometry.plotWidth * progress;
 
     canvas.save();
@@ -467,55 +461,3 @@ const double _markerHaloRadius = 8;
 const double _bubbleGap = 12;
 const double _dashLength = 3;
 const double _dashPitch = 6;
-const double _tangentLimit = 3;
-
-Path _smoothPath(List<Offset> offsets) {
-  final path = Path()..moveTo(offsets.first.dx, offsets.first.dy);
-  final tangents = _monotoneTangents(offsets);
-
-  for (var i = 0; i < offsets.length - 1; i++) {
-    final from = offsets[i];
-    final to = offsets[i + 1];
-    final reach = (to.dx - from.dx) / 3;
-    path.cubicTo(
-      from.dx + reach,
-      from.dy + tangents[i] * reach,
-      to.dx - reach,
-      to.dy - tangents[i + 1] * reach,
-      to.dx,
-      to.dy,
-    );
-  }
-
-  return path;
-}
-
-List<double> _monotoneTangents(List<Offset> offsets) {
-  final slopes = [
-    for (var i = 0; i < offsets.length - 1; i++)
-      (offsets[i + 1].dy - offsets[i].dy) / (offsets[i + 1].dx - offsets[i].dx),
-  ];
-  final tangents = [
-    slopes.first,
-    for (var i = 1; i < slopes.length; i++)
-      slopes[i - 1] * slopes[i] <= 0 ? 0.0 : (slopes[i - 1] + slopes[i]) / 2,
-    slopes.last,
-  ];
-
-  for (var i = 0; i < slopes.length; i++) {
-    if (slopes[i] == 0) {
-      tangents[i] = 0;
-      tangents[i + 1] = 0;
-      continue;
-    }
-    final before = tangents[i] / slopes[i];
-    final after = tangents[i + 1] / slopes[i];
-    final overshoot = sqrt(before * before + after * after);
-    if (overshoot > _tangentLimit) {
-      tangents[i] = _tangentLimit / overshoot * before * slopes[i];
-      tangents[i + 1] = _tangentLimit / overshoot * after * slopes[i];
-    }
-  }
-
-  return tangents;
-}
