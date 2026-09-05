@@ -13,6 +13,7 @@ import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/failure_text.dart';
 import '../../../../core/widgets/sheet.dart';
 import '../../../../core/widgets/state_views.dart';
+import '../../../../core/widgets/swipe_navigator.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
 import '../../../player/domain/player.model.dart';
@@ -146,6 +147,24 @@ class _NewMatchSheetState extends State<NewMatchSheet> {
   }
 
   Widget _form(BuildContext context, MatchFormReady state, String? myPlayerId) {
+    return SwipeNavigator(
+      onNext: _modeAt(context, state.mode.index + 1),
+      onPrevious: _modeAt(context, state.mode.index - 1),
+      child: _fields(context, state, myPlayerId),
+    );
+  }
+
+  VoidCallback? _modeAt(BuildContext context, int index) {
+    if (index < 0 || index >= MatchEntryMode.values.length) return null;
+    final mode = MatchEntryMode.values[index];
+    return () => context.read<MatchFormCubit>().setMode(mode);
+  }
+
+  Widget _fields(
+    BuildContext context,
+    MatchFormReady state,
+    String? myPlayerId,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [

@@ -11,6 +11,7 @@ import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.da
 import 'package:keepscore2/features/leaderboard/domain/season_window.model.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 import 'package:keepscore2/core/widgets/selectable_row.dart';
+import 'package:keepscore2/core/widgets/swipe_navigator.dart';
 import 'package:keepscore2/features/match/domain/match_entry.model.dart';
 import 'package:keepscore2/features/match/domain/match_repository.dart';
 import 'package:keepscore2/features/match/presentation/cubit/match_form_cubit.dart';
@@ -246,7 +247,10 @@ void main() {
       addTearDown(getIt.reset);
 
       await tester.pumpWidget(
-        _app(blocs: blocs, home: const Material(child: NewMatchSheet())),
+        _app(
+          blocs: blocs,
+          home: const Material(child: NewMatchSheet()),
+        ),
       );
       await tester.pumpAndSettle();
 
@@ -296,7 +300,10 @@ void main() {
       final blocs = _blocs();
 
       await tester.pumpWidget(
-        _app(blocs: blocs, home: const Material(child: NewMatchSheet())),
+        _app(
+          blocs: blocs,
+          home: const Material(child: NewMatchSheet()),
+        ),
       );
       await tester.pumpAndSettle();
       await _pickTeamsMode(tester);
@@ -331,10 +338,7 @@ void main() {
         find.byKey(const ValueKey(NewMatchKey.teamPickerSheet)),
         findsNothing,
       );
-      expect(_ready(blocs.form).teamA.map((player) => player.id), [
-        'p1',
-        'p2',
-      ]);
+      expect(_ready(blocs.form).teamA.map((player) => player.id), ['p1', 'p2']);
       expect(_ready(blocs.form).teamB.map((player) => player.id), ['p3']);
       expect(_scoreAHasFocus(tester), isTrue);
     },
@@ -346,7 +350,10 @@ void main() {
     final blocs = _blocs();
 
     await tester.pumpWidget(
-      _app(blocs: blocs, home: const Material(child: NewMatchSheet())),
+      _app(
+        blocs: blocs,
+        home: const Material(child: NewMatchSheet()),
+      ),
     );
     await tester.pumpAndSettle();
     await _pickTeamsMode(tester);
@@ -375,11 +382,7 @@ void main() {
           matching: find.byType(SelectableRow),
         ),
       ),
-      isA<SelectableRow>().having(
-        (row) => row.selected,
-        'selected',
-        isTrue,
-      ),
+      isA<SelectableRow>().having((row) => row.selected, 'selected', isTrue),
     );
   });
 
@@ -389,7 +392,10 @@ void main() {
     final blocs = _blocs();
 
     await tester.pumpWidget(
-      _app(blocs: blocs, home: const Material(child: NewMatchSheet())),
+      _app(
+        blocs: blocs,
+        home: const Material(child: NewMatchSheet()),
+      ),
     );
     await tester.pumpAndSettle();
 
@@ -435,6 +441,43 @@ void main() {
     expect(_ready(blocs.form).teamA.map((player) => player.id), ['p2']);
     expect(_ready(blocs.form).teamB.map((player) => player.id), ['p1']);
     expect(_scoreAHasFocus(tester), isTrue);
+  });
+
+  testWidgets('swiping the form moves between 1v1 and Teams', (tester) async {
+    final blocs = _blocs();
+
+    await tester.pumpWidget(
+      _app(
+        blocs: blocs,
+        home: const Material(child: NewMatchSheet()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(_ready(blocs.form).mode, MatchEntryMode.oneVsOne);
+
+    await tester.fling(find.byType(SwipeNavigator), const Offset(-200, 0), 800);
+    await tester.pumpAndSettle();
+
+    expect(_ready(blocs.form).mode, MatchEntryMode.teams);
+    expect(find.text('Team 1'), findsWidgets);
+
+    await tester.fling(find.byType(SwipeNavigator), const Offset(-200, 0), 800);
+    await tester.pumpAndSettle();
+
+    expect(_ready(blocs.form).mode, MatchEntryMode.teams);
+
+    await tester.fling(find.byType(SwipeNavigator), const Offset(200, 0), 800);
+    await tester.pumpAndSettle();
+
+    expect(_ready(blocs.form).mode, MatchEntryMode.oneVsOne);
+    expect(find.text('Player 1'), findsWidgets);
+
+    await tester.fling(find.byType(SwipeNavigator), const Offset(200, 0), 800);
+    await tester.pumpAndSettle();
+
+    expect(_ready(blocs.form).mode, MatchEntryMode.oneVsOne);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('dismissing an untouched sheet closes it without a prompt', (
