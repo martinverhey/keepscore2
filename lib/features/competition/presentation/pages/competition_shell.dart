@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/router/app_router.dart';
 import '../../../../core/data/recent_competition_store.dart';
 import '../../../../core/extensions/build_context.extension.dart';
+import '../../../../core/extensions/competition_tab.extension.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
+import '../../../../core/widgets/swipe_navigator.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../match/presentation/pages/new_match_sheet.dart';
 import '../../../player/presentation/cubit/players_cubit.dart';
@@ -58,7 +60,7 @@ class _CompetitionShellState extends State<CompetitionShell> {
       child: AdaptiveBottomBarHost(
         bar: _bar(context),
         action: _newMatch(context),
-        child: widget.navigationShell,
+        child: _swipeableShell(context),
       ),
     );
   }
@@ -80,6 +82,20 @@ class _CompetitionShellState extends State<CompetitionShell> {
       onPressed: () =>
           showNewMatchSheet(context, competitionId: widget.competitionId),
     );
+  }
+
+  Widget _swipeableShell(BuildContext context) {
+    return SwipeNavigator(
+      onNext: _goToTab(context, _current.index + 1),
+      onPrevious: _goToTab(context, _current.index - 1),
+      child: widget.navigationShell,
+    );
+  }
+
+  VoidCallback? _goToTab(BuildContext context, int index) {
+    if (index < 0 || index >= CompetitionTab.values.length) return null;
+    final tab = CompetitionTab.values[index];
+    return () => context.go(tab.route(widget.competitionId));
   }
 
   CompetitionTab get _current =>

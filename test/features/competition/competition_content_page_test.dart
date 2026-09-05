@@ -309,6 +309,50 @@ void main() {
     },
   );
 
+  testWidgets('swiping across the page moves between the tabs', (tester) async {
+    AppPlatform.debugOverrideCupertino = false;
+    await _pumpHarness(tester);
+
+    await tester.fling(
+      find.byType(LeaderboardPage),
+      const Offset(-200, 0),
+      800,
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(MatchesPage), findsOneWidget);
+    expect(_currentTab(tester), CompetitionTab.matches);
+
+    await tester.fling(find.byType(MatchesPage), const Offset(-200, 0), 800);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(CompetitionsPage), findsOneWidget);
+    expect(_currentTab(tester), CompetitionTab.competitions);
+
+    await tester.fling(
+      find.byType(CompetitionsPage),
+      const Offset(200, 0),
+      800,
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(MatchesPage), findsOneWidget);
+    expect(_currentTab(tester), CompetitionTab.matches);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('swiping back from the first tab stays on it', (tester) async {
+    AppPlatform.debugOverrideCupertino = false;
+    await _pumpHarness(tester);
+
+    await tester.fling(find.byType(LeaderboardPage), const Offset(200, 0), 800);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(LeaderboardPage), findsOneWidget);
+    expect(_currentTab(tester), CompetitionTab.leaderboard);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('signing out while the leaderboard is open does not throw', (
     tester,
   ) async {
@@ -325,6 +369,12 @@ void main() {
 
     expect(tester.takeException(), isNull);
   });
+}
+
+CompetitionTab _currentTab(WidgetTester tester) {
+  return tester
+      .widget<CompetitionTabBar>(find.byType(CompetitionTabBar))
+      .current;
 }
 
 String _floatingActionLabel(WidgetTester tester) {

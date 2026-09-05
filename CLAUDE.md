@@ -2183,6 +2183,21 @@ only the Leaderboard shows (in its non-wide-web app bar trailing slot) —
 Matches carries the game type filter alone, so the settings action is offered
 once per competition rather than on every tab.
 
+**A horizontal swipe across the page moves between the three tabs, and the
+tab bar is still the thing that says where you are.** `CompetitionShell`
+wraps `navigationShell` in `SwipeNavigator`
+(`core/widgets/swipe_navigator.dart`) and hands it the neighbouring
+`CompetitionTab`'s route; at either end that callback is `null`, so the swipe
+does nothing rather than wrapping around. The mapping the swipe and the tab
+bar share is `CompetitionTab.route(competitionId)`
+(`core/extensions/competition_tab.extension.dart`) — the tab bar's `_select`
+held the only copy of that `switch` until there were two callers. **Nothing
+animates**: the branches are an `indexedStack`, so a swipe lands exactly like
+a tab tap, instantly. A deeper horizontal recognizer wins the arena over it
+(`RatingTrendChart`'s scrub is the only one in the app), which is the
+precedence you want. `competition_content_page_test.dart` walks both
+directions plus the no-op at the first tab.
+
 **The third branch is Competitions, and it renders the same `CompetitionsPage`
 that `/` does — deliberately, so the tab bar survives the tap.** It used to be
 a `NavRow` in `SettingsPage`'s User section pushing `Routes.home`; that row is

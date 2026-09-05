@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../app/router/app_router.dart';
 import '../../../../core/extensions/build_context.extension.dart';
+import '../../../../core/extensions/competition_tab.extension.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import 'competition_tab.enum.dart';
 
@@ -43,10 +43,6 @@ class CompetitionTabBar extends StatelessWidget {
 
   void _select(BuildContext context, CompetitionTab tab) {
     if (tab == current) return;
-    context.go(switch (tab) {
-      CompetitionTab.leaderboard => Routes.leaderboard(competitionId),
-      CompetitionTab.matches => Routes.matches(competitionId),
-      CompetitionTab.competitions => Routes.competitions(competitionId),
-    });
+    context.go(tab.route(competitionId));
   }
 }
