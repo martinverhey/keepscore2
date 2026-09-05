@@ -49,6 +49,7 @@ void main() {
   late MockProfileRepository profileRepository;
   late StreamController<void> ticks;
   late StreamController<void> playerTicks;
+  late Completer<List<Leaderboard>> pendingLeaderboards;
 
   LeaderboardCubit build() =>
       LeaderboardCubit(repository, profileRepository, 'c1');
@@ -291,6 +292,30 @@ void main() {
     verify: (cubit) {
       expect(_ready(cubit).viewerTrend, hasLength(2));
       expect(_ready(cubit).leaderboards, hasLength(1));
+    },
+  );
+
+  blocTest<LeaderboardCubit, LeaderboardState>(
+    'fetches the trend when the viewer arrives while the load is in flight',
+    setUp: () {
+      stubSeason();
+      pendingLeaderboards = Completer<List<Leaderboard>>();
+      when(
+        () =>
+            repository.leaderboards(competitionId: 'c1', seasonId: 's-august'),
+      ).thenAnswer((_) => pendingLeaderboards.future);
+      stubTrend([_point(1010), _point(1040)]);
+    },
+    build: build,
+    act: (cubit) async {
+      final loading = cubit.load();
+      await Future<void>.delayed(Duration.zero);
+      await cubit.setViewer('p1');
+      pendingLeaderboards.complete([_leaderboard('p1', 1040, 1)]);
+      await loading;
+    },
+    verify: (cubit) {
+      expect(_ready(cubit).viewerTrend, hasLength(2));
     },
   );
 

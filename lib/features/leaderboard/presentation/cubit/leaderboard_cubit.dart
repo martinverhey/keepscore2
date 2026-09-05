@@ -50,6 +50,7 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
         seasonId: season.id,
       );
 
+      final requestedViewer = _viewerPlayerId;
       final trendFuture = _viewerTrend(season.id);
 
       final leaderboards = await leaderboardsFuture;
@@ -69,6 +70,7 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
       );
       _watch(season.id);
       _watchPlayers();
+      if (_viewerPlayerId != requestedViewer) await _refreshViewerTrend();
     } on Failure catch (failure) {
       if (isClosed) return;
       if (silent && ready != null) return;
@@ -81,7 +83,11 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
   Future<void> setViewer(String? playerId) async {
     if (playerId == _viewerPlayerId) return;
     _viewerPlayerId = playerId;
+    if (_ready == null) return;
+    await _refreshViewerTrend();
+  }
 
+  Future<void> _refreshViewerTrend() async {
     final season = _ready?.season;
     if (season == null) return;
 
