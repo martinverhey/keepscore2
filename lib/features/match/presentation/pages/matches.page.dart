@@ -20,10 +20,10 @@ import '../../domain/game_type.enum.dart';
 import '../../domain/match_entry.model.dart';
 import '../cubit/game_type_filter_cubit.dart';
 import '../cubit/match_list_cubit.dart';
-import 'day_header.dart';
-import 'game_type_filter_button.dart';
-import 'match_card.dart';
-import 'match_day_group.dart';
+import '../widgets/day_header.dart';
+import '../widgets/game_type_filter_button.dart';
+import '../widgets/match_card.dart';
+import '../widgets/match_day_group.dart';
 import '../pages/match_detail_sheet.dart';
 
 const double _newMatchTailInset = 32;

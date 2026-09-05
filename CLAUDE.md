@@ -66,10 +66,10 @@ Competitions are each a real route, not a tab switch inside one page: a
 `StatefulShellRoute.indexedStack` with
 one branch per route (`features/competition/.../competition_shell.dart`'s `CompetitionShell`
 wraps the `navigationShell`; see "Leaderboard and Matches are routes, not tabs" below for why
-and how). `LeaderboardPage` (`features/leaderboard/presentation/widgets/leaderboard.page.dart`,
+and how). `LeaderboardPage` (`features/leaderboard/presentation/pages/leaderboard.page.dart`,
 join code + invite + `ProfileSection` + the actual ranked list, which is `LeaderboardList` in
-the same directory's `leaderboard_list.dart`) and `MatchesPage`
-(`features/match/presentation/widgets/matches.page.dart`) are each a full routed page — own
+the feature's `presentation/widgets/leaderboard_list.dart`) and `MatchesPage`
+(`features/match/presentation/pages/matches.page.dart`) are each a full routed page — own
 `AdaptiveScaffold`, own `LeaderboardCubit`/`MatchListCubit` loaded in their own `initState`.
 Players has its own settings route, not a branch — see "Leaderboard and Matches are
 routes, not tabs" for why. The leaderboard tab always shows the
@@ -685,7 +685,9 @@ code; don't relitigate them.
     so `join_confirm_sheet.dart`, `new_match_sheet.dart`, `profile_sheet.dart`
     and the rest sit beside the routed `*.page.dart` files, while
     `presentation/widgets/` keeps the pieces those screens are built from
-    (cards, rows, bar buttons, result types, enums). They keep the
+    (cards, rows, bar buttons, result types, enums) — every feature's
+    `pages/` now holds all of its screens, sheets included, and no
+    `*.page.dart` is left in a `widgets/` folder. They keep the
     `_sheet.dart` suffix rather than taking `.page.dart` — that one is for a
     routed destination, and a sheet is not routed. The generic sheet
     machinery stays in core: `core/widgets/sheet.dart`'s `Sheet`,

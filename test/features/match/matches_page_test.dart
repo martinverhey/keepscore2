@@ -21,7 +21,7 @@ import 'package:keepscore2/features/match/presentation/widgets/day_header.dart';
 import 'package:keepscore2/features/match/presentation/pages/game_type_filter_sheet.dart';
 import 'package:keepscore2/features/match/presentation/widgets/game_type_filter_button.dart';
 import 'package:keepscore2/features/match/presentation/widgets/match_card.dart';
-import 'package:keepscore2/features/match/presentation/widgets/matches.page.dart';
+import 'package:keepscore2/features/match/presentation/pages/matches.page.dart';
 import 'package:keepscore2/features/player/domain/player_repository.dart';
 import 'package:keepscore2/features/player/presentation/cubit/players_cubit.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';

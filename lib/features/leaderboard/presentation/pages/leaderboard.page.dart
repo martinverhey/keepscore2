@@ -19,7 +19,7 @@ import '../../../player/presentation/cubit/players_cubit.dart';
 import '../../../profile/presentation/widgets/profile_section.dart';
 import '../../domain/leaderboard.model.dart';
 import '../cubit/leaderboard_cubit.dart';
-import 'leaderboard_list.dart';
+import '../widgets/leaderboard_list.dart';
 
 class LeaderboardPage extends StatefulWidget {
   const LeaderboardPage({super.key, required this.competitionId});
