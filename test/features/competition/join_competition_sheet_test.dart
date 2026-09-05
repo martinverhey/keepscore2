@@ -84,6 +84,7 @@ void main() {
 
     expect(find.text(l10n.joinTitle), findsOneWidget);
     expect(find.byType(JoinCompetitionSheet), findsOneWidget);
+    expect(find.widgetWithText(TextField, _joinCode), findsOneWidget);
   });
 
   testWidgets('claiming a player joins and hands the competition id back', (

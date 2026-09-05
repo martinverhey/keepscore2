@@ -118,11 +118,26 @@ must tell "the user backed out" from "the user wants to type it". A
 non-null code is handed to `showJoinCompetitionSheet(code:)`, which calls
 `JoinCompetitionCubit.lookUpCode` in the provider's `create`.
 
+**One sheet route, one file per step.** `showJoinCompetitionSheet` opens a
+single `showAdaptiveSheet`; `JoinCompetitionSheet`
+(`join_competition_sheet.dart`) is the stateless `BlocConsumer` inside it that
+maps `JoinCompetitionState` onto `JoinCodeSheet` (`join_code_sheet.dart`),
+`JoinLookUpSheet` (`join_look_up_sheet.dart`) or `JoinConfirmSheet`
+(`join_confirm_sheet.dart`), and each of those pops the route itself with a
+`JoinResult`. The steps are *widgets in one route*, not routes of their own —
+`JoinCompetitionCubit.back()` moves confirm → code without any navigation, so
+splitting them into pushed sheets would put a second, parallel back path next
+to it. Only `JoinCodeSheet` is stateful, since the
+`TextEditingController` is the code step's alone; it seeds from
+`JoinCode.code` in a `late final`, which is load-bearing now that
+`back()` from the confirm step builds a *fresh* `JoinCodeSheet` rather than
+returning to a `State` that still held the text.
+
 **A scanned code never shows the code field, and `Back` goes back to the
 camera.** With `code != null` the sheet is confirm-shaped throughout
-(`_scanned`): the `JoinCode` phase renders `_lookUpSheet` — a spinner, or the
-lookup's failure — rather than `_codeSheet`, and `Back` pops the sheet with
-`JoinResult.back()` instead of calling `JoinCompetitionCubit.back()`.
+(`isScanned`): the `JoinCode` phase renders `JoinLookUpSheet` — a spinner, or
+the lookup's failure — rather than `JoinCodeSheet`, and `Back` pops the sheet
+with `JoinResult.back()` instead of calling `JoinCompetitionCubit.back()`.
 `CompetitionsPage._scanAndJoin` loops on that: scanner → sheet → `back()` →
 a *fresh* scanner sheet. It has to be fresh rather than a sheet stacked on
 the live one, because `DetectionSpeed.noDuplicates` would refuse to re-read
@@ -130,7 +145,7 @@ the QR still in frame; a new `QrScannerView` is a new controller with no
 memory of it. Hence `showJoinCompetitionSheet` returns a `JoinResult` rather
 than a `String?` — the same reasoning as `JoinScanResult` above, since
 `null` (Cancel, or a drag/barrier dismissal) has to end the flow where
-`back()` restarts it. In manual-entry mode `_scanned` is false, nothing ever
+`back()` restarts it. In manual-entry mode `isScanned` is false, nothing ever
 returns `back()`, and the code step's Cancel closes as it always did.
 `String.isJoinCode` (`core/extensions/string.extension.dart`) is the one
 definition of "six characters once normalized", shared by `JoinCode.codeIsValid`
@@ -653,6 +668,15 @@ code; don't relitigate them.
     and isn't tied to one screen's layout gets promoted to its own public file
     under `core/widgets/` (or `core/widgets/adaptive/` for a Cupertino/Material
     split) and imported back. Keep it private otherwise.
+  - **`core/widgets/failure_text.dart`'s `FailureText` is the error line under
+    a form or a sheet's content** — the `AppSpacing.md`-topped
+    `failure.localized(l10n)` in `AppColors.negative` that a dozen files used
+    to hand-roll as their own `_failureText`/`_actionFailureText` helper. The
+    join sheets go through it; the older screens (`players.dart`,
+    `configuration.page.dart`, `match_detail_sheet.dart`,
+    `new_match_sheet.dart`, `matches.page.dart`, `create_competition_sheet.dart`,
+    `competitions.page.dart`, `auth_form_parts.dart`) still carry their own
+    copy and should adopt it the next time they are touched.
   - **New modal sheets build on `core/widgets/sheet.dart`'s `Sheet`**, not ad
     hoc `Column`s: title/subtitle/avatar pinned at top, `content` scrolls in
     between (capped at 85% of screen height), primary/secondary buttons
