@@ -12,6 +12,7 @@ class Sheet extends StatelessWidget {
     this.titleColor,
     this.subtitle,
     required this.content,
+    this.fillsHeight = false,
     this.primaryButton,
     this.secondaryButton,
   });
@@ -21,6 +22,7 @@ class Sheet extends StatelessWidget {
   final Color? titleColor;
   final String? subtitle;
   final Widget content;
+  final bool fillsHeight;
   final Widget? primaryButton;
   final Widget? secondaryButton;
 
@@ -28,25 +30,25 @@ class Sheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final maxHeight = MediaQuery.sizeOf(context).height * _maxHeightFraction;
+
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.sizeOf(context).height * 0.85,
+          minHeight: fillsHeight ? maxHeight : 0,
+          maxHeight: maxHeight,
         ),
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisSize: fillsHeight ? MainAxisSize.max : MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               if (_hasHeader) _header(),
               Flexible(
-                child: SingleChildScrollView(
-                  physics: ScrollDismissScope.physicsOf(context),
-                  padding: EdgeInsets.only(top: _hasHeader ? AppSpacing.lg : 0),
-                  child: content,
-                ),
+                fit: fillsHeight ? FlexFit.tight : FlexFit.loose,
+                child: _scrollView(context),
               ),
               if (primaryButton != null) ...[
                 const SizedBox(height: AppSpacing.lg),
@@ -62,6 +64,37 @@ class Sheet extends StatelessWidget {
       ),
     );
   }
+
+  Widget _scrollView(BuildContext context) {
+    if (!fillsHeight) return _scrollable(context, content);
+
+    return LayoutBuilder(
+      builder: (context, constraints) =>
+          _scrollable(context, _filledContent(constraints.maxHeight)),
+    );
+  }
+
+  Widget _scrollable(BuildContext context, Widget child) {
+    return SingleChildScrollView(
+      physics: ScrollDismissScope.physicsOf(context),
+      padding: EdgeInsets.only(top: _contentTopInset),
+      child: child,
+    );
+  }
+
+  Widget _filledContent(double availableHeight) {
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        minHeight: (availableHeight - _contentTopInset).clamp(
+          0,
+          double.infinity,
+        ),
+      ),
+      child: content,
+    );
+  }
+
+  double get _contentTopInset => _hasHeader ? AppSpacing.lg : 0;
 
   Widget _header() {
     if (header case final header?) return header;
@@ -88,3 +121,5 @@ class Sheet extends StatelessWidget {
     );
   }
 }
+
+const _maxHeightFraction = 0.85;

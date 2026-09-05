@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/app/dependency_injection/injector.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive_segmented.dart';
 import 'package:keepscore2/core/widgets/medal_chip.dart';
+import 'package:keepscore2/core/widgets/sheet.dart';
+import 'package:keepscore2/core/widgets/swipe_navigator.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
@@ -127,12 +129,15 @@ void main() {
       MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: BlocProvider.value(
-          value: cubit,
-          child: ProfileSheet(
-            displayName: displayName,
-            seasonLength: SeasonLength.monthly,
-            myPlayerId: myPlayerId,
+        home: Align(
+          alignment: Alignment.bottomCenter,
+          child: BlocProvider.value(
+            value: cubit,
+            child: ProfileSheet(
+              displayName: displayName,
+              seasonLength: SeasonLength.monthly,
+              myPlayerId: myPlayerId,
+            ),
           ),
         ),
       ),
@@ -545,6 +550,120 @@ void main() {
     await cubit.close();
   });
 
+  testWidgets('an overview with nothing to show centres its empty state', (
+    tester,
+  ) async {
+    when(() => leaderboardRepository.currentSeason('c1')).thenAnswer(
+      (_) async =>
+          SeasonWindow(id: 's1', startsAt: _august, endsAt: _september),
+    );
+    when(
+      () => leaderboardRepository.leaderboards(
+        competitionId: 'c1',
+        seasonId: 's1',
+      ),
+    ).thenAnswer((_) async => const []);
+    when(
+      () => leaderboardRepository.medals('c1'),
+    ).thenAnswer((_) async => const []);
+    when(
+      () => profileRepository.ratingHistory(seasonId: 's1', playerId: 'p1'),
+    ).thenAnswer((_) async => const []);
+    when(
+      () => profileRepository.profileStats(
+        playerId: 'p1',
+        seasonId: any(named: 'seasonId'),
+      ),
+    ).thenAnswer(
+      (_) async => const ProfileStats(
+        totalPlayed: 0,
+        bestStreaks: BestStreaks.zero(),
+        bestRating: 0,
+        streak: Streak.none(),
+        recentPlayed: RecentPlayed.zero(),
+      ),
+    );
+    when(
+      () => matchRepository.recentForPlayer(playerId: 'p1'),
+    ).thenAnswer((_) async => const []);
+
+    final cubit = buildOverviewCubit()..load();
+    await cubit.stream.firstWhere((s) => s is ProfileOverviewReady);
+    await pumpSheet(tester, cubit);
+
+    final l10n = AppLocalizations.of(tester.element(find.byType(ProfileSheet)));
+    final body = tester.getRect(find.byType(SwipeNavigator));
+    final message = tester.getRect(find.text(l10n.profileNotEnoughMatches));
+
+    expect(message.center.dy, moreOrLessEquals(body.center.dy, epsilon: 0.5));
+    expect(message.center.dx, moreOrLessEquals(body.center.dx, epsilon: 0.5));
+    expect(tester.takeException(), isNull);
+
+    await cubit.close();
+  });
+
+  testWidgets('the sheet keeps its full height on a near-empty tab', (
+    tester,
+  ) async {
+    when(() => leaderboardRepository.currentSeason('c1')).thenAnswer(
+      (_) async =>
+          SeasonWindow(id: 's1', startsAt: _august, endsAt: _september),
+    );
+    when(
+      () => leaderboardRepository.leaderboards(
+        competitionId: 'c1',
+        seasonId: 's1',
+      ),
+    ).thenAnswer(
+      (_) async => [
+        _leaderboard(rating: 1050, played: 5, wins: 3, losses: 1, draws: 1),
+      ],
+    );
+    when(
+      () => profileRepository.ratingHistory(seasonId: 's1', playerId: 'p1'),
+    ).thenAnswer((_) async => const []);
+    when(
+      () => profileRepository.profileStats(
+        playerId: 'p1',
+        seasonId: any(named: 'seasonId'),
+      ),
+    ).thenAnswer(
+      (_) async => const ProfileStats(
+        totalPlayed: 20,
+        bestStreaks: BestStreaks.zero(),
+        bestRating: 1050,
+        streak: Streak.none(),
+        recentPlayed: RecentPlayed.zero(),
+      ),
+    );
+    when(
+      () => matchRepository.recentForPlayer(playerId: 'p1'),
+    ).thenAnswer((_) async => [_matchAgainstTheo()]);
+    when(
+      () => leaderboardRepository.medals('c1'),
+    ).thenAnswer((_) async => const []);
+    when(
+      () => leaderboardRepository.history(competitionId: 'c1', playerId: 'p1'),
+    ).thenAnswer((_) async => const []);
+
+    final cubit = buildOverviewCubit()..load();
+    await cubit.stream.firstWhere((s) => s is ProfileOverviewReady);
+    await pumpSheet(tester, cubit);
+
+    final l10n = AppLocalizations.of(tester.element(find.byType(ProfileSheet)));
+    final fullHeight = tester.getSize(find.byType(Sheet)).height;
+    expect(fullHeight, moreOrLessEquals(600 * 0.85, epsilon: 0.5));
+
+    await tester.tap(find.text(l10n.profileTabHistory));
+    await tester.pumpAndSettle();
+
+    expect(find.text(l10n.profileHistoryEmpty), findsOneWidget);
+    expect(tester.getSize(find.byType(Sheet)).height, fullHeight);
+    expect(tester.takeException(), isNull);
+
+    await cubit.close();
+  });
+
   testWidgets('the tabs stay put while the tab body scrolls under them', (
     tester,
   ) async {
@@ -609,4 +728,108 @@ void main() {
 
     await cubit.close();
   });
+
+  testWidgets('swiping the tab body moves between the tabs', (tester) async {
+    when(() => leaderboardRepository.currentSeason('c1')).thenAnswer(
+      (_) async =>
+          SeasonWindow(id: 's1', startsAt: _august, endsAt: _september),
+    );
+    when(
+      () => leaderboardRepository.leaderboards(
+        competitionId: 'c1',
+        seasonId: 's1',
+      ),
+    ).thenAnswer((_) async => const []);
+    when(
+      () => leaderboardRepository.medals('c1'),
+    ).thenAnswer((_) async => const []);
+    when(
+      () => leaderboardRepository.history(competitionId: 'c1', playerId: 'p1'),
+    ).thenAnswer((_) async => const []);
+    when(
+      () => profileRepository.ratingHistory(seasonId: 's1', playerId: 'p1'),
+    ).thenAnswer((_) async => const []);
+    when(
+      () => profileRepository.profileStats(
+        playerId: 'p1',
+        seasonId: any(named: 'seasonId'),
+      ),
+    ).thenAnswer(
+      (_) async => const ProfileStats(
+        totalPlayed: 0,
+        bestStreaks: BestStreaks.zero(),
+        bestRating: 0,
+        streak: Streak.none(),
+        recentPlayed: RecentPlayed.zero(),
+      ),
+    );
+    when(
+      () => matchRepository.recentForPlayer(playerId: 'p1'),
+    ).thenAnswer((_) async => const []);
+    when(
+      () => profileRepository.headToHead(playerId: 'viewer', opponentId: 'p1'),
+    ).thenAnswer(
+      (_) async => const HeadToHeadRecord(wins: 4, losses: 1, draws: 1),
+    );
+    when(
+      () => matchRepository.recentBetweenPlayers(
+        playerId: 'viewer',
+        opponentId: 'p1',
+      ),
+    ).thenAnswer((_) async => const []);
+
+    final cubit = buildOverviewCubit()..load(viewerPlayerId: 'viewer');
+    await cubit.stream.firstWhere((s) => s is ProfileOverviewReady);
+    await pumpSheet(tester, cubit, myPlayerId: 'viewer');
+
+    final l10n = AppLocalizations.of(tester.element(find.byType(ProfileSheet)));
+
+    await tester.fling(find.byType(SwipeNavigator), const Offset(-200, 0), 800);
+    await tester.pumpAndSettle();
+
+    expect(_selectedTab(tester), ProfileTab.versus);
+    expect(find.text(l10n.profileWinRateLabel), findsOneWidget);
+
+    await tester.fling(find.byType(SwipeNavigator), const Offset(-200, 0), 800);
+    await tester.pumpAndSettle();
+
+    expect(_selectedTab(tester), ProfileTab.history);
+    expect(find.text(l10n.profileHistoryEmpty), findsOneWidget);
+
+    final body = tester.getRect(find.byType(SwipeNavigator));
+    final viewport = tester.getRect(find.byType(SingleChildScrollView));
+    final emptyLine = tester.getRect(find.text(l10n.profileHistoryEmpty));
+    expect(body.bottom, viewport.bottom);
+    expect(emptyLine.bottom, lessThan(body.bottom - 50));
+
+    await tester.flingFrom(
+      Offset(body.center.dx, body.bottom - 20),
+      const Offset(200, 0),
+      800,
+    );
+    await tester.pumpAndSettle();
+
+    expect(_selectedTab(tester), ProfileTab.versus);
+
+    await tester.fling(find.byType(SwipeNavigator), const Offset(200, 0), 800);
+    await tester.pumpAndSettle();
+
+    expect(_selectedTab(tester), ProfileTab.overview);
+
+    await tester.fling(find.byType(SwipeNavigator), const Offset(200, 0), 800);
+    await tester.pumpAndSettle();
+
+    expect(_selectedTab(tester), ProfileTab.overview);
+    expect(tester.takeException(), isNull);
+
+    await cubit.close();
+  });
+}
+
+ProfileTab _selectedTab(WidgetTester tester) {
+  return tester
+      .widget<AdaptiveSegmented<ProfileTab>>(
+        find.byType(AdaptiveSegmented<ProfileTab>),
+      )
+      .value;
 }

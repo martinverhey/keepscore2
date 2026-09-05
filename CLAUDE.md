@@ -739,6 +739,15 @@ code; don't relitigate them.
     content would let it run into them. For an action-sheet shape (a variable-length column of
     choices plus Cancel), the choice column is `content` and only Cancel is
     `secondaryButton`.
+    **`fillsHeight: true` pins the sheet at that 85% cap instead of
+    shrink-wrapping it** — the same `maxHeight` becomes the `minHeight` and
+    the scroll view's `Flexible` turns `tight`, so the content column keeps
+    its size whatever the content is. `ProfileSheet` is the one caller: its
+    three tabs carry wildly different amounts of content, and a sheet that
+    resized on every tab tap (or shrank to a line of text on Versus/History)
+    read as a different sheet each time. Only pass it to a sheet whose
+    content genuinely changes size under the user; every other sheet still
+    grows to fit what it holds.
   - **A raw `TextEditingController`'s text never lives in cubit state.**
     `MatchScoreSheet` and `NewMatchPage`'s score fields both keep the
     controller itself as page-local state and redraw with a bare
@@ -2474,6 +2483,41 @@ Kept here because the code cannot express them and they cost real debugging:
   gap moved inside the scroll view (see the `Sheet` bullet under Coding
   conventions) — as a fixed `SizedBox` it held 24px of dead space open under a
   pinned control.
+- **An empty tab body is the whole body, or it does not centre.**
+  `EmptyState`'s own `MainAxisAlignment.center` only bites when it is handed
+  the height to centre in, which under `fillsHeight` means being returned
+  *instead of* the tab's `Column` rather than as its first child — History
+  and Versus already did that, so `_overview` returns the bare `EmptyState`
+  when there is neither a leaderboard row nor a recent match. With recent
+  matches to show it stays a section at the top of the column, and the trend
+  section's own `profileNotEnoughMatches` (same string, under the Trend
+  heading) is deliberately left where it is.
+- **`Sheet(fillsHeight: true)` fills the *content* too, not just the sheet.**
+  The flag makes the sheet a fixed 85% of the screen (a tight `Flexible`
+  under a `minHeight`), but the scroll view's child still shrink-wrapped, so
+  a short tab left blank viewport that belonged to nobody — and a swipe there
+  hit no `SwipeNavigator` and did nothing. `_filledContent` gives the child a
+  `minHeight` of the measured viewport less the header gap, so the body
+  reaches the bottom of the scroll view and the blank space is part of it.
+  `profile_sheet_test.dart` flings 20px above the body's bottom edge, on the
+  empty History tab, to pin it.
+- **`ProfileSheet`'s tab body swipes between tabs**, through the same
+  `SwipeNavigator` the competition tabs use. `_segments` is the single
+  declaration of which tabs are visible (`versus` only when `hasOpponent`),
+  and `_ready` reads `.keys` off it — so the map literal's insertion order is
+  what "the next tab" means, and a tab that isn't offered can't be swiped to.
+  **`NewMatchSheet` swipes the same way**, between `MatchEntryMode.oneVsOne`
+  and `teams` — `_form` wraps the fields and steps through
+  `MatchEntryMode.values` by index, the same shape `CompetitionShell` uses,
+  so the segmented control's segment order and the enum's order have to keep
+  agreeing. Note a swipe onto `oneVsOne` clears a side holding more than one
+  player, exactly as tapping that segment does (`setMode` →
+  `_withoutCrowdedSides`); it is the same destructive step, reachable by a
+  looser gesture. A drag that starts on a score field belongs to the field's
+  own selection recognizer, which wins the arena, so the scores are not
+  swipeable. The three remaining `AdaptiveSegmented` call sites (language,
+  season length ×2) are form fields with no body of their own and stay
+  tap-only.
 - **`ProfileSheet` has three cubits, one per tab, not one `ProfileCubit`.**
   Overview, Versus, and History are never visible at once, so only
   Overview (the default tab) loads eagerly, the same way the old single
@@ -2500,7 +2544,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 377 tests at time of writing
+flutter test                    # 397 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 dart run flutter_launcher_icons     # assets/icon/*.png into android/ web/ (not ios/)

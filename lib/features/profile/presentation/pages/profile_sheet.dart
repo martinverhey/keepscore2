@@ -14,6 +14,7 @@ import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/medal_chip.dart';
 import '../../../../core/widgets/sheet.dart';
 import '../../../../core/widgets/state_views.dart';
+import '../../../../core/widgets/swipe_navigator.dart';
 import '../../../../core/widgets/today_delta_badge.dart';
 import '../../../competition/domain/competition.model.dart';
 import '../../../leaderboard/domain/leaderboard.model.dart';
@@ -84,6 +85,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
     return BlocBuilder<ProfileOverviewCubit, ProfileOverviewState>(
       builder: (context, state) {
         return Sheet(
+          fillsHeight: true,
           header: _header(context, state),
           content: switch (state) {
             ProfileOverviewLoading() => const Padding(
@@ -154,16 +156,36 @@ class _ProfileSheetState extends State<ProfileSheet> {
   Widget _tabs(BuildContext context, ProfileOverviewReady state) {
     return AdaptiveSegmented<ProfileTab>(
       value: _tab,
-      onChanged: (tab) => setState(() => _tab = tab),
-      segments: {
-        ProfileTab.overview: context.l10n.profileTabOverview,
-        if (state.hasOpponent) ProfileTab.versus: context.l10n.profileTabVersus,
-        ProfileTab.history: context.l10n.profileTabHistory,
-      },
+      onChanged: _select,
+      segments: _segments(context, state),
     );
   }
 
+  Map<ProfileTab, String> _segments(
+    BuildContext context,
+    ProfileOverviewReady state,
+  ) {
+    return {
+      ProfileTab.overview: context.l10n.profileTabOverview,
+      if (state.hasOpponent) ProfileTab.versus: context.l10n.profileTabVersus,
+      ProfileTab.history: context.l10n.profileTabHistory,
+    };
+  }
+
+  void _select(ProfileTab tab) => setState(() => _tab = tab);
+
   Widget _ready(BuildContext context, ProfileOverviewReady state) {
+    final tabs = _segments(context, state).keys.toList();
+    final index = tabs.indexOf(_tab);
+
+    return SwipeNavigator(
+      onNext: index < tabs.length - 1 ? () => _select(tabs[index + 1]) : null,
+      onPrevious: index > 0 ? () => _select(tabs[index - 1]) : null,
+      child: _tabBody(context, state),
+    );
+  }
+
+  Widget _tabBody(BuildContext context, ProfileOverviewReady state) {
     return switch (_tab) {
       ProfileTab.overview => _overview(context, state),
       ProfileTab.versus => _versusTab(context),
@@ -173,6 +195,9 @@ class _ProfileSheetState extends State<ProfileSheet> {
 
   Widget _overview(BuildContext context, ProfileOverviewReady state) {
     final leaderboard = state.leaderboard;
+    if (leaderboard == null && state.recentMatches.isEmpty) {
+      return EmptyState(message: context.l10n.profileNotEnoughMatches);
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
