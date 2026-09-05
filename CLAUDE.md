@@ -2340,6 +2340,16 @@ Kept here because the code cannot express them and they cost real debugging:
   it would fail if either correction were dropped. The Leaderboard's own
   `Ends {date}` / `Loopt tot {date}` is deliberately *not* nudged: that string
   is phrased for the exclusive boundary.
+- **A `GestureDetector` that handles a drag merges its entire subtree into one
+  semantics node**, the same way a tappable row deliberately reads as a single
+  item. Wrapped around a whole page or sheet body that collapses every label
+  under it into one node — VoiceOver reads the tab body as a single run-on
+  item, and `find.bySemanticsLabel` stops matching the widget that declared
+  the label. `SwipeNavigator` therefore passes `excludeFromSemantics: true`:
+  a swipe is a touch shortcut for the tab bar and the segmented control, and
+  those stay the accessible affordance. It is why the profile sheet's
+  `TodayDeltaBadge` assertion broke the moment the sheet gained a swipe, and
+  `swipe_navigator_test.dart` pins the tree it must leave alone.
 - **`RatingTrendChart` splits itself in two on purpose: the graph is painted,
   the readout is a widget.** `_TrendGeometry` (points + size → the point
   offsets, the two gridline positions and `indexAt(dx)`) is built by the
