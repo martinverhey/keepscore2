@@ -430,7 +430,7 @@ accent wash and no accent border — the accent survives only in the eyebrow
 text and the code badge, so the card is marked by being the one opaque,
 outlined surface in a list where every `CompetitionCard` is a borderless
 translucent neutral. It carries an eyebrow row of
-"Active competition" against the join code as a `Tag(style: code)` — the same
+"Active competition" against the join code as a `JoinCodeTag` — the same
 badge a `CompetitionCard` wears, at the same size — then the
 name and the player/match counts across the **full** card width beneath it,
 then a 200px `JoinQrImage` centred below all of it, big enough to scan off the
@@ -442,8 +442,8 @@ reaches past the code's left edge. So
 answered without opening anything. **The QR carries no tap of its own** — it
 is a thing to scan, not a button, and a nested tap target inside a card that
 is itself one tap only made the card's own destination ambiguous;
-`InviteSheet` (where copy-to-clipboard lives) is still reached from every
-`CompetitionCard`'s invite button. Which competition that is comes from
+`InviteSheet` renders this very card, and is still reached from every
+`CompetitionCard`'s invite button (see below). Which competition that is comes from
 `CompetitionCubit`, the same app-wide answer the sidebar reads, matched
 against the already-loaded `CompetitionListReady.competitions` for the counts
 and ownership — so the page makes no extra request, and renders no hero at all
@@ -455,6 +455,37 @@ rename/leave/delete stay reachable for it. Tapping the card is
 `go(Routes.competition(id))` exactly like a `CompetitionCard`, anywhere on it.
 `JoinQrImage` is the white quiet-zone box `JoinQrCard` was built around,
 split out so the hero can render the same code at its own size.
+
+**`InviteSheet` is that same card with its open affordances taken off, and
+that is the whole sheet.** `showInviteSheet` takes a `CompetitionOverview`
+rather than a bare code, and renders `ActiveCompetitionCard` with a null
+`onOpen` — which drops the "Active competition" eyebrow, the chevron and the
+tap in one, since all three say "this is a destination" and in a sheet it is
+not one. **The code badge then moves down into the name's row**, where the
+chevron would have been: with no eyebrow left to share, a lone badge on its
+own line held an empty band open above the name. That is also why `_nameWithCode` is
+its own row rather than the hero's: the name is `Expanded` so the badge is
+right-aligned beside it rather than trailing it the way the chevron does, and
+the row is `crossAxisAlignment: start` so the badge stays level with the
+name's *first* line when a long name wraps to two. `onManage` is left off for the same reason. It replaced a
+`JoinQrCard` over a `JoinCodeCard`, so the invite sheet and the competitions
+page now show the competition the same way rather than two different ways.
+`SettingsPage` still renders `JoinCodeCard`/`JoinQrCard`, which is why both
+survive. Sourcing the overview is what put `CompetitionOverview? get overview`
+on `CompetitionState`'s sealed base — `LeaderboardPage` had only the
+`Competition` and needs the counts the card shows.
+
+**The join code copies itself wherever it is shown.** `JoinCodeTag`
+(`competition/presentation/widgets/join_code_tag.dart`) is the one code badge
+— the competitions list card, the hero card and the leaderboard's own header
+all render it — and tapping it writes the code to the clipboard and swaps its
+own label to `competitionCodeCopied` for two seconds. Inside a tappable card
+the inner tap wins, so pressing the badge copies rather than opening the
+competition; that is the point, and it is why the badge is the affordance
+rather than a separate Copy button. The timer/clipboard half is
+`core/widgets/copyable.dart`'s `Copyable`, a builder widget handing its child
+`(copied, copy)` — `JoinCodeCard`'s Copy button is the other caller, and the
+two had the same fifteen lines each before it existed.
 
 **The competitions page's two actions live in the bar, and it has no floating
 action and no sign out.** `trailing` is a `Row` of two `AdaptiveBarAction`s —

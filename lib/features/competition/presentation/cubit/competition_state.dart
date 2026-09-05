@@ -6,6 +6,8 @@ import '../../domain/competition.model.dart';
 sealed class CompetitionState extends Equatable {
   const CompetitionState();
 
+  CompetitionOverview? get overview => null;
+
   Competition? get competition => null;
 
   String? get myPlayerId => null;
@@ -37,6 +39,7 @@ class CompetitionFailed extends CompetitionState {
 class CompetitionReady extends CompetitionState {
   const CompetitionReady(this.overview);
 
+  @override
   final CompetitionOverview overview;
 
   @override

@@ -3,9 +3,9 @@ import 'package:flutter/widgets.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
-import '../../../../core/widgets/tag.dart';
 import '../../domain/competition.model.dart';
 import '../pages/invite_sheet.dart';
+import 'join_code_tag.dart';
 
 class CompetitionCard extends StatelessWidget {
   const CompetitionCard({
@@ -57,14 +57,10 @@ class CompetitionCard extends StatelessWidget {
         AdaptiveIconButton(
           glyph: AdaptiveGlyph.invite,
           semanticLabel: context.l10n.competitionInviteAction,
-          onPressed: () => showInviteSheet(context, code: competition.joinCode),
+          onPressed: () => showInviteSheet(context, overview: overview),
         ),
         const SizedBox(width: AppSpacing.xs),
-        Tag(
-          competition.joinCode,
-          color: AdaptiveColors.accent(context),
-          style: TagStyle.code,
-        ),
+        JoinCodeTag(code: competition.joinCode),
       ],
     );
   }

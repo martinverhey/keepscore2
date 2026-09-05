@@ -9,11 +9,11 @@ import '../../../../core/extensions/player_list.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/page_title.dart';
-import '../../../../core/widgets/tag.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../competition/domain/competition.model.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
 import '../../../competition/presentation/widgets/competition_settings_button.dart';
+import '../../../competition/presentation/widgets/join_code_tag.dart';
 import '../../../competition/presentation/pages/invite_sheet.dart';
 import '../../../player/presentation/cubit/players_cubit.dart';
 import '../../../profile/presentation/widgets/profile_section.dart';
@@ -72,7 +72,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
           context.read<LeaderboardCubit>().setViewer(state.myPlayerId),
       child: _scaffold(
         context,
-        competition,
+        competitionState.overview,
         competitionId: competitionId,
         isOwner: competition?.isOwnedBySession(session) ?? false,
         myPlayerId: myPlayerId,
@@ -83,7 +83,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
 
   Widget _scaffold(
     BuildContext context,
-    Competition? competition, {
+    CompetitionOverview? overview, {
     required String competitionId,
     required bool isOwner,
     required String? myPlayerId,
@@ -95,7 +95,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
       trailing: AppPlatform.useWideWeb(context)
           ? null
           : CompetitionSettingsButton(competitionId: competitionId),
-      body: competition == null
+      body: overview == null
           ? const AdaptiveLoader()
           : Padding(
               padding: const EdgeInsets.fromLTRB(
@@ -106,7 +106,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
               ),
               child: _content(
                 context,
-                competition,
+                overview,
                 competitionId: competitionId,
                 isOwner: isOwner,
                 myPlayerId: myPlayerId,
@@ -118,7 +118,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
 
   Widget _content(
     BuildContext context,
-    Competition competition, {
+    CompetitionOverview overview, {
     required String competitionId,
     required bool isOwner,
     required String? myPlayerId,
@@ -138,11 +138,12 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
     final myMedals = leaderboardState is LeaderboardReady
         ? leaderboardState.medals[myPlayerId]
         : null;
+    final competition = overview.competition;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _competitionHeader(context, competition, competitionId),
+        _competitionHeader(context, overview, competitionId),
         const SizedBox(height: AppSpacing.sm),
         if (myPlayerId != null && myDisplayName != null)
           ProfileSection(
@@ -171,7 +172,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
 
   Widget _competitionHeader(
     BuildContext context,
-    Competition competition,
+    CompetitionOverview overview,
     String competitionId,
   ) {
     return Row(
@@ -179,16 +180,16 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
         Expanded(
           child: Align(
             alignment: Alignment.centerLeft,
-            child: _competitionButton(context, competition, competitionId),
+            child: _competitionButton(
+              context,
+              overview.competition,
+              competitionId,
+            ),
           ),
         ),
-        _inviteButton(context, competition.joinCode),
+        _inviteButton(context, overview),
         const SizedBox(width: AppSpacing.xs),
-        Tag(
-          competition.joinCode,
-          color: AdaptiveColors.accent(context),
-          style: TagStyle.code,
-        ),
+        JoinCodeTag(code: overview.competition.joinCode),
       ],
     );
   }
@@ -221,11 +222,11 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
     );
   }
 
-  Widget _inviteButton(BuildContext context, String joinCode) {
+  Widget _inviteButton(BuildContext context, CompetitionOverview overview) {
     return AdaptiveIconButton(
       glyph: AdaptiveGlyph.invite,
       semanticLabel: context.l10n.competitionInviteAction,
-      onPressed: () => showInviteSheet(context, code: joinCode),
+      onPressed: () => showInviteSheet(context, overview: overview),
     );
   }
 }

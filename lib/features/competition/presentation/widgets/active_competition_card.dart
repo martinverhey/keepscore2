@@ -3,20 +3,20 @@ import 'package:flutter/widgets.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
-import '../../../../core/widgets/tag.dart';
 import '../../domain/competition.model.dart';
+import 'join_code_tag.dart';
 import 'join_qr_image.dart';
 
 class ActiveCompetitionCard extends StatelessWidget {
   const ActiveCompetitionCard({
     super.key,
     required this.overview,
-    required this.onOpen,
+    this.onOpen,
     this.onManage,
   });
 
   final CompetitionOverview overview;
-  final VoidCallback onOpen;
+  final VoidCallback? onOpen;
   final VoidCallback? onManage;
 
   static const double _qrSize = 200;
@@ -26,45 +26,48 @@ class ActiveCompetitionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = AdaptiveColors.accent(context);
+    final onOpen = this.onOpen;
+    if (onOpen == null) return _card(context);
 
     return AdaptiveTappable(
       onTap: onOpen,
       borderRadius: _radius,
-      child: Container(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        decoration: BoxDecoration(
-          borderRadius: _radius,
-          color: AdaptiveColors.modalSurface(context),
-          border: Border.all(
-            color: AppColors.neutral.withValues(
-              alpha: AppOpacity.controlBorder,
-            ),
-          ),
+      child: _card(context),
+    );
+  }
+
+  Widget _card(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        borderRadius: _radius,
+        color: AdaptiveColors.modalSurface(context),
+        border: Border.all(
+          color: AppColors.neutral.withValues(alpha: AppOpacity.controlBorder),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _identity(context, accent),
-            const SizedBox(height: AppSpacing.lg),
-            _qr(context),
-            if (onManage != null) ...[
-              const SizedBox(height: AppSpacing.xs),
-              _manageRow(context),
-            ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _identity(context),
+          const SizedBox(height: AppSpacing.lg),
+          _qr(context),
+          if (onManage != null) ...[
+            const SizedBox(height: AppSpacing.xs),
+            _manageRow(context),
           ],
-        ),
+        ],
       ),
     );
   }
 
-  Widget _identity(BuildContext context, Color accent) {
+  Widget _identity(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        _eyebrow(context, accent),
-        _name(context),
+        if (onOpen != null) _eyebrow(context),
+        _name(),
         const SizedBox(height: AppSpacing.xs),
         Text(
           '${context.l10n.competitionPlayers(overview.playerCount)}'
@@ -75,7 +78,7 @@ class ActiveCompetitionCard extends StatelessWidget {
     );
   }
 
-  Widget _eyebrow(BuildContext context, Color accent) {
+  Widget _eyebrow(BuildContext context) {
     return Row(
       children: [
         Expanded(
@@ -83,27 +86,22 @@ class ActiveCompetitionCard extends StatelessWidget {
             context.l10n.competitionsActive,
             style: AppTypography.eyebrow.copyWith(
               letterSpacing: 0.8,
-              color: accent,
+              color: AdaptiveColors.accent(context),
             ),
           ),
         ),
         const SizedBox(width: AppSpacing.sm),
-        Tag(overview.competition.joinCode, color: accent, style: TagStyle.code),
+        JoinCodeTag(code: overview.competition.joinCode),
       ],
     );
   }
 
-  Widget _name(BuildContext context) {
+  Widget _name() {
+    if (onOpen == null) return _nameWithCode();
+
     return Row(
       children: [
-        Flexible(
-          child: Text(
-            overview.competition.name,
-            style: AppTypography.headlineMedium,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
+        Flexible(child: _nameText()),
         const SizedBox(width: AppSpacing.xs),
         const AdaptiveIcon(
           AdaptiveGlyph.chevronRight,
@@ -111,6 +109,26 @@ class ActiveCompetitionCard extends StatelessWidget {
           size: 18,
         ),
       ],
+    );
+  }
+
+  Widget _nameWithCode() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: _nameText()),
+        const SizedBox(width: AppSpacing.sm),
+        JoinCodeTag(code: overview.competition.joinCode),
+      ],
+    );
+  }
+
+  Widget _nameText() {
+    return Text(
+      overview.competition.name,
+      style: AppTypography.headlineMedium,
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
     );
   }
 
