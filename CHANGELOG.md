@@ -3,6 +3,18 @@
 Newest first. Each heading is an annotated `vX.Y.Z` tag; pushing that tag ships
 the build to TestFlight and Play internal testing.
 
+## v0.3.2 — 2026-09-05
+
+### Added
+- Join a competition by scanning its QR code
+
+### Changed
+- The streak flame lines up with the numbers beside it
+
+### Fixed
+- The profile's Recent matches were not your most recent ones
+- The head-to-head record was read from your opponent's side
+
 ## v0.3.1 — 2026-09-05
 
 ### Added
