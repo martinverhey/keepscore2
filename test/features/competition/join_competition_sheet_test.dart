@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/app/dependency_injection/injector.dart';
+import 'package:keepscore2/core/error/failure.dart';
 import 'package:keepscore2/core/widgets/adaptive/app_platform.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/domain/join_preview.model.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/join_competition_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/join_competition_sheet.dart';
+import 'package:keepscore2/features/competition/presentation/widgets/join_result.dart';
 import 'package:keepscore2/features/player/domain/player.model.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
@@ -26,13 +28,16 @@ JoinPreview _preview({bool alreadyMember = false}) => JoinPreview(
 Future<MockCompetitionRepository> _pumpHarness(
   WidgetTester tester, {
   String? code,
+  MockCompetitionRepository? competitions,
 }) async {
   AppPlatform.debugOverrideCupertino = false;
 
-  final competitions = MockCompetitionRepository();
-  when(() => competitions.preview(any())).thenAnswer((_) async => _preview());
+  final repository = competitions ?? MockCompetitionRepository();
+  if (competitions == null) {
+    when(() => repository.preview(any())).thenAnswer((_) async => _preview());
+  }
   getIt.registerFactory<JoinCompetitionCubit>(
-    () => JoinCompetitionCubit(competitions),
+    () => JoinCompetitionCubit(repository),
   );
 
   await tester.pumpWidget(
@@ -45,7 +50,7 @@ Future<MockCompetitionRepository> _pumpHarness(
   await tester.tap(find.byType(TextButton));
   await tester.pumpAndSettle();
 
-  return competitions;
+  return repository;
 }
 
 Future<void> _lookUpCode(WidgetTester tester, AppLocalizations l10n) async {
@@ -118,7 +123,7 @@ void main() {
       ),
     ).called(1);
     expect(find.byType(JoinCompetitionSheet), findsNothing);
-    expect(find.text('opened c1'), findsOneWidget);
+    expect(find.text('joined c1'), findsOneWidget);
   });
 
   testWidgets('a scanned code opens straight on the confirm step', (
@@ -128,6 +133,13 @@ void main() {
 
     verify(() => competitions.preview(_joinCode)).called(1);
     expect(find.text('Office Table Tennis'), findsOneWidget);
+    expect(find.byType(TextField), findsNothing);
+  });
+
+  testWidgets('going back from a scanned code closes the sheet', (
+    tester,
+  ) async {
+    await _pumpHarness(tester, code: _joinCode);
 
     final l10n = AppLocalizations.of(
       tester.element(find.byType(JoinCompetitionSheet)),
@@ -135,7 +147,21 @@ void main() {
     await tester.tap(find.text(l10n.commonBack));
     await tester.pumpAndSettle();
 
-    expect(find.widgetWithText(TextField, _joinCode), findsOneWidget);
+    expect(find.byType(JoinCompetitionSheet), findsNothing);
+    expect(find.text('back'), findsOneWidget);
+  });
+
+  testWidgets('a scanned code that cannot be looked up shows the failure', (
+    tester,
+  ) async {
+    final competitions = MockCompetitionRepository();
+    when(
+      () => competitions.preview(any()),
+    ).thenThrow(const ValidationFailure('No competition with that code.'));
+    await _pumpHarness(tester, code: _joinCode, competitions: competitions);
+
+    expect(find.text('No competition with that code.'), findsOneWidget);
+    expect(find.byType(TextField), findsNothing);
   });
 
   testWidgets('cancelling hands nothing back', (tester) async {
@@ -148,7 +174,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(JoinCompetitionSheet), findsNothing);
-    expect(find.text('opened c1'), findsNothing);
+    expect(find.text('dismissed'), findsOneWidget);
   });
 }
 
@@ -162,25 +188,31 @@ class _OpenerStub extends StatefulWidget {
 }
 
 class _OpenerStubState extends State<_OpenerStub> {
-  String? _opened;
+  JoinResult? _result;
+  bool _closed = false;
+
+  String get _label => switch (_result) {
+    null => 'dismissed',
+    JoinResult(competitionId: final competitionId?) => 'joined $competitionId',
+    _ => 'back',
+  };
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: _opened == null
-            ? TextButton(onPressed: _open, child: const Text('open'))
-            : Text('opened $_opened'),
+        child: _closed
+            ? Text(_label)
+            : TextButton(onPressed: _open, child: const Text('open')),
       ),
     );
   }
 
   Future<void> _open() async {
-    final competitionId = await showJoinCompetitionSheet(
-      context,
-      code: widget.code,
-    );
-    if (competitionId == null) return;
-    setState(() => _opened = competitionId);
+    final result = await showJoinCompetitionSheet(context, code: widget.code);
+    setState(() {
+      _result = result;
+      _closed = true;
+    });
   }
 }

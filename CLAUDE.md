@@ -115,9 +115,23 @@ from the camera, `manualEntry()` (a null `code`) from the "Enter code
 manually" button, and `null` from Cancel or a dismissal — that third case is
 the only reason the result is a type rather than a `String?`, since the page
 must tell "the user backed out" from "the user wants to type it". A
-non-null code is handed to `showJoinCompetitionSheet(code:)`, which seeds the
-text controller *and* calls `JoinCompetitionCubit.lookUpCode`, so the sheet
-opens on its confirm step and `Back` still lands on a filled-in code field.
+non-null code is handed to `showJoinCompetitionSheet(code:)`, which calls
+`JoinCompetitionCubit.lookUpCode` in the provider's `create`.
+
+**A scanned code never shows the code field, and `Back` goes back to the
+camera.** With `code != null` the sheet is confirm-shaped throughout
+(`_scanned`): the `JoinCode` phase renders `_lookUpSheet` — a spinner, or the
+lookup's failure — rather than `_codeSheet`, and `Back` pops the sheet with
+`JoinResult.back()` instead of calling `JoinCompetitionCubit.back()`.
+`CompetitionsPage._scanAndJoin` loops on that: scanner → sheet → `back()` →
+a *fresh* scanner sheet. It has to be fresh rather than a sheet stacked on
+the live one, because `DetectionSpeed.noDuplicates` would refuse to re-read
+the QR still in frame; a new `QrScannerView` is a new controller with no
+memory of it. Hence `showJoinCompetitionSheet` returns a `JoinResult` rather
+than a `String?` — the same reasoning as `JoinScanResult` above, since
+`null` (Cancel, or a drag/barrier dismissal) has to end the flow where
+`back()` restarts it. In manual-entry mode `_scanned` is false, nothing ever
+returns `back()`, and the code step's Cancel closes as it always did.
 `String.isJoinCode` (`core/extensions/string.extension.dart`) is the one
 definition of "six characters once normalized", shared by `JoinCode.codeIsValid`
 and the scanner — a QR carrying anything else (a URL, someone's WiFi) is
@@ -2387,7 +2401,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 374 tests at time of writing
+flutter test                    # 377 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 dart run flutter_launcher_icons     # assets/icon/*.png into android/ web/ (not ios/)

@@ -267,17 +267,22 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
   }
 
   Future<void> _join(BuildContext context) async {
-    final scan = await showJoinScannerSheet(context);
-    if (scan == null || !context.mounted) return;
-
-    final competitionId = await showJoinCompetitionSheet(
-      context,
-      code: scan.code,
-    );
+    final competitionId = await _scanAndJoin(context);
     if (competitionId == null || !context.mounted) return;
 
     context.read<CompetitionListCubit>().refresh();
     context.go(Routes.competition(competitionId));
+  }
+
+  Future<String?> _scanAndJoin(BuildContext context) async {
+    while (true) {
+      final scan = await showJoinScannerSheet(context);
+      if (scan == null || !context.mounted) return null;
+
+      final result = await showJoinCompetitionSheet(context, code: scan.code);
+      if (result == null || !context.mounted) return null;
+      if (result.competitionId case final competitionId?) return competitionId;
+    }
   }
 
   Future<void> _manage(

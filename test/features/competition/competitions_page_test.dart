@@ -8,12 +8,14 @@ import 'package:keepscore2/core/theme/app_tokens.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive_floating_action.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive_bar_action_group.dart';
 import 'package:keepscore2/core/widgets/adaptive/app_platform.dart';
+import 'package:keepscore2/core/widgets/qr_scanner_view.dart';
 import 'package:keepscore2/core/widgets/speech_bubble.dart';
 import 'package:keepscore2/features/auth/domain/auth_repository.dart';
 import 'package:keepscore2/features/auth/domain/auth_user.model.dart';
 import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
+import 'package:keepscore2/features/competition/domain/join_preview.model.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_list_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/create_competition_cubit.dart';
@@ -56,6 +58,15 @@ CompetitionOverview _overview(
   ),
   playerCount: 5,
   matchCount: 11,
+);
+
+const _preview = JoinPreview(
+  competitionId: 'c-padel',
+  name: 'Padel Ladder',
+  ownerName: 'Ada',
+  playerCount: 4,
+  alreadyMember: false,
+  claimable: [],
 );
 
 Future<MockCompetitionRepository> _pumpHarness(
@@ -177,6 +188,32 @@ void main() {
 
     expect(find.byType(JoinScannerSheet), findsNothing);
     expect(find.byType(JoinCompetitionSheet), findsOneWidget);
+  });
+
+  testWidgets('going back from a scanned code returns to the scanner', (
+    tester,
+  ) async {
+    final competitions = await _pumpHarness(tester, isGuest: false);
+    when(() => competitions.preview(any())).thenAnswer((_) async => _preview);
+
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(CompetitionsPage)),
+    );
+    await tester.tap(_barAction(l10n.competitionsJoinShort));
+    await tester.pumpAndSettle();
+
+    tester.widget<QrScannerView>(find.byType(QrScannerView)).onCode('HDHS39');
+    await tester.pumpAndSettle();
+
+    expect(find.byType(JoinScannerSheet), findsNothing);
+    expect(find.text(_preview.name), findsOneWidget);
+    expect(find.byType(TextField), findsNothing);
+
+    await tester.tap(find.text(l10n.commonBack));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(JoinCompetitionSheet), findsNothing);
+    expect(find.byType(JoinScannerSheet), findsOneWidget);
   });
 
   testWidgets('the empty state bubbles a tip for each bar action', (

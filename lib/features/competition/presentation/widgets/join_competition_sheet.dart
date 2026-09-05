@@ -12,9 +12,13 @@ import '../../../../core/widgets/selectable_row.dart';
 import '../../../../core/widgets/sheet.dart';
 import '../../../player/presentation/widgets/player_name_sheet.dart';
 import '../cubit/join_competition_cubit.dart';
+import 'join_result.dart';
 
-Future<String?> showJoinCompetitionSheet(BuildContext context, {String? code}) {
-  return showAdaptiveSheet<String>(
+Future<JoinResult?> showJoinCompetitionSheet(
+  BuildContext context, {
+  String? code,
+}) {
+  return showAdaptiveSheet<JoinResult>(
     context,
     builder: (_) => BlocProvider(
       create: (_) {
@@ -39,6 +43,8 @@ class JoinCompetitionSheet extends StatefulWidget {
 class _JoinCompetitionSheetState extends State<JoinCompetitionSheet> {
   late final _code = TextEditingController(text: widget.code ?? '');
 
+  bool get _scanned => widget.code != null;
+
   @override
   void dispose() {
     _code.dispose();
@@ -50,12 +56,24 @@ class _JoinCompetitionSheetState extends State<JoinCompetitionSheet> {
     return BlocConsumer<JoinCompetitionCubit, JoinCompetitionState>(
       listenWhen: (previous, current) =>
           current is JoinConfirm && current.joined != null,
-      listener: (context, state) =>
-          _close(context, (state as JoinConfirm).preview.competitionId),
+      listener: (context, state) => _close(
+        context,
+        JoinResult.joined((state as JoinConfirm).preview.competitionId),
+      ),
       builder: (context, state) => switch (state) {
+        JoinCode code when _scanned => _lookUpSheet(context, code),
         JoinCode code => _codeSheet(context, code),
         JoinConfirm confirm => _confirmSheet(context, confirm),
       },
+    );
+  }
+
+  Widget _lookUpSheet(BuildContext context, JoinCode state) {
+    return Sheet(
+      title: context.l10n.joinTitle,
+      subtitle: state.code,
+      content: _failureText(context, state.failure) ?? const AdaptiveLoader(),
+      secondaryButton: _backButton(context),
     );
   }
 
@@ -126,7 +144,8 @@ class _JoinCompetitionSheetState extends State<JoinCompetitionSheet> {
       primaryButton: preview.alreadyMember
           ? AdaptiveButton(
               label: context.l10n.joinViewCompetition,
-              onPressed: () => _close(context, preview.competitionId),
+              onPressed: () =>
+                  _close(context, JoinResult.joined(preview.competitionId)),
             )
           : AdaptiveButton(
               label: state.selectedClaimId == null
@@ -135,11 +154,7 @@ class _JoinCompetitionSheetState extends State<JoinCompetitionSheet> {
               busy: state.busy,
               onPressed: state.canJoin ? () => _join(context, state) : null,
             ),
-      secondaryButton: AdaptiveButton(
-        label: context.l10n.commonBack,
-        kind: AdaptiveButtonKind.plain,
-        onPressed: context.read<JoinCompetitionCubit>().back,
-      ),
+      secondaryButton: _backButton(context),
     );
   }
 
@@ -180,6 +195,16 @@ class _JoinCompetitionSheetState extends State<JoinCompetitionSheet> {
     ];
   }
 
+  Widget _backButton(BuildContext context) {
+    return AdaptiveButton(
+      label: context.l10n.commonBack,
+      kind: AdaptiveButtonKind.plain,
+      onPressed: _scanned
+          ? () => _close(context, const JoinResult.back())
+          : context.read<JoinCompetitionCubit>().back,
+    );
+  }
+
   Widget? _failureText(BuildContext context, Failure? failure) {
     if (failure == null) return null;
 
@@ -209,7 +234,7 @@ class _JoinCompetitionSheetState extends State<JoinCompetitionSheet> {
     await cubit.join(displayName: name);
   }
 
-  void _close(BuildContext context, String? competitionId) {
-    Navigator.of(context).pop(competitionId);
+  void _close(BuildContext context, JoinResult? result) {
+    Navigator.of(context).pop(result);
   }
 }

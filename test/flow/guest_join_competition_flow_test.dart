@@ -485,7 +485,8 @@ class _HomeStub extends StatelessWidget {
   }
 
   Future<void> _join(BuildContext context) async {
-    final competitionId = await showJoinCompetitionSheet(context);
+    final result = await showJoinCompetitionSheet(context);
+    final competitionId = result?.competitionId;
     if (competitionId == null || !context.mounted) return;
 
     context.go('/competition/$competitionId');
