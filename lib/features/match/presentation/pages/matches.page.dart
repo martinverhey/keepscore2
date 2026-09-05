@@ -387,9 +387,7 @@ class _MatchesPageState extends State<MatchesPage> {
       bottom: pointsAtSidebar ? null : 0,
       child: SpeechBubble(
         color: AppColors.neutralSurface,
-        tail: pointsAtSidebar
-            ? SpeechBubbleTail.left
-            : SpeechBubbleTail.bottom,
+        tail: pointsAtSidebar ? SpeechBubbleTail.left : SpeechBubbleTail.bottom,
         tailInset: pointsAtSidebar ? _sidebarTailInset : _newMatchTailInset,
         child: Column(
           mainAxisSize: MainAxisSize.min,

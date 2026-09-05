@@ -39,7 +39,9 @@ class SpeechBubble extends StatelessWidget {
       tail == SpeechBubbleTail.left
           ? _tailHeight + AppSpacing.md
           : AppSpacing.md,
-      tail == SpeechBubbleTail.top ? _tailHeight + AppSpacing.md : AppSpacing.md,
+      tail == SpeechBubbleTail.top
+          ? _tailHeight + AppSpacing.md
+          : AppSpacing.md,
       AppSpacing.md,
       tail == SpeechBubbleTail.bottom
           ? _tailHeight + AppSpacing.md

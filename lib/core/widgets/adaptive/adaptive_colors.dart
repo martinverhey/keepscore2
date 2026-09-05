@@ -20,11 +20,8 @@ abstract final class AdaptiveColors {
     AppColors.modalSurfaceOnDark,
   );
 
-  static Color glassTint(BuildContext context) => _forBrightness(
-    context,
-    AppColors.glassTint,
-    AppColors.glassTintOnDark,
-  );
+  static Color glassTint(BuildContext context) =>
+      _forBrightness(context, AppColors.glassTint, AppColors.glassTintOnDark);
 
   static Color glassActionTint(BuildContext context) => _forBrightness(
     context,

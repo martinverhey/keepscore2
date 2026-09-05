@@ -35,17 +35,20 @@ class SupabaseMatchRepository implements MatchRepository {
   });
 
   @override
-  Future<Set<GameType>> seasonGameTypes(String competitionId) => guard(() async {
-    final rows = await _client.rpc<List<dynamic>>(
-      'season_game_types',
-      params: {'p_competition_id': competitionId},
-    );
+  Future<Set<GameType>> seasonGameTypes(String competitionId) =>
+      guard(() async {
+        final rows = await _client.rpc<List<dynamic>>(
+          'season_game_types',
+          params: {'p_competition_id': competitionId},
+        );
 
-    return {
-      for (final row in rows)
-        GameType.fromWire((row as Map<String, dynamic>)['game_type'] as String),
-    };
-  });
+        return {
+          for (final row in rows)
+            GameType.fromWire(
+              (row as Map<String, dynamic>)['game_type'] as String,
+            ),
+        };
+      });
 
   @override
   Future<MatchEntry?> byId(String matchId) => guard(() async {

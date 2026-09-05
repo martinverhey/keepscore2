@@ -54,9 +54,7 @@ class _KeepScoreAppState extends State<KeepScoreApp> {
         BlocProvider<LanguageCubit>.value(value: _languageCubit),
         BlocProvider<GameTypeFilterCubit>.value(value: _gameTypeFilterCubit),
         BlocProvider<CompetitionCubit>.value(value: _competitionCubit),
-        BlocProvider<CompetitionListCubit>.value(
-          value: _competitionListCubit,
-        ),
+        BlocProvider<CompetitionListCubit>.value(value: _competitionListCubit),
       ],
       child: BlocBuilder<ThemeCubit, ThemeState>(
         builder: (context, themeState) =>

@@ -38,11 +38,7 @@ class AdaptiveSwitch extends StatelessWidget {
         visualHeight: _webVisualHeight,
       );
     }
-    return _sized(
-      width: _width,
-      height: _height,
-      visualHeight: _visualHeight,
-    );
+    return _sized(width: _width, height: _height, visualHeight: _visualHeight);
   }
 
   Widget _sized({

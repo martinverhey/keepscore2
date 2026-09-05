@@ -13,10 +13,8 @@ abstract final class EloCalculator {
     return values.reduce((a, b) => a + b) / values.length;
   }
 
-  static double winChance({
-    required double ratingA,
-    required double ratingB,
-  }) => 1.0 / (1.0 + math.pow(10.0, (ratingB - ratingA) / 400.0));
+  static double winChance({required double ratingA, required double ratingB}) =>
+      1.0 / (1.0 + math.pow(10.0, (ratingB - ratingA) / 400.0));
 
   static double delta({
     required double ratingA,
