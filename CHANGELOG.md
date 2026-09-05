@@ -3,6 +3,23 @@
 Newest first. Each heading is an annotated `vX.Y.Z` tag; pushing that tag ships
 the build to TestFlight and Play internal testing.
 
+## v0.4.0 — 2026-09-05
+
+### Added
+- Swipe left and right to move between Leaderboard, Matches and Competitions
+- Swipe between the tabs of a player's profile
+- Swipe between 1v1 and Teams when logging a match
+- A rating sparkline on your own profile section
+
+### Changed
+- Invite players now shows the competition itself, with a bigger QR code
+- Tap a join code anywhere to copy it
+- The profile sheet keeps its height when you switch tabs
+
+### Fixed
+- Your rating trend went missing when it arrived mid-load
+- Going back from a scanned code returns you to the camera
+
 ## v0.3.2 — 2026-09-05
 
 ### Added
