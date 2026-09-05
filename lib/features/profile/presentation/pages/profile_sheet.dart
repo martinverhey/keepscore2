@@ -120,7 +120,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
     return Row(
       children: [
         InitialsCircle(displayName: widget.displayName, size: 48),
-        const SizedBox(width: AppSpacing.md),
+        const SizedBox(width: AppSpacing.sm),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
