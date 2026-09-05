@@ -86,8 +86,11 @@ Future<void> configureDependencies() async {
     )
     ..registerLazySingleton<GameTypeFilterCubit>(() => GameTypeFilterCubit())
     ..registerFactoryParam<LeaderboardCubit, String, void>(
-      (competitionId, _) =>
-          LeaderboardCubit(getIt<LeaderboardRepository>(), competitionId),
+      (competitionId, _) => LeaderboardCubit(
+        getIt<LeaderboardRepository>(),
+        getIt<ProfileRepository>(),
+        competitionId,
+      ),
     )
     ..registerFactoryParam<MatchListCubit, String, void>(
       (competitionId, _) => MatchListCubit(

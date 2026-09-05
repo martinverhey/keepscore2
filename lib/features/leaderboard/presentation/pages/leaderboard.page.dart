@@ -34,7 +34,9 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
   @override
   void initState() {
     super.initState();
-    context.read<LeaderboardCubit>().load();
+    final leaderboard = context.read<LeaderboardCubit>();
+    leaderboard.setViewer(context.read<CompetitionCubit>().state.myPlayerId);
+    leaderboard.load();
   }
 
   Future<void> _refresh() => Future.wait([
@@ -63,6 +65,30 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
           : '${competition.name} · ${context.l10n.leaderboardTitle}',
     );
 
+    return BlocListener<CompetitionCubit, CompetitionState>(
+      listenWhen: (previous, current) =>
+          previous.myPlayerId != current.myPlayerId,
+      listener: (context, state) =>
+          context.read<LeaderboardCubit>().setViewer(state.myPlayerId),
+      child: _scaffold(
+        context,
+        competition,
+        competitionId: competitionId,
+        isOwner: competition?.isOwnedBySession(session) ?? false,
+        myPlayerId: myPlayerId,
+        myDisplayName: myDisplayName,
+      ),
+    );
+  }
+
+  Widget _scaffold(
+    BuildContext context,
+    Competition? competition, {
+    required String competitionId,
+    required bool isOwner,
+    required String? myPlayerId,
+    required String? myDisplayName,
+  }) {
     return AdaptiveScaffold(
       title: context.l10n.leaderboardTitle,
       onRefresh: _refresh,
@@ -82,7 +108,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
                 context,
                 competition,
                 competitionId: competitionId,
-                isOwner: competition.isOwnedBySession(session),
+                isOwner: isOwner,
                 myPlayerId: myPlayerId,
                 myDisplayName: myDisplayName,
               ),
@@ -126,6 +152,9 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
             seasonLength: competition.seasonLength,
             leaderboard: myLeaderboard,
             medals: myMedals,
+            trend: leaderboardState is LeaderboardReady
+                ? leaderboardState.viewerTrend
+                : const [],
           ),
         const SizedBox(height: AppSpacing.lg),
         LeaderboardList(

@@ -5,13 +5,16 @@ import '../../../../app/dependency_injection/injector.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/extensions/double.extension.dart';
 import '../../../../core/extensions/int.extension.dart';
+import '../../../../core/extensions/rating_point_list.extension.dart';
 import '../../../../core/extensions/streak_type.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/medal_chip.dart';
+import '../../../../core/widgets/sparkline.dart';
 import '../../../competition/domain/competition.model.dart';
 import '../../../leaderboard/domain/leaderboard.model.dart';
 import '../../../leaderboard/domain/medals.model.dart';
+import '../../domain/rating_point.model.dart';
 import '../cubit/profile_overview_cubit.dart';
 import 'initials_circle.dart';
 import '../pages/profile_sheet.dart';
@@ -25,6 +28,7 @@ class ProfileSection extends StatelessWidget {
     required this.seasonLength,
     this.leaderboard,
     this.medals,
+    this.trend = const [],
   });
 
   final String competitionId;
@@ -33,6 +37,7 @@ class ProfileSection extends StatelessWidget {
   final SeasonLength seasonLength;
   final Leaderboard? leaderboard;
   final Medals? medals;
+  final List<RatingPoint> trend;
 
   static const BorderRadius _radius = BorderRadius.all(
     Radius.circular(AppRadius.lg),
@@ -41,20 +46,7 @@ class ProfileSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AdaptiveTappable(
-      onTap: () => showAdaptiveSheet<void>(
-        context,
-        builder: (_) => BlocProvider(
-          create: (_) => getIt<ProfileOverviewCubit>(
-            param1: competitionId,
-            param2: playerId,
-          )..load(viewerPlayerId: playerId),
-          child: ProfileSheet(
-            displayName: displayName,
-            seasonLength: seasonLength,
-            myPlayerId: playerId,
-          ),
-        ),
-      ),
+      onTap: () => _openProfile(context),
       borderRadius: _radius,
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
@@ -77,6 +69,22 @@ class ProfileSection extends StatelessWidget {
               color: AppColors.neutral,
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  void _openProfile(BuildContext context) {
+    showAdaptiveSheet<void>(
+      context,
+      builder: (_) => BlocProvider(
+        create: (_) =>
+            getIt<ProfileOverviewCubit>(param1: competitionId, param2: playerId)
+              ..load(viewerPlayerId: playerId),
+        child: ProfileSheet(
+          displayName: displayName,
+          seasonLength: seasonLength,
+          myPlayerId: playerId,
         ),
       ),
     );
@@ -106,7 +114,7 @@ class ProfileSection extends StatelessWidget {
     return Row(
       children: [
         InitialsCircle(displayName: displayName, size: 44),
-        const SizedBox(width: AppSpacing.md),
+        const SizedBox(width: AppSpacing.sm),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -125,7 +133,21 @@ class ProfileSection extends StatelessWidget {
             ],
           ),
         ),
+        _trendSparkline(context),
       ],
+    );
+  }
+
+  Widget _trendSparkline(BuildContext context) {
+    if (trend.length < 2) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(left: AppSpacing.sm),
+      child: Sparkline(
+        values: trend.ratings,
+        color: trend.trendColor(context),
+        width: 100,
+      ),
     );
   }
 

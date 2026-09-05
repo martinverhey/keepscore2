@@ -24,6 +24,7 @@ import 'package:keepscore2/features/match/presentation/pages/matches.page.dart';
 import 'package:keepscore2/features/player/domain/player.model.dart';
 import 'package:keepscore2/features/player/domain/player_repository.dart';
 import 'package:keepscore2/features/player/presentation/cubit/players_cubit.dart';
+import 'package:keepscore2/features/profile/domain/profile_repository.dart';
 import 'package:keepscore2/features/settings/presentation/cubit/theme_cubit.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
@@ -38,6 +39,8 @@ class MockPlayerRepository extends Mock implements PlayerRepository {}
 class MockMatchRepository extends Mock implements MatchRepository {}
 
 class MockLeaderboardRepository extends Mock implements LeaderboardRepository {}
+
+class MockProfileRepository extends Mock implements ProfileRepository {}
 
 CompetitionOverview _overview(String id, String name) => CompetitionOverview(
   competition: Competition(
@@ -200,7 +203,11 @@ void main() {
                             final id = state.pathParameters['id']!;
                             return BlocProvider(
                               key: ValueKey(id),
-                              create: (_) => LeaderboardCubit(leaderboard, id),
+                              create: (_) => LeaderboardCubit(
+                                leaderboard,
+                                _emptyTrendRepository(),
+                                id,
+                              ),
                               child: LeaderboardPage(competitionId: id),
                             );
                           },
@@ -299,4 +306,15 @@ class _CompetitionsStub extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       const Scaffold(body: Center(child: Text('Competitions')));
+}
+
+MockProfileRepository _emptyTrendRepository() {
+  final repository = MockProfileRepository();
+  when(
+    () => repository.ratingHistory(
+      seasonId: any(named: 'seasonId'),
+      playerId: any(named: 'playerId'),
+    ),
+  ).thenAnswer((_) async => const []);
+  return repository;
 }

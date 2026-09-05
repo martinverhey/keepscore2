@@ -1,10 +1,18 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keepscore2/core/widgets/sparkline.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/medals.model.dart';
+import 'package:keepscore2/features/profile/domain/rating_point.model.dart';
 import 'package:keepscore2/features/profile/presentation/widgets/profile_section.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
+
+RatingPoint _point(int day, double rating) => RatingPoint(
+  playedAt: DateTime.utc(2026, 8, day),
+  ratingAfter: rating,
+  ratingDelta: 12,
+);
 
 Leaderboard _leaderboard({
   int played = 5,
@@ -34,6 +42,7 @@ Future<void> _pump(
   WidgetTester tester,
   Leaderboard? leaderboard, {
   Medals? medals,
+  List<RatingPoint> trend = const [],
 }) async {
   await tester.pumpWidget(
     WidgetsApp(
@@ -47,6 +56,7 @@ Future<void> _pump(
         seasonLength: SeasonLength.monthly,
         leaderboard: leaderboard,
         medals: medals,
+        trend: trend,
       ),
     ),
   );
@@ -131,6 +141,41 @@ void main() {
     );
 
     expect(find.text(l10n.profileLossStreakLabel), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('draws the season ratings as a sparkline beside the name', (
+    tester,
+  ) async {
+    await _pump(
+      tester,
+      _leaderboard(),
+      trend: [_point(1, 1010), _point(2, 1026), _point(3, 1042)],
+    );
+
+    expect(find.byType(Sparkline), findsOneWidget);
+    expect(
+      tester.getRect(find.byType(Sparkline)).left,
+      greaterThan(
+        tester.getRect(find.text('Bartholomew Alexandertonovich')).right,
+      ),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('draws no sparkline before the season has its first match', (
+    tester,
+  ) async {
+    await _pump(tester, _leaderboard());
+
+    expect(find.byType(Sparkline), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('draws no sparkline off a single match', (tester) async {
+    await _pump(tester, _leaderboard(), trend: [_point(1, 1010)]);
+
+    expect(find.byType(Sparkline), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }
