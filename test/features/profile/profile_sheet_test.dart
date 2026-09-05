@@ -428,14 +428,14 @@ void main() {
       ).thenAnswer((_) async => const []);
       when(
         () =>
-            profileRepository.headToHead(playerId: 'p1', opponentId: 'viewer'),
+            profileRepository.headToHead(playerId: 'viewer', opponentId: 'p1'),
       ).thenAnswer(
         (_) async => const HeadToHeadRecord(wins: 4, losses: 1, draws: 1),
       );
       when(
         () => matchRepository.recentBetweenPlayers(
-          playerId: 'p1',
-          opponentId: 'viewer',
+          playerId: 'viewer',
+          opponentId: 'p1',
         ),
       ).thenAnswer((_) async => [_matchAgainstTheo()]);
 
@@ -473,7 +473,7 @@ void main() {
 
       verify(
         () =>
-            profileRepository.headToHead(playerId: 'p1', opponentId: 'viewer'),
+            profileRepository.headToHead(playerId: 'viewer', opponentId: 'p1'),
       ).called(1);
 
       await cubit.close();

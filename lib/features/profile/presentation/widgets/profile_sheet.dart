@@ -62,8 +62,8 @@ class _ProfileSheetState extends State<ProfileSheet> {
     if (cubit != null) return cubit;
     final overview = context.read<ProfileOverviewCubit>();
     return _versusCubit = getIt<ProfileVersusCubit>(
-      param1: overview.playerId,
-      param2: widget.myPlayerId,
+      param1: widget.myPlayerId,
+      param2: overview.playerId,
     )..load();
   }
 
