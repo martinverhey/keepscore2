@@ -234,6 +234,9 @@ void main() {
     await tester.tap(find.text(l10n.competitionsJoinShort));
     await tester.pumpAndSettle();
 
+    await tester.tap(find.text(l10n.joinScanEnterCode));
+    await tester.pumpAndSettle();
+
     await tester.enterText(find.byType(TextField), _joinCode);
     await tester.pump();
     await tester.tap(find.text(l10n.joinLookUp));

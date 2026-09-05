@@ -122,6 +122,10 @@
   },
   "competitionDeleteConfirmBody": "This permanently deletes every player, match and rating in this competition. This can't be undone.",
 
+  "joinScanTitle": "Scan a QR code",
+  "joinScanSubtitle": "Point the camera at the QR code of the competition you want to join.",
+  "joinScanEnterCode": "Enter code manually",
+  "joinScanUnavailable": "The camera isn't available. Enter the code manually instead.",
   "joinTitle": "Join a competition",
   "joinSubtitle": "Enter the six-character code from whoever set it up.",
   "joinLookUp": "Find competition",

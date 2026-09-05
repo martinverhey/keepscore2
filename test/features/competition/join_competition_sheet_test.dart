@@ -23,10 +23,14 @@ JoinPreview _preview({bool alreadyMember = false}) => JoinPreview(
   claimable: const [ClaimablePlayer(id: 'p-chris', displayName: 'Chris')],
 );
 
-Future<MockCompetitionRepository> _pumpHarness(WidgetTester tester) async {
+Future<MockCompetitionRepository> _pumpHarness(
+  WidgetTester tester, {
+  String? code,
+}) async {
   AppPlatform.debugOverrideCupertino = false;
 
   final competitions = MockCompetitionRepository();
+  when(() => competitions.preview(any())).thenAnswer((_) async => _preview());
   getIt.registerFactory<JoinCompetitionCubit>(
     () => JoinCompetitionCubit(competitions),
   );
@@ -35,7 +39,7 @@ Future<MockCompetitionRepository> _pumpHarness(WidgetTester tester) async {
     MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: const _OpenerStub(),
+      home: _OpenerStub(code: code),
     ),
   );
   await tester.tap(find.byType(TextButton));
@@ -60,8 +64,7 @@ void main() {
   testWidgets('a looked-up code moves the sheet on to its confirm step', (
     tester,
   ) async {
-    final competitions = await _pumpHarness(tester);
-    when(() => competitions.preview(any())).thenAnswer((_) async => _preview());
+    await _pumpHarness(tester);
 
     final l10n = AppLocalizations.of(
       tester.element(find.byType(JoinCompetitionSheet)),
@@ -82,7 +85,6 @@ void main() {
     tester,
   ) async {
     final competitions = await _pumpHarness(tester);
-    when(() => competitions.preview(any())).thenAnswer((_) async => _preview());
     when(
       () => competitions.join(
         joinCode: any(named: 'joinCode'),
@@ -119,9 +121,25 @@ void main() {
     expect(find.text('opened c1'), findsOneWidget);
   });
 
+  testWidgets('a scanned code opens straight on the confirm step', (
+    tester,
+  ) async {
+    final competitions = await _pumpHarness(tester, code: _joinCode);
+
+    verify(() => competitions.preview(_joinCode)).called(1);
+    expect(find.text('Office Table Tennis'), findsOneWidget);
+
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(JoinCompetitionSheet)),
+    );
+    await tester.tap(find.text(l10n.commonBack));
+    await tester.pumpAndSettle();
+
+    expect(find.widgetWithText(TextField, _joinCode), findsOneWidget);
+  });
+
   testWidgets('cancelling hands nothing back', (tester) async {
-    final competitions = await _pumpHarness(tester);
-    when(() => competitions.preview(any())).thenAnswer((_) async => _preview());
+    await _pumpHarness(tester);
 
     final l10n = AppLocalizations.of(
       tester.element(find.byType(JoinCompetitionSheet)),
@@ -135,7 +153,9 @@ void main() {
 }
 
 class _OpenerStub extends StatefulWidget {
-  const _OpenerStub();
+  const _OpenerStub({this.code});
+
+  final String? code;
 
   @override
   State<_OpenerStub> createState() => _OpenerStubState();
@@ -156,7 +176,10 @@ class _OpenerStubState extends State<_OpenerStub> {
   }
 
   Future<void> _open() async {
-    final competitionId = await showJoinCompetitionSheet(context);
+    final competitionId = await showJoinCompetitionSheet(
+      context,
+      code: widget.code,
+    );
     if (competitionId == null) return;
     setState(() => _opened = competitionId);
   }

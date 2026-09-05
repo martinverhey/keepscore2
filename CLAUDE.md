@@ -102,6 +102,47 @@ with the submit button in `Sheet.primaryButton` (labelled
 `competitionsCreateShort` — the sheet's own title already says "Create
 competition", which is what retired the `competitionCreateSubmit` key) and
 Cancel beside it. `showNewMatchSheet` builds the teams and submits.
+
+**Join opens the camera first, and the code field is the way out of it.**
+`CompetitionsPage._join` shows `showJoinScannerSheet`
+(`competition/presentation/widgets/join_scanner_sheet.dart`) and only then
+`showJoinCompetitionSheet`, so the six-character code is the fallback rather
+than the front door — the QR a competition already shows off every
+`CompetitionCard`, `InviteSheet` and `ActiveCompetitionCard` encodes nothing
+but that code (`JoinQrImage(code: code)`), which is what makes scanning and
+typing the same flow. The scanner pops a `JoinScanResult`: `scanned(code)`
+from the camera, `manualEntry()` (a null `code`) from the "Enter code
+manually" button, and `null` from Cancel or a dismissal — that third case is
+the only reason the result is a type rather than a `String?`, since the page
+must tell "the user backed out" from "the user wants to type it". A
+non-null code is handed to `showJoinCompetitionSheet(code:)`, which seeds the
+text controller *and* calls `JoinCompetitionCubit.lookUpCode`, so the sheet
+opens on its confirm step and `Back` still lands on a filled-in code field.
+`String.isJoinCode` (`core/extensions/string.extension.dart`) is the one
+definition of "six characters once normalized", shared by `JoinCode.codeIsValid`
+and the scanner — a QR carrying anything else (a URL, someone's WiFi) is
+**ignored rather than rejected**, so the camera simply keeps scanning instead
+of erroring on every poster it sees.
+
+`QrScannerView` (`core/widgets/qr_scanner_view.dart`) is the only file in
+`lib/**` that imports `package:mobile_scanner`. It drives the controller
+itself — `autoStart: false` plus its own `start()` in `initState` — rather
+than letting `MobileScanner` start one, because a start that throws (camera
+permission denied, no camera, no plugin) is the case worth rendering: both
+that catch and the widget's `errorBuilder` land on the same
+`unavailableMessage`, and the "Enter code manually" button is right there
+under it. `DetectionSpeed.noDuplicates` plus the sheet's own `_closing` guard
+are what stop a held-up QR popping the sheet twice. **`flutter test` never
+gets past the placeholder**: under the test binding `start()` never resolves,
+so the square renders empty and neither the message nor a live preview is
+reachable — `join_scanner_sheet_test.dart` therefore drives scanning by
+calling `QrScannerView.onCode` off the widget directly, and nothing in the
+suite covers the camera itself. iOS needs `NSCameraUsageDescription` in
+`ios/Runner/Info.plist`; Android needs nothing (the plugin's own manifest
+declares `CAMERA`, and its minSdk 23 is under Flutter's default 24). The
+bundled ML Kit model is left bundled — `dev.steenbakker.mobile_scanner.useUnbundled=true`
+would cut ~3-10 MB off the APK at the price of a Play-Services download before
+the first scan works.
 `TeamPickerSheet`'s "Manage players" button opens `showManagePlayersSheet`
 (`player/presentation/widgets/manage_players_sheet.dart`) on top of the picker
 rather than popping and pushing `Routes.players` — the sheet builds its own
@@ -2346,7 +2387,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 368 tests at time of writing
+flutter test                    # 374 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 dart run flutter_launcher_icons     # assets/icon/*.png into android/ web/ (not ios/)

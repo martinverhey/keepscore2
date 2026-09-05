@@ -43,6 +43,11 @@ class JoinCompetitionCubit extends Cubit<JoinCompetitionState> {
     emit(JoinCode(code: confirm.code));
   }
 
+  Future<void> lookUpCode(String code) {
+    codeChanged(code);
+    return lookUp();
+  }
+
   Future<void> lookUp() async {
     final code = _code;
     if (code == null || !code.canLookUp) return;

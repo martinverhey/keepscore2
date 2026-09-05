@@ -23,6 +23,7 @@ import '../widgets/competition_action.enum.dart';
 import '../widgets/competition_action_sheet.dart';
 import '../widgets/create_competition_sheet.dart';
 import '../widgets/join_competition_sheet.dart';
+import '../widgets/join_scanner_sheet.dart';
 import '../widgets/competition_card.dart';
 
 const double _joinTailInset = 10;
@@ -266,7 +267,13 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
   }
 
   Future<void> _join(BuildContext context) async {
-    final competitionId = await showJoinCompetitionSheet(context);
+    final scan = await showJoinScannerSheet(context);
+    if (scan == null || !context.mounted) return;
+
+    final competitionId = await showJoinCompetitionSheet(
+      context,
+      code: scan.code,
+    );
     if (competitionId == null || !context.mounted) return;
 
     context.read<CompetitionListCubit>().refresh();

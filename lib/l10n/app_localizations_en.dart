@@ -339,6 +339,20 @@ class AppLocalizationsEn extends AppLocalizations {
       'This permanently deletes every player, match and rating in this competition. This can\'t be undone.';
 
   @override
+  String get joinScanTitle => 'Scan a QR code';
+
+  @override
+  String get joinScanSubtitle =>
+      'Point the camera at the QR code of the competition you want to join.';
+
+  @override
+  String get joinScanEnterCode => 'Enter code manually';
+
+  @override
+  String get joinScanUnavailable =>
+      'The camera isn\'t available. Enter the code manually instead.';
+
+  @override
   String get joinTitle => 'Join a competition';
 
   @override

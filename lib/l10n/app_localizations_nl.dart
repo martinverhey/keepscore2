@@ -339,6 +339,20 @@ class AppLocalizationsNl extends AppLocalizations {
       'Dit verwijdert definitief alle spelers, wedstrijden en ratings in deze competitie. Dit kan niet ongedaan worden gemaakt.';
 
   @override
+  String get joinScanTitle => 'Scan een QR-code';
+
+  @override
+  String get joinScanSubtitle =>
+      'Richt de camera op de QR-code van de competitie waaraan je wilt deelnemen.';
+
+  @override
+  String get joinScanEnterCode => 'Code handmatig invoeren';
+
+  @override
+  String get joinScanUnavailable =>
+      'De camera is niet beschikbaar. Voer de code handmatig in.';
+
+  @override
   String get joinTitle => 'Deelnemen aan een competitie';
 
   @override

@@ -122,6 +122,10 @@
   },
   "competitionDeleteConfirmBody": "Dit verwijdert definitief alle spelers, wedstrijden en ratings in deze competitie. Dit kan niet ongedaan worden gemaakt.",
 
+  "joinScanTitle": "Scan een QR-code",
+  "joinScanSubtitle": "Richt de camera op de QR-code van de competitie waaraan je wilt deelnemen.",
+  "joinScanEnterCode": "Code handmatig invoeren",
+  "joinScanUnavailable": "De camera is niet beschikbaar. Voer de code handmatig in.",
   "joinTitle": "Deelnemen aan een competitie",
   "joinSubtitle": "Voer de code van zes tekens in die je van de organisator hebt gekregen.",
   "joinLookUp": "Competitie opzoeken",

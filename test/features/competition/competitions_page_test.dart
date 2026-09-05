@@ -23,6 +23,7 @@ import 'package:keepscore2/features/competition/presentation/widgets/active_comp
 import 'package:keepscore2/features/competition/presentation/widgets/competition_card.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/create_competition_sheet.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/join_competition_sheet.dart';
+import 'package:keepscore2/features/competition/presentation/widgets/join_scanner_sheet.dart';
 import 'package:keepscore2/features/settings/presentation/cubit/theme_cubit.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
@@ -168,8 +169,14 @@ void main() {
     await tester.tap(_barAction(l10n.competitionsJoinShort));
     await tester.pumpAndSettle();
 
-    expect(find.byType(JoinCompetitionSheet), findsOneWidget);
+    expect(find.byType(JoinScannerSheet), findsOneWidget);
     expect(find.byType(CreateCompetitionSheet), findsNothing);
+
+    await tester.tap(find.text(l10n.joinScanEnterCode));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(JoinScannerSheet), findsNothing);
+    expect(find.byType(JoinCompetitionSheet), findsOneWidget);
   });
 
   testWidgets('the empty state bubbles a tip for each bar action', (

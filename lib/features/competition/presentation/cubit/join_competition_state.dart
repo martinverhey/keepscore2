@@ -18,7 +18,7 @@ class JoinCode extends JoinCompetitionState {
 
   String get normalizedCode => code.normalizedJoinCode;
 
-  bool get codeIsValid => normalizedCode.length == 6;
+  bool get codeIsValid => code.isJoinCode;
 
   bool get canLookUp => codeIsValid && !busy;
 

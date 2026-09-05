@@ -674,6 +674,30 @@ abstract class AppLocalizations {
   /// **'This permanently deletes every player, match and rating in this competition. This can\'t be undone.'**
   String get competitionDeleteConfirmBody;
 
+  /// No description provided for @joinScanTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan a QR code'**
+  String get joinScanTitle;
+
+  /// No description provided for @joinScanSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Point the camera at the QR code of the competition you want to join.'**
+  String get joinScanSubtitle;
+
+  /// No description provided for @joinScanEnterCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter code manually'**
+  String get joinScanEnterCode;
+
+  /// No description provided for @joinScanUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The camera isn\'t available. Enter the code manually instead.'**
+  String get joinScanUnavailable;
+
   /// No description provided for @joinTitle.
   ///
   /// In en, this message translates to:

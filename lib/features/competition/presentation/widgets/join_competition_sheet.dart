@@ -13,25 +13,31 @@ import '../../../../core/widgets/sheet.dart';
 import '../../../player/presentation/widgets/player_name_sheet.dart';
 import '../cubit/join_competition_cubit.dart';
 
-Future<String?> showJoinCompetitionSheet(BuildContext context) {
+Future<String?> showJoinCompetitionSheet(BuildContext context, {String? code}) {
   return showAdaptiveSheet<String>(
     context,
     builder: (_) => BlocProvider(
-      create: (_) => getIt<JoinCompetitionCubit>(),
-      child: const JoinCompetitionSheet(),
+      create: (_) {
+        final cubit = getIt<JoinCompetitionCubit>();
+        if (code != null) cubit.lookUpCode(code);
+        return cubit;
+      },
+      child: JoinCompetitionSheet(code: code),
     ),
   );
 }
 
 class JoinCompetitionSheet extends StatefulWidget {
-  const JoinCompetitionSheet({super.key});
+  const JoinCompetitionSheet({super.key, this.code});
+
+  final String? code;
 
   @override
   State<JoinCompetitionSheet> createState() => _JoinCompetitionSheetState();
 }
 
 class _JoinCompetitionSheetState extends State<JoinCompetitionSheet> {
-  final _code = TextEditingController();
+  late final _code = TextEditingController(text: widget.code ?? '');
 
   @override
   void dispose() {
