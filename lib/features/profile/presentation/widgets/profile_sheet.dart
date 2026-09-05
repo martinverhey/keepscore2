@@ -181,6 +181,10 @@ class _ProfileSheetState extends State<ProfileSheet> {
           EmptyState(message: context.l10n.profileNotEnoughMatches)
         else ...[
           _ratingSummary(context, state, leaderboard),
+          const SizedBox(height: AppSpacing.lg),
+          Text(context.l10n.profileGamesTitle, style: AppTypography.bodyMedium),
+          const SizedBox(height: AppSpacing.sm),
+          _gamesRow(context, state),
           const SizedBox(height: AppSpacing.md),
           _recordTable(
             context,
@@ -188,10 +192,6 @@ class _ProfileSheetState extends State<ProfileSheet> {
             losses: leaderboard.losses,
             draws: leaderboard.draws,
           ),
-          const SizedBox(height: AppSpacing.lg),
-          Text(context.l10n.profileGamesTitle, style: AppTypography.bodyMedium),
-          const SizedBox(height: AppSpacing.sm),
-          _gamesRow(context, state),
           const SizedBox(height: AppSpacing.md),
           _streaksRow(context, state),
           const SizedBox(height: AppSpacing.lg),
@@ -409,10 +409,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _statCard([
-          if (tier > 0) ...[
-            _tierFirePill(tier),
-            const SizedBox(width: AppSpacing.sm),
-          ],
+          if (tier > 0) _tierFireBlock(tier),
           _statBlock(context.l10n.profileWinStreakLabel, '$winStreak'),
           _statBlock(
             context.l10n.profileBestWinStreakLabel,
@@ -423,6 +420,10 @@ class _ProfileSheetState extends State<ProfileSheet> {
         _streakMilestoneRow(),
       ],
     );
+  }
+
+  Widget _tierFireBlock(int tier) {
+    return Expanded(child: Center(child: _tierFirePill(tier)));
   }
 
   Widget _tierFirePill(int tier) {
