@@ -10,6 +10,7 @@ class Sheet extends StatelessWidget {
     this.header,
     this.title,
     this.titleColor,
+    this.titleTrailing,
     this.subtitle,
     required this.content,
     this.fillsHeight = false,
@@ -20,6 +21,7 @@ class Sheet extends StatelessWidget {
   final Widget? header;
   final String? title;
   final Color? titleColor;
+  final Widget? titleTrailing;
   final String? subtitle;
   final Widget content;
   final bool fillsHeight;
@@ -103,7 +105,7 @@ class Sheet extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        ?_titleWidget(),
+        ?_titleRow(),
         if (subtitle case final subtitle?) ...[
           const SizedBox(height: AppSpacing.xs),
           HelpText(subtitle),
@@ -112,8 +114,23 @@ class Sheet extends StatelessWidget {
     );
   }
 
-  Widget? _titleWidget() {
+  Widget? _titleRow() {
     if (title == null) return null;
+    if (titleTrailing case final trailing?) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
+        children: [
+          Expanded(child: _title()),
+          trailing,
+        ],
+      );
+    }
+
+    return _title();
+  }
+
+  Widget _title() {
     return Text(
       title!,
       style: AppTypography.sheetTitle.copyWith(color: titleColor),

@@ -61,9 +61,19 @@ class _TeamPickerSheetState extends State<TeamPickerSheet> {
       child: Sheet(
         title: _side == MatchTeam.a ? widget.titleA : widget.titleB,
         titleColor: _color(context, _side),
+        titleTrailing: widget.canManagePlayers ? _manageButton(context) : null,
         content: _steps(context),
         primaryButton: _buttons(context),
       ),
+    );
+  }
+
+  Widget _manageButton(BuildContext context) {
+    return AdaptiveButton(
+      label: context.l10n.leaderboardManage,
+      kind: AdaptiveButtonKind.plain,
+      expand: false,
+      onPressed: _managePlayers,
     );
   }
 
@@ -114,12 +124,6 @@ class _TeamPickerSheetState extends State<TeamPickerSheet> {
                   ? AdaptiveColors.accent(context)
                   : null,
             ),
-          ),
-        if (widget.canManagePlayers)
-          AdaptiveButton(
-            label: context.l10n.playersManageTitle,
-            kind: AdaptiveButtonKind.tinted,
-            onPressed: _managePlayers,
           ),
       ],
     );

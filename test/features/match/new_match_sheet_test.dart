@@ -257,7 +257,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey(NewMatchKey.teamAreaA)));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Manage players'));
+      await tester.tap(find.text('Manage'));
       await tester.pumpAndSettle();
 
       expect(find.byType(ManagePlayersSheet), findsOneWidget);
