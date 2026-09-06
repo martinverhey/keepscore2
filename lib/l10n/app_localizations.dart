@@ -1325,7 +1325,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileTrendTitle.
   ///
   /// In en, this message translates to:
-  /// **'Recent form'**
+  /// **'Trend'**
   String get profileTrendTitle;
 
   /// No description provided for @profileNotEnoughMatches.

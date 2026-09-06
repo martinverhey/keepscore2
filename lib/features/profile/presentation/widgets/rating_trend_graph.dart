@@ -11,35 +11,35 @@ import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/rating_delta.dart';
 import '../../domain/rating_point.model.dart';
 
-class RatingTrendChart extends StatefulWidget {
-  const RatingTrendChart({super.key, required this.points});
+class RatingTrendGraph extends StatefulWidget {
+  const RatingTrendGraph({super.key, required this.points});
 
   final List<RatingPoint> points;
 
-  static const double height = 156;
+  static const double height = 126;
 
   @override
-  State<RatingTrendChart> createState() => _RatingTrendChartState();
+  State<RatingTrendGraph> createState() => _RatingTrendGraphState();
 }
 
-class _RatingTrendChartState extends State<RatingTrendChart> {
+class _RatingTrendGraphState extends State<RatingTrendGraph> {
   int? _focused;
 
   @override
   Widget build(BuildContext context) {
     if (widget.points.length < 2) {
-      return const SizedBox(height: RatingTrendChart.height);
+      return const SizedBox(height: RatingTrendGraph.height);
     }
 
     return SizedBox(
-      height: RatingTrendChart.height,
+      height: RatingTrendGraph.height,
       width: double.infinity,
       child: LayoutBuilder(
         builder: (context, constraints) => _chart(
           context,
           _TrendGeometry(
             widget.points,
-            Size(constraints.maxWidth, RatingTrendChart.height),
+            Size(constraints.maxWidth, RatingTrendGraph.height),
           ),
         ),
       ),
@@ -81,8 +81,6 @@ class _RatingTrendChartState extends State<RatingTrendChart> {
             alpha: AppOpacity.controlBorder,
           ),
           coreColor: AdaptiveColors.modalSurface(context),
-          startLabel: widget.points.first.playedAt.shortDayLabel(context),
-          endLabel: widget.points.last.playedAt.shortDayLabel(context),
           focused: _focused,
           progress: progress,
         ),
@@ -197,8 +195,6 @@ class _RatingTrendPainter extends CustomPainter {
     required this.gridColor,
     required this.guideColor,
     required this.coreColor,
-    required this.startLabel,
-    required this.endLabel,
     required this.focused,
     required this.progress,
   });
@@ -208,8 +204,6 @@ class _RatingTrendPainter extends CustomPainter {
   final Color gridColor;
   final Color guideColor;
   final Color coreColor;
-  final String startLabel;
-  final String endLabel;
   final int? focused;
   final double progress;
 
@@ -219,10 +213,9 @@ class _RatingTrendPainter extends CustomPainter {
 
     final geometry = _TrendGeometry(points, size);
     _paintGrid(canvas, geometry);
-    _paintDates(canvas, geometry);
 
     final line = geometry.offsets.smoothPath();
-    final reveal = _sideInset + geometry.plotWidth * progress;
+    final reveal = geometry.revealAt(progress);
 
     canvas.save();
     canvas.clipRect(Rect.fromLTRB(0, 0, reveal + _sideInset, size.height));
@@ -231,6 +224,7 @@ class _RatingTrendPainter extends CustomPainter {
     canvas.restore();
 
     _paintPoints(canvas, geometry, reveal);
+    _paintExtremes(canvas, geometry, reveal);
     _paintFocus(canvas, geometry);
   }
 
@@ -239,31 +233,9 @@ class _RatingTrendPainter extends CustomPainter {
       ..color = gridColor
       ..strokeWidth = _hairline;
 
-    for (final line in geometry.gridLines) {
-      _paintDashes(
-        canvas,
-        Offset(0, line.y),
-        Offset(geometry.plotRight, line.y),
-        paint,
-      );
-      final label = _label(line.label)..layout();
-      label.paint(
-        canvas,
-        Offset(geometry.plotRight + AppSpacing.sm, line.y - label.height / 2),
-      );
+    for (final y in geometry.gridLines) {
+      _paintDashes(canvas, Offset(0, y), Offset(geometry.plotRight, y), paint);
     }
-  }
-
-  void _paintDates(Canvas canvas, _TrendGeometry geometry) {
-    final baseline = geometry.plotBottom + AppSpacing.xs;
-    final start = _label(startLabel)..layout();
-    start.paint(canvas, Offset(_sideInset, baseline));
-
-    final end = _label(endLabel)..layout();
-    end.paint(
-      canvas,
-      Offset(geometry.plotRight - _sideInset - end.width, baseline),
-    );
   }
 
   void _paintArea(Canvas canvas, _TrendGeometry geometry, Path line) {
@@ -286,7 +258,7 @@ class _RatingTrendPainter extends CustomPainter {
             ).createShader(
               Rect.fromLTRB(
                 0,
-                _topInset,
+                geometry.plotTop,
                 geometry.plotRight,
                 geometry.plotBottom,
               ),
@@ -331,6 +303,26 @@ class _RatingTrendPainter extends CustomPainter {
     }
   }
 
+  void _paintExtremes(Canvas canvas, _TrendGeometry geometry, double reveal) {
+    for (final extreme in geometry.extremes) {
+      final anchor = geometry.offsets[extreme.index];
+      if (anchor.dx > reveal) continue;
+
+      final label = _label(extreme.label)..layout();
+      label.paint(
+        canvas,
+        Offset(
+          extreme.isHighest
+              ? geometry.plotRight - _sideInset - label.width
+              : _sideInset,
+          extreme.isHighest
+              ? anchor.dy - _valueLabelGap - label.height
+              : anchor.dy + _valueLabelGap,
+        ),
+      );
+    }
+  }
+
   void _paintFocus(Canvas canvas, _TrendGeometry geometry) {
     final index = focused;
     if (index == null) return;
@@ -338,7 +330,7 @@ class _RatingTrendPainter extends CustomPainter {
     final anchor = geometry.offsets[index];
     _paintDashes(
       canvas,
-      Offset(anchor.dx, _topInset),
+      Offset(anchor.dx, geometry.plotTop),
       Offset(anchor.dx, geometry.plotBottom),
       Paint()
         ..color = guideColor
@@ -383,8 +375,6 @@ class _RatingTrendPainter extends CustomPainter {
       oldDelegate.gridColor != gridColor ||
       oldDelegate.guideColor != guideColor ||
       oldDelegate.coreColor != coreColor ||
-      oldDelegate.startLabel != startLabel ||
-      oldDelegate.endLabel != endLabel ||
       oldDelegate.focused != focused ||
       oldDelegate.progress != progress;
 }
@@ -396,30 +386,38 @@ class _TrendGeometry {
     final highest = ratings.reduce(max);
     final span = highest - lowest;
     final range = span < 1 ? 1.0 : span;
-    final origin = span < 1 ? lowest - range / 2 : lowest;
+    final origin = lowest - (range - span) / 2;
 
-    final bottom = size.height - _dateBandHeight;
-    final plotHeight = bottom - _topInset;
-    final plotWidth = size.width - _valueGutter - _sideInset * 2;
+    final top = _valueBand;
+    final bottom = size.height - _valueBand;
+    final plotHeight = bottom - top;
+    final plotWidth = size.width - _sideInset * 2;
     final step = plotWidth / (points.length - 1);
 
+    final offsets = [
+      for (var i = 0; i < ratings.length; i++)
+        Offset(
+          _sideInset + step * i,
+          bottom - (ratings[i] - origin) / range * plotHeight,
+        ),
+    ];
+    final highestIndex = ratings.indexOf(highest);
+    final lowestIndex = ratings.indexOf(lowest);
+
     return _TrendGeometry._(
-      offsets: [
-        for (var i = 0; i < ratings.length; i++)
-          Offset(
-            _sideInset + step * i,
-            bottom - (ratings[i] - origin) / range * plotHeight,
-          ),
+      offsets: offsets,
+      gridLines: [
+        offsets[highestIndex].dy,
+        if (lowestIndex != highestIndex) offsets[lowestIndex].dy,
       ],
-      gridLines: span < 1
-          ? [(y: (bottom + _topInset) / 2, label: highest.ratingLabel)]
-          : [
-              (y: _topInset, label: highest.ratingLabel),
-              (y: bottom, label: lowest.ratingLabel),
-            ],
-      plotWidth: plotWidth,
+      extremes: [
+        (index: highestIndex, label: highest.ratingLabel, isHighest: true),
+        if (lowestIndex != highestIndex)
+          (index: lowestIndex, label: lowest.ratingLabel, isHighest: false),
+      ],
+      plotTop: top,
       plotBottom: bottom,
-      plotRight: size.width - _valueGutter,
+      plotRight: size.width,
       step: step,
     );
   }
@@ -427,18 +425,23 @@ class _TrendGeometry {
   const _TrendGeometry._({
     required this.offsets,
     required this.gridLines,
-    required this.plotWidth,
+    required this.extremes,
+    required this.plotTop,
     required this.plotBottom,
     required this.plotRight,
     required this.step,
   });
 
   final List<Offset> offsets;
-  final List<({double y, String label})> gridLines;
-  final double plotWidth;
+  final List<double> gridLines;
+  final List<({int index, String label, bool isHighest})> extremes;
+  final double plotTop;
   final double plotBottom;
   final double plotRight;
   final double step;
+
+  double revealAt(double progress) =>
+      offsets.first.dx + (offsets.last.dx - offsets.first.dx) * progress;
 
   int indexAt(double dx) {
     if (step <= 0) return 0;
@@ -446,10 +449,10 @@ class _TrendGeometry {
   }
 }
 
-const double _topInset = 14;
-const double _dateBandHeight = 20;
-const double _valueGutter = 46;
-const double _sideInset = 4;
+const double _valueLabelHeight = 16;
+const double _valueLabelGap = 8;
+const double _valueBand = _valueLabelGap + _valueLabelHeight;
+const double _sideInset = _markerHaloRadius + 2;
 const double _hairline = 1;
 const double _lineWidth = 2.5;
 const double _glowWidth = 8;

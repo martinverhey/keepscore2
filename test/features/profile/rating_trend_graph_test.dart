@@ -1,11 +1,11 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/features/profile/domain/rating_point.model.dart';
-import 'package:keepscore2/features/profile/presentation/widgets/rating_trend_chart.dart';
+import 'package:keepscore2/features/profile/presentation/widgets/rating_trend_graph.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 
-List<RatingPoint> _climbing() => [
-  for (var i = 0; i < 5; i++)
+List<RatingPoint> _climbing([int count = 5]) => [
+  for (var i = 0; i < count; i++)
     RatingPoint(
       playedAt: DateTime(2026, 8, 20 + i),
       ratingAfter: 1000 + i * 25,
@@ -21,12 +21,12 @@ Future<Rect> _pump(WidgetTester tester, List<RatingPoint> points) async {
       supportedLocales: AppLocalizations.supportedLocales,
       builder: (context, _) => Align(
         alignment: Alignment.topLeft,
-        child: SizedBox(width: 320, child: RatingTrendChart(points: points)),
+        child: SizedBox(width: 320, child: RatingTrendGraph(points: points)),
       ),
     ),
   );
   await tester.pumpAndSettle();
-  return tester.getRect(find.byType(RatingTrendChart));
+  return tester.getRect(find.byType(RatingTrendGraph));
 }
 
 void main() {
@@ -38,7 +38,7 @@ void main() {
     await tester.pump();
     expect(find.text('1000'), findsOneWidget);
 
-    await tester.tapAt(Offset(chart.right - 60, chart.center.dy));
+    await tester.tapAt(Offset(chart.right - 2, chart.center.dy));
     await tester.pump();
     expect(find.text('1100'), findsOneWidget);
   });
@@ -75,12 +75,28 @@ void main() {
     expect(find.text('1000'), findsNothing);
   });
 
+  testWidgets('the newest match keeps its whole marker inside the graph', (
+    tester,
+  ) async {
+    const markerCentre = 310.0;
+    const haloRadius = 8.0;
+    final chart = await _pump(tester, _climbing(2));
+
+    expect(
+      find.byType(RatingTrendGraph),
+      paints
+        ..circle(radius: 2.5)
+        ..circle(x: markerCentre, y: 24, radius: haloRadius),
+    );
+    expect(markerCentre + haloRadius, lessThanOrEqualTo(chart.width));
+  });
+
   testWidgets('a single point is not enough to draw a trend', (tester) async {
     await _pump(tester, [_climbing().first]);
 
     expect(
       find.descendant(
-        of: find.byType(RatingTrendChart),
+        of: find.byType(RatingTrendGraph),
         matching: find.byType(CustomPaint),
       ),
       findsNothing,

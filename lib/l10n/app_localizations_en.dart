@@ -698,7 +698,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileBestLossStreakLabel => 'Worst loss streak';
 
   @override
-  String get profileTrendTitle => 'Recent form';
+  String get profileTrendTitle => 'Trend';
 
   @override
   String get profileNotEnoughMatches =>

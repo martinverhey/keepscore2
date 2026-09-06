@@ -700,7 +700,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get profileBestLossStreakLabel => 'Slechtste verliesreeks';
 
   @override
-  String get profileTrendTitle => 'Recente vorm';
+  String get profileTrendTitle => 'Trend';
 
   @override
   String get profileNotEnoughMatches =>

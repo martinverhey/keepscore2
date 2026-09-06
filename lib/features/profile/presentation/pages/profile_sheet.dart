@@ -27,7 +27,7 @@ import '../cubit/profile_history_cubit.dart';
 import '../cubit/profile_overview_cubit.dart';
 import '../cubit/profile_versus_cubit.dart';
 import '../widgets/initials_circle.dart';
-import '../widgets/rating_trend_chart.dart';
+import '../widgets/rating_trend_graph.dart';
 
 enum ProfileTab { overview, versus, history }
 
@@ -231,6 +231,15 @@ class _ProfileSheetState extends State<ProfileSheet> {
           EmptyState(message: context.l10n.profileNotEnoughMatches)
         else ...[
           _ratingSummary(context, state, leaderboard),
+          if (state.history.length >= 2) ...[
+            const SizedBox(height: AppSpacing.lg),
+            Text(
+              context.l10n.profileTrendTitle,
+              style: AppTypography.bodyMedium,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            RatingTrendGraph(points: state.history),
+          ],
           const SizedBox(height: AppSpacing.lg),
           Text(context.l10n.profileGamesTitle, style: AppTypography.bodyMedium),
           const SizedBox(height: AppSpacing.sm),
@@ -244,14 +253,6 @@ class _ProfileSheetState extends State<ProfileSheet> {
           ),
           const SizedBox(height: AppSpacing.md),
           _streaksRow(context, state),
-          const SizedBox(height: AppSpacing.lg),
-          Text(context.l10n.profileTrendTitle, style: AppTypography.bodyMedium),
-          const SizedBox(height: AppSpacing.sm),
-          if (state.history.length < 2)
-            EmptyState(message: context.l10n.profileNotEnoughMatches)
-          else ...[
-            RatingTrendChart(points: state.history),
-          ],
         ],
         if (state.recentMatches.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.lg),

@@ -2221,7 +2221,7 @@ bar share is `CompetitionTab.route(competitionId)`
 held the only copy of that `switch` until there were two callers. **Nothing
 animates**: the branches are an `indexedStack`, so a swipe lands exactly like
 a tab tap, instantly. A deeper horizontal recognizer wins the arena over it
-(`RatingTrendChart`'s scrub is the only one in the app), which is the
+(`RatingTrendGraph`'s scrub is the only one in the app), which is the
 precedence you want. `competition_content_page_test.dart` walks both
 directions plus the no-op at the first tab.
 
@@ -2392,7 +2392,7 @@ Kept here because the code cannot express them and they cost real debugging:
   those stay the accessible affordance. It is why the profile sheet's
   `TodayDeltaBadge` assertion broke the moment the sheet gained a swipe, and
   `swipe_navigator_test.dart` pins the tree it must leave alone.
-- **`RatingTrendChart` splits itself in two on purpose: the graph is painted,
+- **`RatingTrendGraph` splits itself in two on purpose: the graph is painted,
   the readout is a widget.** `_TrendGeometry` (points + size → the point
   offsets, the two gridline positions and `indexAt(dx)`) is built by the
   widget's `LayoutBuilder` and again inside `paint`, so the scrub hit-test,
@@ -2402,10 +2402,53 @@ Kept here because the code cannot express them and they cost real debugging:
   cannot overshoot into a rating the player never had. The tooltip is a real
   widget positioned by a `CustomSingleChildLayout` rather than canvas text —
   it reuses `RatingDelta`, and `find.text` can see it, which is what
-  `rating_trend_chart_test.dart` uses to pin oldest-left/newest-right (the
+  `rating_trend_graph_test.dart` uses to pin oldest-left/newest-right (the
   ordering bug above is invisible to any assertion the painter could make).
   A tap toggles that readout and a drag scrubs it; neither clears on release,
   since a readout that vanished with the finger could never be read.
+- **The high/low values are labelled in two fixed corners — highest top
+  right, lowest bottom left — which is what lets the plot run the full
+  width.** They used to sit in a 46px right-hand gutter beside their
+  gridlines. `_paintExtremes` takes each label's *y* from its own extreme
+  point (a gap above the highest, the same gap below the lowest, so the label
+  still reads against the gridline through that point) and its *x* from the
+  corner, and `_valueBand` is the room reserved for them above and below the
+  plot, at both edges of the widget. Neither can collide with the curve at
+  any x *by construction*: nothing in the series is above the maximum or
+  below the minimum, and the monotone-cubic interpolation cannot overshoot
+  past either — which is what makes a fixed corner safe rather than merely
+  usually safe. The gridlines are derived from the extremes' own `dy` rather
+  than pinned to the plot's edges, so they still pass through both points in
+  the degenerate case below. The graph carries no axis labels beside them:
+  the first and last match's dates used to sit in a 20px band under the plot
+  and are gone, since the focus bubble already names the date of whichever
+  point is being read and the two ends alone said little about the ones
+  between them.
+  Nothing in `flutter test` sees any of this — it is canvas text — so the
+  suite only notices the width through `indexAt`, which is why the
+  newest-on-the-right tap moved to `chart.right - 2`.
+- **`_sideInset` is what the newest match's marker needs to stay whole, not a
+  margin.** `_chart`'s `Stack` clips at the widget's bounds, and the last
+  point is drawn as a `_paintMarker` whose halo runs `_markerHaloRadius` (8)
+  past its centre — so at the old inset of 4 that halo was cut off 4px outside
+  the box, which is what the newest dot looked shaved on Android and web.
+  It is now `_markerHaloRadius + 2`, and `_valueBand` is `_valueLabelGap +
+  _valueLabelHeight` rather than a bare 22 for the same reason at the top
+  edge: the high label sits a measured line box above the highest point, and
+  the band has to be at least that tall or the label clips against y = 0.
+  Both are derived from what is actually painted, so neither can drift out of
+  agreement with it again. `rating_trend_graph_test.dart` pins the marker's
+  centre exactly (x = 310 in a 320-wide graph) — the `paints` matcher compares
+  doubles with `==` and refuses to skip a `drawCircle` it does not match, so
+  that assertion has to name every dot drawn before it, which is why it runs
+  on a two-point series.
+- **A near-flat series is centred in its range, not floated off the top.**
+  `_TrendGeometry` widens the range to 1.0 whenever the real span is under
+  that, and used to put the origin at `lowest - range / 2` — correct only for
+  a span of exactly zero. At, say, a 0.7 span the highest point mapped to
+  1.2× the plot height and drew *above* the plot; `origin = lowest - (range -
+  span) / 2` centres the span instead, so every point stays inside. It was
+  invisible until the value labels started hanging off the top point.
 
 - **`AppTheme` uses `DynamicSchemeVariant.fidelity`** so the generated primary
   stays on the seed colour. The default variant pulls the saturated orange most
@@ -2562,7 +2605,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 397 tests at time of writing
+flutter test                    # 398 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 dart run flutter_launcher_icons     # assets/icon/*.png into android/ web/ (not ios/)
