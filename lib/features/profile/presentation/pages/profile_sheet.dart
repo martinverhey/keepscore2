@@ -14,6 +14,7 @@ import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/medal_chip.dart';
 import '../../../../core/widgets/sheet.dart';
 import '../../../../core/widgets/state_views.dart';
+import '../../../../core/widgets/streak_badge.dart';
 import '../../../../core/widgets/swipe_navigator.dart';
 import '../../../../core/widgets/today_delta_badge.dart';
 import '../../../competition/domain/competition.model.dart';
@@ -128,12 +129,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                widget.displayName,
-                style: AppTypography.titleSmall,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
+              _nameRow(state),
               if (_medalSummary(state) case final medals?) ...[
                 const SizedBox(height: 2),
                 medals,
@@ -143,6 +139,35 @@ class _ProfileSheetState extends State<ProfileSheet> {
         ),
       ],
     );
+  }
+
+  Widget _nameRow(ProfileOverviewState state) => Row(
+    children: [
+      Flexible(
+        child: Text(
+          widget.displayName,
+          style: AppTypography.titleSmall,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+      if (_streakBadge(state) case final badge?) ...[
+        const SizedBox(width: AppSpacing.xs),
+        badge,
+      ],
+    ],
+  );
+
+  Widget? _streakBadge(ProfileOverviewState state) {
+    if (state is! ProfileOverviewReady) return null;
+
+    final streak = state.streak;
+    if (streak.type != StreakType.win) return null;
+
+    final tier = streak.type.tier(streak.count);
+    if (tier == 0) return null;
+
+    return StreakBadge(tier: tier, count: streak.count);
   }
 
   Widget? _medalSummary(ProfileOverviewState state) {

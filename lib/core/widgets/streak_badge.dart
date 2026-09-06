@@ -1,29 +1,45 @@
 import 'package:flutter/widgets.dart';
 
+import '../extensions/build_context.extension.dart';
+import '../extensions/int.extension.dart';
 import '../theme/app_tokens.dart';
 import 'adaptive/adaptive.dart';
 
 class StreakBadge extends StatelessWidget {
-  const StreakBadge({super.key, required this.isWin, required this.label});
+  const StreakBadge({super.key, required this.tier, required this.count});
 
-  final bool isWin;
-  final String label;
+  final int tier;
+  final int count;
 
   @override
   Widget build(BuildContext context) {
-    final color = isWin ? AppColors.fireCore : AppColors.iceCore;
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        AdaptiveIcon(
-          isWin ? AdaptiveGlyph.fire : AdaptiveGlyph.ice,
-          color: color,
-          size: 18,
+    return Semantics(
+      label: context.l10n.profileStreakWin(count),
+      child: ExcludeSemantics(
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.sm,
+            vertical: 2,
+          ),
+          decoration: BoxDecoration(
+            borderRadius: AppRadius.pill,
+            color: tier.flameBadgeFill,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (var i = 0; i < tier.flameCount; i++) ...[
+                if (i > 0) const SizedBox(width: 2),
+                AdaptiveIcon(
+                  AdaptiveGlyph.fire,
+                  color: tier.flameColor,
+                  size: 13,
+                ),
+              ],
+            ],
+          ),
         ),
-        const SizedBox(width: AppSpacing.xs),
-        Text(label, style: AppTypography.labelLarge.copyWith(color: color)),
-      ],
+      ),
     );
   }
 }

@@ -10,6 +10,7 @@ import '../../../../core/extensions/streak_type.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/medal_chip.dart';
+import '../../../../core/widgets/streak_badge.dart';
 import '../../../../core/widgets/tag.dart';
 import '../../../../core/widgets/today_delta_badge.dart';
 import '../../../competition/domain/competition.model.dart';
@@ -90,7 +91,7 @@ class LeaderboardRow extends StatelessWidget {
           _rank(),
           Expanded(child: _nameColumn(context)),
           const SizedBox(width: AppSpacing.sm),
-          _ratingColumn(context),
+          _ratingColumn(),
         ],
       ),
     );
@@ -130,8 +131,21 @@ class LeaderboardRow extends StatelessWidget {
         const SizedBox(width: AppSpacing.xs),
         Tag(context.l10n.playersOwner, color: AppColors.gold),
       ],
+      if (_streakBadge() case final badge?) ...[
+        const SizedBox(width: AppSpacing.xs),
+        badge,
+      ],
     ],
   );
+
+  Widget? _streakBadge() {
+    if (leaderboard.streakType != StreakType.win) return null;
+
+    final tier = leaderboard.streakType.tier(leaderboard.streakCount);
+    if (tier == 0) return null;
+
+    return StreakBadge(tier: tier, count: leaderboard.streakCount);
+  }
 
   Widget? _medalsRow() {
     final tally = medals;
@@ -156,11 +170,15 @@ class LeaderboardRow extends StatelessWidget {
     ];
   }
 
-  Widget _ratingColumn(BuildContext context) => Column(
+  Widget _ratingColumn() => Column(
     crossAxisAlignment: CrossAxisAlignment.end,
     mainAxisSize: MainAxisSize.min,
     spacing: _secondaryLineGap,
-    children: [_ratingRow(), ?_badgesRow(context)],
+    children: [
+      _ratingRow(),
+      if (leaderboard.todayDelta != 0)
+        TodayDeltaBadge(delta: leaderboard.todayDelta),
+    ],
   );
 
   Widget _ratingRow() {
@@ -180,56 +198,6 @@ class LeaderboardRow extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-
-  Widget? _badgesRow(BuildContext context) {
-    final hasStreak =
-        leaderboard.streakType == StreakType.win &&
-        leaderboard.streakType.tier(leaderboard.streakCount) > 0;
-    final hasTodayDelta = leaderboard.todayDelta != 0;
-    if (!hasStreak && !hasTodayDelta) return null;
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (hasStreak) _streakBadge(context),
-        if (hasStreak && hasTodayDelta) const SizedBox(width: AppSpacing.xs),
-        if (hasTodayDelta) TodayDeltaBadge(delta: leaderboard.todayDelta),
-      ],
-    );
-  }
-
-  Widget _streakBadge(BuildContext context) {
-    final tier = leaderboard.streakType.tier(leaderboard.streakCount);
-
-    return Semantics(
-      label: context.l10n.profileStreakWin(leaderboard.streakCount),
-      child: ExcludeSemantics(
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.sm,
-            vertical: 2,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: AppRadius.pill,
-            color: tier.flameBadgeFill,
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (var i = 0; i < tier.flameCount; i++) ...[
-                if (i > 0) const SizedBox(width: 2),
-                AdaptiveIcon(
-                  AdaptiveGlyph.fire,
-                  color: tier.flameColor,
-                  size: 13,
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

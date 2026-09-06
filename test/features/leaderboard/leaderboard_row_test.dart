@@ -145,7 +145,7 @@ void main() {
   ) async {
     await pumpRow(
       tester,
-      _leaderboard(streakType: StreakType.win, streakCount: 12),
+      _leaderboard(todayDelta: 12.4),
       medals: const Medals(playerId: 'p1', gold: 2, silver: 1, bronze: 0),
     );
 

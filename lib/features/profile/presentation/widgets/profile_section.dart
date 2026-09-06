@@ -4,13 +4,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../app/dependency_injection/injector.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/extensions/double.extension.dart';
-import '../../../../core/extensions/int.extension.dart';
 import '../../../../core/extensions/rating_point_list.extension.dart';
 import '../../../../core/extensions/streak_type.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/medal_chip.dart';
 import '../../../../core/widgets/sparkline.dart';
+import '../../../../core/widgets/streak_badge.dart';
 import '../../../competition/domain/competition.model.dart';
 import '../../../leaderboard/domain/leaderboard.model.dart';
 import '../../../leaderboard/domain/medals.model.dart';
@@ -120,12 +120,7 @@ class ProfileSection extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                displayName,
-                style: AppTypography.titleSmall,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
+              _nameRow(),
               if (hasMedals) ...[
                 const SizedBox(height: 2),
                 Row(children: _medalChips(tally)),
@@ -136,6 +131,35 @@ class ProfileSection extends StatelessWidget {
         _trendSparkline(context),
       ],
     );
+  }
+
+  Widget _nameRow() => Row(
+    children: [
+      Flexible(
+        child: Text(
+          displayName,
+          style: AppTypography.titleSmall,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+      if (_streakBadge() case final badge?) ...[
+        const SizedBox(width: AppSpacing.xs),
+        badge,
+      ],
+    ],
+  );
+
+  Widget? _streakBadge() {
+    final leaderboard = this.leaderboard;
+    if (leaderboard == null || leaderboard.streakType != StreakType.win) {
+      return null;
+    }
+
+    final tier = leaderboard.streakType.tier(leaderboard.streakCount);
+    if (tier == 0) return null;
+
+    return StreakBadge(tier: tier, count: leaderboard.streakCount);
   }
 
   Widget _trendSparkline(BuildContext context) {
@@ -188,28 +212,19 @@ class ProfileSection extends StatelessWidget {
   }
 
   Widget _streakBlock(BuildContext context, Leaderboard leaderboard) {
-    final isWin = leaderboard.streakType == StreakType.win;
-    final tier = leaderboard.streakType.tier(leaderboard.streakCount);
-
     return _statBlock(
       '${leaderboard.streakCount}',
-      isWin
+      leaderboard.streakType == StreakType.win
           ? context.l10n.profileWinStreakLabel
           : context.l10n.profileLossStreakLabel,
-      icon: AdaptiveIcon(
-        isWin ? AdaptiveGlyph.fire : AdaptiveGlyph.ice,
-        color: isWin ? tier.flameColor : AppColors.iceCore,
-        size: 16,
-      ),
     );
   }
 
-  Widget _statBlock(String value, String label, {Widget? icon}) {
+  Widget _statBlock(String value, String label) {
     return Expanded(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (icon != null) ...[icon, const SizedBox(height: 2)],
           Text(
             value,
             style: AppTypography.bodyMedium.copyWith(
