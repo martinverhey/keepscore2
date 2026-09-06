@@ -122,7 +122,7 @@ Everything so far is local and reversible
 
 ## 4. Confirm, then push
 
-Show what is about to go out and ask for a yes before running anything:
+Show what is about to go out before asking anything:
 
 ```bash
 git log --oneline -1
@@ -130,15 +130,30 @@ git tag --points-at HEAD
 git show --stat HEAD -- pubspec.yaml
 ```
 
-State plainly that pushing uploads `vX.Y.Z` to TestFlight and Play internal
-testing, then ask. Only on an explicit yes:
+Then ask with `AskUserQuestion`, the same way step 3 asks for the bump — this
+is the irreversible step, so it gets a real prompt rather than a question in
+prose the user has to answer by typing. Name the version in the question and
+put the consequence in the option descriptions, so what each choice does is
+visible without scrolling back:
+
+- question: `Push v0.4.1? This uploads it to TestFlight and Play internal
+  testing.`
+- header: `Push`
+- `Push the release` — `Runs git push --follow-tags origin main. Both beta
+  workflows fire; a build that reaches either store can only be superseded,
+  not withdrawn.`
+- `Hold` — `Leaves the commit and tag local. Push later with git push
+  --follow-tags origin main.`
+
+Only on `Push the release`:
 
 ```bash
 git push --follow-tags origin main
 ```
 
-If the answer is no, leave the commit and tag in place and say how to undo
-them — do not unwind anything unasked.
+On `Hold` — or on any custom answer that is not a clear yes — leave the commit
+and tag in place and say how to undo them; do not unwind anything unasked.
+Treat a custom answer as a no unless it plainly says to push.
 
 ## After pushing
 
