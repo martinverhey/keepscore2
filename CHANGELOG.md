@@ -3,6 +3,22 @@
 Newest first. Each heading is an annotated `vX.Y.Z` tag; pushing that tag ships
 the build to TestFlight and Play internal testing.
 
+## v0.4.1 — 2026-09-06
+
+### Added
+- A flame streak badge beside every player name
+- The rating trend graph labels its highest and lowest points
+
+### Changed
+- Pick a language from a list of rows instead of a segmented control
+- Manage players moved into the team picker's title
+
+### Fixed
+- The player roster vanished while the players page reloaded
+- The streak badge sits before the owner tag on the leaderboard
+- The leaderboard's Manage button lines up with the season subtitle
+- A disabled filled button looked enabled on iOS
+
 ## v0.4.0 — 2026-09-05
 
 ### Added
