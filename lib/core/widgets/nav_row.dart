@@ -17,29 +17,35 @@ class NavRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AdaptiveTappable(
-      onTap: onTap,
-      borderRadius: AppRadius.card,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.md,
-        ),
-        decoration: BoxDecoration(
-          borderRadius: AppRadius.card,
-          color: AppColors.neutralSurface,
-        ),
-        child: Row(
-          children: [
-            Expanded(child: Text(label, style: AppTypography.bodyLarge)),
-            trailing ??
-                const AdaptiveIcon(
-                  AdaptiveGlyph.chevronRight,
-                  color: AppColors.neutral,
-                ),
-          ],
-        ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: AdaptiveTappable(
+        onTap: onTap,
+        borderRadius: AppRadius.card,
+        child: _row(),
+      ),
+    );
+  }
+
+  Widget _row() {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.md,
+      ),
+      decoration: BoxDecoration(
+        borderRadius: AppRadius.card,
+        color: AppColors.neutralSurface,
+      ),
+      child: Row(
+        children: [
+          Expanded(child: Text(label, style: AppTypography.bodyLarge)),
+          trailing ??
+              const AdaptiveIcon(
+                AdaptiveGlyph.chevronRight,
+                color: AppColors.neutral,
+              ),
+        ],
       ),
     );
   }
