@@ -13,12 +13,13 @@ class ListHeader extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
+      verticalDirection: VerticalDirection.up,
       children: [
-        Text(title, style: AppTypography.titleSmall),
         if (subtitle case final subtitle?) ...[
-          const SizedBox(height: 2),
           Text(subtitle, style: AppTypography.captionSmall),
+          const SizedBox(height: 2),
         ],
+        Text(title, style: AppTypography.titleSmall),
       ],
     );
   }

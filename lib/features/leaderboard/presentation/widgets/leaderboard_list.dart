@@ -73,6 +73,8 @@ class LeaderboardList extends StatelessWidget {
     if (!isOwner) return _seasonHeader(context, season);
 
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
       children: [
         Expanded(child: _seasonHeader(context, season)),
         _manageButton(context),

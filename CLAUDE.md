@@ -1866,6 +1866,24 @@ Leaderboard's running season pass both; Matches passes a title alone.
 Only Matches passes `active` — History always has a season selected, so
 "filtering" is not a state it can be out of.
 
+**`ListHeader`'s column is built bottom-up (`VerticalDirection.up`, subtitle
+first in the child list), and that is the whole mechanism behind the
+Leaderboard's Manage button sitting on the subtitle's baseline.** A vertical
+`RenderFlex` reports `defaultComputeDistanceToFirstActualBaseline` — the first
+child *in child order* that has one, plus its offset — so a normally-ordered
+header hands its parent the **title's** baseline, and
+`LeaderboardList._seasonBar`'s `CrossAxisAlignment.baseline` row then lined the
+button up with the season name rather than the `Ends …` caption under it.
+Reversing the direction leaves the painted order identical (title above,
+subtitle below, same 2px gap) and changes only which line the block reports.
+The alternative — putting the button *inside* the header's last line as a
+`trailing` slot — was built and rejected: a 48px tap target baseline-aligned
+against a 17px caption grows the row above the caption too, which pushed the
+subtitle 16px away from the title and made the block 74px instead of 43px.
+This way the header's own layout is untouched and only the row around it grows,
+downward, by the ~10px the button overhangs. Nothing in the suite watches any
+of it.
+
 **`AdaptiveBarAction.active` is ours, not the package's.** No component in
 `liquid_glass_easy` that we use carries a selected state: `LiquidGlassTabBarAction`
 takes only `icon`/`child`, `onTap`, `foregroundColor`, `size`, `style`,
