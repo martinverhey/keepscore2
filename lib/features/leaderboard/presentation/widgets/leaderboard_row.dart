@@ -127,13 +127,13 @@ class LeaderboardRow extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
         ),
       ),
-      if (leaderboard.isOwner) ...[
-        const SizedBox(width: AppSpacing.xs),
-        Tag(context.l10n.playersOwner, color: AppColors.gold),
-      ],
       if (_streakBadge() case final badge?) ...[
         const SizedBox(width: AppSpacing.xs),
         badge,
+      ],
+      if (leaderboard.isOwner) ...[
+        const SizedBox(width: AppSpacing.xs),
+        Tag(context.l10n.playersOwner, color: AppColors.gold),
       ],
     ],
   );
