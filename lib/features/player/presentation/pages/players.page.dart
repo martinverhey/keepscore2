@@ -22,7 +22,7 @@ class _PlayersPageState extends State<PlayersPage> {
   @override
   void initState() {
     super.initState();
-    context.read<PlayersCubit>().load();
+    context.read<PlayersCubit>().refresh();
   }
 
   @override
