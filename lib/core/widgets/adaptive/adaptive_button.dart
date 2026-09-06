@@ -107,6 +107,10 @@ class AdaptiveButton extends StatelessWidget {
   Widget _cupertinoButton(BuildContext context, bool enabled) {
     final callback = enabled ? onPressed : null;
     final accent = AdaptiveColors.accent(context);
+    final disabledLabel = CupertinoDynamicColor.resolve(
+      CupertinoColors.tertiaryLabel,
+      context,
+    );
     final sizeStyle = expand
         ? CupertinoButtonSize.large
         : CupertinoButtonSize.medium;
@@ -115,7 +119,8 @@ class AdaptiveButton extends StatelessWidget {
       AdaptiveButtonKind.filled => CupertinoButton.filled(
         onPressed: callback,
         sizeStyle: sizeStyle,
-        child: _child(CupertinoColors.white),
+        foregroundColor: enabled ? null : disabledLabel,
+        child: _child(enabled ? CupertinoColors.white : disabledLabel),
       ),
       AdaptiveButtonKind.tinted => CupertinoButton(
         color: accent.withValues(alpha: AppOpacity.tintedButtonFill),
