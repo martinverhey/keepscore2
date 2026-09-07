@@ -39,9 +39,7 @@ void main() {
 
   setUp(() {
     repository = MockPlayerRepository();
-    when(
-      () => repository.watch(any()),
-    ).thenAnswer((_) => const Stream.empty());
+    when(() => repository.watch(any())).thenAnswer((_) => const Stream.empty());
     when(
       () => repository.currentPlayers('c1'),
     ).thenAnswer((_) async => const [_placeholder, _owner, _claimed]);

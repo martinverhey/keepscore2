@@ -185,9 +185,9 @@ void main() {
     await _pumpGroup(tester, glass: true, actionCount: 2);
 
     expect(
-      tester.widgetList<InkWell>(find.byType(InkWell)).map(
-        (action) => action.customBorder,
-      ),
+      tester
+          .widgetList<InkWell>(find.byType(InkWell))
+          .map((action) => action.customBorder),
       everyElement(const CircleBorder()),
     );
   });
@@ -250,28 +250,25 @@ void main() {
   });
 
   for (final useCupertino in [false, true]) {
-    testWidgets(
-      'an active action paints its glyph in the accent off glass '
-      '(cupertino: $useCupertino)',
-      (tester) async {
-        expect(
-          await _pumpAndReadGlyphColor(
-            tester,
-            active: true,
-            useCupertino: useCupertino,
-          ),
-          AppColors.seed,
-        );
+    testWidgets('an active action paints its glyph in the accent off glass '
+        '(cupertino: $useCupertino)', (tester) async {
+      expect(
+        await _pumpAndReadGlyphColor(
+          tester,
+          active: true,
+          useCupertino: useCupertino,
+        ),
+        AppColors.seed,
+      );
 
-        expect(
-          await _pumpAndReadGlyphColor(
-            tester,
-            active: false,
-            useCupertino: useCupertino,
-          ),
-          isNull,
-        );
-      },
-    );
+      expect(
+        await _pumpAndReadGlyphColor(
+          tester,
+          active: false,
+          useCupertino: useCupertino,
+        ),
+        isNull,
+      );
+    });
   }
 }

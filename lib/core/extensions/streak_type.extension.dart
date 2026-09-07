@@ -27,18 +27,15 @@ extension StreakTypeBadge on StreakType {
   }
 
   Color glyphColor(int count) => switch (this) {
-    StreakType.loss => tier(count) >= 4
-        ? AppColors.iceEliteCore
-        : AppColors.iceCore,
+    StreakType.loss =>
+      tier(count) >= 4 ? AppColors.iceEliteCore : AppColors.iceCore,
     _ => tier(count) >= 4 ? AppColors.fireEliteCore : AppColors.fireCore,
   };
 
   Color badgeFill(int count) => switch (this) {
-    StreakType.loss => tier(count) >= 4
-        ? AppColors.iceEliteBadgeFill
-        : AppColors.iceBadgeFill,
-    _ => tier(count) >= 4
-        ? AppColors.fireEliteBadgeFill
-        : AppColors.fireBadgeFill,
+    StreakType.loss =>
+      tier(count) >= 4 ? AppColors.iceEliteBadgeFill : AppColors.iceBadgeFill,
+    _ =>
+      tier(count) >= 4 ? AppColors.fireEliteBadgeFill : AppColors.fireBadgeFill,
   };
 }

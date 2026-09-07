@@ -172,10 +172,8 @@ void main() {
         ),
       );
       when(
-        () => leaderboard.leaderboards(
-          competitionId: id,
-          seasonId: 'season-$id',
-        ),
+        () =>
+            leaderboard.leaderboards(competitionId: id, seasonId: 'season-$id'),
       ).thenAnswer((_) async => [_row(id, id == 'c1' ? 'Ada One' : 'Ada Two')]);
       when(
         () => leaderboard.watchLeaderboards(
@@ -325,12 +323,11 @@ GoRouter _buildRouter({
                           final id = state.pathParameters['id']!;
                           return BlocProvider(
                             key: ValueKey(id),
-                            create: (_) =>
-                                LeaderboardCubit(
-                                  leaderboardRepository,
-                                  _emptyTrendRepository(),
-                                  id,
-                                ),
+                            create: (_) => LeaderboardCubit(
+                              leaderboardRepository,
+                              _emptyTrendRepository(),
+                              id,
+                            ),
                             child: LeaderboardPage(competitionId: id),
                           );
                         },

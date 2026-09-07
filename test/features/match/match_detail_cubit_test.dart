@@ -71,12 +71,7 @@ List<Player> _players() => const [
     isActive: true,
     userId: 'u2',
   ),
-  Player(
-    id: 'p2',
-    competitionId: 'c1',
-    displayName: 'Grace',
-    isActive: true,
-  ),
+  Player(id: 'p2', competitionId: 'c1', displayName: 'Grace', isActive: true),
 ];
 
 void main() {

@@ -66,26 +66,23 @@ Future<void> _pump(
 }
 
 void main() {
-  testWidgets(
-    'shows the name without a greeting, and the rating, win rate '
-    'and games as text, with no streak or record',
-    (tester) async {
-      await _pump(tester, _leaderboard());
+  testWidgets('shows the name without a greeting, and the rating, win rate '
+      'and games as text, with no streak or record', (tester) async {
+    await _pump(tester, _leaderboard());
 
-      final l10n = AppLocalizations.of(
-        tester.element(find.byType(ProfileSection)),
-      );
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(ProfileSection)),
+    );
 
-      expect(find.text('Bartholomew Alexandertonovich'), findsOneWidget);
-      expect(find.textContaining('Hello'), findsNothing);
-      expect(find.text('1042'), findsOneWidget);
-      expect(find.text('60%'), findsOneWidget);
-      expect(find.text('5'), findsOneWidget);
-      expect(find.text(l10n.matchesTitle), findsOneWidget);
-      expect(find.text(l10n.leaderboardRecord(3, 1, 1)), findsNothing);
-      expect(tester.takeException(), isNull);
-    },
-  );
+    expect(find.text('Bartholomew Alexandertonovich'), findsOneWidget);
+    expect(find.textContaining('Hello'), findsNothing);
+    expect(find.text('1042'), findsOneWidget);
+    expect(find.text('60%'), findsOneWidget);
+    expect(find.text('5'), findsOneWidget);
+    expect(find.text(l10n.matchesTitle), findsOneWidget);
+    expect(find.text(l10n.leaderboardRecord(3, 1, 1)), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('omits the stats row when nothing has been played yet', (
     tester,

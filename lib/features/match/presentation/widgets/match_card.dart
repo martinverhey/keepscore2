@@ -64,7 +64,9 @@ class MatchCard extends StatelessWidget {
           ? CrossAxisAlignment.end
           : CrossAxisAlignment.start,
       children: [
-        Expanded(child: _names(context, team: team, alignEnd: alignEnd)),
+        Expanded(
+          child: _names(context, team: team, alignEnd: alignEnd),
+        ),
         const SizedBox(height: 2),
         _delta(team),
       ],

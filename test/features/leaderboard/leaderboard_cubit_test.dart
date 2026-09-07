@@ -38,11 +38,8 @@ Leaderboard _leaderboard(String playerId, double rating, int rank) =>
 LeaderboardReady _ready(LeaderboardCubit cubit) =>
     cubit.state as LeaderboardReady;
 
-RatingPoint _point(double rating) => RatingPoint(
-  playedAt: _august,
-  ratingAfter: rating,
-  ratingDelta: 10,
-);
+RatingPoint _point(double rating) =>
+    RatingPoint(playedAt: _august, ratingAfter: rating, ratingDelta: 10);
 
 void main() {
   late MockLeaderboardRepository repository;

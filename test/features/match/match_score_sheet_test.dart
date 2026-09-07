@@ -43,7 +43,9 @@ Future<void> _pump(WidgetTester tester, {required bool oneVsOne}) {
     MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: Material(child: MatchScoreSheet(match: _match(oneVsOne: oneVsOne))),
+      home: Material(
+        child: MatchScoreSheet(match: _match(oneVsOne: oneVsOne)),
+      ),
     ),
   );
 }

@@ -219,9 +219,9 @@ void main() {
     'loading also reports which game types the season has seen',
     setUp: () {
       stubPage(_page(3));
-      when(() => repository.seasonGameTypes('c1')).thenAnswer(
-        (_) async => const {GameType.oneVOne, GameType.threeVThree},
-      );
+      when(
+        () => repository.seasonGameTypes('c1'),
+      ).thenAnswer((_) async => const {GameType.oneVOne, GameType.threeVThree});
     },
     build: build,
     act: (cubit) => cubit.load(),

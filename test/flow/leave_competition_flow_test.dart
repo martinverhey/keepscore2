@@ -146,10 +146,8 @@ void main() {
       ),
     );
     when(
-      () => leaderboard.leaderboards(
-        competitionId: 'c1',
-        seasonId: 'season-c1',
-      ),
+      () =>
+          leaderboard.leaderboards(competitionId: 'c1', seasonId: 'season-c1'),
     ).thenAnswer((_) async => [_row('c1', 'Ada One')]);
     when(
       () => leaderboard.watchLeaderboards(
@@ -220,10 +218,7 @@ void main() {
 
     expect(find.byType(CompetitionTabBar), findsNothing);
     expect(find.byType(CompetitionsPage), findsOneWidget);
-    expect(
-      router.routerDelegate.currentConfiguration.uri.path,
-      '/',
-    );
+    expect(router.routerDelegate.currentConfiguration.uri.path, '/');
     expect(competitionCubit.competitionId, isNull);
     expect(await RecentCompetitionStore.get(), isNull);
     expect(find.text('Office Table Tennis'), findsNothing);
@@ -287,12 +282,11 @@ GoRouter _buildRouter({
                           final id = state.pathParameters['id']!;
                           return BlocProvider(
                             key: ValueKey(id),
-                            create: (_) =>
-                                LeaderboardCubit(
-                                  leaderboardRepository,
-                                  _emptyTrendRepository(),
-                                  id,
-                                ),
+                            create: (_) => LeaderboardCubit(
+                              leaderboardRepository,
+                              _emptyTrendRepository(),
+                              id,
+                            ),
                             child: LeaderboardPage(competitionId: id),
                           );
                         },
