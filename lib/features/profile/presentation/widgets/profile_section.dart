@@ -152,14 +152,15 @@ class ProfileSection extends StatelessWidget {
 
   Widget? _streakBadge() {
     final leaderboard = this.leaderboard;
-    if (leaderboard == null || leaderboard.streakType != StreakType.win) {
+    if (leaderboard == null ||
+        !leaderboard.streakType.hasBadge(leaderboard.streakCount)) {
       return null;
     }
 
-    final tier = leaderboard.streakType.tier(leaderboard.streakCount);
-    if (tier == 0) return null;
-
-    return StreakBadge(tier: tier, count: leaderboard.streakCount);
+    return StreakBadge(
+      type: leaderboard.streakType,
+      count: leaderboard.streakCount,
+    );
   }
 
   Widget _trendSparkline(BuildContext context) {
@@ -195,7 +196,7 @@ class ProfileSection extends StatelessWidget {
     final winRatePercent = leaderboard.played == 0
         ? 0
         : (leaderboard.winRate * 100).round();
-    final hasStreak = leaderboard.streakType.tier(leaderboard.streakCount) > 0;
+    final hasStreak = leaderboard.streakType.hasBadge(leaderboard.streakCount);
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,

@@ -1,6 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 import 'package:keepscore2/core/widgets/sparkline.dart';
+import 'package:keepscore2/core/widgets/streak_badge.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/medals.model.dart';
@@ -125,6 +127,30 @@ void main() {
     expect(find.text('1'), findsOneWidget);
     expect(find.text('7'), findsOneWidget);
     expect(find.text(l10n.profileWinStreakLabel), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('badges a loss streak in ice beside the name, and names it in '
+      'the stat row', (tester) async {
+    await _pump(
+      tester,
+      _leaderboard(streakType: StreakType.loss, streakCount: 6),
+    );
+
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(ProfileSection)),
+    );
+
+    expect(find.byType(StreakBadge), findsOneWidget);
+    expect(
+      tester
+          .widgetList<AdaptiveIcon>(find.byType(AdaptiveIcon))
+          .where((icon) => icon.glyph == AdaptiveGlyph.ice)
+          .length,
+      2,
+    );
+    expect(find.text(l10n.profileLossStreakLabel), findsOneWidget);
+    expect(find.text('6'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/app/dependency_injection/injector.dart';
-import 'package:keepscore2/core/widgets/adaptive/adaptive_segmented.dart';
+import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 import 'package:keepscore2/core/widgets/medal_chip.dart';
+import 'package:keepscore2/core/widgets/streak_badge.dart';
 import 'package:keepscore2/core/widgets/sheet.dart';
 import 'package:keepscore2/core/widgets/swipe_navigator.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
@@ -235,6 +236,95 @@ void main() {
     },
   );
 
+  testWidgets('the overview carries a loss streak card and badges the streak '
+      'in ice', (tester) async {
+    when(() => leaderboardRepository.currentSeason('c1')).thenAnswer(
+      (_) async =>
+          SeasonWindow(id: 's1', startsAt: _august, endsAt: _september),
+    );
+    when(
+      () => leaderboardRepository.leaderboards(
+        competitionId: 'c1',
+        seasonId: 's1',
+      ),
+    ).thenAnswer(
+      (_) async => [
+        _leaderboard(rating: 1050, played: 10, wins: 6, losses: 3, draws: 1),
+      ],
+    );
+    when(
+      () => profileRepository.ratingHistory(seasonId: 's1', playerId: 'p1'),
+    ).thenAnswer((_) async => const []);
+    when(
+      () => profileRepository.profileStats(
+        playerId: 'p1',
+        seasonId: any(named: 'seasonId'),
+      ),
+    ).thenAnswer(
+      (_) async => const ProfileStats(
+        totalPlayed: 20,
+        bestStreaks: BestStreaks(win: 7, loss: 9),
+        bestRating: 1050,
+        streak: Streak(type: StreakType.loss, count: 4),
+        recentPlayed: RecentPlayed.zero(),
+      ),
+    );
+
+    when(
+      () => matchRepository.recentForPlayer(playerId: 'p1'),
+    ).thenAnswer((_) async => const []);
+    when(
+      () => leaderboardRepository.medals('c1'),
+    ).thenAnswer((_) async => const []);
+
+    final cubit = buildOverviewCubit()..load();
+    await cubit.stream.firstWhere((state) => state is ProfileOverviewReady);
+    await pumpSheet(tester, cubit);
+
+    final l10n = AppLocalizations.of(tester.element(find.byType(ProfileSheet)));
+
+    expect(find.text(l10n.profileWinStreakLabel), findsOneWidget);
+    expect(find.text(l10n.profileBestWinStreakLabel), findsOneWidget);
+    expect(find.text('7'), findsOneWidget);
+
+    expect(find.text(l10n.profileLossStreakLabel), findsOneWidget);
+    expect(find.text(l10n.profileBestLossStreakLabel), findsOneWidget);
+    expect(find.text('4'), findsOneWidget);
+    expect(find.text('9'), findsOneWidget);
+
+    expect(
+      tester
+          .widgetList<AdaptiveIcon>(find.byType(AdaptiveIcon))
+          .where((icon) => icon.glyph == AdaptiveGlyph.ice)
+          .length,
+      9,
+    );
+    expect(find.byType(StreakBadge), findsNWidgets(10));
+
+    expect(find.text('25+'), findsNWidgets(2));
+    final lossCardLabel = tester
+        .getRect(find.text(l10n.profileLossStreakLabel))
+        .top;
+    final milestoneRows = tester
+        .widgetList<Text>(find.text('25+'))
+        .map((text) => tester.getRect(find.byWidget(text)).top)
+        .toList();
+    expect(milestoneRows.first, lessThan(lossCardLabel));
+    expect(milestoneRows.last, greaterThan(lossCardLabel));
+
+    expect(
+      _offCentreInCard(tester, l10n.profileWinStreakLabel),
+      moreOrLessEquals(0, epsilon: 0.5),
+    );
+    expect(
+      _offCentreInCard(tester, l10n.profileLossStreakLabel),
+      moreOrLessEquals(0, epsilon: 0.5),
+    );
+
+    expect(tester.takeException(), isNull);
+    await cubit.close();
+  });
+
   testWidgets('the medals header subtitle does not overflow on a narrow phone '
       'with a long name and large counts', (tester) async {
     tester.view.physicalSize = const Size(360, 800);
@@ -435,7 +525,13 @@ void main() {
         () =>
             profileRepository.headToHead(playerId: 'viewer', opponentId: 'p1'),
       ).thenAnswer(
-        (_) async => const HeadToHeadRecord(wins: 4, losses: 1, draws: 1),
+        (_) async => const HeadToHeadRecord(
+          wins: 4,
+          losses: 1,
+          draws: 1,
+          biggestWin: BiggestWin(score: 21, opponentScore: 3),
+          shutoutWins: 7,
+        ),
       );
       when(
         () => matchRepository.recentBetweenPlayers(
@@ -472,6 +568,11 @@ void main() {
       expect(find.text('67%'), findsOneWidget);
       expect(find.text(l10n.profileHeadToHeadTitle('Nora')), findsNothing);
 
+      expect(find.text(l10n.profileBiggestHumiliationLabel), findsOneWidget);
+      expect(find.text('21 – 3'), findsOneWidget);
+      expect(find.text(l10n.profileUltimateDisrespectLabel), findsOneWidget);
+      expect(find.text('7'), findsOneWidget);
+
       expect(find.text(l10n.profileRecentMatchesTitle), findsOneWidget);
       expect(find.text('Theo'), findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -480,6 +581,74 @@ void main() {
         () =>
             profileRepository.headToHead(playerId: 'viewer', opponentId: 'p1'),
       ).called(1);
+
+      await cubit.close();
+    },
+  );
+
+  testWidgets(
+    'the versus highlights are left out until there is a win to brag about',
+    (tester) async {
+      when(() => leaderboardRepository.currentSeason('c1')).thenAnswer(
+        (_) async =>
+            SeasonWindow(id: 's1', startsAt: _august, endsAt: _september),
+      );
+      when(
+        () => leaderboardRepository.leaderboards(
+          competitionId: 'c1',
+          seasonId: 's1',
+        ),
+      ).thenAnswer((_) async => const []);
+      when(
+        () => profileRepository.ratingHistory(seasonId: 's1', playerId: 'p1'),
+      ).thenAnswer((_) async => const []);
+      when(
+        () => profileRepository.profileStats(
+          playerId: 'p1',
+          seasonId: any(named: 'seasonId'),
+        ),
+      ).thenAnswer(
+        (_) async => const ProfileStats(
+          totalPlayed: 0,
+          bestStreaks: BestStreaks.zero(),
+          bestRating: 0,
+          streak: Streak.none(),
+          recentPlayed: RecentPlayed.zero(),
+        ),
+      );
+      when(
+        () => matchRepository.recentForPlayer(playerId: 'p1'),
+      ).thenAnswer((_) async => const []);
+      when(
+        () => leaderboardRepository.medals('c1'),
+      ).thenAnswer((_) async => const []);
+      when(
+        () =>
+            profileRepository.headToHead(playerId: 'viewer', opponentId: 'p1'),
+      ).thenAnswer(
+        (_) async => const HeadToHeadRecord(wins: 0, losses: 3, draws: 0),
+      );
+      when(
+        () => matchRepository.recentBetweenPlayers(
+          playerId: 'viewer',
+          opponentId: 'p1',
+        ),
+      ).thenAnswer((_) async => const []);
+
+      final cubit = buildOverviewCubit()..load(viewerPlayerId: 'viewer');
+      await cubit.stream.firstWhere((s) => s is ProfileOverviewReady);
+      await pumpSheet(tester, cubit, myPlayerId: 'viewer');
+
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ProfileSheet)),
+      );
+
+      await tester.tap(find.text(l10n.profileTabVersus));
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n.profileLossesLabel), findsOneWidget);
+      expect(find.text(l10n.profileBiggestHumiliationLabel), findsNothing);
+      expect(find.text(l10n.profileUltimateDisrespectLabel), findsNothing);
 
       await cubit.close();
     },
@@ -832,4 +1001,10 @@ ProfileTab _selectedTab(WidgetTester tester) {
         find.byType(AdaptiveSegmented<ProfileTab>),
       )
       .value;
+}
+
+double _offCentreInCard(WidgetTester tester, String label) {
+  final block = find.text(label);
+  final card = find.ancestor(of: block, matching: find.byType(Container)).first;
+  return tester.getRect(block).center.dx - tester.getRect(card).center.dx;
 }

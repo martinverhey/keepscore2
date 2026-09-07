@@ -61,6 +61,7 @@ abstract final class AppColors {
   static const Color fireCore = Color(0xFFFF6D00);
   static const Color fireEliteCore = Color(0xFF9333EA);
   static const Color iceCore = Color(0xFF29B6F6);
+  static const Color iceEliteCore = Color(0xFF1D4ED8);
 
   static const Color modalSurface = Color(0xFFFAFAFA);
   static const Color modalSurfaceOnDark = Color(0xFF1F2023);
@@ -79,6 +80,12 @@ abstract final class AppColors {
     alpha: AppOpacity.badgeFill,
   );
   static final Color fireEliteBadgeFill = fireEliteCore.withValues(
+    alpha: AppOpacity.badgeFill,
+  );
+  static final Color iceBadgeFill = iceCore.withValues(
+    alpha: AppOpacity.badgeFill,
+  );
+  static final Color iceEliteBadgeFill = iceEliteCore.withValues(
     alpha: AppOpacity.badgeFill,
   );
   static final Color glassTint = white.withValues(alpha: AppOpacity.glassFill);

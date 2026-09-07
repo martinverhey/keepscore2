@@ -248,6 +248,25 @@ refreshes the list when either sheet closes — realtime does it.
   monthly / quarterly / yearly in the competition's timezone.
 - **Draws allowed**, scored 0.5.
 - **No match confirmation** — a submitted result counts immediately.
+- **A streak is badged in both directions**: fire for a win streak, ice for a
+  loss streak (`AdaptiveGlyph.fire`/`ice`), on the leaderboard row, in
+  `ProfileSection`'s name row and in `ProfileSheet` alike. The tiers are
+  shared by both — 3/5/10/25, one glyph per tier up to three, then a single
+  *elite*-coloured glyph at 25 (purple for fire, dark blue for ice) — and
+  `StreakType` itself resolves glyph, colour, fill and count
+  (`StreakTypeBadge` in `core/extensions/streak_type.extension.dart`), so
+  `StreakBadge` takes a type plus a count and nothing branches at the call
+  sites: each asks `type.hasBadge(count)` and renders the badge or nothing.
+  The loss half was dropped once (`6225d10`) precisely because no test
+  covered it — `leaderboard_row_test.dart`, `profile_section_test.dart` and
+  `profile_sheet_test.dart` each count ice glyphs now. `ProfileSheet`'s
+  overview carries one stat card per direction (current streak + best), each
+  headed by a badge slot that is **always** laid out — empty below the first
+  tier, so the two numbers beside it hold their place instead of sliding
+  across the card the moment a streak starts — and each followed by its own
+  milestone legend in its own colour — the ladder is the
+  same for both, so the legend reads as part of the card above it rather
+  than as a shared footnote under the pair.
 - **A claimed player's name belongs to the person behind it.** The owner may
   rename an *unclaimed* player and their own row, and may deactivate or
   restore anyone; renaming a row somebody has claimed is that person's alone,
@@ -921,9 +940,8 @@ code; don't relitigate them.
   (e.g. `BuildContextL10n` and `BuildContextLocale.languageTag` both live in
   `build_context.extension.dart`; `ThemePreferenceMode` and
   `ThemePreferenceBrightness` both live in
-  `theme_preference.extension.dart`; `StreakTypeTier` on `StreakType` is
-  currently alone in `streak_type.extension.dart` but a second extension on
-  `StreakType` would join it there rather than get its own file).
+  `theme_preference.extension.dart`; `StreakTypeTier` and `StreakTypeBadge`
+  on `StreakType` both live in `streak_type.extension.dart`).
   `core/extensions/` may import a feature's domain type to extend it
   (`core/data/game_type_filter_store.dart` already does this for `GameType`)
   — extending a type is not a layering violation the way a core file
@@ -2600,12 +2618,25 @@ Kept here because the code cannot express them and they cost real debugging:
   `player_recent_played` already did), so the Dart side no longer needs to
   gate this specific call on `seasonId != null` the way `leaderboards`/
   `ratingHistory` still do.
+- **The Versus tab's two bragging-rights stats ride the `head_to_head` RPC
+  rather than a second call.** "Biggest humiliation" is the scoreline of the
+  win with the largest margin (20260907100000 widened the function with
+  `biggest_win_score`/`biggest_win_opponent_score`, ordered by
+  `own - other desc` and tie-broken by the higher score, then the later
+  match); "Ultimate disrespect" is `shutout_wins`, the wins where the
+  opponent scored nothing. Both are the *viewer's* against the profile's
+  player — `ProfileVersusCubit.playerId` is `myPlayerId` and `opponentId`
+  the player being looked at, the same direction the win/loss/draw table
+  already reads. `HeadToHeadRecord.biggestWin` is null exactly when the
+  viewer has never won, which is what hides the whole card; the two score
+  columns are null together, so they are one nullable `BiggestWin` rather
+  than two nullable ints.
 
 ## Commands
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 398 tests at time of writing
+flutter test                    # 404 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 dart run flutter_launcher_icons     # assets/icon/*.png into android/ web/ (not ios/)

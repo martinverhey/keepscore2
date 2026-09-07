@@ -1,4 +1,8 @@
+import 'package:flutter/widgets.dart';
+
 import '../../features/profile/domain/streak_type.enum.dart';
+import '../theme/app_tokens.dart';
+import '../widgets/adaptive/adaptive.dart';
 
 extension StreakTypeTier on StreakType {
   int tier(int count) {
@@ -9,4 +13,32 @@ extension StreakTypeTier on StreakType {
     if (count >= 3) return 1;
     return 0;
   }
+
+  bool hasBadge(int count) => tier(count) > 0;
+}
+
+extension StreakTypeBadge on StreakType {
+  AdaptiveGlyph get glyph =>
+      this == StreakType.loss ? AdaptiveGlyph.ice : AdaptiveGlyph.fire;
+
+  int glyphCount(int count) {
+    final tier = this.tier(count);
+    return tier >= 4 ? 1 : tier;
+  }
+
+  Color glyphColor(int count) => switch (this) {
+    StreakType.loss => tier(count) >= 4
+        ? AppColors.iceEliteCore
+        : AppColors.iceCore,
+    _ => tier(count) >= 4 ? AppColors.fireEliteCore : AppColors.fireCore,
+  };
+
+  Color badgeFill(int count) => switch (this) {
+    StreakType.loss => tier(count) >= 4
+        ? AppColors.iceEliteBadgeFill
+        : AppColors.iceBadgeFill,
+    _ => tier(count) >= 4
+        ? AppColors.fireEliteBadgeFill
+        : AppColors.fireBadgeFill,
+  };
 }

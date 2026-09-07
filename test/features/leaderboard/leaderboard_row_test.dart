@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
+import 'package:keepscore2/core/widgets/streak_badge.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/medals.model.dart';
@@ -126,6 +128,38 @@ void main() {
     );
   });
 
+  testWidgets('a loss streak is badged in ice, a win streak in fire', (
+    tester,
+  ) async {
+    await pumpRow(
+      tester,
+      _leaderboard(streakType: StreakType.loss, streakCount: 12),
+    );
+
+    expect(find.byType(StreakBadge), findsOneWidget);
+    expect(_glyphCount(tester, AdaptiveGlyph.ice), 3);
+    expect(_glyphCount(tester, AdaptiveGlyph.fire), 0);
+
+    await pumpRow(
+      tester,
+      _leaderboard(streakType: StreakType.win, streakCount: 12),
+    );
+
+    expect(_glyphCount(tester, AdaptiveGlyph.fire), 3);
+    expect(_glyphCount(tester, AdaptiveGlyph.ice), 0);
+  });
+
+  testWidgets('a loss streak below the first tier carries no badge', (
+    tester,
+  ) async {
+    await pumpRow(
+      tester,
+      _leaderboard(streakType: StreakType.loss, streakCount: 2),
+    );
+
+    expect(find.byType(StreakBadge), findsNothing);
+  });
+
   testWidgets('the rating is centred whenever it carries no badges', (
     tester,
   ) async {
@@ -165,3 +199,8 @@ double _offCenter(WidgetTester tester, String text) {
   );
   return tester.getRect(find.text(text)).center.dy - card.center.dy;
 }
+
+int _glyphCount(WidgetTester tester, AdaptiveGlyph glyph) => tester
+    .widgetList<AdaptiveIcon>(find.byType(AdaptiveIcon))
+    .where((icon) => icon.glyph == glyph)
+    .length;

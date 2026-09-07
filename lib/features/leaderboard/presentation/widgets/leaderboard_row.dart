@@ -139,12 +139,12 @@ class LeaderboardRow extends StatelessWidget {
   );
 
   Widget? _streakBadge() {
-    if (leaderboard.streakType != StreakType.win) return null;
+    if (!leaderboard.streakType.hasBadge(leaderboard.streakCount)) return null;
 
-    final tier = leaderboard.streakType.tier(leaderboard.streakCount);
-    if (tier == 0) return null;
-
-    return StreakBadge(tier: tier, count: leaderboard.streakCount);
+    return StreakBadge(
+      type: leaderboard.streakType,
+      count: leaderboard.streakCount,
+    );
   }
 
   Widget? _medalsRow() {
