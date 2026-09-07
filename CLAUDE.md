@@ -271,8 +271,14 @@ refreshes the list when either sheet closes — realtime does it.
   rename an *unclaimed* player and their own row, and may deactivate or
   restore anyone; renaming a row somebody has claimed is that person's alone,
   even for the owner. `Players._canRename`/`_canRemove` are the UI half —
-  `PlayerRow` shows its Edit button when either is true, so an owner still
-  reaches a claimed player's action sheet, it just holds no Rename.
+  `PlayerRow` renders one icon button per action it is allowed, so a claimed
+  player's row simply carries no rename button for the owner while still
+  carrying the remove one. The row splits them the way the competition cards
+  do: a compact rename directly behind the name (and behind its
+  Owner/Unclaimed tags, which qualify the name), remove or restore at the
+  row's end. `_nameRow` is `MainAxisSize.min` for that — inside `_identity`'s
+  `Flexible` it shrink-wraps, so the rename button hugs a short name while a
+  long one still ellipsises against it.
   Enforced by the `players_guard_rename` trigger (20260902110000), **not** by
   RLS: `players_update_owner_or_self` still admits the owner's UPDATE, since
   a policy sees either the existing row (`USING`) or the incoming one
@@ -403,8 +409,8 @@ has to be recorded at the moment we know.
 **Leaving or deleting the competition whose shell you are standing in drops
 you out of that shell, and `clearIfSelected` emitting `CompetitionMissing` is
 the whole mechanism.** Both entry points are on the competitions list itself —
-the spotlight card's Manage button, reachable at `/` and at the in-shell
-`/competition/:id/competitions` branch — so the page you land on is the list
+the spotlight card's own leave/delete icon buttons, reachable at `/` and at
+the in-shell `/competition/:id/competitions` branch — so the page you land on is the list
 you were already looking at, minus the tab bar. Nothing in `CompetitionsPage`
 navigates: it clears the cubit, and `CompetitionShell`'s existing
 `BlocListener` on `CompetitionMissing` (which already handles a competition
@@ -430,7 +436,8 @@ kept the departed competition's group.
 paths are spelled out separately in the cubit for that reason; the shared
 `_clear()` helper they used to call was hiding the distinction.
 `test/flow/leave_competition_flow_test.dart` walks the real path (leaderboard
-→ Competitions branch → Manage → Leave) and is the only thing watching it.
+→ Competitions branch → the card's Leave button → confirm) and is the only
+thing watching it.
 
 "No competition selected" is deliberately **not** a fifth state: it is never
 rendered. Only pages inside the competition subtree switch on
@@ -449,8 +456,9 @@ accent wash and no accent border — the accent survives only in the eyebrow
 text and the code badge, so the card is marked by being the one opaque,
 outlined surface in a list where every `CompetitionCard` is a borderless
 translucent neutral. It reads top to bottom as identity then invitation: the
-name starts at the card's very top edge, an `Active` eyebrow sits directly
-under it, then the player/match counts, all across the **full** card width,
+name starts at the card's very top edge with its rename button beside it
+(owner only), an `Active` eyebrow sits directly under it, then the
+player/match counts, all across the **full** card width,
 then a centred block of the join code over a 200px `JoinQrImage`, both big
 enough to read or scan off the page and captioned by nothing — the code
 above the QR says which is which without a line of prose under them. The
@@ -489,8 +497,24 @@ and ownership — so the page makes no extra request, and renders no hero at all
 when the cubit is empty (a fresh launch, or after signing out) or when it
 holds a competition the user has since left. That competition is then
 **dropped from the list below**, with the rest headed by a
-`ListHeader(competitionsOther)`; the card carries its own Manage button so
-rename/leave/delete stay reachable for it. Tapping the card is
+`ListHeader(competitionsOther)`; the card carries its own `CompetitionActions`
+so rename/leave/delete stay reachable for it. **`CompetitionActions` renders
+only the callbacks it is handed, which is what lets one card split them
+across two rows**, and both cards split them the same way: **rename sits
+immediately after the name, and the destructive pair sits at the end of a
+row of its own** — naming and destroying are not the same kind of action and
+do not belong in one cluster. Rename is passed `compact: true`, which is a
+32px `AdaptiveIconButton` rather than the platform's 48px one; at full size
+the gap reads as a button placed at the end of the row rather than one
+attached to the title. It hugs the name because **the name and the button
+are one `Row` inside the surrounding `Expanded`/`Column`, with the name
+`Flexible` inside it** — the button is inflexible and sized first, so a long
+name ellipsises against it and a short one is followed immediately by it. A
+`Spacer` beside a `Flexible` name does not work here: both are flex 1, so
+they would split the free space and ellipsise a long name at half the row.
+`CompetitionCard` keeps `JoinCodeTag` outside that group at the row's end,
+and puts its invite button in the counts row ahead of leave/delete; the hero
+card has no invite button of its own (it *is* the invite). Tapping the card is
 `go(Routes.competition(id))` exactly like a `CompetitionCard`, anywhere on it.
 `JoinQrImage` is the white quiet-zone box `JoinQrCard` was built around,
 split out so the hero can render the same code at its own size.
@@ -505,8 +529,9 @@ arrow after the name only competed with the name for the width it wraps
 into. Nothing else moves: the code and the QR are one centred block under
 the name in both, so the sheet is the hero card minus its chrome rather than
 a second arrangement of the same parts (it used to hold the code badge in the
-name's row, which is what `_nameWithCode` was for). `onManage` is left off for
-the same reason. It replaced a
+name's row, which is what `_nameWithCode` was for). `onRename`/`onLeave`/
+`onDelete` are left off for the same reason, which is what drops the action
+row entirely. It replaced a
 `JoinQrCard` over a `JoinCodeCard`, so the invite sheet and the competitions
 page now show the competition the same way rather than two different ways.
 `SettingsPage` still renders `JoinCodeCard`/`JoinQrCard`, which is why both
@@ -1174,9 +1199,9 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   bottom sheet for a centered dialog** (`showDialog` + `Dialog`, capped at
   480px) instead of `showModalBottomSheet` — a panel sliding up from the
   bottom of a wide desktop window reads as disconnected from whatever button
-  opened it. Every existing call site (game type filter, player/competition
-  row action sheets, invite sheet, rename, match score edit, team picker,
-  profile sheet, season picker) gets this automatically, since they all
+  opened it. Every existing call site (game type filter, invite sheet,
+  rename, match score edit, team picker, profile sheet, season picker) gets
+  this automatically, since they all
   already funnel through `showAdaptiveSheet`/`Sheet` — no call-site changes
   needed when adding a new sheet.
 - **`AdaptiveScaffold`'s Material app bar stops collapsing on wide web.**

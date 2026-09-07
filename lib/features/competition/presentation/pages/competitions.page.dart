@@ -20,8 +20,6 @@ import '../../domain/competition.model.dart';
 import '../cubit/competition_cubit.dart';
 import '../cubit/competition_list_cubit.dart';
 import '../widgets/active_competition_card.dart';
-import '../widgets/competition_action.enum.dart';
-import 'competition_action_sheet.dart';
 import 'create_competition_sheet.dart';
 import 'join_competition_sheet.dart';
 import 'join_scanner_sheet.dart';
@@ -136,7 +134,9 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
               CompetitionCard(
                 overview: overview,
                 onTap: () => context.go(Routes.competition(overview.id)),
-                onManage: () => _manage(context, overview, myUserId: myUserId),
+                onRename: _renameCallback(context, overview, myUserId),
+                onLeave: _leaveCallback(context, overview, myUserId),
+                onDelete: _deleteCallback(context, overview, myUserId),
               ),
               const SizedBox(height: AppSpacing.sm),
             ],
@@ -171,7 +171,9 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
         ActiveCompetitionCard(
           overview: active,
           onOpen: () => context.go(Routes.competition(active.id)),
-          onManage: () => _manage(context, active, myUserId: myUserId),
+          onRename: _renameCallback(context, active, myUserId),
+          onLeave: _leaveCallback(context, active, myUserId),
+          onDelete: _deleteCallback(context, active, myUserId),
         ),
         if (hasOthers) ...[
           const SizedBox(height: AppSpacing.lg),
@@ -276,69 +278,92 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
     }
   }
 
-  Future<void> _manage(
+  VoidCallback? _renameCallback(
     BuildContext context,
-    CompetitionOverview overview, {
-    required String? myUserId,
-  }) async {
+    CompetitionOverview overview,
+    String? myUserId,
+  ) {
+    if (!overview.competition.isOwnedBy(myUserId)) return null;
+    return () => _rename(context, overview);
+  }
+
+  VoidCallback? _leaveCallback(
+    BuildContext context,
+    CompetitionOverview overview,
+    String? myUserId,
+  ) {
+    if (overview.competition.isOwnedBy(myUserId)) return null;
+    return () => _leave(context, overview);
+  }
+
+  VoidCallback? _deleteCallback(
+    BuildContext context,
+    CompetitionOverview overview,
+    String? myUserId,
+  ) {
+    if (!overview.competition.isOwnedBy(myUserId)) return null;
+    return () => _delete(context, overview);
+  }
+
+  Future<void> _rename(
+    BuildContext context,
+    CompetitionOverview overview,
+  ) async {
+    final cubit = context.read<CompetitionListCubit>();
+    final name = await showTextEntrySheet(
+      context,
+      title: context.l10n.competitionRenameTitle,
+      fieldLabel: context.l10n.competitionNameLabel,
+      submitLabel: context.l10n.competitionRename,
+      initialValue: overview.competition.name,
+      tooShortMessage: context.l10n.competitionNameTooShort,
+    );
+    if (name == null || name == overview.competition.name) return;
+
+    await cubit.rename(overview.id, name);
+  }
+
+  Future<void> _leave(
+    BuildContext context,
+    CompetitionOverview overview,
+  ) async {
     final cubit = context.read<CompetitionListCubit>();
     final competitionCubit = context.read<CompetitionCubit>();
-    final isOwner = overview.competition.isOwnedBy(myUserId);
 
-    final action = await showAdaptiveSheet<CompetitionAction>(
+    final confirmed = await showAdaptiveConfirm(
       context,
-      builder: (_) => CompetitionActionSheet(
-        name: overview.competition.name,
-        isOwner: isOwner,
+      title: context.l10n.competitionLeaveConfirmTitle(
+        overview.competition.name,
       ),
+      message: context.l10n.competitionLeaveConfirmBody,
+      confirmLabel: context.l10n.competitionLeave,
+      cancelLabel: context.l10n.commonCancel,
+      destructive: true,
     );
-    if (action == null || !context.mounted) return;
+    if (confirmed && await cubit.leave(overview.id)) {
+      await _forget(competitionCubit, overview.id);
+    }
+  }
 
-    switch (action) {
-      case CompetitionAction.rename:
-        final name = await showTextEntrySheet(
-          context,
-          title: context.l10n.competitionRenameTitle,
-          fieldLabel: context.l10n.competitionNameLabel,
-          submitLabel: context.l10n.competitionRename,
-          initialValue: overview.competition.name,
-          tooShortMessage: context.l10n.competitionNameTooShort,
-        );
-        if (name != null && name != overview.competition.name) {
-          await cubit.rename(overview.id, name);
-        }
+  Future<void> _delete(
+    BuildContext context,
+    CompetitionOverview overview,
+  ) async {
+    final cubit = context.read<CompetitionListCubit>();
+    final competitionCubit = context.read<CompetitionCubit>();
 
-      case CompetitionAction.leave:
-        if (!context.mounted) return;
-        final confirmed = await showAdaptiveConfirm(
-          context,
-          title: context.l10n.competitionLeaveConfirmTitle(
-            overview.competition.name,
-          ),
-          message: context.l10n.competitionLeaveConfirmBody,
-          confirmLabel: context.l10n.competitionLeave,
-          cancelLabel: context.l10n.commonCancel,
-          destructive: true,
-        );
-        if (confirmed && await cubit.leave(overview.id)) {
-          await _forget(competitionCubit, overview.id);
-        }
-
-      case CompetitionAction.delete:
-        if (!context.mounted) return;
-        final confirmed = await showAdaptiveConfirm(
-          context,
-          title: context.l10n.competitionDeleteConfirmTitle(
-            overview.competition.name,
-          ),
-          message: context.l10n.competitionDeleteConfirmBody,
-          confirmLabel: context.l10n.competitionDelete,
-          cancelLabel: context.l10n.commonCancel,
-          destructive: true,
-        );
-        if (confirmed && await cubit.delete(overview.id)) {
-          await _forget(competitionCubit, overview.id);
-        }
+    final confirmed = await showAdaptiveConfirm(
+      context,
+      title: context.l10n.competitionDeleteConfirmTitle(
+        overview.competition.name,
+      ),
+      message: context.l10n.competitionDeleteConfirmBody,
+      confirmLabel: context.l10n.competitionDelete,
+      cancelLabel: context.l10n.commonCancel,
+      destructive: true,
+    );
+    if (confirmed && await cubit.delete(overview.id)) {
+      await _forget(competitionCubit, overview.id);
     }
   }
 

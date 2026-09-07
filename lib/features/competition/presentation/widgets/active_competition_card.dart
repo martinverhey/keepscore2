@@ -5,6 +5,7 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/tag.dart';
 import '../../domain/competition.model.dart';
+import 'competition_actions.dart';
 import 'join_code_tag.dart';
 import 'join_qr_image.dart';
 
@@ -13,12 +14,16 @@ class ActiveCompetitionCard extends StatelessWidget {
     super.key,
     required this.overview,
     this.onOpen,
-    this.onManage,
+    this.onRename,
+    this.onLeave,
+    this.onDelete,
   });
 
   final CompetitionOverview overview;
   final VoidCallback? onOpen;
-  final VoidCallback? onManage;
+  final VoidCallback? onRename;
+  final VoidCallback? onLeave;
+  final VoidCallback? onDelete;
 
   static const double _qrSize = 200;
   static const double _codeWidth = _qrSize + AppSpacing.sm * 2;
@@ -54,9 +59,9 @@ class ActiveCompetitionCard extends StatelessWidget {
           _identity(context),
           const SizedBox(height: AppSpacing.lg),
           _codeAndQr(),
-          if (onManage != null) ...[
+          if (_hasRowActions) ...[
             const SizedBox(height: AppSpacing.xs),
-            _manageRow(context),
+            _actionRow(),
           ],
         ],
       ),
@@ -94,11 +99,20 @@ class ActiveCompetitionCard extends StatelessWidget {
   }
 
   Widget _name() {
-    return Text(
-      overview.competition.name,
-      style: AppTypography.headlineMedium,
-      maxLines: 2,
-      overflow: TextOverflow.ellipsis,
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Flexible(
+          child: Text(
+            overview.competition.name,
+            style: AppTypography.headlineMedium,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        if (onRename != null)
+          CompetitionActions(onRename: onRename, compact: true),
+      ],
     );
   }
 
@@ -122,17 +136,12 @@ class ActiveCompetitionCard extends StatelessWidget {
     );
   }
 
-  Widget _manageRow(BuildContext context) {
+  bool get _hasRowActions => onLeave != null || onDelete != null;
+
+  Widget _actionRow() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        AdaptiveButton(
-          label: context.l10n.competitionManage,
-          kind: AdaptiveButtonKind.plain,
-          expand: false,
-          onPressed: onManage,
-        ),
-      ],
+      children: [CompetitionActions(onLeave: onLeave, onDelete: onDelete)],
     );
   }
 }

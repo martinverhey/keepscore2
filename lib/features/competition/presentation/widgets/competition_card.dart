@@ -5,6 +5,7 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../domain/competition.model.dart';
 import '../pages/invite_sheet.dart';
+import 'competition_actions.dart';
 import 'join_code_tag.dart';
 
 class CompetitionCard extends StatelessWidget {
@@ -12,12 +13,16 @@ class CompetitionCard extends StatelessWidget {
     super.key,
     required this.overview,
     required this.onTap,
-    this.onManage,
+    this.onRename,
+    this.onLeave,
+    this.onDelete,
   });
 
   final CompetitionOverview overview;
   final VoidCallback onTap;
-  final VoidCallback? onManage;
+  final VoidCallback? onRename;
+  final VoidCallback? onLeave;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +40,7 @@ class CompetitionCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _header(context, competition),
+            _header(competition),
             const SizedBox(height: AppSpacing.xs),
             _statsRow(context),
           ],
@@ -44,23 +49,28 @@ class CompetitionCard extends StatelessWidget {
     );
   }
 
-  Widget _header(BuildContext context, Competition competition) {
+  Widget _header(Competition competition) {
     return Row(
       children: [
-        Expanded(
+        Expanded(child: _name(competition)),
+        const SizedBox(width: AppSpacing.xs),
+        JoinCodeTag(code: competition.joinCode),
+      ],
+    );
+  }
+
+  Widget _name(Competition competition) {
+    return Row(
+      children: [
+        Flexible(
           child: Text(
             competition.name,
             style: AppTypography.titleSmall,
             overflow: TextOverflow.ellipsis,
           ),
         ),
-        AdaptiveIconButton(
-          glyph: AdaptiveGlyph.invite,
-          semanticLabel: context.l10n.competitionInviteAction,
-          onPressed: () => showInviteSheet(context, overview: overview),
-        ),
-        const SizedBox(width: AppSpacing.xs),
-        JoinCodeTag(code: competition.joinCode),
+        if (onRename != null)
+          CompetitionActions(onRename: onRename, compact: true),
       ],
     );
   }
@@ -75,14 +85,17 @@ class CompetitionCard extends StatelessWidget {
             style: AppTypography.caption,
           ),
         ),
-        if (onManage != null)
-          AdaptiveButton(
-            label: context.l10n.competitionManage,
-            kind: AdaptiveButtonKind.plain,
-            expand: false,
-            onPressed: onManage,
-          ),
+        _inviteButton(context),
+        CompetitionActions(onLeave: onLeave, onDelete: onDelete),
       ],
+    );
+  }
+
+  Widget _inviteButton(BuildContext context) {
+    return AdaptiveIconButton(
+      glyph: AdaptiveGlyph.invite,
+      semanticLabel: context.l10n.competitionInviteAction,
+      onPressed: () => showInviteSheet(context, overview: overview),
     );
   }
 }

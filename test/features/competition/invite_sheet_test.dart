@@ -5,6 +5,7 @@ import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/presentation/pages/invite_sheet.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/active_competition_card.dart';
+import 'package:keepscore2/features/competition/presentation/widgets/competition_actions.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/join_code_tag.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/join_qr_image.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
@@ -65,7 +66,7 @@ void main() {
       expect(find.text('Office Table Tennis'), findsOneWidget);
       expect(find.text('HDHS39'), findsOneWidget);
       expect(find.text('Active'), findsNothing);
-      expect(find.text('Manage'), findsNothing);
+      expect(find.byType(CompetitionActions), findsNothing);
       final name = tester.getRect(find.text('Office Table Tennis'));
       final code = tester.getRect(find.byType(JoinCodeTag));
       final qr = tester.getRect(find.byType(JoinQrImage));

@@ -105,7 +105,6 @@
   "competitionAllowDrawsLabel": "Gelijkspel toestaan",
   "competitionAllowDrawsHelp": "Maakt het mogelijk een wedstrijd met gelijke score op te slaan.",
 
-  "competitionManage": "Beheren",
   "competitionRenameTitle": "Competitie hernoemen",
   "competitionRename": "Hernoemen",
   "competitionLeave": "Competitie verlaten",
@@ -238,7 +237,6 @@
   "playersYou": "Jij",
   "playersOwner": "Beheerder",
   "playersUnclaimed": "Niet geclaimd",
-  "playersEdit": "Bewerken",
   "playersAddTitle": "Speler toevoegen",
   "playersAddSubtitle": "Maak zoveel spelers aan als je wilt. Je kunt ze gebruiken om wedstrijden vast te leggen. Of ze dienen als plaatshouder voor spelers die later meedoen. Een andere speler kan een speler claimen nadat die zich bij je competitie heeft aangesloten.",
   "playersNameTooShort": "Vul een naam van minstens 2 tekens in.",

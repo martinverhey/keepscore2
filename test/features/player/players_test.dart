@@ -73,39 +73,35 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Future<void> openActions(WidgetTester tester, String displayName) async {
+  Finder rowAction(String displayName, String tooltip) {
     final row = find.ancestor(
       of: find.text(displayName),
       matching: find.byType(PlayerRow),
     );
-    await tester.tap(find.descendant(of: row, matching: find.text('Edit')));
-    await tester.pumpAndSettle();
+    return find.descendant(of: row, matching: find.byTooltip(tooltip));
   }
 
   testWidgets('the owner may rename a placeholder', (tester) async {
     await pumpPlayers(tester, myUserId: 'owner-1');
-    await openActions(tester, 'Tester1');
 
-    expect(find.text('Rename'), findsOneWidget);
-    expect(find.text('Remove from player list'), findsOneWidget);
+    expect(rowAction('Tester1', 'Rename'), findsOneWidget);
+    expect(rowAction('Tester1', 'Remove from player list'), findsOneWidget);
   });
 
   testWidgets('the owner may rename their own player', (tester) async {
     await pumpPlayers(tester, myUserId: 'owner-1');
-    await openActions(tester, 'Henkie');
 
-    expect(find.text('Rename'), findsOneWidget);
-    expect(find.text('Remove from player list'), findsNothing);
+    expect(rowAction('Henkie', 'Rename'), findsOneWidget);
+    expect(rowAction('Henkie', 'Remove from player list'), findsNothing);
   });
 
   testWidgets('the owner may remove but not rename a claimed player', (
     tester,
   ) async {
     await pumpPlayers(tester, myUserId: 'owner-1');
-    await openActions(tester, 'Tester10');
 
-    expect(find.text('Rename'), findsNothing);
-    expect(find.text('Remove from player list'), findsOneWidget);
+    expect(rowAction('Tester10', 'Rename'), findsNothing);
+    expect(rowAction('Tester10', 'Remove from player list'), findsOneWidget);
   });
 
   testWidgets('a member reaches their own player and nobody else', (
@@ -113,10 +109,8 @@ void main() {
   ) async {
     await pumpPlayers(tester, myUserId: 'guest-2');
 
-    expect(find.text('Edit'), findsOneWidget);
-
-    await openActions(tester, 'Tester10');
-    expect(find.text('Rename'), findsOneWidget);
-    expect(find.text('Remove from player list'), findsNothing);
+    expect(rowAction('Tester10', 'Rename'), findsOneWidget);
+    expect(find.byTooltip('Rename'), findsOneWidget);
+    expect(find.byTooltip('Remove from player list'), findsNothing);
   });
 }

@@ -303,9 +303,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Lets a match be saved with equal scores.';
 
   @override
-  String get competitionManage => 'Manage';
-
-  @override
   String get competitionRenameTitle => 'Rename competition';
 
   @override
@@ -609,9 +606,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get playersUnclaimed => 'Unclaimed';
-
-  @override
-  String get playersEdit => 'Edit';
 
   @override
   String get playersAddTitle => 'Add a player';

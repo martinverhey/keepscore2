@@ -614,12 +614,6 @@ abstract class AppLocalizations {
   /// **'Lets a match be saved with equal scores.'**
   String get competitionAllowDrawsHelp;
 
-  /// No description provided for @competitionManage.
-  ///
-  /// In en, this message translates to:
-  /// **'Manage'**
-  String get competitionManage;
-
   /// No description provided for @competitionRenameTitle.
   ///
   /// In en, this message translates to:
@@ -1165,12 +1159,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unclaimed'**
   String get playersUnclaimed;
-
-  /// No description provided for @playersEdit.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit'**
-  String get playersEdit;
 
   /// No description provided for @playersAddTitle.
   ///

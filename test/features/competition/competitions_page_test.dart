@@ -382,7 +382,7 @@ void main() {
     expect(find.text(l10n.competitionsOther), findsNothing);
   });
 
-  testWidgets('the spotlighted name runs the full width of the card', (
+  testWidgets('the spotlighted name runs up to its rename button', (
     tester,
   ) async {
     const longName = 'Office Table Tennis Winter Championship Ladder';
@@ -394,10 +394,20 @@ void main() {
       activeId: 'c1',
     );
 
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(CompetitionsPage)),
+    );
     final name = tester.getRect(find.text(longName));
+    final rename = tester.getRect(
+      find.descendant(
+        of: find.byType(ActiveCompetitionCard),
+        matching: find.byTooltip(l10n.competitionRename),
+      ),
+    );
     final card = tester.getRect(find.byType(ActiveCompetitionCard));
 
-    expect(name.right, greaterThan(card.right - AppSpacing.lg));
+    expect(name.right, greaterThan(rename.left - AppSpacing.xs));
+    expect(rename.right, greaterThan(card.right - AppSpacing.lg));
   });
 
   testWidgets('the spotlight fits a narrow phone without overflowing', (
@@ -479,16 +489,14 @@ void main() {
       tester.element(find.byType(CompetitionsPage)),
     );
 
-    final manage = find.descendant(
+    final delete = find.descendant(
       of: find.byType(ActiveCompetitionCard),
-      matching: find.text(l10n.competitionManage),
+      matching: find.byTooltip(l10n.competitionDelete),
     );
 
-    await tester.ensureVisible(manage);
+    await tester.ensureVisible(delete);
     await tester.pumpAndSettle();
-    await tester.tap(manage);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text(l10n.competitionDelete));
+    await tester.tap(delete);
     await tester.pumpAndSettle();
     await tester.tap(
       find.descendant(
@@ -528,15 +536,13 @@ void main() {
       tester.element(find.byType(CompetitionsPage)),
     );
 
-    final manage = find.descendant(
+    final leave = find.descendant(
       of: find.byType(CompetitionCard),
-      matching: find.text(l10n.competitionManage),
+      matching: find.byTooltip(l10n.competitionLeave),
     );
-    await tester.ensureVisible(manage);
+    await tester.ensureVisible(leave);
     await tester.pumpAndSettle();
-    await tester.tap(manage);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text(l10n.competitionLeave));
+    await tester.tap(leave);
     await tester.pumpAndSettle();
     await tester.tap(
       find.descendant(

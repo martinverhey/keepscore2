@@ -28,6 +28,10 @@ class AdaptiveIcon extends StatelessWidget {
     AdaptiveGlyph.chevronDown => CupertinoIcons.chevron_down,
     AdaptiveGlyph.check => CupertinoIcons.checkmark,
     AdaptiveGlyph.invite => CupertinoIcons.share,
+    AdaptiveGlyph.rename => CupertinoIcons.pencil,
+    AdaptiveGlyph.delete => CupertinoIcons.delete,
+    AdaptiveGlyph.restore => CupertinoIcons.arrow_up_bin,
+    AdaptiveGlyph.leave => CupertinoIcons.square_arrow_right,
     AdaptiveGlyph.star => CupertinoIcons.star_fill,
     AdaptiveGlyph.add => CupertinoIcons.add,
     AdaptiveGlyph.medal => CupertinoIcons.rosette,
@@ -51,6 +55,10 @@ class AdaptiveIcon extends StatelessWidget {
     AdaptiveGlyph.chevronDown => Icons.keyboard_arrow_down,
     AdaptiveGlyph.check => Icons.check,
     AdaptiveGlyph.invite => Icons.ios_share,
+    AdaptiveGlyph.rename => Icons.edit,
+    AdaptiveGlyph.delete => Icons.delete,
+    AdaptiveGlyph.restore => Icons.restore_from_trash,
+    AdaptiveGlyph.leave => Icons.logout,
     AdaptiveGlyph.star => Icons.star,
     AdaptiveGlyph.add => Icons.add,
     AdaptiveGlyph.medal => Icons.military_tech,
@@ -77,12 +85,18 @@ class AdaptiveIconButton extends StatelessWidget {
     required this.onPressed,
     this.semanticLabel,
     this.active = false,
+    this.destructive = false,
+    this.compact = false,
   });
 
   final AdaptiveGlyph glyph;
   final VoidCallback? onPressed;
   final String? semanticLabel;
   final bool active;
+  final bool destructive;
+  final bool compact;
+
+  static const Size _compactSize = Size.square(32);
 
   @override
   Widget build(BuildContext context) {
@@ -93,6 +107,7 @@ class AdaptiveIconButton extends StatelessWidget {
             label: semanticLabel,
             child: CupertinoButton(
               padding: EdgeInsets.zero,
+              minimumSize: compact ? _compactSize : null,
               onPressed: onPressed,
               child: _icon(context),
             ),
@@ -101,14 +116,26 @@ class AdaptiveIconButton extends StatelessWidget {
             onPressed: onPressed,
             tooltip: semanticLabel,
             isSelected: active,
+            style: compact ? _compactStyle() : null,
             icon: _icon(context),
           );
   }
 
-  Widget _icon(BuildContext context) {
-    return AdaptiveIcon(
-      glyph,
-      color: active ? AdaptiveColors.accent(context) : null,
+  ButtonStyle _compactStyle() {
+    return IconButton.styleFrom(
+      padding: EdgeInsets.zero,
+      minimumSize: _compactSize,
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
     );
+  }
+
+  Widget _icon(BuildContext context) {
+    return AdaptiveIcon(glyph, color: _color(context));
+  }
+
+  Color? _color(BuildContext context) {
+    if (destructive) return AdaptiveColors.destructive(context);
+    if (active) return AdaptiveColors.accent(context);
+    return null;
   }
 }

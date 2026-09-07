@@ -303,9 +303,6 @@ class AppLocalizationsNl extends AppLocalizations {
       'Maakt het mogelijk een wedstrijd met gelijke score op te slaan.';
 
   @override
-  String get competitionManage => 'Beheren';
-
-  @override
   String get competitionRenameTitle => 'Competitie hernoemen';
 
   @override
@@ -611,9 +608,6 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get playersUnclaimed => 'Niet geclaimd';
-
-  @override
-  String get playersEdit => 'Bewerken';
 
   @override
   String get playersAddTitle => 'Speler toevoegen';

@@ -105,7 +105,6 @@
   "competitionAllowDrawsLabel": "Allow draws",
   "competitionAllowDrawsHelp": "Lets a match be saved with equal scores.",
 
-  "competitionManage": "Manage",
   "competitionRenameTitle": "Rename competition",
   "competitionRename": "Rename",
   "competitionLeave": "Leave competition",
@@ -238,7 +237,6 @@
   "playersYou": "You",
   "playersOwner": "Owner",
   "playersUnclaimed": "Unclaimed",
-  "playersEdit": "Edit",
   "playersAddTitle": "Add a player",
   "playersAddSubtitle": "Create as many players as you want. You can use them to create matches. Or they can be used as placeholders for players who might join later. Another player can claim a player after joining your competition.",
   "playersNameTooShort": "Enter a name of at least 2 characters.",

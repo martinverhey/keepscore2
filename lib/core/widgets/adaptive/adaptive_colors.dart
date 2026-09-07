@@ -42,6 +42,10 @@ abstract final class AdaptiveColors {
   static Color scrollEdgeTint(BuildContext context) =>
       pageBackground(context).withValues(alpha: AppOpacity.scrollEdgeFill);
 
+  static Color destructive(BuildContext context) => AppPlatform.useCupertino
+      ? CupertinoDynamicColor.resolve(CupertinoColors.destructiveRed, context)
+      : Theme.of(context).colorScheme.error;
+
   static Color glassGlyph(BuildContext context) =>
       _forBrightness(context, AppColors.black, AppColors.white);
 

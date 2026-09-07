@@ -205,13 +205,11 @@ void main() {
     expect(find.byType(CompetitionsPage), findsOneWidget);
     expect(find.byType(CompetitionTabBar), findsOneWidget);
 
-    final manage = find.descendant(
+    final leave = find.descendant(
       of: find.byType(ActiveCompetitionCard),
-      matching: find.text(l10n.competitionManage),
+      matching: find.byTooltip(l10n.competitionLeave),
     );
-    await tester.tap(manage);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text(l10n.competitionLeave));
+    await tester.tap(leave);
     await tester.pumpAndSettle();
     await tester.tap(find.text(l10n.competitionLeave));
     await tester.pumpAndSettle();
