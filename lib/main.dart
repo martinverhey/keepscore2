@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -7,6 +8,7 @@ import 'app/dependency_injection/injector.dart';
 import 'core/config/app_version.dart';
 import 'core/config/env.dart';
 import 'core/widgets/adaptive/adaptive_glass.dart';
+import 'core/widgets/adaptive/app_platform.dart';
 import 'features/match/presentation/cubit/game_type_filter_cubit.dart';
 import 'features/settings/presentation/cubit/language_cubit.dart';
 import 'features/settings/presentation/cubit/theme_cubit.dart';
@@ -14,6 +16,10 @@ import 'features/settings/presentation/cubit/theme_cubit.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   usePathUrlStrategy();
+
+  if (AppPlatform.isMobile) {
+    await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  }
 
   await Env.load();
   await AppVersion.load();

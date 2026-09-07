@@ -28,6 +28,12 @@ abstract final class AppPlatform {
     return defaultTargetPlatform == TargetPlatform.iOS;
   }
 
+  static bool get isMobile {
+    if (kIsWeb) return false;
+    return defaultTargetPlatform == TargetPlatform.iOS ||
+        defaultTargetPlatform == TargetPlatform.android;
+  }
+
   static bool useWideWeb(BuildContext context) {
     if (debugOverrideWideWeb != null) return debugOverrideWideWeb!;
     return kIsWeb && MediaQuery.sizeOf(context).width >= wideWebBreakpoint;
