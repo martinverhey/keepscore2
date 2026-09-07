@@ -743,6 +743,15 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get profileBiggestHumiliationLabel => 'Biggest humiliation';
+
+  @override
+  String get profileUltimateDisrespectLabel => 'Ultimate disrespect';
+
+  @override
+  String get profileTotalDisrespectsLabel => 'Total disrespects';
+
+  @override
   String get profileGamesTitle => 'Games';
 
   @override

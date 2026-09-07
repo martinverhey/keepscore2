@@ -125,6 +125,7 @@ void main() {
     ProfileOverviewCubit cubit, {
     String displayName = 'Nora',
     String? myPlayerId,
+    Key? sheetKey,
   }) async {
     await tester.pumpWidget(
       MaterialApp(
@@ -135,6 +136,7 @@ void main() {
           child: BlocProvider.value(
             value: cubit,
             child: ProfileSheet(
+              key: sheetKey,
               displayName: displayName,
               seasonLength: SeasonLength.monthly,
               myPlayerId: myPlayerId,
@@ -530,7 +532,8 @@ void main() {
           losses: 1,
           draws: 1,
           biggestWin: BiggestWin(score: 21, opponentScore: 3),
-          shutoutWins: 7,
+          biggestShutout: BiggestWin(score: 15, opponentScore: 0),
+          shutoutWins: 5,
         ),
       );
       when(
@@ -571,7 +574,9 @@ void main() {
       expect(find.text(l10n.profileBiggestHumiliationLabel), findsOneWidget);
       expect(find.text('21 – 3'), findsOneWidget);
       expect(find.text(l10n.profileUltimateDisrespectLabel), findsOneWidget);
-      expect(find.text('7'), findsOneWidget);
+      expect(find.text('15 – 0'), findsOneWidget);
+      expect(find.text(l10n.profileTotalDisrespectsLabel), findsOneWidget);
+      expect(find.text('5'), findsOneWidget);
 
       expect(find.text(l10n.profileRecentMatchesTitle), findsOneWidget);
       expect(find.text('Theo'), findsOneWidget);
@@ -587,7 +592,7 @@ void main() {
   );
 
   testWidgets(
-    'the versus highlights are left out until there is a win to brag about',
+    'each versus highlight waits for a win of its own to brag about',
     (tester) async {
       when(() => leaderboardRepository.currentSeason('c1')).thenAnswer(
         (_) async =>
@@ -649,8 +654,40 @@ void main() {
       expect(find.text(l10n.profileLossesLabel), findsOneWidget);
       expect(find.text(l10n.profileBiggestHumiliationLabel), findsNothing);
       expect(find.text(l10n.profileUltimateDisrespectLabel), findsNothing);
+      expect(find.text(l10n.profileTotalDisrespectsLabel), findsNothing);
 
       await cubit.close();
+
+      when(
+        () =>
+            profileRepository.headToHead(playerId: 'viewer', opponentId: 'p1'),
+      ).thenAnswer(
+        (_) async => const HeadToHeadRecord(
+          wins: 1,
+          losses: 3,
+          draws: 0,
+          biggestWin: BiggestWin(score: 21, opponentScore: 3),
+        ),
+      );
+
+      final withAWin = buildOverviewCubit()..load(viewerPlayerId: 'viewer');
+      await withAWin.stream.firstWhere((s) => s is ProfileOverviewReady);
+      await pumpSheet(
+        tester,
+        withAWin,
+        myPlayerId: 'viewer',
+        sheetKey: const ValueKey('with-a-win'),
+      );
+
+      await tester.tap(find.text(l10n.profileTabVersus));
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n.profileBiggestHumiliationLabel), findsOneWidget);
+      expect(find.text('21 – 3'), findsOneWidget);
+      expect(find.text(l10n.profileUltimateDisrespectLabel), findsNothing);
+      expect(find.text(l10n.profileTotalDisrespectsLabel), findsNothing);
+
+      await withAWin.close();
     },
   );
 

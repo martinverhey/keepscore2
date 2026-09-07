@@ -18,11 +18,53 @@ void main() {
       'wins': 3,
       'losses': 1,
       'draws': 2,
+      'biggest_win_score': 21,
+      'biggest_win_opponent_score': 3,
+      'biggest_shutout_score': 15,
+      'shutout_wins': 3,
     });
 
     expect(record.wins, 3);
     expect(record.losses, 1);
     expect(record.draws, 2);
+    expect(record.biggestWin, const BiggestWin(score: 21, opponentScore: 3));
+    expect(
+      record.biggestShutout,
+      const BiggestWin(score: 15, opponentScore: 0),
+    );
+    expect(record.shutoutWins, 3);
+  });
+
+  test('HeadToHeadRecord has no biggest win until the player has won one', () {
+    final record = HeadToHeadRecord.fromMap({
+      'wins': 0,
+      'losses': 2,
+      'draws': 0,
+      'biggest_win_score': null,
+      'biggest_win_opponent_score': null,
+      'biggest_shutout_score': null,
+      'shutout_wins': 0,
+    });
+
+    expect(record.biggestWin, isNull);
+    expect(record.biggestShutout, isNull);
+    expect(record.shutoutWins, 0);
+  });
+
+  test('HeadToHeadRecord keeps a biggest win that was not a shutout', () {
+    final record = HeadToHeadRecord.fromMap({
+      'wins': 2,
+      'losses': 0,
+      'draws': 0,
+      'biggest_win_score': 21,
+      'biggest_win_opponent_score': 3,
+      'biggest_shutout_score': null,
+      'shutout_wins': 0,
+    });
+
+    expect(record.biggestWin, const BiggestWin(score: 21, opponentScore: 3));
+    expect(record.biggestShutout, isNull);
+    expect(record.shutoutWins, 0);
   });
 
   test('HeadToHeadRecord.zero is the zero value', () {
@@ -31,6 +73,9 @@ void main() {
     expect(record.wins, 0);
     expect(record.losses, 0);
     expect(record.draws, 0);
+    expect(record.biggestWin, isNull);
+    expect(record.biggestShutout, isNull);
+    expect(record.shutoutWins, 0);
   });
 
   test('Streak reads a player_streak row', () {

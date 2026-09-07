@@ -297,6 +297,9 @@
   "@profileVersusEmpty": {
     "placeholders": { "name": { "type": "String" } }
   },
+  "profileBiggestHumiliationLabel": "Grootste vernedering",
+  "profileUltimateDisrespectLabel": "Ultiem disrespect",
+  "profileTotalDisrespectsLabel": "Totaal disrespect",
   "profileGamesTitle": "Wedstrijden",
   "profileTodayGamesLabel": "Vandaag",
   "profileThisWeekGamesLabel": "Deze week",

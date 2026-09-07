@@ -745,6 +745,15 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
+  String get profileBiggestHumiliationLabel => 'Grootste vernedering';
+
+  @override
+  String get profileUltimateDisrespectLabel => 'Ultiem disrespect';
+
+  @override
+  String get profileTotalDisrespectsLabel => 'Totaal disrespect';
+
+  @override
   String get profileGamesTitle => 'Wedstrijden';
 
   @override

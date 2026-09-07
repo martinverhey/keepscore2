@@ -2639,25 +2639,29 @@ Kept here because the code cannot express them and they cost real debugging:
   `player_recent_played` already did), so the Dart side no longer needs to
   gate this specific call on `seasonId != null` the way `leaderboards`/
   `ratingHistory` still do.
-- **The Versus tab's two bragging-rights stats ride the `head_to_head` RPC
-  rather than a second call.** "Biggest humiliation" is the scoreline of the
-  win with the largest margin (20260907100000 widened the function with
+- **The Versus tab's three bragging-rights stats ride the `head_to_head`
+  RPC rather than a second call.** "Biggest humiliation" is the win with the
+  largest margin (20260907100000 widened the function with
   `biggest_win_score`/`biggest_win_opponent_score`, ordered by
   `own - other desc` and tie-broken by the higher score, then the later
-  match); "Ultimate disrespect" is `shutout_wins`, the wins where the
-  opponent scored nothing. Both are the *viewer's* against the profile's
-  player — `ProfileVersusCubit.playerId` is `myPlayerId` and `opponentId`
-  the player being looked at, the same direction the win/loss/draw table
-  already reads. `HeadToHeadRecord.biggestWin` is null exactly when the
-  viewer has never won, which is what hides the whole card; the two score
-  columns are null together, so they are one nullable `BiggestWin` rather
-  than two nullable ints.
+  match); "Ultimate disrespect" is the highest win in which the opponent
+  scored nothing — `biggest_shutout_score`, a `max(own_score) filter (…)`,
+  so it needs no opponent column of its own and
+  `HeadToHeadRecord.biggestShutout` fills the `0` in; "Total disrespects"
+  is `shutout_wins`, the `count(*)` over that same filter. All three are the
+  *viewer's* against the profile's player — `ProfileVersusCubit.playerId`
+  is `myPlayerId` and `opponentId` the player being looked at, the same
+  direction the win/loss/draw table already reads. `biggestWin` is null
+  exactly when the viewer has never won, which is what hides the whole card,
+  and `biggestShutout` is null on top of that until one of those wins was a
+  shutout — that null is what drops the shutout scoreline *and* the counter
+  beside it, since a `0` count next to a hidden scoreline says nothing.
 
 ## Commands
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 404 tests at time of writing
+flutter test                    # 405 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 dart run flutter_launcher_icons     # assets/icon/*.png into android/ web/ (not ios/)

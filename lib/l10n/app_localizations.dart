@@ -1370,6 +1370,24 @@ abstract class AppLocalizations {
   /// **'Matches against {name} will show up here.'**
   String profileVersusEmpty(String name);
 
+  /// No description provided for @profileBiggestHumiliationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Biggest humiliation'**
+  String get profileBiggestHumiliationLabel;
+
+  /// No description provided for @profileUltimateDisrespectLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Ultimate disrespect'**
+  String get profileUltimateDisrespectLabel;
+
+  /// No description provided for @profileTotalDisrespectsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total disrespects'**
+  String get profileTotalDisrespectsLabel;
+
   /// No description provided for @profileGamesTitle.
   ///
   /// In en, this message translates to:

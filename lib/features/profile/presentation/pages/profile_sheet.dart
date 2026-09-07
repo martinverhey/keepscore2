@@ -22,6 +22,7 @@ import '../../../leaderboard/domain/medals.model.dart';
 import '../../../leaderboard/domain/season_leaderboard.model.dart';
 import '../../../match/domain/match_entry.model.dart';
 import '../../../match/presentation/widgets/match_card.dart';
+import '../../domain/head_to_head_record.model.dart';
 import '../cubit/profile_history_cubit.dart';
 import '../cubit/profile_overview_cubit.dart';
 import '../cubit/profile_versus_cubit.dart';
@@ -295,6 +296,15 @@ class _ProfileSheetState extends State<ProfileSheet> {
           losses: record.losses,
           draws: record.draws,
         ),
+        if (record.biggestWin case final win?) ...[
+          const SizedBox(height: AppSpacing.md),
+          _versusHighlights(
+            context,
+            win,
+            record.biggestShutout,
+            record.shutoutWins,
+          ),
+        ],
         if (state.recentMatches.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.lg),
           _recentMatches(context, state.recentMatches),
@@ -302,6 +312,29 @@ class _ProfileSheetState extends State<ProfileSheet> {
       ],
     );
   }
+
+  Widget _versusHighlights(
+    BuildContext context,
+    BiggestWin biggestWin,
+    BiggestWin? biggestShutout,
+    int shutoutWins,
+  ) {
+    return _statCard([
+      _statBlock(
+        context.l10n.profileBiggestHumiliationLabel,
+        _scoreline(biggestWin),
+      ),
+      if (biggestShutout != null) ...[
+        _statBlock(
+          context.l10n.profileUltimateDisrespectLabel,
+          _scoreline(biggestShutout),
+        ),
+        _statBlock(context.l10n.profileTotalDisrespectsLabel, '$shutoutWins'),
+      ],
+    ]);
+  }
+
+  String _scoreline(BiggestWin win) => '${win.score} – ${win.opponentScore}';
 
   Widget _medalRow(Medals medals) {
     final chips = _medalChips(medals);
