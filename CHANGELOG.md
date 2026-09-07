@@ -3,6 +3,21 @@
 Newest first. Each heading is an annotated `vX.Y.Z` tag; pushing that tag ships
 the build to TestFlight and Play internal testing.
 
+## v0.4.2 — 2026-09-07
+
+### Added
+- The Versus tab names your biggest win, your best shutout and how many there were
+- An ice streak badge for a run of losses
+
+### Changed
+- Rename, leave and delete a competition from the card itself, no menu in between
+- Rename, remove and restore a player from their row itself
+- The spotlighted competition shows its join code above its QR, both big enough to scan
+- The app stays in portrait on iOS and Android
+
+### Fixed
+- A match card's score and names sat off centre
+
 ## v0.4.1 — 2026-09-06
 
 ### Added
