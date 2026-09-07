@@ -341,7 +341,7 @@ abstract class AppLocalizations {
   /// No description provided for @competitionsActive.
   ///
   /// In en, this message translates to:
-  /// **'Active competition'**
+  /// **'Active'**
   String get competitionsActive;
 
   /// No description provided for @competitionsOther.
@@ -463,12 +463,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Point a camera at this code — no typing required.'**
   String get competitionQrHelp;
-
-  /// No description provided for @competitionQrScan.
-  ///
-  /// In en, this message translates to:
-  /// **'Scan to join'**
-  String get competitionQrScan;
 
   /// No description provided for @competitionInviteTitle.
   ///

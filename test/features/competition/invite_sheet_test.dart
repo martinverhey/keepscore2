@@ -64,19 +64,14 @@ void main() {
       expect(find.byType(JoinQrImage), findsOneWidget);
       expect(find.text('Office Table Tennis'), findsOneWidget);
       expect(find.text('HDHS39'), findsOneWidget);
-      expect(find.text('Active competition'), findsNothing);
+      expect(find.text('Active'), findsNothing);
       expect(find.text('Manage'), findsNothing);
       final name = tester.getRect(find.text('Office Table Tennis'));
       final code = tester.getRect(find.byType(JoinCodeTag));
-      expect(code.top, closeTo(name.top, 4));
-      expect(code.left, greaterThanOrEqualTo(name.right));
-      expect(
-        find.descendant(
-          of: find.byType(ActiveCompetitionCard),
-          matching: find.byType(AdaptiveIcon),
-        ),
-        findsNothing,
-      );
+      final qr = tester.getRect(find.byType(JoinQrImage));
+      expect(code.top, greaterThan(name.bottom));
+      expect(code.bottom, lessThanOrEqualTo(qr.top));
+      expect(code.width, qr.width);
     });
   }
 

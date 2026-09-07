@@ -7,9 +7,14 @@ import '../../../../core/widgets/copyable.dart';
 import '../../../../core/widgets/tag.dart';
 
 class JoinCodeTag extends StatelessWidget {
-  const JoinCodeTag({super.key, required this.code});
+  const JoinCodeTag({
+    super.key,
+    required this.code,
+    this.style = TagStyle.code,
+  });
 
   final String code;
+  final TagStyle style;
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +26,7 @@ class JoinCodeTag extends StatelessWidget {
         child: Tag(
           copied ? context.l10n.competitionCodeCopied : code,
           color: AdaptiveColors.accent(context),
-          style: TagStyle.code,
+          style: style,
         ),
       ),
     );

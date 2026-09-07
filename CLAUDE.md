@@ -448,19 +448,39 @@ plain grey hairline (`AppColors.neutral` at `AppOpacity.controlBorder`). No
 accent wash and no accent border — the accent survives only in the eyebrow
 text and the code badge, so the card is marked by being the one opaque,
 outlined surface in a list where every `CompetitionCard` is a borderless
-translucent neutral. It carries an eyebrow row of
-"Active competition" against the join code as a `JoinCodeTag` — the same
-badge a `CompetitionCard` wears, at the same size — then the
-name and the player/match counts across the **full** card width beneath it,
-then a 200px `JoinQrImage` centred below all of it, big enough to scan off the
-page. The code shares the eyebrow's row rather than the name's precisely so
-that a long name gets the whole card to wrap into instead of a column beside a
-badge; `competitions_page_test.dart` pins that by asserting the name's row
-reaches past the code's left edge. So
-"which competition am I in" and "how does someone else get in" are both
-answered without opening anything. **The QR carries no tap of its own** — it
-is a thing to scan, not a button, and a nested tap target inside a card that
-is itself one tap only made the card's own destination ambiguous;
+translucent neutral. It reads top to bottom as identity then invitation: the
+name starts at the card's very top edge, an `Active` eyebrow sits directly
+under it, then the player/match counts, all across the **full** card width,
+then a centred block of the join code over a 200px `JoinQrImage`, both big
+enough to read or scan off the page and captioned by nothing — the code
+above the QR says which is which without a line of prose under them. The
+eyebrow is the `competitionsActive` key, one word (`Active` / `Actief`) — it used to read
+"Active competition" from a line of its own *above* the name, which both said
+what the card's own position already says and held an empty band open over
+the title; `competitions_page_test.dart` pins where it landed, between the
+name's bottom and the counts' top and flush with the name's left edge.
+**The code is a `JoinCodeTag(style: TagStyle.codeLarge)` stretched to the
+QR's own width** (`_codeWidth`, the QR size plus
+`JoinQrImage`'s own padding, so the two edges line up by construction rather
+than by a matching literal) — the same copy-on-tap badge a `CompetitionCard`
+wears, at `headlineMedium` instead of `labelLarge`, so the code and the QR
+read as one pair of ways in rather than as a badge on the name and a picture
+below it. **Nothing that wraps may go inside that `SizedBox`**, which is a
+layout constraint rather than a taste: `AdaptiveScaffold`'s non-scrolling
+body sizes itself from `getMaxIntrinsicHeight(crossAxisExtent)`, and
+`RenderConstrainedBox` forwards the *incoming* width to its child for that
+query instead of its own — so a wrapping `Text` in a fixed-width box is
+measured at the card's full width, comes back one line short, and the page
+**overflows by the lines it will actually wrap to** rather than growing and
+scrolling. A `Scan to join` caption under the QR is what found this; the
+code badge and the QR that are left are a single line and a fixed square, so
+their measured height is honest at any width. It is the same "pad, never
+constrain" rule the wide-web section states, biting through a plain
+`SizedBox` on a phone. So "which competition am I in" and "how does someone
+else get in" are both answered without opening anything. **The QR
+carries no tap of its own** — it is a thing to scan, not a button, and a
+nested tap target inside a card that is itself one tap only made the card's
+own destination ambiguous;
 `InviteSheet` renders this very card, and is still reached from every
 `CompetitionCard`'s invite button (see below). Which competition that is comes from
 `CompetitionCubit`, the same app-wide answer the sidebar reads, matched
@@ -478,15 +498,15 @@ split out so the hero can render the same code at its own size.
 **`InviteSheet` is that same card with its open affordances taken off, and
 that is the whole sheet.** `showInviteSheet` takes a `CompetitionOverview`
 rather than a bare code, and renders `ActiveCompetitionCard` with a null
-`onOpen` — which drops the "Active competition" eyebrow, the chevron and the
-tap in one, since all three say "this is a destination" and in a sheet it is
-not one. **The code badge then moves down into the name's row**, where the
-chevron would have been: with no eyebrow left to share, a lone badge on its
-own line held an empty band open above the name. That is also why `_nameWithCode` is
-its own row rather than the hero's: the name is `Expanded` so the badge is
-right-aligned beside it rather than trailing it the way the chevron does, and
-the row is `crossAxisAlignment: start` so the badge stays level with the
-name's *first* line when a long name wraps to two. `onManage` is left off for the same reason. It replaced a
+`onOpen` — which drops the `Active` eyebrow and the tap together, since both
+say "this is a destination" and in a sheet it is not one. There is no chevron
+on either surface any more: the whole hero card is the tap target, so an
+arrow after the name only competed with the name for the width it wraps
+into. Nothing else moves: the code and the QR are one centred block under
+the name in both, so the sheet is the hero card minus its chrome rather than
+a second arrangement of the same parts (it used to hold the code badge in the
+name's row, which is what `_nameWithCode` was for). `onManage` is left off for
+the same reason. It replaced a
 `JoinQrCard` over a `JoinCodeCard`, so the invite sheet and the competitions
 page now show the competition the same way rather than two different ways.
 `SettingsPage` still renders `JoinCodeCard`/`JoinQrCard`, which is why both
@@ -496,9 +516,10 @@ on `CompetitionState`'s sealed base — `LeaderboardPage` had only the
 
 **The join code copies itself wherever it is shown.** `JoinCodeTag`
 (`competition/presentation/widgets/join_code_tag.dart`) is the one code badge
-— the competitions list card, the hero card and the leaderboard's own header
-all render it — and tapping it writes the code to the clipboard and swaps its
-own label to `competitionCodeCopied` for two seconds. Inside a tappable card
+— the competitions list card, the hero card (at `TagStyle.codeLarge`) and the
+leaderboard's own header all render it — and tapping it writes the code to
+the clipboard and swaps its own label to `competitionCodeCopied` for two
+seconds. Inside a tappable card
 the inner tap wins, so pressing the badge copies rather than opening the
 competition; that is the point, and it is why the badge is the affordance
 rather than a separate Copy button. The timer/clipboard half is

@@ -136,7 +136,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Create your own competition with the + button.';
 
   @override
-  String get competitionsActive => 'Active competition';
+  String get competitionsActive => 'Active';
 
   @override
   String get competitionsOther => 'Other competitions';
@@ -219,9 +219,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get competitionQrHelp =>
       'Point a camera at this code — no typing required.';
-
-  @override
-  String get competitionQrScan => 'Scan to join';
 
   @override
   String get competitionInviteTitle => 'Invite players';

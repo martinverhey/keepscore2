@@ -320,6 +320,16 @@ void main() {
       find.descendant(of: card, matching: find.byType(QrImageView)),
       findsOneWidget,
     );
+
+    final eyebrow = tester.getRect(find.text(l10n.competitionsActive));
+    final name = tester.getRect(find.text('Office Table Tennis'));
+    final counts = tester.getRect(
+      find.descendant(of: card, matching: find.textContaining('players')),
+    );
+
+    expect(eyebrow.top, greaterThanOrEqualTo(name.bottom));
+    expect(eyebrow.bottom, lessThanOrEqualTo(counts.top));
+    expect(eyebrow.left, closeTo(name.left, 1));
   });
 
   testWidgets('the spotlighted competition is not repeated in the list', (
@@ -375,26 +385,19 @@ void main() {
   testWidgets('the spotlighted name runs the full width of the card', (
     tester,
   ) async {
+    const longName = 'Office Table Tennis Winter Championship Ladder';
+
     await _pumpHarness(
       tester,
       isGuest: false,
-      competitions: [_overview('c1', 'Office Table Tennis', 'HDHS39')],
+      competitions: [_overview('c1', longName, 'HDHS39')],
       activeId: 'c1',
     );
 
-    final nameRow = tester.getRect(
-      find
-          .ancestor(
-            of: find.text('Office Table Tennis'),
-            matching: find.byType(Row),
-          )
-          .first,
-    );
+    final name = tester.getRect(find.text(longName));
     final card = tester.getRect(find.byType(ActiveCompetitionCard));
-    final code = tester.getRect(find.text('HDHS39'));
 
-    expect(nameRow.right, greaterThan(code.left));
-    expect(nameRow.right, greaterThan(card.right - AppSpacing.lg));
+    expect(name.right, greaterThan(card.right - AppSpacing.lg));
   });
 
   testWidgets('the spotlight fits a narrow phone without overflowing', (
@@ -476,12 +479,14 @@ void main() {
       tester.element(find.byType(CompetitionsPage)),
     );
 
-    await tester.tap(
-      find.descendant(
-        of: find.byType(ActiveCompetitionCard),
-        matching: find.text(l10n.competitionManage),
-      ),
+    final manage = find.descendant(
+      of: find.byType(ActiveCompetitionCard),
+      matching: find.text(l10n.competitionManage),
     );
+
+    await tester.ensureVisible(manage);
+    await tester.pumpAndSettle();
+    await tester.tap(manage);
     await tester.pumpAndSettle();
     await tester.tap(find.text(l10n.competitionDelete));
     await tester.pumpAndSettle();

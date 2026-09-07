@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import '../theme/app_tokens.dart';
 
-enum TagStyle { pill, code }
+enum TagStyle { pill, code, codeLarge }
 
 class Tag extends StatelessWidget {
   const Tag(
@@ -18,31 +18,47 @@ class Tag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isCode = style == TagStyle.code;
-
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: AppSpacing.sm,
-        vertical: isCode ? AppSpacing.xs : 2,
+        vertical: switch (style) {
+          TagStyle.pill => 2,
+          TagStyle.code => AppSpacing.xs,
+          TagStyle.codeLarge => AppSpacing.sm,
+        },
       ),
       decoration: BoxDecoration(
-        borderRadius: isCode
-            ? BorderRadius.circular(AppRadius.sm)
-            : AppRadius.pill,
+        borderRadius: style == TagStyle.pill
+            ? AppRadius.pill
+            : BorderRadius.circular(AppRadius.sm),
         color: color.withValues(
-          alpha: isCode ? AppOpacity.selectedFill : AppOpacity.badgeFill,
+          alpha: style == TagStyle.pill
+              ? AppOpacity.badgeFill
+              : AppOpacity.selectedFill,
         ),
       ),
       child: Text(
         label,
-        style: (isCode ? AppTypography.labelLarge : AppTypography.labelTiny)
-            .copyWith(
-              fontWeight: FontWeight.w700,
-              color: color,
-              letterSpacing: isCode ? 1.2 : null,
-              fontFeatures: isCode ? AppTypography.tabularFigures : null,
-            ),
+        textAlign: TextAlign.center,
+        style: _labelStyle().copyWith(color: color),
       ),
     );
+  }
+
+  TextStyle _labelStyle() {
+    return switch (style) {
+      TagStyle.pill => AppTypography.labelTiny.copyWith(
+        fontWeight: FontWeight.w700,
+      ),
+      TagStyle.code => AppTypography.labelLarge.copyWith(
+        fontWeight: FontWeight.w700,
+        letterSpacing: 1.2,
+        fontFeatures: AppTypography.tabularFigures,
+      ),
+      TagStyle.codeLarge => AppTypography.headlineMedium.copyWith(
+        letterSpacing: 3,
+        fontFeatures: AppTypography.tabularFigures,
+      ),
+    };
   }
 }
