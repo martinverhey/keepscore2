@@ -41,16 +41,13 @@ class MatchCard extends StatelessWidget {
         borderRadius: AppRadius.card,
         color: AppColors.neutralSurface,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [_teams(context), const SizedBox(height: 2), _deltas()],
-      ),
+      child: IntrinsicHeight(child: _teams(context)),
     );
   }
 
   Widget _teams(BuildContext context) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Expanded(child: _side(context, team: MatchTeam.a)),
         _score(),
@@ -66,7 +63,24 @@ class MatchCard extends StatelessWidget {
       crossAxisAlignment: alignEnd
           ? CrossAxisAlignment.end
           : CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
+      children: [
+        Expanded(child: _names(context, team: team, alignEnd: alignEnd)),
+        const SizedBox(height: 2),
+        _delta(team),
+      ],
+    );
+  }
+
+  Widget _names(
+    BuildContext context, {
+    required MatchTeam team,
+    required bool alignEnd,
+  }) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: alignEnd
+          ? CrossAxisAlignment.end
+          : CrossAxisAlignment.start,
       children: [
         for (final entry in match.players(team))
           Text(
@@ -92,14 +106,15 @@ class MatchCard extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text('${match.teamAScore}', style: scoreStyle),
-          _separator(),
-          Text('${match.teamBScore}', style: scoreStyle),
-        ],
+      child: Center(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('${match.teamAScore}', style: scoreStyle),
+            _separator(),
+            Text('${match.teamBScore}', style: scoreStyle),
+          ],
+        ),
       ),
     );
   }
@@ -111,13 +126,6 @@ class MatchCard extends StatelessWidget {
         '–',
         style: AppTypography.bodySmall.copyWith(color: AppColors.neutralSoft),
       ),
-    );
-  }
-
-  Widget _deltas() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [_delta(MatchTeam.a), _delta(MatchTeam.b)],
     );
   }
 
