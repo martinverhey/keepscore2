@@ -23,6 +23,7 @@ declare
   v_comp     public.competitions;
   v_season   uuid;
   v_n        integer;
+  v_expected integer;
   v_denied   boolean;
   v_player   uuid;
 begin
@@ -71,8 +72,18 @@ begin
   select count(*) into v_n from public.competitions;
   assert v_n = 1, format('owner should see 1 competition, saw %s', v_n);
 
+  -- Counted against the roster rather than a literal: the demo competition
+  -- was seeded with five players and manual testing has since added more, so
+  -- a hardcoded number here fails for a reason that has nothing to do with
+  -- RLS. What matters is that the owner sees the whole ladder, not a subset.
+  select count(*) into v_expected
+    from public.players
+   where competition_id = v_comp.id and is_active;
+
   select count(*) into v_n from public.leaderboard where season_id = v_season;
-  assert v_n = 5, format('owner should see 5 leaderboard rows, saw %s', v_n);
+  assert v_n = v_expected,
+    format('owner should see all %s active players on the leaderboard, saw %s',
+           v_expected, v_n);
 
   select count(*) into v_n from public.match_feed;
   assert v_n > 0, 'owner should see the match feed';
@@ -133,7 +144,9 @@ begin
   perform pg_temp.act_as(v_guest, true);
 
   select count(*) into v_n from public.leaderboard where season_id = v_season;
-  assert v_n = 5, format('guest should still see the leaderboard, saw %s', v_n);
+  assert v_n = v_expected,
+    format('guest should still see all %s leaderboard rows, saw %s',
+           v_expected, v_n);
 
   v_denied := false;
   begin
