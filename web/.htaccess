@@ -6,6 +6,16 @@
   RewriteRule . index.html [L]
 </IfModule>
 
+<Files ".env">
+  <IfModule mod_authz_core.c>
+    Require all granted
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Allow from all
+  </IfModule>
+</Files>
+
 <IfModule mod_headers.c>
   <FilesMatch "\.(html|json)$">
     Header set Cache-Control "no-cache"
