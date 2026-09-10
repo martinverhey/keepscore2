@@ -49,3 +49,8 @@ app.*.map.json
 .supabase.local
 .supabase/
 
+# Database backups. Root-anchored, and never committed: these carry real user
+# data — auth.users holds every account's email address — and a full public
+# dump is a complete copy of the production tables. Made by
+# scripts/backup-db.sh before anything writes to the live project.
+/backups/
