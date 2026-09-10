@@ -279,7 +279,8 @@ refreshes the list when either sheet closes — realtime does it.
   row's end. `_nameRow` is `MainAxisSize.min` for that — inside `_identity`'s
   `Flexible` it shrink-wraps, so the rename button hugs a short name while a
   long one still ellipsises against it.
-  Enforced by the `players_guard_rename` trigger (20260902110000), **not** by
+  Enforced by the `players_guard_rename` trigger
+  (`schema/30_triggers/players_guard_rename.sql`), **not** by
   RLS: `players_update_owner_or_self` still admits the owner's UPDATE, since
   a policy sees either the existing row (`USING`) or the incoming one
   (`WITH CHECK`) and never both, and this rule is a comparison between them.
@@ -1095,8 +1096,8 @@ code; don't relitigate them.
   it by 400 ms and refetches. This is not laziness: reconciling a stream of
   per-row payloads would cost more than the refetch and could not keep `rank`
   consistent anyway — a single write's fan-out can still be many rows, even
-  after `recalc_season_from`/no-op write guards (20260815170000,
-  20260816110000) cut the `matches`/`match_players` side of it down to just
+  after `recalc_season_from`/the no-op write guards in
+  `apply_match_ratings` cut the `matches`/`match_players` side of it down to just
   the affected match(es): `player_ratings` is still fully deleted and
   rebuilt per season on every edit/delete (see the comment on
   `recalc_season_from`), so every player in the season still gets a fresh
@@ -2585,7 +2586,8 @@ Kept here because the code cannot express them and they cost real debugging:
   methods, or a second `game_type_*` sibling view, without deciding that
   scope is coming back on purpose. **The filter sheet only lists the game
   types actually played in the current season** — `season_game_types`
-  (20260902100000) answers that in one call, scoped by `season_window`'s
+  (`schema/10_functions/season_game_types.sql`) answers that in one call,
+  scoped by `season_window`'s
   computed bounds rather than by `matches.season_id` so it is also correct
   before the season's first match exists; `MatchListCubit.load` fetches it
   alongside the feed and parks it on `MatchListReady.seasonGameTypes` (a
@@ -2656,7 +2658,7 @@ Kept here because the code cannot express them and they cost real debugging:
   `ProfileOverviewCubit.profileStats` bundles what used to be five separate
   round trips (`totalMatchesPlayed`/`bestStreaks`/`bestRating`/
   `currentStreak`/`recentPlayed`, all single-row results for the same
-  `(player, season)`) into one `player_profile_stats` RPC (20260816130000);
+  `(player, season)`) into one `player_profile_stats` RPC;
   `leaderboards`/`recentForPlayer`/`medals`/`ratingHistory` stay separate
   calls, since those are genuinely different, list-shaped fetches.
   `ProfileRepository.profileStats` accepts a nullable `seasonId` — the RPC
@@ -2666,8 +2668,8 @@ Kept here because the code cannot express them and they cost real debugging:
   `ratingHistory` still do.
 - **The Versus tab's three bragging-rights stats ride the `head_to_head`
   RPC rather than a second call.** "Biggest humiliation" is the win with the
-  largest margin (20260907100000 widened the function with
-  `biggest_win_score`/`biggest_win_opponent_score`, ordered by
+  largest margin (`head_to_head` returns
+  `biggest_win_score`/`biggest_win_opponent_score` for it, ordered by
   `own - other desc` and tie-broken by the higher score, then the later
   match); "Ultimate disrespect" is the highest win in which the opponent
   scored nothing — `biggest_shutout_score`, a `max(own_score) filter (…)`,
@@ -2694,8 +2696,21 @@ flutter run -d chrome           # web
 flutter build web
 flutter build apk --debug        # verified green
 
+./scripts/backup-db.sh                        # snapshot live into backups/ (gitignored)
+./scripts/backup-db.sh --verify               # ...and prove it restores into Docker
+./scripts/verify-schema.sh                    # rebuild on Docker, diff against live
+./scripts/local-db.sh up                      # load newest backup into local Postgres
+./scripts/local-db.sh competitions            # first 25 rows of any table or view
+./scripts/local-db.sh auth.users 50           # ...qualified, with a row limit
+./scripts/local-db.sh tables                  # every relation + row count
+./scripts/local-db.sh codes                   # every competition + its join code
+./scripts/local-db.sh comp HDHS39             # one competition: settings, seasons,
+                                              #   leaderboard, last 10 matches
+./scripts/local-db.sh as <auth-user-uuid>     # psql as that user, RLS and all
 ./scripts/db.sh -c "select 1"                 # ad-hoc SQL
-./scripts/db.sh -f supabase/migrations/X.sql  # apply a migration
+./scripts/db.sh --apply-schema                # re-apply every replaceable object
+./scripts/db.sh --apply-schema --dry-run      # list what that would run, in order
+./scripts/db.sh -f supabase/migrations/X.sql  # apply a structural migration
 ./scripts/db.sh -f supabase/seed.sql          # reseed + run assertions
 ./scripts/db.sh -f supabase/tests/rls_check.sql      # RLS verification, rolls back
 ./scripts/db.sh -f supabase/tests/players_check.sql  # players + settings writes
@@ -2724,17 +2739,93 @@ flutter build apk --debug        # verified green
 ## Database workflow — read this before touching SQL
 
 `supabase link` needs a Management API access token we do not have, so
-**migrations are applied with `psql` via `scripts/db.sh`, not `supabase db
-push`.** The script reads `SUPABASE_PROJECT_REF` and `SUPABASE_DB_PASSWORD`
-from the project-root `.env`.
+**SQL is applied with `psql` via `scripts/db.sh`, not `supabase db push`.**
+The script reads `SUPABASE_PROJECT_REF` and `SUPABASE_DB_PASSWORD` from the
+project-root `.env`.
+
+**The SQL is split by whether Postgres can replace the object, and which half
+you are editing decides how it ships.**
+
+- `supabase/schema/` — everything that is `create or replace`: functions,
+  views, triggers, policies, grants. **One file per object, holding its current
+  definition and nothing else**, re-applied wholesale by
+  `./scripts/db.sh --apply-schema`. Editing one of these is editing that file
+  in place, so `git log -p` on it reads as the history of that function
+  instead of a pile of full redefinitions across a dozen migrations. Numeric
+  directory prefixes are the apply order: `00_prelude`, `10_functions`,
+  `20_views`, `30_triggers`, `40_policies`, `90_grants`.
+- `supabase/migrations/` — only what genuinely has to run once in sequence:
+  `create table`, `alter table`, columns, constraints, indexes, RLS enable,
+  data backfills. Everything before 2026-09-10 is squashed into
+  `20260910120000_baseline.sql`, generated from the live catalog and verified
+  against it object for object.
+
+Which half a change belongs in is almost always obvious: if you are changing
+what a function or view *does*, it is `schema/`, and there is no new migration
+at all. A new column is a migration; the view that exposes it is not.
 
 - The project's direct DB host is **IPv6-only**; the `aws-0`/`aws-1` poolers
   reject this tenant. `scripts/db.sh` already targets the right host.
-- After applying a migration by hand, record it:
+- After applying a *migration* by hand, record it:
   `insert into supabase_migrations.schema_migrations (version, name) values (…)`
-  so a future `supabase db push` picks up cleanly.
-- **Re-applying a `create or replace function` drops its grants.** Always
-  re-issue `grant execute on function … to authenticated` afterwards.
+  so a future `supabase db push` picks up cleanly. `--apply-schema` records
+  nothing, by design — it is not a migration, and re-running it is a no-op.
+- **Views need real dependency order and carry a numeric prefix for it**
+  (`10_leaderboard_base` before `20_leaderboard`, `20_season_history` before
+  `30_player_medals`). Functions do not: `00_prelude.sql` sets
+  `check_function_bodies = off`, so a body may name anything that exists by the
+  time it actually runs. Adding a view that builds on another means giving it
+  a higher prefix.
+- **Re-applying a `create or replace function` drops its grants.** Every file
+  in `10_functions/` therefore ends with its own `revoke`/`grant execute`
+  pair, so the footgun is structurally gone rather than something to remember
+  — but a *new* function file has to carry that pair too, or it ships
+  unreachable through PostgREST.
+- **A blanket `revoke all on all tables in schema public` only ever catches
+  what exists that day.** One in the original RLS migration is why the seven
+  base tables are narrow while all eight views still carry Supabase's default
+  `grant all` to `anon` and `authenticated`. Nothing reaches data through them
+  (every view is `security_invoker`, so a read re-enters the base table's RLS,
+  and every policy is `to authenticated`), which is why `90_grants.sql`
+  reproduces that state rather than quietly narrowing it. Narrowing the views
+  is a real behaviour change and wants its own commit.
+- **Back up before writing to live.** `scripts/backup-db.sh` drops a
+  timestamped snapshot into `backups/` — `public` as both plain SQL and a
+  `pg_restore` archive, plus `auth` (every `players.user_id` and `profiles.id`
+  points into `auth.users`, so a public-only dump cannot be read back), a
+  privilege snapshot and exact row counts. `--verify` restores it into a
+  throwaway Postgres and diffs the row counts, which is the difference between
+  having a file and having a backup. `backups/` is gitignored and must stay
+  that way: those dumps carry real account emails.
+- **`scripts/local-db.sh up` is a full, inspectable copy of production** —
+  the newest `backups/` snapshot loaded into Postgres 17 on
+  `localhost:55432`, verified on the way in against the snapshot's own row
+  counts and its 806-check privilege probe. It creates the Supabase roles but
+  deliberately **not** Supabase's default privileges: `pg_dump` already
+  captured live's real ACLs as explicit `GRANT`s, and a default-privileges
+  rule would silently widen every restored object past what live actually has
+  (this is not hypothetical — the first build of it handed `anon` full write
+  privileges on all seven base tables). Publication membership is replayed
+  from the snapshot too, since a `--schema=public` dump omits it.
+  `local-db.sh comp <join-code>` runs `supabase/inspect/competition.sql`
+  against it, which is the worked example of the one thing that trips up every
+  hand-written query here: `public.leaderboard` calls `player_streak` and
+  `player_today_delta`, both of which check membership through `auth.uid()`,
+  so a plain superuser session gets `You are not in this competition` instead
+  of rows. Impersonating any claimed member returns the whole ladder.
+  `local-db.sh as <auth-user-uuid>` sets the same GUC PostgREST does, so
+  `auth.uid()` answers and RLS, the security-definer membership checks and the
+  views all behave exactly as they do for that user — `set role authenticated`
+  on top of that is what actually exercises the policies, since `postgres`
+  owns the tables and bypasses them.
+- **The shadow database is how you check any of this without touching live.**
+  `postgres:17` in Docker, plus a small stub schema for what Supabase provides
+  (`anon`/`authenticated`/`service_role`, `auth.users`, `auth.uid()`,
+  `auth.jwt()`, the `supabase_realtime` publication, and default privileges
+  granting all on new tables to both roles) — then baseline, then
+  `--apply-schema`, then `pg_dump --schema-only` and diff against a dump of
+  the live project. That is what verified the squash, and it is the only way
+  to see a privilege or ordering mistake before it lands.
 
 ### SQL gotchas (Postgres / Supabase functions)
 
