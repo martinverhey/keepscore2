@@ -31,10 +31,11 @@ begin
   -- unordered limit 1 is one VACUUM away from picking a different one.
   select * into v_comp from public.competitions where join_code = 'HDHS39';
 
-  -- season_history (20260812120000) backfilled several historical seasons
-  -- for the demo competition, so `leaderboard` now spans more than one
-  -- season_id; pin to the latest one the same way the app always does
-  -- (a season_id filter), instead of counting across every season ever played.
+  -- A one-time backfill (squashed away with the pre-baseline migrations) gave
+  -- the demo competition several historical seasons, so `leaderboard` now
+  -- spans more than one season_id; pin to the latest one the same way the app
+  -- always does (a season_id filter), instead of counting across every season
+  -- ever played.
   select id into v_season
     from public.seasons
    where competition_id = v_comp.id

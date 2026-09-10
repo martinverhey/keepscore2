@@ -1,6 +1,7 @@
--- Verifies that apply_match_ratings (20260815170000) actually skips no-op
--- writes: replaying a season that hasn't changed must rewrite zero rows in
--- matches and match_players, not just leave the final values correct.
+-- Verifies that apply_match_ratings (schema/10_functions/apply_match_ratings.sql)
+-- actually skips no-op writes: replaying a season that hasn't changed must
+-- rewrite zero rows in matches and match_players, not just leave the final
+-- values correct.
 --
 --   ./scripts/db.sh -f supabase/tests/no_op_recalc_check.sql
 --

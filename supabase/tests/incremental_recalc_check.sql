@@ -1,7 +1,7 @@
--- Verifies recalc_season_from (20260816110000): after create_match /
--- update_match_score / delete_match run their narrow, boundary-scoped
--- replay, the result must be byte-identical to running a full recalc_season
--- from scratch on the same season — for player_ratings and every
+-- Verifies recalc_season_from (schema/10_functions/recalc_season_from.sql):
+-- after create_match / update_match_score / delete_match run their narrow,
+-- boundary-scoped replay, the result must be byte-identical to running a full
+-- recalc_season from scratch on the same season — for player_ratings and every
 -- match_players row (not just the ones at/after the boundary).
 --
 --   ./scripts/db.sh -f supabase/tests/incremental_recalc_check.sql

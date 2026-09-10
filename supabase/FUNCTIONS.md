@@ -3,9 +3,9 @@
 Every action the app takes — joining a competition, logging a match, editing
 a score — is actually a call to one of these functions on the database, not
 a raw insert/update. This page explains what each one does in plain
-language. For the actual SQL, see `migrations/20260809100000_schema.sql`,
-`20260809100100_functions.sql`, `20260809100200_rls.sql`,
-`20260809100300_views_realtime.sql`, and `20260809100500_normalize_join_code.sql`.
+language. For the actual SQL, every function below has a file of its own at
+`schema/10_functions/<name>.sql` — the name in bold is the filename. The tables
+they read and write live in `migrations/20260910120000_baseline.sql`.
 
 ## Who's allowed to do what
 
