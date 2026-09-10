@@ -1,0 +1,45 @@
+name: Web
+
+on:
+  workflow_dispatch: {}
+  push:
+    tags:
+      - "v*.*.*"
+
+concurrency:
+  group: web-deploy
+  cancel-in-progress: false
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.44.9"
+          channel: stable
+      - run: flutter pub get
+      - name: Resolve version name from tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: echo "BUILD_NAME=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+      - name: Build web
+        env:
+          BASE_HREF: ${{ vars.WEB_BASE_HREF || '/' }}
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: |
+          flutter build web \
+            --release \
+            --base-href "$BASE_HREF" \
+            ${BUILD_NAME:+--build-name "$BUILD_NAME"} \
+            --build-number "$BUILD_NUMBER"
+      - name: Deploy to FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ${{ vars.FTP_PROTOCOL || 'ftps' }}
+          port: ${{ vars.FTP_PORT || 21 }}
+          local-dir: ./build/web/
+          server-dir: ${{ vars.FTP_SERVER_DIR || './' }}
