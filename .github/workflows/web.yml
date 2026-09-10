@@ -25,9 +25,13 @@ jobs:
         run: echo "BUILD_NAME=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
       - name: Build web
         env:
-          BASE_HREF: ${{ vars.WEB_BASE_HREF || '/' }}
+          BASE_HREF: ${{ vars.WEB_BASE_HREF || secrets.WEB_BASE_HREF || '/' }}
           BUILD_NUMBER: ${{ github.run_number }}
         run: |
+          case "$BASE_HREF" in
+            /|/*/) ;;
+            *) echo "::error::WEB_BASE_HREF must start and end with a slash"; exit 1 ;;
+          esac
           flutter build web \
             --release \
             --base-href "$BASE_HREF" \
@@ -39,7 +43,7 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ${{ vars.FTP_PROTOCOL || 'ftps' }}
-          port: ${{ vars.FTP_PORT || 21 }}
+          protocol: ${{ vars.FTP_PROTOCOL || secrets.FTP_PROTOCOL || 'ftps' }}
+          port: ${{ vars.FTP_PORT || secrets.FTP_PORT || 21 }}
           local-dir: ./build/web/
-          server-dir: ${{ vars.FTP_SERVER_DIR || './' }}
+          server-dir: ${{ vars.FTP_SERVER_DIR || secrets.FTP_SERVER_DIR || './' }}
