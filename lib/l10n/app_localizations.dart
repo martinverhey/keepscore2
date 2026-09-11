@@ -974,6 +974,60 @@ abstract class AppLocalizations {
   /// **'Teams'**
   String get matchModeTeams;
 
+  /// No description provided for @matchModePrePick.
+  ///
+  /// In en, this message translates to:
+  /// **'Pre-pick'**
+  String get matchModePrePick;
+
+  /// No description provided for @matchPrePickTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Players'**
+  String get matchPrePickTitle;
+
+  /// No description provided for @matchPrePickCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'Create matches'**
+  String get matchPrePickCreate;
+
+  /// No description provided for @matchPrePickNeedsPlayers.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick at least two players.'**
+  String get matchPrePickNeedsPlayers;
+
+  /// No description provided for @matchPrePickCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 match will show up on the list.} other{{count} matches will show up on the list.}}'**
+  String matchPrePickCount(num count);
+
+  /// No description provided for @matchesPrePickedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pre-picked'**
+  String get matchesPrePickedTitle;
+
+  /// No description provided for @matchesPrePickedClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get matchesPrePickedClear;
+
+  /// No description provided for @matchesPrePickedRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get matchesPrePickedRemove;
+
+  /// No description provided for @matchesPrePickedVersus.
+  ///
+  /// In en, this message translates to:
+  /// **'vs'**
+  String get matchesPrePickedVersus;
+
   /// No description provided for @matchPlayerA.
   ///
   /// In en, this message translates to:

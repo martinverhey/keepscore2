@@ -202,6 +202,18 @@
   "matchTapToSelectPlayer": "Tap to pick a player",
   "matchModeOneVsOne": "1v1",
   "matchModeTeams": "Teams",
+  "matchModePrePick": "Pre-pick",
+  "matchPrePickTitle": "Players",
+  "matchPrePickCreate": "Create matches",
+  "matchPrePickNeedsPlayers": "Pick at least two players.",
+  "matchPrePickCount": "{count, plural, =1{1 match will show up on the list.} other{{count} matches will show up on the list.}}",
+  "@matchPrePickCount": {
+    "placeholders": { "count": { "type": "num", "format": "compact" } }
+  },
+  "matchesPrePickedTitle": "Pre-picked",
+  "matchesPrePickedClear": "Clear",
+  "matchesPrePickedRemove": "Remove",
+  "matchesPrePickedVersus": "vs",
   "matchPlayerA": "Player 1",
   "matchPlayerB": "Player 2",
   "matchScoreTitle": "Final score",

@@ -5,6 +5,7 @@ import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/extensions/date_time.extension.dart';
 import '../../../../core/extensions/game_type.extension.dart';
+import '../../../../core/extensions/player_list.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/failure_text.dart';
@@ -22,16 +23,26 @@ import '../../../tournament/presentation/widgets/tournament_button.dart';
 import '../../../tournament/presentation/widgets/tournament_card.dart';
 import '../../domain/game_type.enum.dart';
 import '../../domain/match_entry.model.dart';
+import '../../domain/planned_match.model.dart';
 import '../cubit/game_type_filter_cubit.dart';
 import '../cubit/match_list_cubit.dart';
+import '../cubit/planned_match_cubit.dart';
 import '../widgets/day_header.dart';
 import '../widgets/game_type_filter_button.dart';
 import '../widgets/match_card.dart';
 import '../widgets/match_day_group.dart';
+import '../widgets/planned_match_card.dart';
 import '../pages/match_detail_sheet.dart';
+import '../pages/new_match_sheet.dart';
 
 const double _newMatchTailInset = 32;
 const double _sidebarTailInset = 38;
+
+typedef _PrePickedMatch = ({
+  PlannedMatch match,
+  String playerAName,
+  String playerBName,
+});
 
 class MatchesPage extends StatefulWidget {
   const MatchesPage({super.key, required this.competitionId});
@@ -77,6 +88,7 @@ class _MatchesPageState extends State<MatchesPage> {
     final myPlayerId = competitionState.myPlayerId;
     final bottomInset = _bottomInset(context);
     final tournamentState = context.watch<TournamentCubit>().state;
+    final prePicked = _prePicked(context, isRegistered: isRegistered);
 
     setPageTitle(
       context,
@@ -115,12 +127,34 @@ class _MatchesPageState extends State<MatchesPage> {
                 isRegistered: isRegistered,
                 myPlayerId: myPlayerId,
                 bottomInset: bottomInset,
+                prePicked: prePicked,
               ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  List<_PrePickedMatch> _prePicked(
+    BuildContext context, {
+    required bool isRegistered,
+  }) {
+    if (!isRegistered) return const [];
+    final playersState = context.watch<PlayersCubit>().state;
+    if (playersState is! PlayersReady) return const [];
+    final roster = playersState.active;
+
+    return [
+      for (final match in context.watch<PlannedMatchCubit>().state.matches)
+        if (roster.displayNameFor(match.playerAId) case final playerAName?)
+          if (roster.displayNameFor(match.playerBId) case final playerBName?)
+            (
+              match: match,
+              playerAName: playerAName,
+              playerBName: playerBName,
+            ),
+    ];
   }
 
   double _bottomInset(BuildContext context) {
@@ -243,6 +277,7 @@ class _MatchesPageState extends State<MatchesPage> {
     required bool isRegistered,
     required String? myPlayerId,
     required double bottomInset,
+    required List<_PrePickedMatch> prePicked,
   }) {
     final cubit = context.read<MatchListCubit>();
 
@@ -263,6 +298,7 @@ class _MatchesPageState extends State<MatchesPage> {
         isRegistered: isRegistered,
         myPlayerId: myPlayerId,
         bottomInset: bottomInset,
+        prePicked: prePicked,
       ),
     };
   }
@@ -275,10 +311,19 @@ class _MatchesPageState extends State<MatchesPage> {
     required bool isRegistered,
     required String? myPlayerId,
     required double bottomInset,
+    required List<_PrePickedMatch> prePicked,
   }) {
     return SliverMainAxisGroup(
       slivers: [
         if (!isRegistered) SliverToBoxAdapter(child: _guestNotice(context)),
+        if (prePicked.isNotEmpty)
+          SliverToBoxAdapter(
+            child: _prePickedSection(
+              context,
+              prePicked,
+              competitionId: competitionId,
+            ),
+          ),
         if (state.selectedGameType case final gameType?)
           SliverToBoxAdapter(child: _gameTypeHeader(context, gameType)),
         _matchesSection(
@@ -288,11 +333,55 @@ class _MatchesPageState extends State<MatchesPage> {
           isRegistered: isRegistered,
           myPlayerId: myPlayerId,
           bottomInset: bottomInset,
+          hasPrePicked: prePicked.isNotEmpty,
         ),
         if (state.hasMore)
           SliverToBoxAdapter(child: _loadMoreButton(context, state, cubit)),
         if (state.actionFailure case final failure?)
           SliverToBoxAdapter(child: FailureText(failure)),
+      ],
+    );
+  }
+
+  Widget _prePickedSection(
+    BuildContext context,
+    List<_PrePickedMatch> prePicked, {
+    required String competitionId,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _prePickedHeader(context),
+          const SizedBox(height: AppSpacing.sm),
+          for (final entry in prePicked)
+            PlannedMatchCard(
+              playerAName: entry.playerAName,
+              playerBName: entry.playerBName,
+              onTap: () => showNewMatchSheet(
+                context,
+                competitionId: competitionId,
+                planned: entry.match,
+              ),
+              onRemove: () =>
+                  context.read<PlannedMatchCubit>().remove(entry.match),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _prePickedHeader(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(child: ListHeader(title: context.l10n.matchesPrePickedTitle)),
+        AdaptiveButton(
+          label: context.l10n.matchesPrePickedClear,
+          kind: AdaptiveButtonKind.plain,
+          expand: false,
+          onPressed: context.read<PlannedMatchCubit>().clear,
+        ),
       ],
     );
   }
@@ -318,11 +407,15 @@ class _MatchesPageState extends State<MatchesPage> {
     required bool isRegistered,
     required String? myPlayerId,
     required double bottomInset,
+    required bool hasPrePicked,
   }) {
     if (state.busy) return _loader();
 
     if (state.matches.isEmpty) {
       _rememberDays(const []);
+      if (hasPrePicked) {
+        return const SliverToBoxAdapter(child: SizedBox.shrink());
+      }
       return SliverFillRemaining(
         hasScrollBody: false,
         child: _emptyState(

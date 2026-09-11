@@ -510,6 +510,46 @@ class AppLocalizationsEn extends AppLocalizations {
   String get matchModeTeams => 'Teams';
 
   @override
+  String get matchModePrePick => 'Pre-pick';
+
+  @override
+  String get matchPrePickTitle => 'Players';
+
+  @override
+  String get matchPrePickCreate => 'Create matches';
+
+  @override
+  String get matchPrePickNeedsPlayers => 'Pick at least two players.';
+
+  @override
+  String matchPrePickCount(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString matches will show up on the list.',
+      one: '1 match will show up on the list.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get matchesPrePickedTitle => 'Pre-picked';
+
+  @override
+  String get matchesPrePickedClear => 'Clear';
+
+  @override
+  String get matchesPrePickedRemove => 'Remove';
+
+  @override
+  String get matchesPrePickedVersus => 'vs';
+
+  @override
   String get matchPlayerA => 'Player 1';
 
   @override

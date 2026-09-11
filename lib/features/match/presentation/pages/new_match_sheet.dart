@@ -11,6 +11,7 @@ import '../../../../core/extensions/text_editing_controller.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/failure_text.dart';
+import '../../../../core/widgets/selectable_row.dart';
 import '../../../../core/widgets/sheet.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../../core/widgets/swipe_navigator.dart';
@@ -19,7 +20,9 @@ import '../../../competition/presentation/cubit/competition_cubit.dart';
 import '../../../player/domain/player.model.dart';
 import '../../../player/presentation/pages/manage_players_sheet.dart';
 import '../../domain/match_entry.model.dart';
+import '../../domain/planned_match.model.dart';
 import '../cubit/match_form_cubit.dart';
+import '../cubit/planned_match_cubit.dart';
 import '../widgets/new_match_keys.enum.dart';
 import '../widgets/team_area.dart';
 import 'team_picker_sheet.dart';
@@ -27,19 +30,33 @@ import 'team_picker_sheet.dart';
 Future<void> showNewMatchSheet(
   BuildContext context, {
   required String competitionId,
+  PlannedMatch? planned,
 }) {
+  final plannedMatches = context.read<PlannedMatchCubit>();
+
   return showAdaptiveSheet<void>(
     context,
     confirmsDismissal: true,
-    builder: (_) => BlocProvider(
-      create: (_) => getIt<MatchFormCubit>(param1: competitionId)..load(),
-      child: const NewMatchSheet(),
+    builder: (_) => MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => getIt<MatchFormCubit>(param1: competitionId)
+            ..load(
+              teamA: [if (planned != null) planned.playerAId],
+              teamB: [if (planned != null) planned.playerBId],
+            ),
+        ),
+        BlocProvider<PlannedMatchCubit>.value(value: plannedMatches),
+      ],
+      child: NewMatchSheet(planned: planned),
     ),
   );
 }
 
 class NewMatchSheet extends StatefulWidget {
-  const NewMatchSheet({super.key});
+  const NewMatchSheet({super.key, this.planned});
+
+  final PlannedMatch? planned;
 
   @override
   State<NewMatchSheet> createState() => _NewMatchSheetState();
@@ -66,10 +83,33 @@ class _NewMatchSheetState extends State<NewMatchSheet> {
     final scoreB = _scoreBValue;
     if (scoreA == null || scoreB == null) return;
 
-    final id = await cubit.submit(scoreA: scoreA, scoreB: scoreB);
-    if (id == null || !context.mounted) return;
+    final navigator = Navigator.of(context);
+    final plannedMatches = context.read<PlannedMatchCubit>();
 
-    Navigator.of(context).pop();
+    final id = await cubit.submit(scoreA: scoreA, scoreB: scoreB);
+    if (id == null) return;
+    if (widget.planned case final planned?) {
+      await plannedMatches.remove(planned);
+    }
+    if (navigator.mounted) navigator.pop();
+  }
+
+  Future<void> _createPrePicked(
+    BuildContext context,
+    MatchFormReady state,
+  ) async {
+    final navigator = Navigator.of(context);
+    await context.read<PlannedMatchCubit>().plan(state.prePicked);
+    if (navigator.mounted) navigator.pop();
+  }
+
+  Future<void> _removePrePicked(
+    BuildContext context,
+    PlannedMatch planned,
+  ) async {
+    final navigator = Navigator.of(context);
+    await context.read<PlannedMatchCubit>().remove(planned);
+    if (navigator.mounted) navigator.pop();
   }
 
   @override
@@ -86,28 +126,54 @@ class _NewMatchSheetState extends State<NewMatchSheet> {
         child: Sheet(
           title: context.l10n.matchNewTitle,
           content: _content(context, state, cubit, myPlayerId),
-          primaryButton: state is MatchFormReady
-              ? AdaptiveButton(
-                  label: context.l10n.matchSubmit,
-                  busy: state.busy,
-                  onPressed:
-                      state.canSubmit(
-                        scoreAValue: _scoreAValue,
-                        scoreBValue: _scoreBValue,
-                      )
-                      ? () => _submit(context, cubit)
-                      : null,
-                )
-              : null,
+          primaryButton: _primaryButton(context, state, cubit),
+          secondaryButton: _secondaryButton(context),
         ),
       ),
     );
   }
 
+  Widget? _primaryButton(
+    BuildContext context,
+    MatchFormState state,
+    MatchFormCubit cubit,
+  ) {
+    if (state is! MatchFormReady) return null;
+
+    if (state.isPrePick) {
+      return AdaptiveButton(
+        label: context.l10n.matchPrePickCreate,
+        onPressed: state.canCreatePrePicked
+            ? () => _createPrePicked(context, state)
+            : null,
+      );
+    }
+
+    return AdaptiveButton(
+      label: context.l10n.matchSubmit,
+      busy: state.busy,
+      onPressed:
+          state.canSubmit(scoreAValue: _scoreAValue, scoreBValue: _scoreBValue)
+          ? () => _submit(context, cubit)
+          : null,
+    );
+  }
+
+  Widget? _secondaryButton(BuildContext context) {
+    final planned = widget.planned;
+    if (planned == null) return null;
+
+    return AdaptiveButton(
+      label: context.l10n.matchesPrePickedRemove,
+      kind: AdaptiveButtonKind.destructive,
+      onPressed: () => _removePrePicked(context, planned),
+    );
+  }
+
   bool _hasUnsavedInput(MatchFormState state) {
-    return _scoreA.text.isNotEmpty ||
-        _scoreB.text.isNotEmpty ||
-        (state is MatchFormReady && state.assignments.isNotEmpty);
+    if (_scoreA.text.isNotEmpty || _scoreB.text.isNotEmpty) return true;
+    if (state is! MatchFormReady || widget.planned != null) return false;
+    return state.assignments.isNotEmpty || state.prePicked.isNotEmpty;
   }
 
   Future<void> _confirmDiscard(BuildContext context) async {
@@ -147,10 +213,14 @@ class _NewMatchSheetState extends State<NewMatchSheet> {
   }
 
   Widget _form(BuildContext context, MatchFormReady state, String? myPlayerId) {
+    if (widget.planned != null) return _fields(context, state, myPlayerId);
+
     return SwipeNavigator(
       onNext: _modeAt(context, state.mode.index + 1),
       onPrevious: _modeAt(context, state.mode.index - 1),
-      child: _fields(context, state, myPlayerId),
+      child: state.isPrePick
+          ? _prePickFields(context, state)
+          : _fields(context, state, myPlayerId),
     );
   }
 
@@ -168,8 +238,10 @@ class _NewMatchSheetState extends State<NewMatchSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _modeToggle(context, state),
-        const SizedBox(height: AppSpacing.lg),
+        if (widget.planned == null) ...[
+          _modeToggle(context, state),
+          const SizedBox(height: AppSpacing.lg),
+        ],
         Text(context.l10n.matchPickTeamsTitle, style: AppTypography.titleSmall),
         const SizedBox(height: AppSpacing.md),
 
@@ -191,18 +263,6 @@ class _NewMatchSheetState extends State<NewMatchSheet> {
         if (state.submitFailure case final failure?)
           FailureText(failure, textAlign: TextAlign.center),
       ],
-    );
-  }
-
-  Widget _modeToggle(BuildContext context, MatchFormReady state) {
-    return AdaptiveSegmented<MatchEntryMode>(
-      key: const ValueKey(NewMatchKey.modeToggle),
-      segments: {
-        MatchEntryMode.oneVsOne: context.l10n.matchModeOneVsOne,
-        MatchEntryMode.teams: context.l10n.matchModeTeams,
-      },
-      value: state.mode,
-      onChanged: context.read<MatchFormCubit>().setMode,
     );
   }
 
@@ -299,6 +359,62 @@ class _NewMatchSheetState extends State<NewMatchSheet> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _prePickFields(BuildContext context, MatchFormReady state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _modeToggle(context, state),
+        const SizedBox(height: AppSpacing.lg),
+        Text(context.l10n.matchPrePickTitle, style: AppTypography.titleSmall),
+        const SizedBox(height: AppSpacing.md),
+
+        if (state.players.isEmpty)
+          EmptyState(message: context.l10n.matchNeedsPlayers)
+        else
+          _prePickRoster(context, state),
+
+        const SizedBox(height: AppSpacing.md),
+        _hintText(_prePickHint(context, state)),
+      ],
+    );
+  }
+
+  Widget _prePickRoster(BuildContext context, MatchFormReady state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (final player in state.players) ...[
+          SelectableRow(
+            label: player.displayName,
+            selected: state.isPrePicked(player.id),
+            onTap: () =>
+                context.read<MatchFormCubit>().togglePrePick(player.id),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+        ],
+      ],
+    );
+  }
+
+  String _prePickHint(BuildContext context, MatchFormReady state) {
+    return state.prePicked.length < 2
+        ? context.l10n.matchPrePickNeedsPlayers
+        : context.l10n.matchPrePickCount(state.prePickedMatchCount);
+  }
+
+  Widget _modeToggle(BuildContext context, MatchFormReady state) {
+    return AdaptiveSegmented<MatchEntryMode>(
+      key: const ValueKey(NewMatchKey.modeToggle),
+      segments: {
+        MatchEntryMode.oneVsOne: context.l10n.matchModeOneVsOne,
+        MatchEntryMode.teams: context.l10n.matchModeTeams,
+        MatchEntryMode.prePick: context.l10n.matchModePrePick,
+      },
+      value: state.mode,
+      onChanged: context.read<MatchFormCubit>().setMode,
     );
   }
 

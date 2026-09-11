@@ -184,7 +184,7 @@ is selectable without closing anything (the picker does its own
 already-on-the-other-side filtering now, so what it gets back is every active
 player, not one side's selectable subset).
 
-**The new match sheet opens on a `1v1` / `Teams` toggle
+**The new match sheet opens on a `1v1` / `Teams` / `Pre-pick` toggle
 (`AdaptiveSegmented<MatchEntryMode>`), and that mode drives the whole form.**
 `MatchEntryMode` (`presentation/cubit/match_entry_mode.enum.dart`, exported
 through `match_form_state.dart`) lives on `MatchFormReady`; it defaults to
@@ -197,6 +197,76 @@ holding exactly one survives.
 **The sides are numbered, not lettered** — `Team 1`/`Team 2`, `Player 1`/
 `Speler 1` — while the l10n *keys* still read `matchTeamA`/`matchPlayerB`, so
 don't read a letter off a key name and assume it reaches the screen.
+
+**`prePick` is the one mode that replaces the form rather than reshaping it,
+and its output is a list of placeholders rather than a match.** `_form`
+returns `_prePickFields` instead of `_fields` for it: the mode toggle, a
+`matchPrePickTitle` header, a `SelectableRow` per active player
+(`MatchFormCubit.togglePrePick` → `MatchFormReady.prePicked`, a `Set<String>`
+beside `assignments` rather than folded into it — a pre-pick selection is not
+a side), and a hint counting the pairings the selection produces. The primary
+button is `Create matches`, which calls `PlannedMatchCubit.plan` with the
+selection and pops; nothing is submitted and no `MatchRepository` call is
+made. The pairing rule is every unordered pair (`_roundRobin` in
+`planned_match_cubit.dart`), so N players give N(N-1)/2 placeholders. There is
+no cap: the list below is the only thing that grows.
+
+**Placeholders are device-local, and that is a deliberate product choice, not
+an omission.** `PlannedMatchStore` (`core/data/planned_match_store.dart`) is a
+`SharedPreferences` key per competition holding a JSON list of
+`PlannedMatch` (`domain/planned_match.model.dart` — two player ids and
+nothing else). So they are private to the device that pre-picked them and
+never reach anyone else in the competition; the *matches* they turn into are
+of course normal server-side matches. This is the one piece of competition
+state the app deliberately keeps off Postgres — before adding a second,
+re-read "Online only" and decide it on purpose.
+
+**A pair is its own identity: `PlannedMatch.pairKey` is the two ids sorted and
+joined**, which is what makes pre-picking again *add the missing pairings*
+rather than duplicate the ones already open (`plan` dedupes on it), and what
+makes `remove` indifferent to which side a player was on. There is no id, no
+timestamp and no ordering beyond insertion order.
+
+**`PlannedMatchCubit` is a `registerLazySingleton` provided at the app root,
+next to `CompetitionCubit`, and `CompetitionScope` selects it alongside it.**
+It has to be app-wide for the same reason `CompetitionCubit` does, and the
+reason is `Sidebar`: the sidebar's New match button lives in `SidebarShell`,
+which sits *above* the competition `ShellRoute`, so a competition-scoped
+`registerFactoryParam` would hand that button a different instance from the
+one `MatchesPage` renders — and on wide web, where the sidebar is always the
+new-match affordance, pre-picking would then never reach the visible list.
+`select(id)` is a no-op for the same id, so re-entering a competition does not
+re-read the store. The cost is that **every test pumping `CompetitionScope`,
+`MatchesPage` or `NewMatchSheet` now needs a `PlannedMatchCubit` in scope**
+(and `SharedPreferences.setMockInitialValues`), the same tax `Sidebar` charges
+for `ThemeCubit`/`AuthBloc`.
+
+**The placeholders head the Matches list, and a placeholder is a `MatchCard`
+with the score taken out.** `PlannedMatchCard` renders the two names either
+side of a muted `vs` and a compact delete button at the row's end, on a faint
+fill inside a hairline border — the one outlined card in a list of solid ones,
+so "not played yet" reads without a label. `MatchesPage._prePicked` resolves
+each pair's names off `PlayersCubit`'s active roster and **drops any pair a
+name cannot be found for**, so a placeholder against someone who has since
+been deactivated disappears rather than rendering an id. The section is above
+the game-type header (a placeholder has no game type to filter by) and is
+gated on `session.canWrite`. When the real feed is empty but placeholders
+exist, `_matchesSection` returns nothing rather than the full-viewport
+`EmptyState` — the placeholders *are* the invitation, and the speech bubble
+pointing at the new-match action would be pointing past a list that is not
+empty.
+
+**Tapping a placeholder opens the same `NewMatchSheet`, pre-filled.**
+`showNewMatchSheet(planned:)` seeds `MatchFormCubit.load(teamA:, teamB:)` with
+the pair, which is why `load` takes them at all — a `setTeams` after the fact
+would mean waiting on a fetch the provider's `create` does not await. A
+pre-filled sheet **hides the mode toggle and the `SwipeNavigator`** (the
+players are settled; there is no mode left to move between), carries a
+destructive `Remove` secondary button, and treats its own seeded assignments
+as *not* unsaved input — otherwise backing out of a placeholder you opened by
+accident would prompt to discard a match you never touched. Saving removes the
+placeholder; so does `Remove`. `Clear` on the section header drops every open
+one.
 
 **Everywhere else that names a side asks the match, not a mode.**
 `MatchTeam.label(context, isOneVsOne:)`
@@ -326,6 +396,10 @@ or moved:
 - **Create a match** — the "new match" bottom tab item is omitted entirely for
   guests in `competition_tab_bar.dart`; `matches.page.dart` shows
   `GuestNotice` instead of the new-match affordance.
+- **Pre-picked placeholders** — `matches.page.dart`'s `_prePicked` returns an
+  empty list unless `session.canWrite`, so the whole section is absent for a
+  guest. Pre-picking itself is inside the new match sheet, which a guest
+  cannot open.
 - **Edit/delete a match** — `match_detail_sheet.dart`,
   `session.canWrite && state.isManageableBy(session.user?.id)` (creator or
   owner only, not just registered).
@@ -2808,7 +2882,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 441 tests at time of writing
+flutter test                    # 456 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 dart run flutter_launcher_icons     # assets/icon/*.png into android/ web/ (not ios/)

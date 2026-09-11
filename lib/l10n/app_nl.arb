@@ -202,6 +202,18 @@
   "matchTapToSelectPlayer": "Tik om een speler te kiezen",
   "matchModeOneVsOne": "1v1",
   "matchModeTeams": "Teams",
+  "matchModePrePick": "Vooraf",
+  "matchPrePickTitle": "Spelers",
+  "matchPrePickCreate": "Wedstrijden maken",
+  "matchPrePickNeedsPlayers": "Kies minstens twee spelers.",
+  "matchPrePickCount": "{count, plural, =1{Er komt 1 wedstrijd in de lijst.} other{Er komen {count} wedstrijden in de lijst.}}",
+  "@matchPrePickCount": {
+    "placeholders": { "count": { "type": "num", "format": "compact" } }
+  },
+  "matchesPrePickedTitle": "Vooraf gekozen",
+  "matchesPrePickedClear": "Wissen",
+  "matchesPrePickedRemove": "Verwijderen",
+  "matchesPrePickedVersus": "vs",
   "matchPlayerA": "Speler 1",
   "matchPlayerB": "Speler 2",
   "matchScoreTitle": "Eindstand",

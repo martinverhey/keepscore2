@@ -13,6 +13,7 @@ import '../features/auth/presentation/cubit/auth_bloc.dart';
 import '../features/competition/presentation/cubit/competition_cubit.dart';
 import '../features/competition/presentation/cubit/competition_list_cubit.dart';
 import '../features/match/presentation/cubit/game_type_filter_cubit.dart';
+import '../features/match/presentation/cubit/planned_match_cubit.dart';
 import '../features/settings/domain/theme_preference.enum.dart';
 import '../features/settings/presentation/cubit/language_cubit.dart';
 import '../features/settings/presentation/cubit/theme_cubit.dart';
@@ -33,6 +34,7 @@ class _KeepScoreAppState extends State<KeepScoreApp> {
   late final LanguageCubit _languageCubit = getIt<LanguageCubit>();
   late final GameTypeFilterCubit _gameTypeFilterCubit =
       getIt<GameTypeFilterCubit>();
+  late final PlannedMatchCubit _plannedMatchCubit = getIt<PlannedMatchCubit>();
   late final CompetitionCubit _competitionCubit = getIt<CompetitionCubit>();
   late final CompetitionListCubit _competitionListCubit =
       getIt<CompetitionListCubit>();
@@ -53,6 +55,7 @@ class _KeepScoreAppState extends State<KeepScoreApp> {
         BlocProvider<ThemeCubit>.value(value: _themeCubit),
         BlocProvider<LanguageCubit>.value(value: _languageCubit),
         BlocProvider<GameTypeFilterCubit>.value(value: _gameTypeFilterCubit),
+        BlocProvider<PlannedMatchCubit>.value(value: _plannedMatchCubit),
         BlocProvider<CompetitionCubit>.value(value: _competitionCubit),
         BlocProvider<CompetitionListCubit>.value(value: _competitionListCubit),
       ],

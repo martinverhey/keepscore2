@@ -42,6 +42,7 @@ class MatchFormReady extends MatchFormState {
     this.players = const [],
     this.ratings = const {},
     this.assignments = const {},
+    this.prePicked = const {},
     this.mode = MatchEntryMode.oneVsOne,
     this.busy = false,
     this.submitFailure,
@@ -51,11 +52,21 @@ class MatchFormReady extends MatchFormState {
   final List<Player> players;
   final Map<String, double> ratings;
   final Map<String, MatchTeam> assignments;
+  final Set<String> prePicked;
   final MatchEntryMode mode;
   final bool busy;
   final Failure? submitFailure;
 
   bool get isOneVsOne => mode == MatchEntryMode.oneVsOne;
+
+  bool get isPrePick => mode == MatchEntryMode.prePick;
+
+  bool isPrePicked(String playerId) => prePicked.contains(playerId);
+
+  int get prePickedMatchCount =>
+      prePicked.length * (prePicked.length - 1) ~/ 2;
+
+  bool get canCreatePrePicked => prePicked.length >= 2 && !busy;
 
   List<Player> team(MatchTeam side) => players
       .where((player) => assignments[player.id] == side)
@@ -106,6 +117,7 @@ class MatchFormReady extends MatchFormState {
     List<Player>? players,
     Map<String, double>? ratings,
     Map<String, MatchTeam>? assignments,
+    Set<String>? prePicked,
     MatchEntryMode? mode,
     bool? busy,
     Failure? submitFailure,
@@ -116,6 +128,7 @@ class MatchFormReady extends MatchFormState {
       players: players ?? this.players,
       ratings: ratings ?? this.ratings,
       assignments: assignments ?? this.assignments,
+      prePicked: prePicked ?? this.prePicked,
       mode: mode ?? this.mode,
       busy: busy ?? this.busy,
       submitFailure: clearSubmitFailure
@@ -130,6 +143,7 @@ class MatchFormReady extends MatchFormState {
     players,
     ratings,
     assignments,
+    prePicked,
     mode,
     busy,
     submitFailure,
