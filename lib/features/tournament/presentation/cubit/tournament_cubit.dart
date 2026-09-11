@@ -2,7 +2,9 @@ import 'package:bloc/bloc.dart';
 
 import '../../../../core/data/realtime.dart';
 import '../../../../core/error/failure.dart';
+import '../../domain/bracket.model.dart';
 import '../../domain/tournament_repository.dart';
+import '../../domain/tournament_run.model.dart';
 import 'tournament_state.dart';
 
 export 'tournament_state.dart';
@@ -29,20 +31,28 @@ class TournamentCubit extends Cubit<TournamentState> {
     _watch();
 
     try {
-      final tournament = await _repository.latest(competitionId);
+      final tournaments = _repository.all(competitionId);
+      final brackets = _repository.brackets(competitionId);
+      final loaded = await tournaments;
+      final bracketsById = await brackets;
       if (isClosed) return;
 
-      if (tournament == null) {
+      if (loaded.isEmpty) {
         _watchBracket(null);
         emit(const TournamentMissing());
         return;
       }
 
-      final bracket = await _repository.bracket(tournament.id);
-      if (isClosed) return;
+      final runs = [
+        for (final tournament in loaded)
+          TournamentRun(
+            tournament: tournament,
+            bracket: bracketsById[tournament.id] ?? const Bracket([]),
+          ),
+      ];
 
-      _watchBracket(tournament.id);
-      emit(TournamentReady(tournament: tournament, bracket: bracket));
+      _watchBracket(runs.first.id);
+      emit(TournamentReady(runs: runs));
     } on Failure catch (failure) {
       if (isClosed) return;
       if (silent && ready != null) return;
@@ -80,13 +90,13 @@ class TournamentCubit extends Cubit<TournamentState> {
     }
   }
 
-  Future<bool> cancel() async {
+  Future<bool> cancel(String tournamentId) async {
     final ready = _ready;
     if (ready == null) return false;
     emit(ready.copyWith(busy: true, clearActionFailure: true));
 
     try {
-      await _repository.cancel(ready.tournament.id);
+      await _repository.cancel(tournamentId);
       if (isClosed) return false;
       await load(silent: true);
       return true;

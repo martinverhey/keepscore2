@@ -97,7 +97,8 @@ void main() {
     final matches = MockMatchRepository();
     final tournaments = MockTournamentRepository();
 
-    when(() => tournaments.latest(any())).thenAnswer((_) async => null);
+    when(() => tournaments.all(any())).thenAnswer((_) async => []);
+    when(() => tournaments.brackets(any())).thenAnswer((_) async => {});
     when(
       () => tournaments.watchTournaments(any()),
     ).thenAnswer((_) => const Stream.empty());

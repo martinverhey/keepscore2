@@ -19,8 +19,10 @@ class TournamentButton extends StatelessWidget {
   final TournamentState state;
   final bool isRegistered;
 
-  bool get _isRunning =>
-      state is TournamentReady && !(state as TournamentReady).isCompleted;
+  bool get _isRunning => switch (state) {
+    TournamentReady ready => ready.hasRunning,
+    _ => false,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -36,8 +38,13 @@ class TournamentButton extends StatelessWidget {
     final cubit = context.read<TournamentCubit>();
 
     if (_isRunning || !isRegistered) {
-      if (state is! TournamentReady) return;
-      await showTournamentBracketSheet(context, cubit: cubit);
+      if (state case final TournamentReady ready) {
+        await showTournamentBracketSheet(
+          context,
+          cubit: cubit,
+          tournamentId: ready.latest.id,
+        );
+      }
       return;
     }
 

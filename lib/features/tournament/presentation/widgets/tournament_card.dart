@@ -6,14 +6,14 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/tag.dart';
 import '../../domain/bracket.model.dart';
-import '../cubit/tournament_cubit.dart';
+import '../../domain/tournament_run.model.dart';
 
 class TournamentCard extends StatelessWidget {
-  const TournamentCard({super.key, required this.state, required this.onOpen});
+  const TournamentCard({super.key, required this.run, required this.onOpen});
 
   static const int _previewPairings = 3;
 
-  final TournamentReady state;
+  final TournamentRun run;
   final VoidCallback onOpen;
 
   @override
@@ -32,22 +32,51 @@ class TournamentCard extends StatelessWidget {
         borderRadius: AppRadius.card,
         color: AppColors.neutralSurface,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
+      child: Row(
         children: [
-          _titleRow(context),
-          const SizedBox(height: AppSpacing.sm),
-          if (state.champion case final champion?)
-            _championRow(context, champion)
-          else
-            _upNext(context),
+          Expanded(child: _details(context)),
+          const SizedBox(width: AppSpacing.sm),
+          const AdaptiveIcon(
+            AdaptiveGlyph.chevronRight,
+            color: AppColors.neutral,
+            size: 18,
+          ),
         ],
       ),
     );
   }
 
+  Widget _details(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _titleRow(context),
+        const SizedBox(height: AppSpacing.sm),
+        if (run.champion case final champion?)
+          _championRow(context, champion)
+        else
+          _upNext(context),
+      ],
+    );
+  }
+
   Widget _titleRow(BuildContext context) {
+    return Row(
+      children: [
+        Text(context.l10n.tournamentTitle, style: AppTypography.titleSmall),
+        if (!run.isCompleted) ...[
+          const SizedBox(width: AppSpacing.xs),
+          Tag(
+            context.l10n.tournamentInProgress,
+            color: AdaptiveColors.accent(context),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _championRow(BuildContext context, TournamentEntrant champion) {
     return Row(
       children: [
         const AdaptiveIcon(
@@ -56,37 +85,22 @@ class TournamentCard extends StatelessWidget {
           size: 20,
         ),
         const SizedBox(width: AppSpacing.sm),
-        Text(context.l10n.tournamentTitle, style: AppTypography.titleSmall),
-        const SizedBox(width: AppSpacing.xs),
-        Tag(_statusLabel(context), color: _statusColor(context)),
-        const Spacer(),
-        const AdaptiveIcon(
-          AdaptiveGlyph.chevronRight,
-          color: AppColors.neutral,
-          size: 18,
+        Flexible(
+          child: Text(
+            champion.displayName,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTypography.bodyLarge,
+          ),
         ),
+        const SizedBox(width: AppSpacing.xs),
+        Tag(context.l10n.tournamentChampion, color: AppColors.gold),
       ],
     );
   }
 
-  String _statusLabel(BuildContext context) => state.isCompleted
-      ? context.l10n.tournamentChampion
-      : context.l10n.tournamentInProgress;
-
-  Color _statusColor(BuildContext context) =>
-      state.isCompleted ? AppColors.gold : AdaptiveColors.accent(context);
-
-  Widget _championRow(BuildContext context, TournamentEntrant champion) {
-    return Text(
-      champion.displayName,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: AppTypography.bodyLarge,
-    );
-  }
-
   Widget _upNext(BuildContext context) {
-    final pairings = state.bracket.currentRound
+    final pairings = run.bracket.currentRound
         .where((match) => match.isPlayable && !match.isPlayed)
         .take(_previewPairings)
         .toList(growable: false);
@@ -96,7 +110,7 @@ class TournamentCard extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          state.bracket.roundLabel(context, state.bracket.currentRoundNumber),
+          run.bracket.roundLabel(context, run.bracket.currentRoundNumber),
           style: AppTypography.captionStrong,
         ),
         for (final match in pairings) ...[

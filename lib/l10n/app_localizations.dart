@@ -1574,6 +1574,18 @@ abstract class AppLocalizations {
   /// **'A tournament match needs a winner.'**
   String get tournamentNoDraw;
 
+  /// No description provided for @tournamentRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove tournament'**
+  String get tournamentRemove;
+
+  /// No description provided for @tournamentRemoveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove tournament?'**
+  String get tournamentRemoveTitle;
+
   /// No description provided for @tournamentCancel.
   ///
   /// In en, this message translates to:

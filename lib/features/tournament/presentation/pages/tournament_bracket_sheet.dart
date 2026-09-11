@@ -6,10 +6,12 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/failure_text.dart';
 import '../../../../core/widgets/sheet.dart';
+import '../../../../core/widgets/tag.dart';
 import '../../../../core/widgets/trophy_chip.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
 import '../../domain/bracket.model.dart';
+import '../../domain/tournament_run.model.dart';
 import '../cubit/tournament_cubit.dart';
 import '../widgets/bracket_view.dart';
 import 'tournament_score_sheet.dart';
@@ -17,48 +19,64 @@ import 'tournament_score_sheet.dart';
 Future<void> showTournamentBracketSheet(
   BuildContext context, {
   required TournamentCubit cubit,
+  required String tournamentId,
 }) {
   return showAdaptiveSheet<void>(
     context,
     builder: (_) => BlocProvider<TournamentCubit>.value(
       value: cubit,
-      child: const TournamentBracketSheet(),
+      child: TournamentBracketSheet(tournamentId: tournamentId),
     ),
   );
 }
 
 class TournamentBracketSheet extends StatelessWidget {
-  const TournamentBracketSheet({super.key});
+  const TournamentBracketSheet({super.key, required this.tournamentId});
+
+  final String tournamentId;
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<TournamentCubit, TournamentState>(
-      builder: (context, state) => Sheet(
-        title: context.l10n.tournamentBracketTitle,
-        content: _content(context, state),
-        secondaryButton: _cancelButton(context, state),
-      ),
+      builder: (context, state) {
+        final run = _run(state);
+
+        return Sheet(
+          title: context.l10n.tournamentBracketTitle,
+          content: _content(context, state, run),
+          secondaryButton: _discardButton(context, state, run),
+        );
+      },
     );
   }
 
-  Widget _content(BuildContext context, TournamentState state) {
-    if (state is! TournamentReady) return const SizedBox.shrink();
+  TournamentRun? _run(TournamentState state) =>
+      state is TournamentReady ? state.runOf(tournamentId) : null;
+
+  Widget _content(
+    BuildContext context,
+    TournamentState state,
+    TournamentRun? run,
+  ) {
+    if (run == null) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (state.champion case final champion?) ...[
+        if (run.champion case final champion?) ...[
           _champion(context, champion),
           const SizedBox(height: AppSpacing.md),
         ],
         BracketView(
-          bracket: state.bracket,
-          onSelect: _canScore(context, state)
+          bracket: run.bracket,
+          myPlayerId: context.watch<CompetitionCubit>().state.myPlayerId,
+          onSelect: _canScore(context, run)
               ? (match) => _score(context, match)
               : null,
         ),
-        if (state.actionFailure case final failure?) FailureText(failure),
+        if (state case TournamentReady(actionFailure: final failure?))
+          FailureText(failure),
       ],
     );
   }
@@ -68,30 +86,22 @@ class TournamentBracketSheet extends StatelessWidget {
       children: [
         const TrophyChip(count: 1, iconSize: 20),
         const SizedBox(width: AppSpacing.sm),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                context.l10n.tournamentChampion,
-                style: AppTypography.eyebrow.copyWith(color: AppColors.gold),
-              ),
-              Text(
-                champion.displayName,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTypography.titleSmall,
-              ),
-            ],
+        Flexible(
+          child: Text(
+            champion.displayName,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTypography.titleSmall,
           ),
         ),
+        const SizedBox(width: AppSpacing.xs),
+        Tag(context.l10n.tournamentChampion, color: AppColors.gold),
       ],
     );
   }
 
-  bool _canScore(BuildContext context, TournamentReady state) =>
-      context.read<AuthBloc>().state.canWrite && !state.isCompleted;
+  bool _canScore(BuildContext context, TournamentRun run) =>
+      context.read<AuthBloc>().state.canWrite && !run.isCompleted;
 
   Future<void> _score(BuildContext context, TournamentMatch match) async {
     final cubit = context.read<TournamentCubit>();
@@ -105,39 +115,50 @@ class TournamentBracketSheet extends StatelessWidget {
     );
   }
 
-  Widget? _cancelButton(BuildContext context, TournamentState state) {
-    if (state is! TournamentReady) return null;
+  Widget? _discardButton(
+    BuildContext context,
+    TournamentState state,
+    TournamentRun? run,
+  ) {
+    if (state is! TournamentReady || run == null) return null;
 
     final session = context.watch<AuthBloc>().state;
     final ownerId = context.watch<CompetitionCubit>().state.competition?.ownerId;
     if (ownerId == null || !session.canWrite) return null;
-    if (!state.tournament.isManageableBy(session.user?.id, ownerId: ownerId)) {
+    if (!run.tournament.isManageableBy(session.user?.id, ownerId: ownerId)) {
       return null;
     }
 
     return AdaptiveButton(
-      label: context.l10n.tournamentCancel,
+      label: _discardLabel(context, run),
       kind: AdaptiveButtonKind.destructive,
       busy: state.busy,
-      onPressed: () => _confirmCancel(context),
+      onPressed: () => _confirmDiscard(context, run),
     );
   }
 
-  Future<void> _confirmCancel(BuildContext context) async {
+  Future<void> _confirmDiscard(BuildContext context, TournamentRun run) async {
     final navigator = Navigator.of(context);
     final cubit = context.read<TournamentCubit>();
 
     final confirmed = await showAdaptiveConfirm(
       context,
-      title: context.l10n.tournamentCancelTitle,
+      title: run.isCompleted
+          ? context.l10n.tournamentRemoveTitle
+          : context.l10n.tournamentCancelTitle,
       message: context.l10n.tournamentCancelConfirm,
-      confirmLabel: context.l10n.tournamentCancel,
+      confirmLabel: _discardLabel(context, run),
       cancelLabel: context.l10n.tournamentKeep,
       destructive: true,
     );
     if (!confirmed) return;
 
-    final cancelled = await cubit.cancel();
+    final cancelled = await cubit.cancel(tournamentId);
     if (cancelled && navigator.mounted) navigator.pop();
   }
+
+  String _discardLabel(BuildContext context, TournamentRun run) =>
+      run.isCompleted
+      ? context.l10n.tournamentRemove
+      : context.l10n.tournamentCancel;
 }

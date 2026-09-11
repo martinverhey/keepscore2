@@ -12,30 +12,35 @@ class SupabaseTournamentRepository implements TournamentRepository {
   final SupabaseClient _client;
 
   @override
-  Future<Tournament?> latest(String competitionId) => guard(() async {
-    final row = await _client
+  Future<List<Tournament>> all(String competitionId) => guard(() async {
+    final rows = await _client
         .from('tournaments')
         .select()
         .eq('competition_id', competitionId)
-        .order('created_at', ascending: false)
-        .limit(1)
-        .maybeSingle();
+        .order('created_at', ascending: false);
 
-    return row == null ? null : Tournament.fromMap(row);
+    return rows.map(Tournament.fromMap).toList(growable: false);
   });
 
   @override
-  Future<Bracket> bracket(String tournamentId) => guard(() async {
+  Future<Map<String, Bracket>> brackets(String competitionId) => guard(() async {
     final rows = await _client
         .from('tournament_bracket')
         .select()
-        .eq('tournament_id', tournamentId)
+        .eq('competition_id', competitionId)
         .order('round')
         .order('slot');
 
-    return Bracket.fromMatches(
-      rows.map((row) => TournamentMatch.fromMap(row)).toList(growable: false),
-    );
+    final byTournament = <String, List<TournamentMatch>>{};
+    for (final row in rows) {
+      final match = TournamentMatch.fromMap(row);
+      (byTournament[match.tournamentId] ??= []).add(match);
+    }
+
+    return {
+      for (final entry in byTournament.entries)
+        entry.key: Bracket.fromMatches(entry.value),
+    };
   });
 
   @override

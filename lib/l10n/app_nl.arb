@@ -344,6 +344,8 @@
   "tournamentEnterScore": "Score invoeren",
   "tournamentSaveResult": "Uitslag opslaan",
   "tournamentNoDraw": "Een toernooiwedstrijd heeft een winnaar nodig.",
+  "tournamentRemove": "Toernooi verwijderen",
+  "tournamentRemoveTitle": "Toernooi verwijderen?",
   "tournamentCancel": "Toernooi annuleren",
   "tournamentCancelTitle": "Toernooi annuleren?",
   "tournamentCancelConfirm": "Hiermee verdwijnen het schema en alle scores erin.",

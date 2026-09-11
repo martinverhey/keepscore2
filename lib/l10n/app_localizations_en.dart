@@ -863,6 +863,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tournamentNoDraw => 'A tournament match needs a winner.';
 
   @override
+  String get tournamentRemove => 'Remove tournament';
+
+  @override
+  String get tournamentRemoveTitle => 'Remove tournament?';
+
+  @override
   String get tournamentCancel => 'Cancel tournament';
 
   @override

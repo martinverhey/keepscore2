@@ -2484,9 +2484,10 @@ is still rendered when there is *no* competition (the `else` branch of
 
 ### Tournaments are a track of their own
 
-`/competition/:id/matches` heads itself with a `TournamentCard` and carries a
-trophy bar action; both drive `features/tournament/`. The decision the whole
-feature hangs off:
+`/competition/:id/matches` heads itself with the running tournament's
+`TournamentCard`, files every finished one into the feed by date, and carries
+a trophy bar action; all three drive `features/tournament/`. The decision the
+whole feature hangs off:
 
 - **A bracket result is not an Elo result.** `set_tournament_result` writes
   `tournament_matches` and nothing else — it never calls `create_match`, never
@@ -2507,13 +2508,57 @@ feature hangs off:
   `start_tournament`'s own readable check — the index is what stops two
   concurrent calls both winning. Which is why `cancel_tournament` exists at
   all: without it an abandoned bracket would block the competition forever.
-  A *completed* tournament does not block anything, and the card keeps showing
-  it (with its champion) until the next one starts.
-- **`TournamentRepository.latest` is deliberately not `active`.** It returns
-  the newest tournament whatever its status, so the champion stays on the
-  Matches page after the final. "Is one running" is then
-  `TournamentReady && !isCompleted`, which is what the trophy action's
-  `active` state and its tap target both read.
+  A *completed* tournament does not block anything, and its card stays on the
+  Matches page for good.
+- **Every tournament the competition has ever run keeps a card, and starting
+  a new one adds a card rather than replacing the last one's result.** The
+  running one (there is at most one) heads the page; a finished one takes its
+  place in the match feed at the day and time it finished — see "A finished
+  tournament is a feed entry" below. `TournamentRepository.all`/`brackets` fetch the whole
+  history in two queries — the roster of tournaments, and every bracket row
+  for the competition at once (`tournament_bracket` carries `competition_id`,
+  so one read covers every tournament's slots), assembled into one
+  `TournamentRun` (`domain/tournament_run.model.dart`, a tournament plus its
+  bracket) per tournament on `TournamentReady.runs`. `runs.first` is the
+  newest, and "is one running" is `hasRunning` — `!latest.isCompleted`, which
+  holds because the partial unique index means an active tournament can only
+  ever be the newest. That is what the trophy action's `active` state and its
+  tap target read. Deleting an old card is `cancel_tournament`, which the
+  bracket sheet still offers on a completed tournament for exactly that
+  reason.
+- **Only the newest bracket is watched.** `_watchBracket(runs.first.id)` —
+  an older tournament's slots are settled, and the `tournaments` channel
+  already covers a start or a cancel. The cost is that a re-score of a
+  finished tournament's final reaches other devices on the next refresh
+  rather than immediately.
+- **A bracket sheet is opened for one tournament, by id.**
+  `showTournamentBracketSheet(cubit:, tournamentId:)`, and the sheet reads
+  `TournamentReady.runOf(id)` on every build so realtime still flows into it.
+
+**A finished tournament is a feed entry, not a card pinned above the list.**
+`MatchFeedEntry` (`match/presentation/widgets/match_feed_entry.dart`) is the
+sealed pair `MatchFeedMatch`/`MatchFeedTournament` the Matches list is built
+from, and `groupByDay` groups *those* rather than bare `MatchEntry`s —
+`MatchDayGroup.entries`, keyed on `happenedAt` (a match's `playedAt`, a
+tournament's `TournamentRun.finishedAt`, which is `completedAt` with
+`createdAt` as the fallback the model's nullable column forces). So a
+tournament that finished at 15:00 sits between that day's 18:00 and 09:00
+matches, under the same `DayHeader`, and a tournament finished on a day with
+no matches gets a day header of its own.
+`groupByDay` therefore **sorts before grouping**, where it used to trust the
+order the server gave it (`MatchRepository.feed` returns `played_at desc`) and
+group consecutively. Merging a second source in is what broke that premise;
+the comparator is the same `newest first, ties by id desc` it always applied
+within a day, now applied across the whole list.
+Two consequences worth knowing:
+- **The game type filter does not hide them.** A tournament has no game type
+  — the same reason pre-picked placeholders sit above the game-type header —
+  so a filtered feed still carries its tournament cards. The card is a
+  trophy-headed surface rather than a scoreline, so it does not read as a
+  match of the filtered type.
+- **A tournament older than the loaded page lands at the bottom** rather than
+  being hidden, since the feed is paginated and the tournaments are not.
+  Loading more matches then fills in above it.
 
 **Seeding pairs the closest ratings, and there are no byes.**
 `start_tournament` refuses any field that is not 2, 4, 8 or 16
@@ -2618,6 +2663,18 @@ the sheet returns the new tournament id and `TournamentButton` refreshes
 `TournamentBracketSheet` is handed the page's cubit with `BlocProvider.value`
 — a sheet route inherits nothing route-scoped, and building a second
 `TournamentCubit` would mean a second pair of realtime channels.
+
+**The card is a row, not a column with a chevron dropped into its first
+line.** `TournamentCard._card` is `[Expanded(details), chevron]`, so the
+chevron sits on the whole card's centre line however many pairings the body
+lists — it points at the card, not at its title. The status tag follows the
+same reasoning: `In progress` qualifies the tournament and stays beside the
+title, while `Champion` qualifies the *person* and sits behind the champion's
+name, the same place a `Tag` sits behind a player's name everywhere else. The
+trophy went with it — it heads the champion's name rather than the card's own
+title, so an unfinished bracket carries no trophy at all and a finished one
+names its champion exactly the way the bracket sheet does: trophy, name, tag,
+rather than the eyebrow-over-name block that block was.
 
 ### Every app icon comes from `ios/Runner/AppIcon.icon`
 
@@ -2955,7 +3012,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 456 tests at time of writing
+flutter test                    # 469 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 dart run flutter_launcher_icons     # assets/icon/*.png into android/ web/ (not ios/)

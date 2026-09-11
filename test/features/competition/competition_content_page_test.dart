@@ -68,7 +68,8 @@ Future<GoRouter> _pumpHarness(
   final tournamentRepository = MockTournamentRepository();
   final leaderboard = MockLeaderboardRepository();
 
-  when(() => tournamentRepository.latest(any())).thenAnswer((_) async => null);
+  when(() => tournamentRepository.all(any())).thenAnswer((_) async => []);
+  when(() => tournamentRepository.brackets(any())).thenAnswer((_) async => {});
   when(
     () => tournamentRepository.watchTournaments(any()),
   ).thenAnswer((_) => const Stream.empty());

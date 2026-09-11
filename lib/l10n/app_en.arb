@@ -344,6 +344,8 @@
   "tournamentEnterScore": "Enter score",
   "tournamentSaveResult": "Save result",
   "tournamentNoDraw": "A tournament match needs a winner.",
+  "tournamentRemove": "Remove tournament",
+  "tournamentRemoveTitle": "Remove tournament?",
   "tournamentCancel": "Cancel tournament",
   "tournamentCancelTitle": "Cancel tournament?",
   "tournamentCancelConfirm": "This removes the bracket and every score in it.",

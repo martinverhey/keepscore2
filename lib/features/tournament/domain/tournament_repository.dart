@@ -2,9 +2,9 @@ import 'bracket.model.dart';
 import 'tournament.model.dart';
 
 abstract interface class TournamentRepository {
-  Future<Tournament?> latest(String competitionId);
+  Future<List<Tournament>> all(String competitionId);
 
-  Future<Bracket> bracket(String tournamentId);
+  Future<Map<String, Bracket>> brackets(String competitionId);
 
   Future<String> start({
     required String competitionId,

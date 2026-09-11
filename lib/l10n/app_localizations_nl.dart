@@ -866,6 +866,12 @@ class AppLocalizationsNl extends AppLocalizations {
       'Een toernooiwedstrijd heeft een winnaar nodig.';
 
   @override
+  String get tournamentRemove => 'Toernooi verwijderen';
+
+  @override
+  String get tournamentRemoveTitle => 'Toernooi verwijderen?';
+
+  @override
   String get tournamentCancel => 'Toernooi annuleren';
 
   @override

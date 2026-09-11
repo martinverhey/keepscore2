@@ -13,10 +13,11 @@ class MockTournamentRepository extends Mock implements TournamentRepository {}
 Future<void> _settle() => Future<void>.delayed(Duration.zero);
 
 Tournament _tournament({
+  String id = 't1',
   TournamentStatus status = TournamentStatus.active,
   String? winnerPlayerId,
 }) => Tournament(
-  id: 't1',
+  id: id,
   competitionId: 'c1',
   seasonId: 's1',
   size: 4,
@@ -45,6 +46,13 @@ TournamentMatch _match(
       : TournamentEntrant(playerId: b, displayName: b.toUpperCase()),
   winnerPlayerId: winner,
 );
+
+void _stubLoad(MockTournamentRepository repository) {
+  when(() => repository.all('c1')).thenAnswer((_) async => [_tournament()]);
+  when(
+    () => repository.brackets('c1'),
+  ).thenAnswer((_) async => {'t1': _bracket()});
+}
 
 Bracket _bracket() => Bracket.fromMatches([
   _match(1, 0, a: 'p1', b: 'p2'),
@@ -77,34 +85,59 @@ void main() {
   });
 
   test('reports missing when the competition has never run one', () async {
-    when(() => repository.latest('c1')).thenAnswer((_) async => null);
+    when(() => repository.all('c1')).thenAnswer((_) async => []);
+    when(() => repository.brackets('c1')).thenAnswer((_) async => {});
 
     final cubit = build();
     await cubit.load();
 
     expect(cubit.state, isA<TournamentMissing>());
-    verifyNever(() => repository.bracket(any()));
+    verifyNever(() => repository.watchBracket(any()));
     await cubit.close();
   });
 
   test('loads the bracket of the latest tournament', () async {
-    when(() => repository.latest('c1')).thenAnswer((_) async => _tournament());
-    when(() => repository.bracket('t1')).thenAnswer((_) async => _bracket());
+    _stubLoad(repository);
 
     final cubit = build();
     await cubit.load();
 
     final state = cubit.state as TournamentReady;
-    expect(state.tournament.id, 't1');
-    expect(state.bracket.roundCount, 2);
-    expect(state.isCompleted, isFalse);
+    expect(state.latest.id, 't1');
+    expect(state.latest.bracket.roundCount, 2);
+    expect(state.hasRunning, isTrue);
+    await cubit.close();
+  });
+
+  test('every tournament keeps a run of its own, newest first', () async {
+    when(() => repository.all('c1')).thenAnswer(
+      (_) async => [
+        _tournament(),
+        _tournament(
+          id: 't0',
+          status: TournamentStatus.completed,
+          winnerPlayerId: 'p1',
+        ),
+      ],
+    );
+    when(() => repository.brackets('c1')).thenAnswer(
+      (_) async => {'t1': _bracket(), 't0': _bracket()},
+    );
+
+    final cubit = build();
+    await cubit.load();
+
+    final state = cubit.state as TournamentReady;
+    expect(state.runs.map((run) => run.id), ['t1', 't0']);
+    expect(state.runOf('t0')?.isCompleted, isTrue);
+    verify(() => repository.watchBracket('t1')).called(1);
+    verifyNever(() => repository.watchBracket('t0'));
     await cubit.close();
   });
 
   test('surfaces a load failure with no prior data', () async {
-    when(
-      () => repository.latest('c1'),
-    ).thenThrow(const UnknownFailure('boom'));
+    when(() => repository.all('c1')).thenThrow(const UnknownFailure('boom'));
+    when(() => repository.brackets('c1')).thenAnswer((_) async => {});
 
     final cubit = build();
     await cubit.load();
@@ -114,15 +147,12 @@ void main() {
   });
 
   test('a silent refresh that fails keeps the data already on screen', () async {
-    when(() => repository.latest('c1')).thenAnswer((_) async => _tournament());
-    when(() => repository.bracket('t1')).thenAnswer((_) async => _bracket());
+    _stubLoad(repository);
 
     final cubit = build();
     await cubit.load();
 
-    when(
-      () => repository.latest('c1'),
-    ).thenThrow(const UnknownFailure('boom'));
+    when(() => repository.all('c1')).thenThrow(const UnknownFailure('boom'));
     await cubit.refresh();
 
     expect(cubit.state, isA<TournamentReady>());
@@ -130,8 +160,7 @@ void main() {
   });
 
   test('a realtime tick on the bracket refetches', () async {
-    when(() => repository.latest('c1')).thenAnswer((_) async => _tournament());
-    when(() => repository.bracket('t1')).thenAnswer((_) async => _bracket());
+    _stubLoad(repository);
 
     final cubit = build();
     await cubit.load();
@@ -141,13 +170,12 @@ void main() {
     await Future<void>.delayed(const Duration(milliseconds: 500));
     await _settle();
 
-    verify(() => repository.latest('c1')).called(greaterThanOrEqualTo(1));
+    verify(() => repository.all('c1')).called(greaterThanOrEqualTo(1));
     await cubit.close();
   });
 
   test('the bracket watcher is only rebuilt when the tournament changes', () async {
-    when(() => repository.latest('c1')).thenAnswer((_) async => _tournament());
-    when(() => repository.bracket('t1')).thenAnswer((_) async => _bracket());
+    _stubLoad(repository);
 
     final cubit = build();
     await cubit.load();
@@ -159,8 +187,7 @@ void main() {
   });
 
   test('setResult reloads and clears busy', () async {
-    when(() => repository.latest('c1')).thenAnswer((_) async => _tournament());
-    when(() => repository.bracket('t1')).thenAnswer((_) async => _bracket());
+    _stubLoad(repository);
     when(
       () => repository.setResult(
         tournamentMatchId: any(named: 'tournamentMatchId'),
@@ -184,8 +211,7 @@ void main() {
   });
 
   test('a refused result lands on actionFailure, not a failed state', () async {
-    when(() => repository.latest('c1')).thenAnswer((_) async => _tournament());
-    when(() => repository.bracket('t1')).thenAnswer((_) async => _bracket());
+    _stubLoad(repository);
     when(
       () => repository.setResult(
         tournamentMatchId: any(named: 'tournamentMatchId'),

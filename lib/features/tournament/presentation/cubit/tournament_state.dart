@@ -1,13 +1,10 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/failure.dart';
-import '../../domain/bracket.model.dart';
-import '../../domain/tournament.model.dart';
+import '../../domain/tournament_run.model.dart';
 
 sealed class TournamentState extends Equatable {
   const TournamentState();
-
-  Tournament? get tournament => null;
 }
 
 class TournamentLoading extends TournamentState {
@@ -35,33 +32,41 @@ class TournamentFailed extends TournamentState {
 
 class TournamentReady extends TournamentState {
   const TournamentReady({
-    required this.tournament,
-    required this.bracket,
+    required this.runs,
     this.busy = false,
     this.actionFailure,
   });
 
-  @override
-  final Tournament tournament;
-
-  final Bracket bracket;
+  final List<TournamentRun> runs;
   final bool busy;
   final Failure? actionFailure;
 
-  bool get isCompleted => tournament.isCompleted;
+  TournamentRun get latest => runs.first;
 
-  TournamentEntrant? get champion => bracket.champion;
+  bool get hasRunning => !latest.isCompleted;
+
+  TournamentRun? get running => hasRunning ? latest : null;
+
+  List<TournamentRun> get finished => [
+    for (final run in runs)
+      if (run.isCompleted) run,
+  ];
+
+  TournamentRun? runOf(String tournamentId) {
+    for (final run in runs) {
+      if (run.id == tournamentId) return run;
+    }
+    return null;
+  }
 
   TournamentReady copyWith({
-    Tournament? tournament,
-    Bracket? bracket,
+    List<TournamentRun>? runs,
     bool? busy,
     Failure? actionFailure,
     bool clearActionFailure = false,
   }) {
     return TournamentReady(
-      tournament: tournament ?? this.tournament,
-      bracket: bracket ?? this.bracket,
+      runs: runs ?? this.runs,
       busy: busy ?? this.busy,
       actionFailure: clearActionFailure
           ? null
@@ -70,5 +75,5 @@ class TournamentReady extends TournamentState {
   }
 
   @override
-  List<Object?> get props => [tournament, bracket, busy, actionFailure];
+  List<Object?> get props => [runs, busy, actionFailure];
 }
