@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
+import 'package:keepscore2/core/widgets/medal_chip.dart';
 import 'package:keepscore2/core/widgets/streak_badge.dart';
 import 'package:keepscore2/core/widgets/trophy_chip.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
@@ -190,12 +191,25 @@ void main() {
     expect(_offCenter(tester, '1080'), lessThan(-4));
   });
 
-  testWidgets('a tournament winner wears a trophy next to their name', (
+  testWidgets('a tournament winner wears a trophy beside their medals', (
     tester,
   ) async {
-    await pumpRow(tester, _leaderboard(trophies: 1));
+    await pumpRow(
+      tester,
+      _leaderboard(trophies: 1),
+      medals: const Medals(playerId: 'p1', gold: 2, silver: 0, bronze: 0),
+    );
 
-    expect(find.byType(TrophyChip), findsOneWidget);
+    final trophy = tester.getRect(find.byType(TrophyChip));
+
+    expect(
+      trophy.top,
+      greaterThanOrEqualTo(tester.getRect(find.text('Ada Lovelace')).bottom),
+    );
+    expect(
+      trophy.right,
+      lessThanOrEqualTo(tester.getRect(find.byType(MedalChip)).left),
+    );
     expect(
       find.descendant(of: find.byType(TrophyChip), matching: find.byType(Text)),
       findsNothing,

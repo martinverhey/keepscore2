@@ -2536,7 +2536,13 @@ completed tournaments per (season, winner), and `public.leaderboard` carries it
 as a **trailing** `trophies` column (a `create or replace view` can only append
 — see that file's own header). `Leaderboard.trophies` then reaches
 `LeaderboardRow`, `ProfileSection` and `ProfileSheet`, each rendering the same
-`core/widgets/trophy_chip.dart` beside the name next to the streak badge.
+`core/widgets/trophy_chip.dart` **at the head of the medals line, not in the
+name row** — a trophy is an award like a medal, and the name row is for the
+name, the streak and the Owner tag. Each surface therefore has one
+`_awardsRow`/`_awardChips` pair instead of a `_trophyChip` in the name row
+plus a separate medals row, and it renders for a player with trophies and no
+medals as readily as the other way round. The trophy leads the row so its
+position does not shift with how many medal kinds a player happens to hold.
 `TrophyChip` shows the count only above one, unlike `MedalChip`, which always
 does: one trophy is a trophy, and a "1" beside it reads as a rank.
 

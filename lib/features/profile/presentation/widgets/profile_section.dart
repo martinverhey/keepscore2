@@ -109,9 +109,6 @@ class ProfileSection extends StatelessWidget {
   }
 
   Widget _header(BuildContext context) {
-    final tally = medals;
-    final hasMedals = tally != null && tally.hasAny;
-
     return Row(
       children: [
         InitialsCircle(displayName: displayName, size: 44),
@@ -122,9 +119,9 @@ class ProfileSection extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               _nameRow(),
-              if (hasMedals) ...[
+              if (_awardsRow() case final awards?) ...[
                 const SizedBox(height: 2),
-                Row(children: _medalChips(tally)),
+                awards,
               ],
             ],
           ),
@@ -148,10 +145,6 @@ class ProfileSection extends StatelessWidget {
         const SizedBox(width: AppSpacing.xs),
         badge,
       ],
-      if (_trophyChip() case final chip?) ...[
-        const SizedBox(width: AppSpacing.xs),
-        chip,
-      ],
     ],
   );
 
@@ -168,11 +161,27 @@ class ProfileSection extends StatelessWidget {
     );
   }
 
-  Widget? _trophyChip() {
-    final trophies = leaderboard?.trophies ?? 0;
-    if (trophies == 0) return null;
+  Widget? _awardsRow() {
+    final chips = _awardChips();
+    if (chips.isEmpty) return null;
 
-    return TrophyChip(count: trophies);
+    return Row(spacing: AppSpacing.xs, children: chips);
+  }
+
+  List<Widget> _awardChips() {
+    final trophies = leaderboard?.trophies ?? 0;
+    final tally = medals;
+
+    return [
+      if (trophies > 0) TrophyChip(count: trophies),
+      if (tally != null) ...[
+        if (tally.gold > 0) MedalChip(color: AppColors.gold, count: tally.gold),
+        if (tally.silver > 0)
+          MedalChip(color: AppColors.silver, count: tally.silver),
+        if (tally.bronze > 0)
+          MedalChip(color: AppColors.bronze, count: tally.bronze),
+      ],
+    ];
   }
 
   Widget _trendSparkline(BuildContext context) {
@@ -186,22 +195,6 @@ class ProfileSection extends StatelessWidget {
         width: 100,
       ),
     );
-  }
-
-  List<Widget> _medalChips(Medals medals) {
-    final chips = [
-      if (medals.gold > 0) MedalChip(color: AppColors.gold, count: medals.gold),
-      if (medals.silver > 0)
-        MedalChip(color: AppColors.silver, count: medals.silver),
-      if (medals.bronze > 0)
-        MedalChip(color: AppColors.bronze, count: medals.bronze),
-    ];
-    return [
-      for (var i = 0; i < chips.length; i++) ...[
-        if (i > 0) const SizedBox(width: AppSpacing.xs),
-        chips[i],
-      ],
-    ];
   }
 
   Widget _statRow(BuildContext context, Leaderboard leaderboard) {

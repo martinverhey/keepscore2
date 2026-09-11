@@ -114,7 +114,7 @@ class LeaderboardRow extends StatelessWidget {
     crossAxisAlignment: CrossAxisAlignment.start,
     mainAxisSize: MainAxisSize.min,
     spacing: _secondaryLineGap,
-    children: [_nameRow(context), ?_medalsRow()],
+    children: [_nameRow(context), ?_awardsRow()],
   );
 
   Widget _nameRow(BuildContext context) => Row(
@@ -132,10 +132,6 @@ class LeaderboardRow extends StatelessWidget {
         const SizedBox(width: AppSpacing.xs),
         badge,
       ],
-      if (leaderboard.trophies > 0) ...[
-        const SizedBox(width: AppSpacing.xs),
-        TrophyChip(count: leaderboard.trophies),
-      ],
       if (leaderboard.isOwner) ...[
         const SizedBox(width: AppSpacing.xs),
         Tag(context.l10n.playersOwner, color: AppColors.gold),
@@ -152,25 +148,24 @@ class LeaderboardRow extends StatelessWidget {
     );
   }
 
-  Widget? _medalsRow() {
-    final tally = medals;
-    if (tally == null || !tally.hasAny) return null;
+  Widget? _awardsRow() {
+    final chips = _awardChips();
+    if (chips.isEmpty) return null;
 
-    return Row(children: _medalChips(tally));
+    return Row(spacing: AppSpacing.xs, children: chips);
   }
 
-  List<Widget> _medalChips(Medals medals) {
-    final chips = [
-      if (medals.gold > 0) MedalChip(color: AppColors.gold, count: medals.gold),
-      if (medals.silver > 0)
-        MedalChip(color: AppColors.silver, count: medals.silver),
-      if (medals.bronze > 0)
-        MedalChip(color: AppColors.bronze, count: medals.bronze),
-    ];
+  List<Widget> _awardChips() {
+    final tally = medals;
+
     return [
-      for (var i = 0; i < chips.length; i++) ...[
-        if (i > 0) const SizedBox(width: AppSpacing.xs),
-        chips[i],
+      if (leaderboard.trophies > 0) TrophyChip(count: leaderboard.trophies),
+      if (tally != null) ...[
+        if (tally.gold > 0) MedalChip(color: AppColors.gold, count: tally.gold),
+        if (tally.silver > 0)
+          MedalChip(color: AppColors.silver, count: tally.silver),
+        if (tally.bronze > 0)
+          MedalChip(color: AppColors.bronze, count: tally.bronze),
       ],
     ];
   }
