@@ -396,8 +396,8 @@ refreshes the list when either sheet closes — realtime does it.
 - **Tournaments do not feed the ladder.** A knockout bracket is its own
   track: own tables, own score entry, no Elo, not in the Matches feed. The
   winner keeps a trophy on their leaderboard row for that season. Seeding
-  pairs the closest ratings and byes go to the top seeds — see "Tournaments
-  are a track of their own".
+  pairs the closest ratings, and a bracket takes 2, 4, 8 or 16 players so it
+  needs no byes — see "Tournaments are a track of their own".
 - **Auth**: Apple, Google, email OTP code. No passwords.
 - **Guests** (Supabase anonymous) may join a competition and read it. They may
   not create competitions, add players, or create matches. Enforced in Postgres.
@@ -2496,6 +2496,12 @@ feature hangs off:
   `player_ratings` and counts `matches` either side of a whole tournament and
   requires both unchanged. If tournaments should ever *feed* the ladder, that
   is a new decision, not a bug.
+- **A bracket is 2, 4, 8 or 16 players, and nothing else.** That is the whole
+  answer to byes: a power-of-two field pairs off exactly, every round, so no
+  slot ever holds one player and nobody is skipped past a round. The
+  alternative was tried and reverted — see "There are no byes, by
+  construction" below for what was built, why it did not work, and what it
+  cost, so it is not rebuilt from scratch.
 - **One running tournament per competition**, enforced by a partial unique
   index (`tournaments_one_active_per_competition`) as well as by
   `start_tournament`'s own readable check — the index is what stops two
@@ -2509,18 +2515,32 @@ feature hangs off:
   `TournamentReady && !isCompleted`, which is what the trophy action's
   `active` state and its tap target both read.
 
-**Seeding pairs the closest ratings, and the byes go to the top.**
-`start_tournament` orders the picked players by their current rating (tie-broken
-the way `leaderboard_base` ranks), pads up to the next power of two, and lays
-round one out as: the first `v_byes` slots hold one player each — seeds 1…b —
-and every remaining seed pairs with its neighbour. Six players therefore give
-`(1,bye) (2,bye) (3v4) (5v6)`, and seeds 1 and 2 meet in round two. This is
-**not** the usual 1-v-N seeding, and it is the point: the request was that the
-closest-rated players play each other first.
-A bye is resolved the moment it is drawn — winner set, player advanced — so
-round two opens half-filled. **One pass is always enough and nothing cascades**:
-two byes can only ever feed the same round-two slot when both are real players,
-which makes that slot playable rather than another bye.
+**Seeding pairs the closest ratings, and there are no byes.**
+`start_tournament` refuses any field that is not 2, 4, 8 or 16
+(`A tournament needs 2, 4, 8 or 16 players`), orders the picked players by
+their current rating (tie-broken the way `leaderboard_base` ranks) and pairs
+each with their neighbour, so the two closest-rated players meet in round one.
+This is **not** the usual 1-v-N seeding, and it is the point: the request was
+that the closest-rated players play each other first.
+`tournaments.size` is that field, the bracket is a perfect tree, and a winner
+always walks into `slot / 2` of the round above.
+
+**There are no byes, by construction — and the construction is the decision.**
+An earlier attempt let any field from 2 to 16 in and spread the byes instead
+of padding: `ceil(entrants / 2)` slots per round, at most one leftover, its
+end alternating per round so nobody sat out twice running, and a
+`parent_slot` column because the tree stopped being a perfect power of two.
+It worked — every field from 2 to 16 completed in exactly N-1 matches, and no
+player ever drew two byes in a row — and it was still **reverted**, because a
+bracket that quietly gives somebody a round off reads as broken however few
+times it does it. Single elimination cannot do better: an odd count *must*
+leave one player over. So the constraint moved to the input. If this comes up
+again, the thing to reach for is a different number of players, or a format
+that is not single elimination — not a cleverer bye.
+What the revert took with it: `parent_slot` and its migration, the
+`settle_tournament_byes`/`advance_tournament_winner` helpers, and a
+`BracketView` that derived its geometry from the tree rather than from the
+round index.
 
 **Re-scoring is allowed right up until it would orphan the bracket.**
 `set_tournament_result` refuses a *winner change* when the parent slot has
@@ -2578,6 +2598,9 @@ own `Column` on the same arithmetic: each is a `CustomPaint` whose height *is*
 the pitch, so it spans exactly from one child's centre line to the next's, and
 the spacer between connectors is that same pitch. Change one of the three
 constants and all of it follows; there is no magic number to keep in sync.
+**This only holds because a round always has half as many slots as the one
+below it**, which is what the 2/4/8/16 field size buys.
+
 **A `BracketMatchTile` keeps a 1px border whatever its state** — the
 next-playable tile is marked by colour and an accent fill, not a thicker
 border, because 1.5px overflowed the fixed 52px tile by exactly the pixel the
@@ -2961,7 +2984,7 @@ flutter build apk --debug        # verified green
 ./scripts/db.sh -f supabase/tests/player_rename_guard_check.sql  # claimed names, rolls back
 ./scripts/db.sh -f supabase/tests/no_op_recalc_check.sql  # no-op write guards, rolls back
 ./scripts/db.sh -f supabase/tests/incremental_recalc_check.sql  # boundary-scoped replay, rolls back
-./scripts/db.sh -f supabase/tests/tournament_check.sql  # seeding, byes, advancing, rolls back
+./scripts/db.sh -f supabase/tests/tournament_check.sql  # seeding, field size, advancing, rolls back
 ```
 
 ## Git workflow

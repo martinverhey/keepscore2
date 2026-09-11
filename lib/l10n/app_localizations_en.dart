@@ -817,7 +817,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tournamentSelectHint =>
-      'Pick 2 to 16 players. The closest-rated players meet first.';
+      'Pick 2, 4, 8 or 16 players. The closest-rated players meet first.';
 
   @override
   String tournamentSelectedCount(int count, int max) {

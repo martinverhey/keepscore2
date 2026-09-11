@@ -819,7 +819,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get tournamentSelectHint =>
-      'Kies 2 tot 16 spelers. Spelers met de dichtstbijzijnde rating treffen elkaar het eerst.';
+      'Kies 2, 4, 8 of 16 spelers. Spelers met de dichtstbijzijnde rating treffen elkaar het eerst.';
 
   @override
   String tournamentSelectedCount(int count, int max) {

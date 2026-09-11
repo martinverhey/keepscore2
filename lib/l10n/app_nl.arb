@@ -321,7 +321,7 @@
   "tournamentTitle": "Toernooi",
   "tournamentStart": "Toernooi starten",
   "tournamentNewTitle": "Nieuw toernooi",
-  "tournamentSelectHint": "Kies 2 tot 16 spelers. Spelers met de dichtstbijzijnde rating treffen elkaar het eerst.",
+  "tournamentSelectHint": "Kies 2, 4, 8 of 16 spelers. Spelers met de dichtstbijzijnde rating treffen elkaar het eerst.",
   "tournamentSelectedCount": "{count} van {max} gekozen",
   "@tournamentSelectedCount": {
     "placeholders": {

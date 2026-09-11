@@ -1,7 +1,7 @@
 -- Verifies the tournament RPCs (schema/10_functions/start_tournament.sql,
 -- set_tournament_result.sql, cancel_tournament.sql): the seeding rule, the
--- byes, how a winner advances, and the invariant the whole feature rests on --
--- a bracket never moves an Elo rating.
+-- field sizes a bracket accepts, how a winner advances, and the invariant the
+-- whole feature rests on -- a bracket never moves an Elo rating.
 --
 --   ./scripts/db.sh -f supabase/tests/tournament_check.sql
 --
@@ -44,6 +44,7 @@ declare
   v_comp      public.competitions;
   v_season    uuid;
   v_p1 uuid; v_p2 uuid; v_p3 uuid; v_p4 uuid; v_p5 uuid; v_p6 uuid;
+  v_p7 uuid; v_p8 uuid;
   v_tournament uuid;
   v_second     uuid;
   v_match      public.tournament_matches;
@@ -55,6 +56,7 @@ declare
   v_matches_before integer;
   v_matches_after  integer;
   v_trophies   integer;
+  v_field      integer;
 begin
   perform pg_temp.make_user(v_owner, 'tournament-owner@keepscore.test');
   perform pg_temp.make_user(v_outsider, 'tournament-outsider@keepscore.test');
@@ -69,12 +71,15 @@ begin
   v_p4 := (public.add_dummy_player(v_comp.id, 'P4')).id;
   v_p5 := (public.add_dummy_player(v_comp.id, 'P5')).id;
   v_p6 := (public.add_dummy_player(v_comp.id, 'P6')).id;
+  v_p7 := (public.add_dummy_player(v_comp.id, 'P7')).id;
+  v_p8 := (public.add_dummy_player(v_comp.id, 'P8')).id;
 
   -- Distinct ratings, so the seeding order is not a tie-break coin flip.
   v_season := public.ensure_season(v_comp.id, now());
   insert into public.player_ratings (season_id, player_id, rating)
   values (v_season, v_p1, 1300), (v_season, v_p2, 1200), (v_season, v_p3, 1100),
-         (v_season, v_p4, 1000), (v_season, v_p5,  900), (v_season, v_p6,  800);
+         (v_season, v_p4, 1000), (v_season, v_p5,  900), (v_season, v_p6,  800),
+         (v_season, v_p7,  700), (v_season, v_p8,  600);
 
   select md5(string_agg(player_id::text || ':' || rating::text, ',' order by player_id))
     into v_ratings_before
@@ -85,41 +90,30 @@ begin
   ----------------------------------------------------------------- seeding --
 
   v_tournament := public.start_tournament(
-    v_comp.id, array[v_p1, v_p2, v_p3, v_p4, v_p5, v_p6]
+    v_comp.id, array[v_p1, v_p2, v_p3, v_p4, v_p5, v_p6, v_p7, v_p8]
   );
 
   assert (select size from public.tournaments where id = v_tournament) = 8,
-    'six players must pad up to an eight bracket';
+    'the size is the field itself';
 
   select count(*) into v_count
     from public.tournament_matches where tournament_id = v_tournament;
   assert v_count = 7, format('an eight bracket holds 4+2+1 slots, got %s', v_count);
 
+  assert not exists (
+    select 1 from public.tournament_matches
+     where tournament_id = v_tournament and player_b_id is null and round = 1
+  ), 'a power-of-two field leaves no byes at all';
+
   select * into v_row from public.tournament_matches
    where tournament_id = v_tournament and round = 1 and slot = 0;
-  assert v_row.player_a_id = v_p1 and v_row.player_b_id is null,
-    'the top seed gets the first bye';
-  assert v_row.winner_player_id = v_p1, 'a bye is decided when it is drawn';
-
-  select * into v_row from public.tournament_matches
-   where tournament_id = v_tournament and round = 1 and slot = 1;
-  assert v_row.player_a_id = v_p2 and v_row.player_b_id is null,
-    'the second seed gets the second bye';
-
-  select * into v_row from public.tournament_matches
-   where tournament_id = v_tournament and round = 1 and slot = 2;
-  assert v_row.player_a_id = v_p3 and v_row.player_b_id = v_p4,
-    'the remaining seeds pair adjacently, closest ratings first';
+  assert v_row.player_a_id = v_p1 and v_row.player_b_id = v_p2,
+    'the seeds pair adjacently, closest ratings first';
 
   select * into v_row from public.tournament_matches
    where tournament_id = v_tournament and round = 1 and slot = 3;
-  assert v_row.player_a_id = v_p5 and v_row.player_b_id = v_p6,
+  assert v_row.player_a_id = v_p7 and v_row.player_b_id = v_p8,
     'the last pair is the two lowest seeds';
-
-  select * into v_row from public.tournament_matches
-   where tournament_id = v_tournament and round = 2 and slot = 0;
-  assert v_row.player_a_id = v_p1 and v_row.player_b_id = v_p2,
-    'both byes advance into the same round-two slot, on the right sides';
 
   --------------------------------------------------------------- refusals --
 
@@ -131,7 +125,7 @@ begin
   assert v_denied, 'a second active tournament must be refused';
 
   select * into v_match from public.tournament_matches
-   where tournament_id = v_tournament and round = 1 and slot = 2;
+   where tournament_id = v_tournament and round = 1 and slot = 0;
 
   v_denied := false;
   begin
@@ -180,20 +174,28 @@ begin
   perform public.set_tournament_result(v_match.id, 21, 15);
 
   select * into v_row from public.tournament_matches
-   where tournament_id = v_tournament and round = 2 and slot = 1;
-  assert v_row.player_a_id = v_p3,
+   where tournament_id = v_tournament and round = 2 and slot = 0;
+  assert v_row.player_a_id = v_p1,
     'an even slot advances into the A side of its parent';
 
   perform public.set_tournament_result(
     (select id from public.tournament_matches
-      where tournament_id = v_tournament and round = 1 and slot = 3), 10, 21
+      where tournament_id = v_tournament and round = 1 and slot = 1), 10, 21
   );
 
   select * into v_row from public.tournament_matches
-   where tournament_id = v_tournament and round = 2 and slot = 1;
-  assert v_row.player_b_id = v_p6,
+   where tournament_id = v_tournament and round = 2 and slot = 0;
+  assert v_row.player_b_id = v_p4,
     'an odd slot advances into the B side of its parent';
 
+  perform public.set_tournament_result(
+    (select id from public.tournament_matches
+      where tournament_id = v_tournament and round = 1 and slot = 2), 21, 15
+  );
+  perform public.set_tournament_result(
+    (select id from public.tournament_matches
+      where tournament_id = v_tournament and round = 1 and slot = 3), 10, 21
+  );
   perform public.set_tournament_result(
     (select id from public.tournament_matches
       where tournament_id = v_tournament and round = 2 and slot = 0), 15, 21
@@ -220,26 +222,24 @@ begin
 
   select * into v_row from public.tournament_matches
    where tournament_id = v_tournament and round = 3 and slot = 0;
-  assert v_row.player_a_id = v_p2 and v_row.player_b_id = v_p3,
+  assert v_row.player_a_id = v_p4 and v_row.player_b_id = v_p5,
     'the final holds both semi-final winners';
 
   perform public.set_tournament_result(v_row.id, 18, 21);
 
-  select * into v_row from public.tournament_matches
-   where tournament_id = v_tournament and round = 3 and slot = 0;
   assert (select status from public.tournaments where id = v_tournament) = 'completed',
     'the final completes the tournament';
-  assert (select winner_player_id from public.tournaments where id = v_tournament) = v_p3,
+  assert (select winner_player_id from public.tournaments where id = v_tournament) = v_p5,
     'the champion is the winner of the final';
 
   select trophies into v_trophies
     from public.player_trophies
-   where season_id = v_season and player_id = v_p3;
+   where season_id = v_season and player_id = v_p5;
   assert v_trophies = 1, format('the champion has one trophy, got %s', v_trophies);
 
   select trophies into v_trophies
     from public.leaderboard
-   where season_id = v_season and player_id = v_p3;
+   where season_id = v_season and player_id = v_p5;
   assert v_trophies = 1, 'the leaderboard carries the trophy count';
 
   select trophies into v_trophies
@@ -260,14 +260,29 @@ begin
   assert v_matches_before = v_matches_after,
     'a tournament must not write anything into matches';
 
+  -------------------------------------------------------- the field size --
+
+  foreach v_field in array array[1, 3, 5, 6, 7] loop
+    v_denied := false;
+    begin
+      v_second := public.start_tournament(
+        v_comp.id,
+        (array[v_p1, v_p2, v_p3, v_p4, v_p5, v_p6, v_p7, v_p8])[1:v_field]
+      );
+    exception when others then v_denied := true;
+    end;
+    assert v_denied,
+      format('%s players is not a bracket and must be refused', v_field);
+  end loop;
+
   ------------------------------------------------------------- cancelling --
 
-  v_second := public.start_tournament(v_comp.id, array[v_p1, v_p2, v_p3]);
+  v_second := public.start_tournament(v_comp.id, array[v_p1, v_p2, v_p3, v_p4]);
   assert (select size from public.tournaments where id = v_second) = 4,
-    'three players pad up to a four bracket';
+    'four players make a four bracket';
   assert (select count(*) from public.tournament_matches
-           where tournament_id = v_second and round = 1 and player_b_id is null) = 1,
-    'three players leave exactly one bye';
+           where tournament_id = v_second) = 3,
+    'a four bracket holds 2+1 slots';
 
   perform pg_temp.act_as(v_outsider);
   v_denied := false;
@@ -284,7 +299,7 @@ begin
   assert not exists (select 1 from public.tournament_matches where tournament_id = v_second),
     'cancelling cascades to its matches';
 
-  raise notice 'tournament check OK — seeding, byes, advancing, trophy, no Elo movement';
+  raise notice 'tournament check OK — seeding, field size, advancing, trophy, no Elo movement';
 end;
 $$;
 

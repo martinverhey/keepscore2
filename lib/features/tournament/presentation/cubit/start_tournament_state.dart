@@ -31,15 +31,15 @@ class StartTournamentReady extends StartTournamentState {
     this.actionFailure,
   });
 
+  static const bracketSizes = [2, 4, 8, 16];
   static const maxPlayers = 16;
-  static const minPlayers = 2;
 
   final List<Player> players;
   final Set<String> selected;
   final bool busy;
   final Failure? actionFailure;
 
-  bool get canStart => selected.length >= minPlayers && !busy;
+  bool get canStart => bracketSizes.contains(selected.length) && !busy;
 
   bool get isFull => selected.length >= maxPlayers;
 

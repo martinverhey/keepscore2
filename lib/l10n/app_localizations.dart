@@ -1493,7 +1493,7 @@ abstract class AppLocalizations {
   /// No description provided for @tournamentSelectHint.
   ///
   /// In en, this message translates to:
-  /// **'Pick 2 to 16 players. The closest-rated players meet first.'**
+  /// **'Pick 2, 4, 8 or 16 players. The closest-rated players meet first.'**
   String get tournamentSelectHint;
 
   /// No description provided for @tournamentSelectedCount.

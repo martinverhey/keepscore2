@@ -111,8 +111,8 @@ void main() {
     expect(tester.widget<SelectableRow>(_row('Zoe')).labelColor, isNull);
   });
 
-  testWidgets('Start is refused until two players are picked', (tester) async {
-    await _pump(tester);
+  testWidgets('Start only opens on a bracket-sized field', (tester) async {
+    await _pump(tester, players: 9);
 
     expect(_startButton(tester).onPressed, isNull);
 
@@ -121,6 +121,36 @@ void main() {
 
     await _select(tester, 'Player 1');
     expect(_startButton(tester).onPressed, isNotNull);
+
+    await _select(tester, 'Player 2');
+    expect(_startButton(tester).onPressed, isNull);
+
+    await _select(tester, 'Player 3');
+    expect(_startButton(tester).onPressed, isNotNull);
+
+    for (final index in [4, 5, 6]) {
+      await _select(tester, 'Player $index');
+      expect(_startButton(tester).onPressed, isNull);
+    }
+
+    await _select(tester, 'Player 7');
+    expect(_startButton(tester).onPressed, isNotNull);
+
+    await _select(tester, 'Player 8');
+    expect(_startButton(tester).onPressed, isNull);
+  });
+
+  testWidgets('the sheet says which field sizes make a bracket', (
+    tester,
+  ) async {
+    await _pump(tester);
+
+    expect(
+      find.text(
+        'Pick 2, 4, 8 or 16 players. The closest-rated players meet first.',
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('the header counts what is selected', (tester) async {

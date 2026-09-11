@@ -321,7 +321,7 @@
   "tournamentTitle": "Tournament",
   "tournamentStart": "Start tournament",
   "tournamentNewTitle": "New tournament",
-  "tournamentSelectHint": "Pick 2 to 16 players. The closest-rated players meet first.",
+  "tournamentSelectHint": "Pick 2, 4, 8 or 16 players. The closest-rated players meet first.",
   "tournamentSelectedCount": "{count} of {max} selected",
   "@tournamentSelectedCount": {
     "placeholders": {

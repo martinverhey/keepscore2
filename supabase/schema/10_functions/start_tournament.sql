@@ -3,10 +3,13 @@
 --
 -- Seeding rule: players are ordered by their current rating, and the pairing
 -- is *adjacent* rather than the usual 1-v-N — the two closest-rated players
--- meet in round one. Padding up to a power of two hands the byes to the top
--- seeds: the first v_byes slots hold one player each, and the remaining seeds
--- pair off below them. A bye is resolved immediately, so round two opens with
--- those players already in it.
+-- meet in round one.
+--
+-- The field has to be 2, 4, 8 or 16. That is what keeps the bracket a perfect
+-- tree with no byes in it at all: every player plays every round they survive,
+-- and a winner always walks into slot / 2 of the round above. An uneven field
+-- would have to hand somebody a free pass, and the answer to that is to pick a
+-- different number of players rather than to bracket around it.
 --
 -- Nothing here touches matches/match_players/player_ratings. A bracket result
 -- is not an Elo result.
@@ -23,8 +26,6 @@ as $$
 declare
   v_comp          public.competitions;
   v_count         integer;
-  v_size          integer;
-  v_byes          integer;
   v_rounds        integer;
   v_season_id     uuid;
   v_tournament_id uuid;
@@ -32,9 +33,6 @@ declare
   v_round         integer;
   v_slot          integer;
   v_seed          integer;
-  v_player_a      uuid;
-  v_player_b      uuid;
-  v_bye           record;
 begin
   if not public.is_registered() then
     raise exception 'Create an account to start a tournament' using errcode = 'P0001';
@@ -48,11 +46,8 @@ begin
 
   v_count := coalesce(array_length(p_player_ids, 1), 0);
 
-  if v_count < 2 then
-    raise exception 'Pick at least two players' using errcode = 'P0001';
-  end if;
-  if v_count > 16 then
-    raise exception 'A tournament holds at most 16 players' using errcode = 'P0001';
+  if v_count not in (2, 4, 8, 16) then
+    raise exception 'A tournament needs 2, 4, 8 or 16 players' using errcode = 'P0001';
   end if;
 
   if (select count(distinct x) from unnest(p_player_ids) x) <> v_count then
@@ -82,15 +77,8 @@ begin
 
   v_season_id := public.ensure_season(p_competition_id, now());
 
-  -- Smallest power of two that holds them all: 2, 4, 8 or 16.
-  v_size := 2;
-  while v_size < v_count loop
-    v_size := v_size * 2;
-  end loop;
-  v_byes := v_size - v_count;
-
   v_rounds := 0;
-  while power(2, v_rounds)::integer < v_size loop
+  while power(2, v_rounds)::integer < v_count loop
     v_rounds := v_rounds + 1;
   end loop;
 
@@ -113,59 +101,22 @@ begin
   insert into public.tournaments
     (competition_id, season_id, size, created_by)
   values
-    (p_competition_id, v_season_id, v_size, auth.uid())
+    (p_competition_id, v_season_id, v_count, auth.uid())
   returning id into v_tournament_id;
 
-  for v_slot in 0 .. (v_size / 2) - 1 loop
-    if v_slot < v_byes then
-      v_player_a := v_seeds[v_slot + 1];
-      v_player_b := null;
-    else
-      v_seed := v_byes + 2 * (v_slot - v_byes);
-      v_player_a := v_seeds[v_seed + 1];
-      v_player_b := v_seeds[v_seed + 2];
-    end if;
-
+  for v_slot in 0 .. (v_count / 2) - 1 loop
+    v_seed := 2 * v_slot + 1;
     insert into public.tournament_matches
       (tournament_id, round, slot, player_a_id, player_b_id)
     values
-      (v_tournament_id, 1, v_slot, v_player_a, v_player_b);
+      (v_tournament_id, 1, v_slot, v_seeds[v_seed], v_seeds[v_seed + 1]);
   end loop;
 
   for v_round in 2 .. v_rounds loop
-    for v_slot in 0 .. (v_size / power(2, v_round)::integer) - 1 loop
+    for v_slot in 0 .. (v_count / power(2, v_round)::integer) - 1 loop
       insert into public.tournament_matches (tournament_id, round, slot)
       values (v_tournament_id, v_round, v_slot);
     end loop;
-  end loop;
-
-  -- A bye is decided the moment it is drawn. Two byes can feed the same
-  -- round-two slot (five players in an eight bracket), which fills it with two
-  -- real players -- so one pass is always enough and nothing cascades.
-  for v_bye in
-    select tm.slot, tm.player_a_id
-      from public.tournament_matches tm
-     where tm.tournament_id = v_tournament_id
-       and tm.round = 1
-       and tm.player_b_id is null
-       and tm.player_a_id is not null
-  loop
-    update public.tournament_matches
-       set winner_player_id = v_bye.player_a_id
-     where tournament_id = v_tournament_id
-       and round = 1
-       and slot = v_bye.slot;
-
-    if v_rounds >= 2 then
-      update public.tournament_matches
-         set player_a_id = case when v_bye.slot % 2 = 0
-                                then v_bye.player_a_id else player_a_id end,
-             player_b_id = case when v_bye.slot % 2 = 1
-                                then v_bye.player_a_id else player_b_id end
-       where tournament_id = v_tournament_id
-         and round = 2
-         and slot = v_bye.slot / 2;
-    end if;
   end loop;
 
   return v_tournament_id;
