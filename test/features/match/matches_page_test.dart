@@ -24,6 +24,13 @@ import 'package:keepscore2/features/match/presentation/widgets/match_card.dart';
 import 'package:keepscore2/features/match/presentation/pages/matches.page.dart';
 import 'package:keepscore2/features/player/domain/player_repository.dart';
 import 'package:keepscore2/features/player/presentation/cubit/players_cubit.dart';
+import 'package:keepscore2/features/tournament/domain/bracket.model.dart';
+import 'package:keepscore2/features/tournament/domain/tournament.model.dart';
+import 'package:keepscore2/features/tournament/domain/tournament_repository.dart';
+import 'package:keepscore2/features/tournament/presentation/cubit/tournament_cubit.dart';
+import 'package:keepscore2/features/tournament/presentation/widgets/tournament_button.dart';
+import 'package:keepscore2/features/tournament/presentation/widgets/tournament_card.dart';
+import 'package:keepscore2/features/tournament/presentation/widgets/bracket_view.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -35,6 +42,8 @@ class MockCompetitionRepository extends Mock implements CompetitionRepository {}
 class MockPlayerRepository extends Mock implements PlayerRepository {}
 
 class MockMatchRepository extends Mock implements MatchRepository {}
+
+class MockTournamentRepository extends Mock implements TournamentRepository {}
 
 const _competitionId = 'c1';
 
@@ -65,16 +74,61 @@ MatchEntry _match(int day, int index) => MatchEntry(
   ],
 );
 
+Tournament _tournament({
+  TournamentStatus status = TournamentStatus.active,
+  String? winnerPlayerId,
+}) => Tournament(
+  id: 't1',
+  competitionId: _competitionId,
+  seasonId: 's1',
+  size: 4,
+  status: status,
+  createdAt: DateTime(2026, 9, 11),
+  winnerPlayerId: winnerPlayerId,
+  createdBy: 'u-ada',
+);
+
+TournamentMatch _bracketMatch(
+  int round,
+  int slot, {
+  String? a,
+  String? b,
+  String? winner,
+}) => TournamentMatch(
+  id: 'tm$round-$slot',
+  tournamentId: 't1',
+  round: round,
+  slot: slot,
+  playerA: a == null ? null : TournamentEntrant(playerId: a, displayName: a),
+  playerB: b == null ? null : TournamentEntrant(playerId: b, displayName: b),
+  winnerPlayerId: winner,
+);
+
+Bracket _bracket() => Bracket.fromMatches([
+  _bracketMatch(1, 0, a: 'Ada', b: 'Bo'),
+  _bracketMatch(1, 1, a: 'Cas', b: 'Dee'),
+  _bracketMatch(2, 0),
+]);
+
+Bracket _finishedBracket() => Bracket.fromMatches([
+  _bracketMatch(1, 0, a: 'Ada', b: 'Bo', winner: 'Ada'),
+  _bracketMatch(1, 1, a: 'Cas', b: 'Dee', winner: 'Cas'),
+  _bracketMatch(2, 0, a: 'Ada', b: 'Cas', winner: 'Ada'),
+]);
+
 Future<GameTypeFilterCubit> _pumpMatchesPage(
   WidgetTester tester, {
   Set<GameType> played = const {GameType.oneVOne, GameType.twoVTwo},
   List<MatchEntry>? feed,
   bool hostsBar = false,
+  Tournament? tournament,
+  Bracket bracket = const Bracket([]),
 }) async {
   final auth = MockAuthRepository();
   final competitions = MockCompetitionRepository();
   final players = MockPlayerRepository();
   final matches = MockMatchRepository();
+  final tournaments = MockTournamentRepository();
 
   when(
     () => auth.currentUser,
@@ -105,6 +159,15 @@ Future<GameTypeFilterCubit> _pumpMatchesPage(
         ],
   );
 
+  when(() => tournaments.latest(any())).thenAnswer((_) async => tournament);
+  when(() => tournaments.bracket(any())).thenAnswer((_) async => bracket);
+  when(
+    () => tournaments.watchTournaments(any()),
+  ).thenAnswer((_) => const Stream.empty());
+  when(
+    () => tournaments.watchBracket(any()),
+  ).thenAnswer((_) => const Stream.empty());
+
   final authBloc = AuthBloc(auth);
   final gameTypeFilterCubit = GameTypeFilterCubit();
   addTearDown(authBloc.close);
@@ -120,6 +183,9 @@ Future<GameTypeFilterCubit> _pumpMatchesPage(
         BlocProvider(
           create: (_) =>
               MatchListCubit(matches, gameTypeFilterCubit, _competitionId),
+        ),
+        BlocProvider(
+          create: (_) => TournamentCubit(tournaments, _competitionId)..load(),
         ),
       ],
       child: MaterialApp(
@@ -513,5 +579,71 @@ void main() {
     expect(header.left, greaterThanOrEqualTo(400));
     expect(header.right, lessThanOrEqualTo(1040));
     expect(tester.getRect(_matchCard('m5-0')).width, lessThanOrEqualTo(640));
+  });
+
+  testWidgets('no tournament means no card, but the action is still there', (
+    tester,
+  ) async {
+    await _pumpMatchesPage(tester);
+
+    expect(find.byType(TournamentCard), findsNothing);
+    expect(find.byType(TournamentButton), findsOneWidget);
+  });
+
+  testWidgets('a running tournament heads the page, above the first day', (
+    tester,
+  ) async {
+    await _pumpMatchesPage(
+      tester,
+      tournament: _tournament(),
+      bracket: _bracket(),
+    );
+
+    expect(find.byType(TournamentCard), findsOneWidget);
+    expect(
+      tester.getRect(find.byType(TournamentCard)).bottom,
+      lessThan(tester.getRect(_dayHeader(5)).top),
+    );
+  });
+
+  testWidgets('the card names the round and who is up next', (tester) async {
+    await _pumpMatchesPage(
+      tester,
+      tournament: _tournament(),
+      bracket: _bracket(),
+    );
+
+    expect(find.text('Semi-finals'), findsOneWidget);
+    expect(find.text('In progress'), findsOneWidget);
+    expect(find.text('Ada'), findsWidgets);
+  });
+
+  testWidgets('a finished tournament names its champion instead', (
+    tester,
+  ) async {
+    await _pumpMatchesPage(
+      tester,
+      tournament: _tournament(
+        status: TournamentStatus.completed,
+        winnerPlayerId: 'p-ada',
+      ),
+      bracket: _finishedBracket(),
+    );
+
+    expect(find.text('Champion'), findsOneWidget);
+    expect(find.text('In progress'), findsNothing);
+  });
+
+  testWidgets('tapping the card opens the bracket', (tester) async {
+    await _pumpMatchesPage(
+      tester,
+      tournament: _tournament(),
+      bracket: _bracket(),
+    );
+
+    await tester.tap(find.byType(TournamentCard));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(BracketView), findsOneWidget);
   });
 }

@@ -767,6 +767,86 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileHistoryEmpty => 'Past seasons will show up here.';
 
   @override
+  String get tournamentTitle => 'Tournament';
+
+  @override
+  String get tournamentStart => 'Start tournament';
+
+  @override
+  String get tournamentNewTitle => 'New tournament';
+
+  @override
+  String get tournamentSelectHint =>
+      'Pick 2 to 16 players. The closest-rated players meet first.';
+
+  @override
+  String tournamentSelectedCount(int count, int max) {
+    return '$count of $max selected';
+  }
+
+  @override
+  String get tournamentBracketTitle => 'Bracket';
+
+  @override
+  String tournamentRound(int round) {
+    return 'Round $round';
+  }
+
+  @override
+  String get tournamentFinalRound => 'Final';
+
+  @override
+  String get tournamentSemiFinalRound => 'Semi-finals';
+
+  @override
+  String get tournamentQuarterFinalRound => 'Quarter-finals';
+
+  @override
+  String get tournamentChampion => 'Champion';
+
+  @override
+  String get tournamentInProgress => 'In progress';
+
+  @override
+  String get tournamentBye => 'Bye';
+
+  @override
+  String get tournamentWaiting => 'Waiting';
+
+  @override
+  String get tournamentEnterScore => 'Enter score';
+
+  @override
+  String get tournamentSaveResult => 'Save result';
+
+  @override
+  String get tournamentNoDraw => 'A tournament match needs a winner.';
+
+  @override
+  String get tournamentCancel => 'Cancel tournament';
+
+  @override
+  String get tournamentCancelTitle => 'Cancel tournament?';
+
+  @override
+  String get tournamentCancelConfirm =>
+      'This removes the bracket and every score in it.';
+
+  @override
+  String get tournamentKeep => 'Keep it';
+
+  @override
+  String tournamentTrophies(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tournaments won',
+      one: '1 tournament won',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get settingsDarkModeTitle => 'Dark mode';
 
   @override

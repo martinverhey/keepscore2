@@ -306,6 +306,41 @@
   "profileRecentMatchesTitle": "Recente wedstrijden",
   "profileHistoryEmpty": "Eerdere seizoenen verschijnen hier.",
 
+  "tournamentTitle": "Toernooi",
+  "tournamentStart": "Toernooi starten",
+  "tournamentNewTitle": "Nieuw toernooi",
+  "tournamentSelectHint": "Kies 2 tot 16 spelers. Spelers met de dichtstbijzijnde rating treffen elkaar het eerst.",
+  "tournamentSelectedCount": "{count} van {max} gekozen",
+  "@tournamentSelectedCount": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "max": { "type": "int" }
+    }
+  },
+  "tournamentBracketTitle": "Schema",
+  "tournamentRound": "Ronde {round}",
+  "@tournamentRound": {
+    "placeholders": { "round": { "type": "int" } }
+  },
+  "tournamentFinalRound": "Finale",
+  "tournamentSemiFinalRound": "Halve finales",
+  "tournamentQuarterFinalRound": "Kwartfinales",
+  "tournamentChampion": "Kampioen",
+  "tournamentInProgress": "Bezig",
+  "tournamentBye": "Vrijgeloot",
+  "tournamentWaiting": "Wacht nog",
+  "tournamentEnterScore": "Score invoeren",
+  "tournamentSaveResult": "Uitslag opslaan",
+  "tournamentNoDraw": "Een toernooiwedstrijd heeft een winnaar nodig.",
+  "tournamentCancel": "Toernooi annuleren",
+  "tournamentCancelTitle": "Toernooi annuleren?",
+  "tournamentCancelConfirm": "Hiermee verdwijnen het schema en alle scores erin.",
+  "tournamentKeep": "Behouden",
+  "tournamentTrophies": "{count, plural, =1{1 toernooi gewonnen} other{{count} toernooien gewonnen}}",
+  "@tournamentTrophies": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
   "settingsDarkModeTitle": "Donkere modus",
   "themeOptionLight": "Licht",
   "themeOptionDark": "Donker",

@@ -306,6 +306,41 @@
   "profileRecentMatchesTitle": "Recent matches",
   "profileHistoryEmpty": "Past seasons will show up here.",
 
+  "tournamentTitle": "Tournament",
+  "tournamentStart": "Start tournament",
+  "tournamentNewTitle": "New tournament",
+  "tournamentSelectHint": "Pick 2 to 16 players. The closest-rated players meet first.",
+  "tournamentSelectedCount": "{count} of {max} selected",
+  "@tournamentSelectedCount": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "max": { "type": "int" }
+    }
+  },
+  "tournamentBracketTitle": "Bracket",
+  "tournamentRound": "Round {round}",
+  "@tournamentRound": {
+    "placeholders": { "round": { "type": "int" } }
+  },
+  "tournamentFinalRound": "Final",
+  "tournamentSemiFinalRound": "Semi-finals",
+  "tournamentQuarterFinalRound": "Quarter-finals",
+  "tournamentChampion": "Champion",
+  "tournamentInProgress": "In progress",
+  "tournamentBye": "Bye",
+  "tournamentWaiting": "Waiting",
+  "tournamentEnterScore": "Enter score",
+  "tournamentSaveResult": "Save result",
+  "tournamentNoDraw": "A tournament match needs a winner.",
+  "tournamentCancel": "Cancel tournament",
+  "tournamentCancelTitle": "Cancel tournament?",
+  "tournamentCancelConfirm": "This removes the bracket and every score in it.",
+  "tournamentKeep": "Keep it",
+  "tournamentTrophies": "{count, plural, =1{1 tournament won} other{{count} tournaments won}}",
+  "@tournamentTrophies": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
   "settingsDarkModeTitle": "Dark mode",
   "themeOptionLight": "Light",
   "themeOptionDark": "Dark",

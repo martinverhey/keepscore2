@@ -16,6 +16,10 @@ import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../auth/presentation/widgets/guest_notice.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
 import '../../../player/presentation/cubit/players_cubit.dart';
+import '../../../tournament/presentation/cubit/tournament_cubit.dart';
+import '../../../tournament/presentation/pages/tournament_bracket_sheet.dart';
+import '../../../tournament/presentation/widgets/tournament_button.dart';
+import '../../../tournament/presentation/widgets/tournament_card.dart';
 import '../../domain/game_type.enum.dart';
 import '../../domain/match_entry.model.dart';
 import '../cubit/game_type_filter_cubit.dart';
@@ -72,6 +76,7 @@ class _MatchesPageState extends State<MatchesPage> {
     final isRegistered = session.canWrite;
     final myPlayerId = competitionState.myPlayerId;
     final bottomInset = _bottomInset(context);
+    final tournamentState = context.watch<TournamentCubit>().state;
 
     setPageTitle(
       context,
@@ -86,8 +91,15 @@ class _MatchesPageState extends State<MatchesPage> {
         title: context.l10n.matchesTitle,
         subtitle: _daySubtitle(),
         onRefresh: _refresh,
-        trailing: _gameTypeFilterButton(context),
+        trailing: _trailing(
+          context,
+          tournamentState,
+          competitionId: competitionId,
+          isRegistered: isRegistered,
+        ),
         slivers: [
+          if (tournamentState case final TournamentReady ready)
+            SliverToBoxAdapter(child: _tournamentCard(context, ready)),
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(
               AppSpacing.md,
@@ -173,6 +185,43 @@ class _MatchesPageState extends State<MatchesPage> {
                 overflow: TextOverflow.ellipsis,
                 style: AppTypography.captionStrong,
               ),
+      ),
+    );
+  }
+
+  Widget _trailing(
+    BuildContext context,
+    TournamentState tournamentState, {
+    required String competitionId,
+    required bool isRegistered,
+  }) {
+    return AdaptiveBarActionGroup(
+      actions: [
+        if (isRegistered || tournamentState is TournamentReady)
+          TournamentButton(
+            competitionId: competitionId,
+            state: tournamentState,
+            isRegistered: isRegistered,
+          ),
+        _gameTypeFilterButton(context),
+      ],
+    );
+  }
+
+  Widget _tournamentCard(BuildContext context, TournamentReady state) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.sm,
+        AppSpacing.md,
+        0,
+      ),
+      child: TournamentCard(
+        state: state,
+        onOpen: () => showTournamentBracketSheet(
+          context,
+          cubit: context.read<TournamentCubit>(),
+        ),
       ),
     );
   }

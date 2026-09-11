@@ -1418,6 +1418,138 @@ abstract class AppLocalizations {
   /// **'Past seasons will show up here.'**
   String get profileHistoryEmpty;
 
+  /// No description provided for @tournamentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tournament'**
+  String get tournamentTitle;
+
+  /// No description provided for @tournamentStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start tournament'**
+  String get tournamentStart;
+
+  /// No description provided for @tournamentNewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New tournament'**
+  String get tournamentNewTitle;
+
+  /// No description provided for @tournamentSelectHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick 2 to 16 players. The closest-rated players meet first.'**
+  String get tournamentSelectHint;
+
+  /// No description provided for @tournamentSelectedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} of {max} selected'**
+  String tournamentSelectedCount(int count, int max);
+
+  /// No description provided for @tournamentBracketTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bracket'**
+  String get tournamentBracketTitle;
+
+  /// No description provided for @tournamentRound.
+  ///
+  /// In en, this message translates to:
+  /// **'Round {round}'**
+  String tournamentRound(int round);
+
+  /// No description provided for @tournamentFinalRound.
+  ///
+  /// In en, this message translates to:
+  /// **'Final'**
+  String get tournamentFinalRound;
+
+  /// No description provided for @tournamentSemiFinalRound.
+  ///
+  /// In en, this message translates to:
+  /// **'Semi-finals'**
+  String get tournamentSemiFinalRound;
+
+  /// No description provided for @tournamentQuarterFinalRound.
+  ///
+  /// In en, this message translates to:
+  /// **'Quarter-finals'**
+  String get tournamentQuarterFinalRound;
+
+  /// No description provided for @tournamentChampion.
+  ///
+  /// In en, this message translates to:
+  /// **'Champion'**
+  String get tournamentChampion;
+
+  /// No description provided for @tournamentInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'In progress'**
+  String get tournamentInProgress;
+
+  /// No description provided for @tournamentBye.
+  ///
+  /// In en, this message translates to:
+  /// **'Bye'**
+  String get tournamentBye;
+
+  /// No description provided for @tournamentWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting'**
+  String get tournamentWaiting;
+
+  /// No description provided for @tournamentEnterScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter score'**
+  String get tournamentEnterScore;
+
+  /// No description provided for @tournamentSaveResult.
+  ///
+  /// In en, this message translates to:
+  /// **'Save result'**
+  String get tournamentSaveResult;
+
+  /// No description provided for @tournamentNoDraw.
+  ///
+  /// In en, this message translates to:
+  /// **'A tournament match needs a winner.'**
+  String get tournamentNoDraw;
+
+  /// No description provided for @tournamentCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel tournament'**
+  String get tournamentCancel;
+
+  /// No description provided for @tournamentCancelTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel tournament?'**
+  String get tournamentCancelTitle;
+
+  /// No description provided for @tournamentCancelConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'This removes the bracket and every score in it.'**
+  String get tournamentCancelConfirm;
+
+  /// No description provided for @tournamentKeep.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep it'**
+  String get tournamentKeep;
+
+  /// No description provided for @tournamentTrophies.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 tournament won} other{{count} tournaments won}}'**
+  String tournamentTrophies(int count);
+
   /// No description provided for @settingsDarkModeTitle.
   ///
   /// In en, this message translates to:

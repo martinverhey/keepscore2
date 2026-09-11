@@ -769,6 +769,87 @@ class AppLocalizationsNl extends AppLocalizations {
   String get profileHistoryEmpty => 'Eerdere seizoenen verschijnen hier.';
 
   @override
+  String get tournamentTitle => 'Toernooi';
+
+  @override
+  String get tournamentStart => 'Toernooi starten';
+
+  @override
+  String get tournamentNewTitle => 'Nieuw toernooi';
+
+  @override
+  String get tournamentSelectHint =>
+      'Kies 2 tot 16 spelers. Spelers met de dichtstbijzijnde rating treffen elkaar het eerst.';
+
+  @override
+  String tournamentSelectedCount(int count, int max) {
+    return '$count van $max gekozen';
+  }
+
+  @override
+  String get tournamentBracketTitle => 'Schema';
+
+  @override
+  String tournamentRound(int round) {
+    return 'Ronde $round';
+  }
+
+  @override
+  String get tournamentFinalRound => 'Finale';
+
+  @override
+  String get tournamentSemiFinalRound => 'Halve finales';
+
+  @override
+  String get tournamentQuarterFinalRound => 'Kwartfinales';
+
+  @override
+  String get tournamentChampion => 'Kampioen';
+
+  @override
+  String get tournamentInProgress => 'Bezig';
+
+  @override
+  String get tournamentBye => 'Vrijgeloot';
+
+  @override
+  String get tournamentWaiting => 'Wacht nog';
+
+  @override
+  String get tournamentEnterScore => 'Score invoeren';
+
+  @override
+  String get tournamentSaveResult => 'Uitslag opslaan';
+
+  @override
+  String get tournamentNoDraw =>
+      'Een toernooiwedstrijd heeft een winnaar nodig.';
+
+  @override
+  String get tournamentCancel => 'Toernooi annuleren';
+
+  @override
+  String get tournamentCancelTitle => 'Toernooi annuleren?';
+
+  @override
+  String get tournamentCancelConfirm =>
+      'Hiermee verdwijnen het schema en alle scores erin.';
+
+  @override
+  String get tournamentKeep => 'Behouden';
+
+  @override
+  String tournamentTrophies(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count toernooien gewonnen',
+      one: '1 toernooi gewonnen',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get settingsDarkModeTitle => 'Donkere modus';
 
   @override

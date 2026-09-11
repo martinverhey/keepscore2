@@ -13,6 +13,7 @@ import '../../../../core/widgets/medal_chip.dart';
 import '../../../../core/widgets/streak_badge.dart';
 import '../../../../core/widgets/tag.dart';
 import '../../../../core/widgets/today_delta_badge.dart';
+import '../../../../core/widgets/trophy_chip.dart';
 import '../../../competition/domain/competition.model.dart';
 import '../../../profile/presentation/cubit/profile_overview_cubit.dart';
 import '../../../profile/presentation/pages/profile_sheet.dart';
@@ -130,6 +131,10 @@ class LeaderboardRow extends StatelessWidget {
       if (_streakBadge() case final badge?) ...[
         const SizedBox(width: AppSpacing.xs),
         badge,
+      ],
+      if (leaderboard.trophies > 0) ...[
+        const SizedBox(width: AppSpacing.xs),
+        TrophyChip(count: leaderboard.trophies),
       ],
       if (leaderboard.isOwner) ...[
         const SizedBox(width: AppSpacing.xs),

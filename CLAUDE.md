@@ -20,6 +20,7 @@ is the up-to-date source of truth regardless.
 | 6. Matches (team builder, submit, list, edit, delete) | Done |
 | 7. Leaderboard + seasons + realtime | Done |
 | 8. Polish, Dutch copy pass, app icons | Done |
+| 9. Tournaments (bracket, trophy) | Done, applied to the live project |
 
 Theme and language are app-wide, competition-independent preferences, both
 persisted to `SharedPreferences` and read back in `main()` before `runApp`.
@@ -291,6 +292,11 @@ refreshes the list when either sheet closes — realtime does it.
   true, so psql and service-role renames deliberately still pass.
 - **Edits/deletes replay the season from the affected match forward** via
   `recalc_season_from`, not from scratch — see the note under Testing.
+- **Tournaments do not feed the ladder.** A knockout bracket is its own
+  track: own tables, own score entry, no Elo, not in the Matches feed. The
+  winner keeps a trophy on their leaderboard row for that season. Seeding
+  pairs the closest ratings and byes go to the top seeds — see "Tournaments
+  are a track of their own".
 - **Auth**: Apple, Google, email OTP code. No passwords.
 - **Guests** (Supabase anonymous) may join a competition and read it. They may
   not create competitions, add players, or create matches. Enforced in Postgres.
@@ -323,6 +329,11 @@ or moved:
 - **Edit/delete a match** — `match_detail_sheet.dart`,
   `session.canWrite && state.isManageableBy(session.user?.id)` (creator or
   owner only, not just registered).
+- **Start a tournament / enter a bracket score** — the trophy bar action in
+  `matches.page.dart` is rendered when `session.canWrite` **or** a tournament
+  already exists, so a guest may open and read a bracket but never starts one;
+  `TournamentBracketSheet._canScore` is `session.canWrite` on top of that, and
+  Cancel tournament is narrower still (creator or owner, like a match).
 - **History** (`settings.page.dart`) is deliberately *outside*
   this gate — it's read-only historical data a guest may read. Competition
   Settings and Manage players in the same menu stay gated, both to the owner.
@@ -1102,7 +1113,8 @@ code; don't relitigate them.
   rebuilt per season on every edit/delete (see the comment on
   `recalc_season_from`), so every player in the season still gets a fresh
   event on every write, back-dated or not.
-- **Three tables are watched, and `players` is one of them.** `matches`
+- **Five tables are watched, and `players` is the one that was missed.**
+  `matches`
   (filtered by `competition_id`, feeding `MatchListCubit`), `player_ratings`
   (by `season_id`, or unfiltered before the season has a row, feeding
   `LeaderboardCubit`), and `players` (by `competition_id`, feeding both
@@ -1121,6 +1133,19 @@ code; don't relitigate them.
   channel also covers a rename, a deactivate/restore and a leave (which is
   an `update … set is_active = false`, not a delete, so `players` needs no
   `replica identity full` the way `matches` did).
+  The other two are the tournament pair, both feeding `TournamentCubit`:
+  `tournaments` (by `competition_id`) and `tournament_matches` (by
+  `tournament_id`). Both carry `replica identity full`, because cancelling a
+  tournament is a real delete and a default replica identity would deliver
+  only the primary key — leaving the subscriber nothing to filter on.
+- **`TournamentCubit` keeps two watchers for the same reason
+  `LeaderboardCubit` does.** `_watcher` on `tournaments` is started once and
+  never re-keyed; `_bracketWatcher` is keyed on `_watchedTournamentId` and is
+  torn down and rebuilt when that changes (including to `null`, when the
+  latest tournament is cancelled). `tournament_matches` carries no
+  `competition_id` column, so filtering it by competition is not an option —
+  keying on the tournament is what keeps the channel from delivering every
+  other competition's scores.
 - **`LeaderboardCubit` keeps two watchers, not one.** `_watcher` is keyed on
   `_watchedSeasonId` and is torn down and rebuilt whenever the season id
   changes (notably null → real, when the season's first match lands);
@@ -2157,7 +2182,7 @@ Two things had to move for `go` to be safe here:
   same hoist; see "Leaderboard and Matches are routes, not tabs" for why).
   Sharing removes the staleness at the source, and that is still the reason
   there is no refresh-on-return machinery for it. It does watch `players`
-  now (see "Three tables are watched" above), but that covers somebody
+  now (see "Five tables are watched" above), but that covers somebody
   *else's* write, not a stale instance of your own. The one thing outside that shared
   instance is the competition itself (a rename in Configuration), so
   `SidebarShell._select` calls `CompetitionCubit.refresh()` on every hop.
@@ -2351,6 +2376,101 @@ is still rendered when there is *no* competition (the `else` branch of
   outside `AdaptiveScaffold`'s own themed background, so a low-alpha neutral
   fill there blends against the page canvas rather than the app's actual
   surface colour and reads as stuck-in-light-mode regardless of theme.
+
+### Tournaments are a track of their own
+
+`/competition/:id/matches` heads itself with a `TournamentCard` and carries a
+trophy bar action; both drive `features/tournament/`. The decision the whole
+feature hangs off:
+
+- **A bracket result is not an Elo result.** `set_tournament_result` writes
+  `tournament_matches` and nothing else — it never calls `create_match`, never
+  touches `matches`/`match_players`/`player_ratings`, and a tournament match
+  never appears in the Matches feed, in a streak, in a medal or on the rating
+  graph. `tournament_check.sql` asserts that directly: it hashes
+  `player_ratings` and counts `matches` either side of a whole tournament and
+  requires both unchanged. If tournaments should ever *feed* the ladder, that
+  is a new decision, not a bug.
+- **One running tournament per competition**, enforced by a partial unique
+  index (`tournaments_one_active_per_competition`) as well as by
+  `start_tournament`'s own readable check — the index is what stops two
+  concurrent calls both winning. Which is why `cancel_tournament` exists at
+  all: without it an abandoned bracket would block the competition forever.
+  A *completed* tournament does not block anything, and the card keeps showing
+  it (with its champion) until the next one starts.
+- **`TournamentRepository.latest` is deliberately not `active`.** It returns
+  the newest tournament whatever its status, so the champion stays on the
+  Matches page after the final. "Is one running" is then
+  `TournamentReady && !isCompleted`, which is what the trophy action's
+  `active` state and its tap target both read.
+
+**Seeding pairs the closest ratings, and the byes go to the top.**
+`start_tournament` orders the picked players by their current rating (tie-broken
+the way `leaderboard_base` ranks), pads up to the next power of two, and lays
+round one out as: the first `v_byes` slots hold one player each — seeds 1…b —
+and every remaining seed pairs with its neighbour. Six players therefore give
+`(1,bye) (2,bye) (3v4) (5v6)`, and seeds 1 and 2 meet in round two. This is
+**not** the usual 1-v-N seeding, and it is the point: the request was that the
+closest-rated players play each other first.
+A bye is resolved the moment it is drawn — winner set, player advanced — so
+round two opens half-filled. **One pass is always enough and nothing cascades**:
+two byes can only ever feed the same round-two slot when both are real players,
+which makes that slot playable rather than another bye.
+
+**Re-scoring is allowed right up until it would orphan the bracket.**
+`set_tournament_result` refuses a *winner change* when the parent slot has
+already been played, and allows a score correction that leaves the winner
+alone. Checking the parent rather than the whole subtree is the minimal rule:
+if the parent has no winner, nothing past it can have been affected. Draws are
+refused here whatever `competitions.allow_draws` says — a slot has to produce
+somebody for the next round.
+
+**A trophy is a season thing, like everything else on the leaderboard.**
+`tournaments.season_id` comes from `ensure_season`, `player_trophies` counts
+completed tournaments per (season, winner), and `public.leaderboard` carries it
+as a **trailing** `trophies` column (a `create or replace view` can only append
+— see that file's own header). `Leaderboard.trophies` then reaches
+`LeaderboardRow`, `ProfileSection` and `ProfileSheet`, each rendering the same
+`core/widgets/trophy_chip.dart` beside the name next to the streak badge.
+`TrophyChip` shows the count only above one, unlike `MedalChip`, which always
+does: one trophy is a trophy, and a "1" beside it reads as a rank.
+
+**`AdaptiveGlyph.trophy` maps to `Icons.emoji_events` on *both* platform
+branches, and that is deliberate.** CupertinoIcons ships no trophy — the
+nearest shapes are `rosette` (already `AdaptiveGlyph.medal`, so it would say
+two things at once), `sportscourt`, `flag` and `star`. Rather than have iOS
+name a different object than every other platform, the Material glyph is used
+on both. It is the one break in the per-platform mapping; `adaptive_icon.dart`
+already imports `material.dart`, so it costs nothing. Do not "fix" it by
+pointing the Cupertino branch at `rosette`.
+
+**The bracket's geometry is derived, not laid out by hand.** `BracketView`
+gives round *r* a pitch of `2^r * unit` and a leading offset of
+`(2^r - 1) * unit / 2` (`unit` = tile height + gap), which is exactly what puts
+every parent on the midpoint of the two slots feeding it and the final on the
+midpoint of the whole bracket — `bracket_view_test.dart` asserts both directly
+rather than pinning pixel values. The connectors between two columns are their
+own `Column` on the same arithmetic: each is a `CustomPaint` whose height *is*
+the pitch, so it spans exactly from one child's centre line to the next's, and
+the spacer between connectors is that same pitch. Change one of the three
+constants and all of it follows; there is no magic number to keep in sync.
+**A `BracketMatchTile` keeps a 1px border whatever its state** — the
+next-playable tile is marked by colour and an accent fill, not a thicker
+border, because 1.5px overflowed the fixed 52px tile by exactly the pixel the
+border added.
+
+`TournamentCubit` is a `registerFactoryParam` provided by the **Matches branch's
+leaf route**, alongside `MatchListCubit` and under the same
+`key: ValueKey(competitionId)` — go_router keys pages by route pattern, so
+without that key a competition switch would keep the previous competition's
+bracket (the same trap the Leaderboard/Matches branches already document).
+`StartTournamentCubit` is separate and owns the picker's own selection, busy
+and failure, so a refused start is shown *in the sheet* rather than swallowed;
+the sheet returns the new tournament id and `TournamentButton` refreshes
+`TournamentCubit`, exactly the way the create/join competition sheets work.
+`TournamentBracketSheet` is handed the page's cubit with `BlocProvider.value`
+— a sheet route inherits nothing route-scoped, and building a second
+`TournamentCubit` would mean a second pair of realtime channels.
 
 ### Every app icon comes from `ios/Runner/AppIcon.icon`
 
@@ -2688,7 +2808,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 405 tests at time of writing
+flutter test                    # 441 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 dart run flutter_launcher_icons     # assets/icon/*.png into android/ web/ (not ios/)
@@ -2717,6 +2837,7 @@ flutter build apk --debug        # verified green
 ./scripts/db.sh -f supabase/tests/player_rename_guard_check.sql  # claimed names, rolls back
 ./scripts/db.sh -f supabase/tests/no_op_recalc_check.sql  # no-op write guards, rolls back
 ./scripts/db.sh -f supabase/tests/incremental_recalc_check.sql  # boundary-scoped replay, rolls back
+./scripts/db.sh -f supabase/tests/tournament_check.sql  # seeding, byes, advancing, rolls back
 ```
 
 ## Git workflow

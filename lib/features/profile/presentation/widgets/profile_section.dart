@@ -11,6 +11,7 @@ import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/medal_chip.dart';
 import '../../../../core/widgets/sparkline.dart';
 import '../../../../core/widgets/streak_badge.dart';
+import '../../../../core/widgets/trophy_chip.dart';
 import '../../../competition/domain/competition.model.dart';
 import '../../../leaderboard/domain/leaderboard.model.dart';
 import '../../../leaderboard/domain/medals.model.dart';
@@ -147,6 +148,10 @@ class ProfileSection extends StatelessWidget {
         const SizedBox(width: AppSpacing.xs),
         badge,
       ],
+      if (_trophyChip() case final chip?) ...[
+        const SizedBox(width: AppSpacing.xs),
+        chip,
+      ],
     ],
   );
 
@@ -161,6 +166,13 @@ class ProfileSection extends StatelessWidget {
       type: leaderboard.streakType,
       count: leaderboard.streakCount,
     );
+  }
+
+  Widget? _trophyChip() {
+    final trophies = leaderboard?.trophies ?? 0;
+    if (trophies == 0) return null;
+
+    return TrophyChip(count: trophies);
   }
 
   Widget _trendSparkline(BuildContext context) {

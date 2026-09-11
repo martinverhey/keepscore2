@@ -32,6 +32,10 @@ import '../../features/settings/presentation/cubit/configuration_cubit.dart';
 import '../../features/settings/presentation/cubit/history_cubit.dart';
 import '../../features/settings/presentation/cubit/language_cubit.dart';
 import '../../features/settings/presentation/cubit/theme_cubit.dart';
+import '../../features/tournament/data/supabase_tournament_repository.dart';
+import '../../features/tournament/domain/tournament_repository.dart';
+import '../../features/tournament/presentation/cubit/start_tournament_cubit.dart';
+import '../../features/tournament/presentation/cubit/tournament_cubit.dart';
 
 final getIt = GetIt.instance;
 
@@ -114,6 +118,20 @@ Future<void> configureDependencies() async {
         getIt<CompetitionRepository>(),
         getIt<PlayerRepository>(),
         matchId,
+        competitionId,
+      ),
+    )
+    ..registerLazySingleton<TournamentRepository>(
+      () => SupabaseTournamentRepository(getIt<SupabaseClient>()),
+    )
+    ..registerFactoryParam<TournamentCubit, String, void>(
+      (competitionId, _) =>
+          TournamentCubit(getIt<TournamentRepository>(), competitionId),
+    )
+    ..registerFactoryParam<StartTournamentCubit, String, void>(
+      (competitionId, _) => StartTournamentCubit(
+        getIt<TournamentRepository>(),
+        getIt<PlayerRepository>(),
         competitionId,
       ),
     )

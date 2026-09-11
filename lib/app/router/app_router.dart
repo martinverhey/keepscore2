@@ -25,6 +25,7 @@ import '../../features/settings/presentation/pages/settings.page.dart';
 import '../../features/settings/presentation/pages/configuration.page.dart';
 import '../../features/settings/presentation/pages/history.page.dart';
 import '../../features/settings/presentation/pages/language.page.dart';
+import '../../features/tournament/presentation/cubit/tournament_cubit.dart';
 import '../dependency_injection/injector.dart';
 import '../splash.page.dart';
 import 'go_router_refresh_stream.dart';
@@ -196,10 +197,19 @@ GoRouter createRouter(AuthBloc authBloc) {
                             path: 'matches',
                             builder: (context, state) {
                               final id = state.pathParameters['id']!;
-                              return BlocProvider(
+                              return MultiBlocProvider(
                                 key: ValueKey(id),
-                                create: (_) =>
-                                    getIt<MatchListCubit>(param1: id),
+                                providers: [
+                                  BlocProvider(
+                                    create: (_) =>
+                                        getIt<MatchListCubit>(param1: id),
+                                  ),
+                                  BlocProvider(
+                                    create: (_) =>
+                                        getIt<TournamentCubit>(param1: id)
+                                          ..load(),
+                                  ),
+                                ],
                                 child: MatchesPage(competitionId: id),
                               );
                             },

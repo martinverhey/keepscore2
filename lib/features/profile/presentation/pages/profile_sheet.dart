@@ -14,6 +14,7 @@ import '../../../../core/widgets/medal_chip.dart';
 import '../../../../core/widgets/sheet.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../../core/widgets/streak_badge.dart';
+import '../../../../core/widgets/trophy_chip.dart';
 import '../../../../core/widgets/swipe_navigator.dart';
 import '../../../../core/widgets/today_delta_badge.dart';
 import '../../../competition/domain/competition.model.dart';
@@ -155,6 +156,10 @@ class _ProfileSheetState extends State<ProfileSheet> {
         const SizedBox(width: AppSpacing.xs),
         badge,
       ],
+      if (_trophyChip(state) case final chip?) ...[
+        const SizedBox(width: AppSpacing.xs),
+        chip,
+      ],
     ],
   );
 
@@ -165,6 +170,15 @@ class _ProfileSheetState extends State<ProfileSheet> {
     if (!streak.type.hasBadge(streak.count)) return null;
 
     return StreakBadge(type: streak.type, count: streak.count);
+  }
+
+  Widget? _trophyChip(ProfileOverviewState state) {
+    if (state is! ProfileOverviewReady) return null;
+
+    final trophies = state.leaderboard?.trophies ?? 0;
+    if (trophies == 0) return null;
+
+    return TrophyChip(count: trophies);
   }
 
   Widget? _medalSummary(ProfileOverviewState state) {

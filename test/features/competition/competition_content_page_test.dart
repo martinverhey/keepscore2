@@ -24,6 +24,8 @@ import 'package:keepscore2/features/leaderboard/presentation/cubit/leaderboard_c
 import 'package:keepscore2/features/leaderboard/presentation/pages/leaderboard.page.dart';
 import 'package:keepscore2/features/match/domain/game_type.enum.dart';
 import 'package:keepscore2/features/match/domain/match_repository.dart';
+import 'package:keepscore2/features/tournament/domain/tournament_repository.dart';
+import 'package:keepscore2/features/tournament/presentation/cubit/tournament_cubit.dart';
 import 'package:keepscore2/features/match/presentation/cubit/game_type_filter_cubit.dart';
 import 'package:keepscore2/features/match/presentation/cubit/match_list_cubit.dart';
 import 'package:keepscore2/features/match/presentation/pages/matches.page.dart';
@@ -43,6 +45,8 @@ class MockPlayerRepository extends Mock implements PlayerRepository {}
 
 class MockMatchRepository extends Mock implements MatchRepository {}
 
+class MockTournamentRepository extends Mock implements TournamentRepository {}
+
 class MockLeaderboardRepository extends Mock implements LeaderboardRepository {}
 
 class MockProfileRepository extends Mock implements ProfileRepository {}
@@ -60,7 +64,16 @@ Future<GoRouter> _pumpHarness(
   final competitions = MockCompetitionRepository();
   final players = MockPlayerRepository();
   final matches = MockMatchRepository();
+  final tournamentRepository = MockTournamentRepository();
   final leaderboard = MockLeaderboardRepository();
+
+  when(() => tournamentRepository.latest(any())).thenAnswer((_) async => null);
+  when(
+    () => tournamentRepository.watchTournaments(any()),
+  ).thenAnswer((_) => const Stream.empty());
+  when(
+    () => tournamentRepository.watchBracket(any()),
+  ).thenAnswer((_) => const Stream.empty());
 
   when(
     () => auth.currentUser,
@@ -186,12 +199,22 @@ Future<GoRouter> _pumpHarness(
                     routes: [
                       GoRoute(
                         path: 'matches',
-                        builder: (context, state) => BlocProvider(
-                          create: (_) => MatchListCubit(
-                            matches,
-                            gameTypeFilterCubit,
-                            state.pathParameters['id']!,
-                          ),
+                        builder: (context, state) => MultiBlocProvider(
+                          providers: [
+                            BlocProvider(
+                              create: (_) => MatchListCubit(
+                                matches,
+                                gameTypeFilterCubit,
+                                state.pathParameters['id']!,
+                              ),
+                            ),
+                            BlocProvider(
+                              create: (_) => TournamentCubit(
+                                tournamentRepository,
+                                state.pathParameters['id']!,
+                              )..load(),
+                            ),
+                          ],
                           child: MatchesPage(
                             competitionId: state.pathParameters['id']!,
                           ),
