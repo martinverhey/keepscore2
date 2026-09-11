@@ -9,6 +9,32 @@ PlannedMatchCubit _cubit() {
   return cubit;
 }
 
+int _longestRunOf(String playerId, List<PlannedMatch> matches) {
+  var longest = 0;
+  var run = 0;
+
+  for (final match in matches) {
+    final plays = match.playerAId == playerId || match.playerBId == playerId;
+    run = plays ? run + 1 : 0;
+    if (run > longest) longest = run;
+  }
+
+  return longest;
+}
+
+void _expectNobodyPlaysThriceInARow(
+  List<String> playerIds,
+  List<PlannedMatch> matches,
+) {
+  for (final playerId in playerIds) {
+    expect(
+      _longestRunOf(playerId, matches),
+      lessThanOrEqualTo(2),
+      reason: '$playerId plays too many times in a row',
+    );
+  }
+}
+
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues(const {}));
 
@@ -23,6 +49,55 @@ void main() {
       PlannedMatch(playerAId: 'p1', playerBId: 'p3'),
       PlannedMatch(playerAId: 'p2', playerBId: 'p3'),
     ]);
+  });
+
+  test('nobody plays more than twice in a row', () async {
+    for (final size in [4, 5, 6, 7, 8]) {
+      SharedPreferences.setMockInitialValues(const {});
+      final playerIds = [for (var i = 1; i <= size; i++) 'p$i'];
+      final cubit = _cubit();
+      await cubit.select('c$size');
+
+      await cubit.plan(playerIds);
+
+      expect(cubit.state.matches.length, size * (size - 1) ~/ 2);
+      _expectNobodyPlaysThriceInARow(playerIds, cubit.state.matches);
+    }
+  });
+
+  test('pre-picking again re-spaces the pairings already planned', () async {
+    final cubit = _cubit();
+    await cubit.select('c1');
+    await cubit.plan(['p1', 'p2', 'p3']);
+
+    await cubit.plan(['p1', 'p2', 'p3', 'p4', 'p5']);
+
+    expect(cubit.state.matches.length, 10);
+    _expectNobodyPlaysThriceInARow([
+      'p1',
+      'p2',
+      'p3',
+      'p4',
+      'p5',
+    ], cubit.state.matches);
+  });
+
+  test('two pre-picks of separate players still interleave', () async {
+    final cubit = _cubit();
+    await cubit.select('c1');
+    await cubit.plan(['p1', 'p2', 'p3']);
+
+    await cubit.plan(['p4', 'p5', 'p6']);
+
+    expect(cubit.state.matches.length, 6);
+    _expectNobodyPlaysThriceInARow([
+      'p1',
+      'p2',
+      'p3',
+      'p4',
+      'p5',
+      'p6',
+    ], cubit.state.matches);
   });
 
   test('pre-picking fewer than two players plans nothing', () async {

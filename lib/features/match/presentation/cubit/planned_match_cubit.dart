@@ -33,7 +33,7 @@ class PlannedMatchCubit extends Cubit<PlannedMatchState> {
     ];
     if (added.isEmpty) return;
 
-    await _write(competitionId, [...planned, ...added]);
+    await _write(competitionId, _spreadOverRounds([...planned, ...added]));
   }
 
   Future<void> remove(PlannedMatch match) async {
@@ -70,4 +70,58 @@ List<PlannedMatch> _roundRobin(List<String> playerIds) {
           playerBId: playerIds[second],
         ),
   ];
+}
+
+List<PlannedMatch> _spreadOverRounds(List<PlannedMatch> matches) {
+  final remaining = [...matches];
+  final pairsLeft = <String, int>{};
+  for (final match in remaining) {
+    pairsLeft.update(match.playerAId, (count) => count + 1, ifAbsent: () => 1);
+    pairsLeft.update(match.playerBId, (count) => count + 1, ifAbsent: () => 1);
+  }
+
+  final ordered = <PlannedMatch>[];
+  while (remaining.isNotEmpty) {
+    final playing = <String>{};
+
+    for (
+      var index = _busiestFreePair(remaining, playing, pairsLeft);
+      index != null;
+      index = _busiestFreePair(remaining, playing, pairsLeft)
+    ) {
+      final match = remaining.removeAt(index);
+      playing.add(match.playerAId);
+      playing.add(match.playerBId);
+      pairsLeft.update(match.playerAId, (count) => count - 1);
+      pairsLeft.update(match.playerBId, (count) => count - 1);
+      ordered.add(match);
+    }
+  }
+
+  return ordered;
+}
+
+int? _busiestFreePair(
+  List<PlannedMatch> remaining,
+  Set<String> playing,
+  Map<String, int> pairsLeft,
+) {
+  int? busiest;
+  var mostLeft = 0;
+
+  for (var index = 0; index < remaining.length; index++) {
+    final match = remaining[index];
+    if (playing.contains(match.playerAId) ||
+        playing.contains(match.playerBId)) {
+      continue;
+    }
+
+    final left = pairsLeft[match.playerAId]! + pairsLeft[match.playerBId]!;
+    if (left > mostLeft) {
+      mostLeft = left;
+      busiest = index;
+    }
+  }
+
+  return busiest;
 }
