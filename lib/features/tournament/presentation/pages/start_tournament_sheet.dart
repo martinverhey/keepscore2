@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../app/dependency_injection/injector.dart';
 import '../../../../core/extensions/build_context.extension.dart';
+import '../../../../core/extensions/player_list.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/failure_text.dart';
@@ -10,6 +11,7 @@ import '../../../../core/widgets/list_header.dart';
 import '../../../../core/widgets/selectable_row.dart';
 import '../../../../core/widgets/sheet.dart';
 import '../../../../core/widgets/state_views.dart';
+import '../../../competition/presentation/cubit/competition_cubit.dart';
 import '../../../player/domain/player.model.dart';
 import '../cubit/start_tournament_cubit.dart';
 
@@ -17,17 +19,21 @@ Future<String?> showStartTournamentSheet(
   BuildContext context, {
   required String competitionId,
 }) {
+  final myPlayerId = context.read<CompetitionCubit>().state.myPlayerId;
+
   return showAdaptiveSheet<String>(
     context,
     builder: (_) => BlocProvider(
       create: (_) => getIt<StartTournamentCubit>(param1: competitionId)..load(),
-      child: const StartTournamentSheet(),
+      child: StartTournamentSheet(myPlayerId: myPlayerId),
     ),
   );
 }
 
 class StartTournamentSheet extends StatelessWidget {
-  const StartTournamentSheet({super.key});
+  const StartTournamentSheet({super.key, this.myPlayerId});
+
+  final String? myPlayerId;
 
   @override
   Widget build(BuildContext context) {
@@ -65,10 +71,11 @@ class StartTournamentSheet extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.sm),
-        for (final player in state.players) ...[
-          _row(context, state, player),
-          const SizedBox(height: AppSpacing.xs),
-        ],
+        for (final player in state.players.byName)
+          Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+            child: _row(context, state, player),
+          ),
         if (state.actionFailure case final failure?) FailureText(failure),
       ],
     );
@@ -79,14 +86,22 @@ class StartTournamentSheet extends StatelessWidget {
     StartTournamentReady state,
     Player player,
   ) {
-    final selectable = state.canSelect(player.id);
-
     return SelectableRow(
       label: player.displayName,
       selected: state.isSelected(player.id),
-      labelColor: selectable ? null : AppColors.neutral,
+      labelColor: _labelColor(context, state, player),
       onTap: () => context.read<StartTournamentCubit>().toggle(player.id),
     );
+  }
+
+  Color? _labelColor(
+    BuildContext context,
+    StartTournamentReady state,
+    Player player,
+  ) {
+    if (!state.canSelect(player.id)) return AppColors.neutral;
+    if (player.id == myPlayerId) return AdaptiveColors.accent(context);
+    return null;
   }
 
   Widget? _startButton(BuildContext context, StartTournamentState state) {

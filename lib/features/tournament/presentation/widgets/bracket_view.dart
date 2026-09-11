@@ -6,7 +6,12 @@ import '../../domain/bracket.model.dart';
 import 'bracket_match_tile.dart';
 
 class BracketView extends StatelessWidget {
-  const BracketView({super.key, required this.bracket, this.onSelect});
+  const BracketView({
+    super.key,
+    required this.bracket,
+    this.onSelect,
+    this.myPlayerId,
+  });
 
   static const double tileWidth = 150;
   static const double tileHeight = 52;
@@ -15,6 +20,7 @@ class BracketView extends StatelessWidget {
 
   final Bracket bracket;
   final void Function(TournamentMatch match)? onSelect;
+  final String? myPlayerId;
 
   static const double _unit = tileHeight + _gap;
 
@@ -85,6 +91,7 @@ class BracketView extends StatelessWidget {
             width: tileWidth,
             height: tileHeight,
             onTap: _tapHandler(matches[index]),
+            myPlayerId: myPlayerId,
           ),
         ],
       ],

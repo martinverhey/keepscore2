@@ -204,7 +204,15 @@ returns `_prePickFields` instead of `_fields` for it: the mode toggle, a
 `matchPrePickTitle` header, a `SelectableRow` per active player
 (`MatchFormCubit.togglePrePick` → `MatchFormReady.prePicked`, a `Set<String>`
 beside `assignments` rather than folded into it — a pre-pick selection is not
-a side), and a hint counting the pairings the selection produces. The primary
+a side), and a hint counting the pairings the selection produces. **That
+roster is rendered exactly as `TeamPickerSheet._playerList` renders one** —
+`List<Player>.byName` (`core/extensions/player_list.extension.dart`, the
+case-insensitive display-name sort both now share, lifted out of the picker's
+own `_sortedByName`), an `AppSpacing.sm` gap below each row rather than an
+`xs` one after it, and the viewer's own row in `AdaptiveColors.accent` via
+`SelectableRow.labelColor`. The two lists pick players for the same match from
+the same roster, so they are one list rendered twice, not two lists that
+happen to look alike. The primary
 button is `Create matches`, which calls `PlannedMatchCubit.plan` with the
 selection and pops; nothing is submitted and no `MatchRepository` call is
 made. The pairing rule is every unordered pair (`_roundRobin` in
@@ -2531,6 +2539,19 @@ as a **trailing** `trophies` column (a `create or replace view` can only append
 `core/widgets/trophy_chip.dart` beside the name next to the streak badge.
 `TrophyChip` shows the count only above one, unlike `MedalChip`, which always
 does: one trophy is a trophy, and a "1" beside it reads as a rank.
+
+**The entrant roster is rendered the way every other player list is** —
+`List<Player>.byName`, an `AppSpacing.sm` gap under each row, and the viewer's
+own row in `AdaptiveColors.accent` — the same three rules
+`TeamPickerSheet._playerList` and the new match sheet's pre-pick roster
+follow. `_labelColor` is where the one extra rule this list has meets them:
+a player who cannot be added because sixteen are already picked stays
+`AppColors.neutral`, and that greying wins over the accent, since it says
+whether the row can be tapped at all. **`myPlayerId` is read by
+`showStartTournamentSheet` and passed in**, not read off `CompetitionCubit`
+inside the sheet's own `build` the way `NewMatchSheet` does it — the sheet is
+pumped bare by `start_tournament_sheet_test.dart`, and reading a provider in
+its build would charge every one of those tests a `CompetitionCubit`.
 
 **`AdaptiveGlyph.trophy` maps to `Icons.emoji_events` on *both* platform
 branches, and that is deliberate.** CupertinoIcons ships no trophy — the

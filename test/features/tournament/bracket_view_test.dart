@@ -41,18 +41,26 @@ Future<void> _pump(
   WidgetTester tester,
   Bracket bracket, {
   void Function(TournamentMatch match)? onSelect,
+  String? myPlayerId,
 }) async {
   await tester.pumpWidget(
     MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
-        body: BracketView(bracket: bracket, onSelect: onSelect),
+        body: BracketView(
+          bracket: bracket,
+          onSelect: onSelect,
+          myPlayerId: myPlayerId,
+        ),
       ),
     ),
   );
   await tester.pumpAndSettle();
 }
+
+TextStyle _name(WidgetTester tester, String displayName) =>
+    tester.widget<Text>(find.text(displayName).first).style!;
 
 Finder _tile(String id) => find.byWidgetPredicate(
   (widget) => widget is BracketMatchTile && widget.match.id == id,
@@ -131,6 +139,29 @@ void main() {
     await tester.tap(_tile('m2-1'), warnIfMissed: false);
     await tester.pumpAndSettle();
     expect(selected, ['m1-2']);
+  });
+
+  testWidgets('a winner is bold, and only the viewer is accented', (
+    tester,
+  ) async {
+    await _pump(
+      tester,
+      Bracket.fromMatches([
+        _match(1, 0, a: 'Ada', b: 'Bo', winner: 'Bo'),
+        _match(1, 1, a: 'Cas', b: 'Dee'),
+        _match(2, 0),
+      ]),
+      myPlayerId: 'Dee',
+    );
+
+    final winner = _name(tester, 'Bo');
+    final viewer = _name(tester, 'Dee');
+    final loser = _name(tester, 'Ada');
+
+    expect(winner.fontWeight, FontWeight.w700);
+    expect(winner.color, loser.color);
+    expect(viewer.fontWeight, FontWeight.w400);
+    expect(viewer.color, isNot(loser.color));
   });
 
   testWidgets('a played slot shows both scores', (tester) async {

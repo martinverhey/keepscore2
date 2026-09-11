@@ -12,12 +12,14 @@ class BracketMatchTile extends StatelessWidget {
     required this.width,
     required this.height,
     this.onTap,
+    this.myPlayerId,
   });
 
   final TournamentMatch match;
   final double width;
   final double height;
   final VoidCallback? onTap;
+  final String? myPlayerId;
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +81,9 @@ class BracketMatchTile extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: AppTypography.bodySmall.copyWith(
               fontWeight: won ? FontWeight.w700 : FontWeight.w400,
-              color: won ? AdaptiveColors.accent(context) : null,
+              color: entrant.playerId == myPlayerId
+                  ? AdaptiveColors.accent(context)
+                  : null,
             ),
           ),
         ),

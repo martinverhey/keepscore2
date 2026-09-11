@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../app/dependency_injection/injector.dart';
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context.extension.dart';
+import '../../../../core/extensions/player_list.extension.dart';
 import '../../../../core/extensions/competition.extension.dart';
 import '../../../../core/extensions/match_team.extension.dart';
 import '../../../../core/extensions/text_editing_controller.extension.dart';
@@ -219,7 +220,7 @@ class _NewMatchSheetState extends State<NewMatchSheet> {
       onNext: _modeAt(context, state.mode.index + 1),
       onPrevious: _modeAt(context, state.mode.index - 1),
       child: state.isPrePick
-          ? _prePickFields(context, state)
+          ? _prePickFields(context, state, myPlayerId)
           : _fields(context, state, myPlayerId),
     );
   }
@@ -362,7 +363,11 @@ class _NewMatchSheetState extends State<NewMatchSheet> {
     );
   }
 
-  Widget _prePickFields(BuildContext context, MatchFormReady state) {
+  Widget _prePickFields(
+    BuildContext context,
+    MatchFormReady state,
+    String? myPlayerId,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -374,7 +379,7 @@ class _NewMatchSheetState extends State<NewMatchSheet> {
         if (state.players.isEmpty)
           EmptyState(message: context.l10n.matchNeedsPlayers)
         else
-          _prePickRoster(context, state),
+          _prePickRoster(context, state, myPlayerId),
 
         const SizedBox(height: AppSpacing.md),
         _hintText(_prePickHint(context, state)),
@@ -382,19 +387,27 @@ class _NewMatchSheetState extends State<NewMatchSheet> {
     );
   }
 
-  Widget _prePickRoster(BuildContext context, MatchFormReady state) {
+  Widget _prePickRoster(
+    BuildContext context,
+    MatchFormReady state,
+    String? myPlayerId,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        for (final player in state.players) ...[
-          SelectableRow(
-            label: player.displayName,
-            selected: state.isPrePicked(player.id),
-            onTap: () =>
-                context.read<MatchFormCubit>().togglePrePick(player.id),
+        for (final player in state.players.byName)
+          Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+            child: SelectableRow(
+              label: player.displayName,
+              selected: state.isPrePicked(player.id),
+              onTap: () =>
+                  context.read<MatchFormCubit>().togglePrePick(player.id),
+              labelColor: player.id == myPlayerId
+                  ? AdaptiveColors.accent(context)
+                  : null,
+            ),
           ),
-          const SizedBox(height: AppSpacing.xs),
-        ],
       ],
     );
   }

@@ -32,6 +32,7 @@ Future<MockTournamentRepository> _pump(
   WidgetTester tester, {
   int players = 6,
   List<Player>? roster,
+  String? myPlayerId,
 }) async {
   final playerRepository = MockPlayerRepository();
   final tournaments = MockTournamentRepository();
@@ -48,7 +49,9 @@ Future<MockTournamentRepository> _pump(
         create: (_) =>
             StartTournamentCubit(tournaments, playerRepository, _competitionId)
               ..load(),
-        child: const Scaffold(body: StartTournamentSheet()),
+        child: Scaffold(
+          body: StartTournamentSheet(myPlayerId: myPlayerId),
+        ),
       ),
     ),
   );
@@ -69,7 +72,45 @@ Future<void> _select(WidgetTester tester, String name) async {
   await tester.pumpAndSettle();
 }
 
+Finder _row(String name) =>
+    find.ancestor(of: find.text(name), matching: find.byType(SelectableRow));
+
 void main() {
+  testWidgets('the roster reads like the player picker', (tester) async {
+    await _pump(
+      tester,
+      roster: [
+        Player(
+          id: 'p1',
+          competitionId: _competitionId,
+          displayName: 'Zoe',
+          isActive: true,
+        ),
+        Player(
+          id: 'p2',
+          competitionId: _competitionId,
+          displayName: 'Ada',
+          isActive: true,
+        ),
+        Player(
+          id: 'p3',
+          competitionId: _competitionId,
+          displayName: 'Mia',
+          isActive: true,
+        ),
+      ],
+      myPlayerId: 'p2',
+    );
+
+    final tops = [
+      for (final name in ['Ada', 'Mia', 'Zoe']) tester.getRect(_row(name)).top,
+    ];
+
+    expect(tops, equals(List.of(tops)..sort()));
+    expect(tester.widget<SelectableRow>(_row('Ada')).labelColor, isNotNull);
+    expect(tester.widget<SelectableRow>(_row('Zoe')).labelColor, isNull);
+  });
+
   testWidgets('Start is refused until two players are picked', (tester) async {
     await _pump(tester);
 

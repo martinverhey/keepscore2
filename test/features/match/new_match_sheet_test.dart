@@ -64,7 +64,11 @@ typedef _Blocs = ({
   PlayerRepository players,
 });
 
-_Blocs _blocs({List<String> teamA = const [], List<String> teamB = const []}) {
+_Blocs _blocs({
+  List<String> teamA = const [],
+  List<String> teamB = const [],
+  String? myPlayerId,
+}) {
   SharedPreferences.setMockInitialValues(const {});
   final auth = MockAuthRepository();
   final matches = MockMatchRepository();
@@ -82,6 +86,7 @@ _Blocs _blocs({List<String> teamA = const [], List<String> teamB = const []}) {
       competition: _competition(),
       playerCount: 3,
       matchCount: 0,
+      myPlayerId: myPlayerId,
     ),
   );
   when(
@@ -198,6 +203,9 @@ Future<void> _pickPrePickMode(WidgetTester tester) async {
   await tester.tap(find.text('Pre-pick'));
   await tester.pumpAndSettle();
 }
+
+Finder _prePickRow(String name) =>
+    find.ancestor(of: find.text(name), matching: find.byType(SelectableRow));
 
 bool _scoreAHasFocus(WidgetTester tester) => tester
     .widget<EditableText>(find.byType(EditableText).first)
@@ -525,6 +533,30 @@ void main() {
 
     expect(_ready(blocs.form).mode, MatchEntryMode.oneVsOne);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the pre-pick roster reads like the player picker', (
+    tester,
+  ) async {
+    final blocs = _blocs(myPlayerId: 'p2');
+
+    await tester.pumpWidget(
+      _app(blocs: blocs, home: const Material(child: NewMatchSheet())),
+    );
+    await tester.pumpAndSettle();
+    await _pickPrePickMode(tester);
+
+    final tops = [
+      for (final name in ['Ada', 'Mia', 'Zoe'])
+        tester.getRect(_prePickRow(name)).top,
+    ];
+
+    expect(tops, equals(List.of(tops)..sort()));
+    expect(
+      tester.widget<SelectableRow>(_prePickRow('Ada')).labelColor,
+      isNotNull,
+    );
+    expect(tester.widget<SelectableRow>(_prePickRow('Zoe')).labelColor, isNull);
   });
 
   testWidgets('pre-picking players plans a match for every pairing', (
