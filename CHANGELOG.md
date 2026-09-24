@@ -3,6 +3,25 @@
 Newest first. Each heading is an annotated `vX.Y.Z` tag; pushing that tag ships
 the build to TestFlight and Play internal testing.
 
+## v0.5.0 — 2026-09-25
+
+### Added
+- Knockout tournaments of 2, 4, 8 or 16 players, with a trophy for the winner
+- Finished tournaments stay in the Matches feed
+- Pre-pick players to plan a round robin of matches, ordered so nobody plays more than twice in a row
+- Pick a past season from the leaderboard's season header to see its final standings
+- The profile page shows your avatar and lets you change your name
+
+### Changed
+- Edit, rename, leave and delete a competition from a three-dots menu on its card
+- Settings is now a profile page
+- History left the sidebar; past seasons live on the leaderboard
+
+### Fixed
+- The leaderboard didn't update after the app came back from the background
+- The profile page didn't stay pinned to the top
+- The invite button used the iOS share icon on Android and web
+
 ## v0.4.2 — 2026-09-07
 
 ### Added
