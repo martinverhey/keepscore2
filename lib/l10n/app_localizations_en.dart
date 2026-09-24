@@ -224,6 +224,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profilePageTitle => 'Profile';
 
   @override
+  String get profileChangeName => 'Change name';
+
+  @override
   String get competitionSettingsSectionCompetition => 'Competition';
 
   @override

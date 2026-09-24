@@ -443,8 +443,15 @@ or moved:
   entry point is the wide-web sidebar's History row: the profile page
   (`profile.page.dart`, reached from the Leaderboard's profile bar action)
   carries no competition rows at all — no History, no Manage players, no
-  join code or QR — only the System section (theme, language), the app
-  version and sign out.
+  join code or QR. It heads itself with the viewer's own `InitialsCircle`
+  at 112px, their name under it and a `Change name` button, which opens the
+  same `showPlayerNameSheet` the join flow asks a new player's name with
+  (`joinNewPlayerNameTitle`), prefilled, and saves through
+  `PlayersCubit.rename`. The name it edits is the viewer's *player* row in
+  the current competition (`CompetitionCubit.myPlayerId` resolved against
+  the shell-scoped `PlayersCubit`), not `profiles.display_name`, so it is
+  what the leaderboard shows and it is per competition. Below that: the
+  System section (theme, language), the app version and sign out.
 - **Edit a competition** — the owner-only Edit item in the competition
   cards' actions menu (`CompetitionsPage._editCallback`) is the only entry
   point to the edit page (`CompetitionEditPage`).

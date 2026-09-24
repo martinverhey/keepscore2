@@ -80,6 +80,7 @@
   "competitionNotFound": "This competition is gone, or you're no longer in it.",
 
   "profilePageTitle": "Profile",
+  "profileChangeName": "Change name",
   "competitionSettingsSectionCompetition": "Competition",
   "competitionSettingsSectionSystem": "System",
   "playersManageTitle": "Manage players",

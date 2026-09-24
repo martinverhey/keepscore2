@@ -470,6 +470,12 @@ abstract class AppLocalizations {
   /// **'Profile'**
   String get profilePageTitle;
 
+  /// No description provided for @profileChangeName.
+  ///
+  /// In en, this message translates to:
+  /// **'Change name'**
+  String get profileChangeName;
+
   /// No description provided for @competitionSettingsSectionCompetition.
   ///
   /// In en, this message translates to:
