@@ -3112,6 +3112,16 @@ flutter build apk --debug        # verified green
 ./scripts/db.sh -f supabase/tests/tournament_check.sql  # seeding, field size, advancing, rolls back
 ```
 
+**CI pins the Flutter version, and it must match the local one.** All three
+workflows in `.github/workflows/` (`beta-android.yml`, `beta-ios.yml`,
+`web.yml`) set `flutter-version:` on `subosito/flutter-action`. Whenever
+Flutter is upgraded locally, bump that value in all three files in the same
+commit. A dependency upgrade or a platform migration made against a newer SDK
+builds fine locally and then fails every release job: v0.5.0 failed on all
+three platforms because CI was still on 3.44.9 while the lockfile and the AGP 9
+built-in-Kotlin migration had been made on 3.47.4. Check with
+`flutter --version` against `grep -rn flutter-version .github/workflows`.
+
 ## Git workflow
 
 - Commit messages follow **Conventional Commits**: `<type>(<scope>): <description>`
