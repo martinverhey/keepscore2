@@ -20,16 +20,17 @@ is the up-to-date source of truth regardless.
 | 6. Matches (team builder, submit, list, edit, delete) | Done |
 | 7. Leaderboard + seasons + realtime | Done |
 | 8. Polish, Dutch copy pass, app icons | Done |
+| 9. Tournaments (bracket, trophy) | Done, applied to the live project |
 
 Theme and language are app-wide, competition-independent preferences, both
 persisted to `SharedPreferences` and read back in `main()` before `runApp`.
 `LanguagePreference.locale` feeds `MaterialApp`/`CupertinoApp`'s `locale`, with
 `system` meaning "no override, follow the device", and `/settings/language` is a
-real page reached from the settings page's System section (and from the wide-web
+real page reached from the profile page's System section (and from the wide-web
 sidebar's account section).
 
 **Theme is deliberately *not* a page** — it's a toggle rendered inline
-in both of those places (settings page System section, sidebar account section),
+in both of those places (profile page System section, sidebar account section),
 so `ThemePreference` is `{light, dark}` with no `system` value and there is no
 `Routes.theme`. Losing `system` means there is nothing left for the device to
 follow at runtime, so the device's brightness is instead read *once*, as the
@@ -49,7 +50,7 @@ have passed the identical closure — the same reasoning that later moved
 section below). The cost of that is that **every widget test mounting a
 `Sidebar`, or a page composed with one, now needs a `ThemeCubit` and an
 `AuthBloc` in scope** — in the app both come from `KeepScoreApp`'s root
-`MultiBlocProvider`, but `sidebar_test.dart`, `settings_page_test.dart` and
+`MultiBlocProvider`, but `sidebar_test.dart`, `profile_page_test.dart` and
 `competition_content_page_test.dart` each provide their own (the test file kept
 its old name across the rename below — it now pumps a `StatefulShellRoute` and
 asserts against `LeaderboardPage`).
@@ -72,18 +73,29 @@ the feature's `presentation/widgets/leaderboard_list.dart`) and `MatchesPage`
 (`features/match/presentation/pages/matches.page.dart`) are each a full routed page — own
 `AdaptiveScaffold`, own `LeaderboardCubit`/`MatchListCubit` loaded in their own `initState`.
 Players has its own settings route, not a branch — see "Leaderboard and Matches are
-routes, not tabs" for why. The leaderboard tab always shows the
+routes, not tabs" for why. The leaderboard tab opens on the
 current calendar window — which has no row until the first match lands in it.
-It has no season picker: that moved to
-`/competition/:id/settings/history` (`HistoryPage`), which shows one
-finished season at a time — `SeasonFilterButton` in the app bar's `trailing`
-slot opens `SeasonSheet`, which picks among `HistoryState.seasons` (the lean,
-already-loaded season list — id/starts_at/ends_at only, no leaderboards — so
-the picker itself needs no separate fetch), selecting one fetches just that
-season's leaderboard, and the chosen season heads the list as a `ListHeader`
-— the same title-plus-subtitle block `LeaderboardList._seasonBar` uses, so
-both pages name their season identically; only the subtitle differs
-(`Ends <date>` for the running season, the finished season's date range in
+**Once the competition has a finished season, the season header above the
+list is itself the season picker**: `ListHeader(onTap:)` adds a chevron-down
+after the title and makes the block tappable, and it opens the same
+`SeasonSheet` over `LeaderboardReady.pickableSeasons` (the current season
+first, then `finishedSeasons` newest first). Picking a finished season calls
+`LeaderboardCubit.viewSeason(id)`, which fetches that season's final standings
+from `history` into `finishedLeaderboards`; `viewSeason(null)` goes back. Only
+the list follows the pick — `ProfileSection` above it stays on the current
+season, a past row carries no all-time medal tally and opens no profile (the
+sheet would show the *current* season's stats), and the subtitle switches
+from `Ends <date>` to the finished season's date range. A silent realtime
+refresh keeps the viewed season; a non-silent `load()` returns to the current
+one, and a failed fetch falls back to it rather than showing an empty table.
+With no finished season the header is plain text, as before.
+`/competition/:id/settings/history` (`HistoryPage`) still exists but **nothing
+links to it any more** — the sidebar's History row was removed once the
+leaderboard header took over the job; it shows one finished
+season at a time through `SeasonFilterButton` in the app bar's `trailing`
+slot, which opens that same `SeasonSheet` over `HistoryState.seasons`, and heads the list with a
+`ListHeader` naming the season the same way (only the subtitle differs:
+`Ends <date>` for the running season, the finished season's date range in
 History). Neither tab filters by game type —
 that's Matches-only, see below.
 
@@ -183,7 +195,7 @@ is selectable without closing anything (the picker does its own
 already-on-the-other-side filtering now, so what it gets back is every active
 player, not one side's selectable subset).
 
-**The new match sheet opens on a `1v1` / `Teams` toggle
+**The new match sheet opens on a `1v1` / `Teams` / `Pre-pick` toggle
 (`AdaptiveSegmented<MatchEntryMode>`), and that mode drives the whole form.**
 `MatchEntryMode` (`presentation/cubit/match_entry_mode.enum.dart`, exported
 through `match_form_state.dart`) lives on `MatchFormReady`; it defaults to
@@ -196,6 +208,107 @@ holding exactly one survives.
 **The sides are numbered, not lettered** — `Team 1`/`Team 2`, `Player 1`/
 `Speler 1` — while the l10n *keys* still read `matchTeamA`/`matchPlayerB`, so
 don't read a letter off a key name and assume it reaches the screen.
+
+**`prePick` is the one mode that replaces the form rather than reshaping it,
+and its output is a list of placeholders rather than a match.** `_form`
+returns `_prePickFields` instead of `_fields` for it: the mode toggle, a
+`matchPrePickTitle` header, a `SelectableRow` per active player
+(`MatchFormCubit.togglePrePick` → `MatchFormReady.prePicked`, a `Set<String>`
+beside `assignments` rather than folded into it — a pre-pick selection is not
+a side), and a hint counting the pairings the selection produces. **That
+roster is rendered exactly as `TeamPickerSheet._playerList` renders one** —
+`List<Player>.byName` (`core/extensions/player_list.extension.dart`, the
+case-insensitive display-name sort both now share, lifted out of the picker's
+own `_sortedByName`), an `AppSpacing.sm` gap below each row rather than an
+`xs` one after it, and the viewer's own row in `AdaptiveColors.accent` via
+`SelectableRow.labelColor`. The two lists pick players for the same match from
+the same roster, so they are one list rendered twice, not two lists that
+happen to look alike. The primary
+button is `Create matches`, which calls `PlannedMatchCubit.plan` with the
+selection and pops; nothing is submitted and no `MatchRepository` call is
+made. The pairing rule is every unordered pair (`_roundRobin` in
+`planned_match_cubit.dart`), so N players give N(N-1)/2 placeholders. There is
+no cap: the list below is the only thing that grows.
+
+**The order they are listed in is a schedule, not the order they were
+generated in: nobody plays more than twice in a row.** `_spreadOverRounds`
+deals the whole merged list into rounds — inside one round no player appears
+twice — and flattens them, so the worst case is the last match of one round
+and the first of the next. A round is built by repeatedly taking the pair
+whose two players have the **most pairings still unplaced**
+(`_busiestFreePair`), which is what keeps the odd player out of trouble: plain
+first-fit strands whoever is left over by an odd count and ends the list with
+all four of their remaining matches back to back (five players is the smallest
+case that shows it). Plain circle-method generation would schedule a *fresh*
+round robin perfectly, but it cannot order a list that is part old and part
+new, which is the case that actually has to work — `plan` re-spreads
+`[...planned, ...added]` every time, so pre-picking again reshuffles the
+placeholders already on screen rather than appending after them. It is a
+heuristic, not a proof: it holds for every fresh pre-pick from 2 to 16
+players, for every growth from one pre-pick to a larger one, and for two
+pre-picks of entirely separate players, which is what
+`planned_match_cubit_test.dart` pins. A set of pairings that all share one
+player has no valid order at all, and that is what the greedy degrades to.
+**`remove` deliberately does not re-spread** — deleting one placeholder can in
+principle leave a run of three, and a list that reshuffles itself under the
+delete button is the worse of the two.
+
+**Placeholders are device-local, and that is a deliberate product choice, not
+an omission.** `PlannedMatchStore` (`core/data/planned_match_store.dart`) is a
+`SharedPreferences` key per competition holding a JSON list of
+`PlannedMatch` (`domain/planned_match.model.dart` — two player ids and
+nothing else). So they are private to the device that pre-picked them and
+never reach anyone else in the competition; the *matches* they turn into are
+of course normal server-side matches. This is the one piece of competition
+state the app deliberately keeps off Postgres — before adding a second,
+re-read "Online only" and decide it on purpose.
+
+**A pair is its own identity: `PlannedMatch.pairKey` is the two ids sorted and
+joined**, which is what makes pre-picking again *add the missing pairings*
+rather than duplicate the ones already open (`plan` dedupes on it), and what
+makes `remove` indifferent to which side a player was on. There is no id, no
+timestamp and no ordering beyond insertion order.
+
+**`PlannedMatchCubit` is a `registerLazySingleton` provided at the app root,
+next to `CompetitionCubit`, and `CompetitionScope` selects it alongside it.**
+It has to be app-wide for the same reason `CompetitionCubit` does, and the
+reason is `Sidebar`: the sidebar's New match button lives in `SidebarShell`,
+which sits *above* the competition `ShellRoute`, so a competition-scoped
+`registerFactoryParam` would hand that button a different instance from the
+one `MatchesPage` renders — and on wide web, where the sidebar is always the
+new-match affordance, pre-picking would then never reach the visible list.
+`select(id)` is a no-op for the same id, so re-entering a competition does not
+re-read the store. The cost is that **every test pumping `CompetitionScope`,
+`MatchesPage` or `NewMatchSheet` now needs a `PlannedMatchCubit` in scope**
+(and `SharedPreferences.setMockInitialValues`), the same tax `Sidebar` charges
+for `ThemeCubit`/`AuthBloc`.
+
+**The placeholders head the Matches list, and a placeholder is a `MatchCard`
+with the score taken out.** `PlannedMatchCard` renders the two names either
+side of a muted `vs` and a compact delete button at the row's end, on a faint
+fill inside a hairline border — the one outlined card in a list of solid ones,
+so "not played yet" reads without a label. `MatchesPage._prePicked` resolves
+each pair's names off `PlayersCubit`'s active roster and **drops any pair a
+name cannot be found for**, so a placeholder against someone who has since
+been deactivated disappears rather than rendering an id. The section is above
+the game-type header (a placeholder has no game type to filter by) and is
+gated on `session.canWrite`. When the real feed is empty but placeholders
+exist, `_matchesSection` returns nothing rather than the full-viewport
+`EmptyState` — the placeholders *are* the invitation, and the speech bubble
+pointing at the new-match action would be pointing past a list that is not
+empty.
+
+**Tapping a placeholder opens the same `NewMatchSheet`, pre-filled.**
+`showNewMatchSheet(planned:)` seeds `MatchFormCubit.load(teamA:, teamB:)` with
+the pair, which is why `load` takes them at all — a `setTeams` after the fact
+would mean waiting on a fetch the provider's `create` does not await. A
+pre-filled sheet **hides the mode toggle and the `SwipeNavigator`** (the
+players are settled; there is no mode left to move between), carries a
+destructive `Remove` secondary button, and treats its own seeded assignments
+as *not* unsaved input — otherwise backing out of a placeholder you opened by
+accident would prompt to discard a match you never touched. Saving removes the
+placeholder; so does `Remove`. `Clear` on the section header drops every open
+one.
 
 **Everywhere else that names a side asks the match, not a mode.**
 `MatchTeam.label(context, isOneVsOne:)`
@@ -291,6 +404,11 @@ refreshes the list when either sheet closes — realtime does it.
   true, so psql and service-role renames deliberately still pass.
 - **Edits/deletes replay the season from the affected match forward** via
   `recalc_season_from`, not from scratch — see the note under Testing.
+- **Tournaments do not feed the ladder.** A knockout bracket is its own
+  track: own tables, own score entry, no Elo, not in the Matches feed. The
+  winner keeps a trophy on their leaderboard row for that season. Seeding
+  pairs the closest ratings, and a bracket takes 2, 4, 8 or 16 players so it
+  needs no byes — see "Tournaments are a track of their own".
 - **Auth**: Apple, Google, email OTP code. No passwords.
 - **Guests** (Supabase anonymous) may join a competition and read it. They may
   not create competitions, add players, or create matches. Enforced in Postgres.
@@ -310,8 +428,7 @@ or moved:
   `widgets/players.dart`, `isRegistered: session.canWrite`. **Every entry
   point *into* player management is a step stricter than that: owner-only,
   `session.canWrite && competition.isOwnedBySession(session)`** — the
-  Settings row and the sidebar's Players row (`canManageSettings`, the same
-  flag Configuration uses), the leaderboard's Manage players button
+  Settings row and the sidebar's Players row (`canManageSettings`), the leaderboard's Manage players button
   (`LeaderboardList.isOwner`), and the team picker's
   (`TeamPickerSheet.canManagePlayers`). A registered non-owner reaching the
   sheet another way still sees the roster and may rename themselves —
@@ -320,12 +437,35 @@ or moved:
 - **Create a match** — the "new match" bottom tab item is omitted entirely for
   guests in `competition_tab_bar.dart`; `matches.page.dart` shows
   `GuestNotice` instead of the new-match affordance.
+- **Pre-picked placeholders** — `matches.page.dart`'s `_prePicked` returns an
+  empty list unless `session.canWrite`, so the whole section is absent for a
+  guest. Pre-picking itself is inside the new match sheet, which a guest
+  cannot open.
 - **Edit/delete a match** — `match_detail_sheet.dart`,
   `session.canWrite && state.isManageableBy(session.user?.id)` (creator or
   owner only, not just registered).
-- **History** (`settings.page.dart`) is deliberately *outside*
-  this gate — it's read-only historical data a guest may read. Competition
-  Settings and Manage players in the same menu stay gated, both to the owner.
+- **Start a tournament / enter a bracket score** — the trophy bar action in
+  `matches.page.dart` is rendered when `session.canWrite` **or** a tournament
+  already exists, so a guest may open and read a bracket but never starts one;
+  `TournamentBracketSheet._canScore` is `session.canWrite` on top of that, and
+  Cancel tournament is narrower still (creator or owner, like a match).
+- **Past seasons** (the leaderboard's season header, and the now
+  unlinked `history.page.dart`) are deliberately *outside*
+  this gate — it's read-only historical data a guest may read. The profile page
+  (`profile.page.dart`, reached from the Leaderboard's profile bar action)
+  carries no competition rows at all — no History, no Manage players, no
+  join code or QR. It heads itself with the viewer's own `InitialsCircle`
+  at 112px, their name under it and a `Change name` button, which opens the
+  same `showPlayerNameSheet` the join flow asks a new player's name with
+  (`joinNewPlayerNameTitle`), prefilled, and saves through
+  `PlayersCubit.rename`. The name it edits is the viewer's *player* row in
+  the current competition (`CompetitionCubit.myPlayerId` resolved against
+  the shell-scoped `PlayersCubit`), not `profiles.display_name`, so it is
+  what the leaderboard shows and it is per competition. Below that: the
+  System section (theme, language), the app version and sign out.
+- **Edit a competition** — the owner-only Edit item in the competition
+  cards' actions menu (`CompetitionsPage._editCallback`) is the only entry
+  point to the edit page (`CompetitionEditPage`).
 
 ## Architecture
 
@@ -342,8 +482,9 @@ lib/
 
 `features/settings/` is the one deliberate exception to "a feature owns the
 domain it presents": alongside its own theme-preference domain, it also holds
-the presentation for the competition-admin menu — `SettingsPage`,
-`ConfigurationPage`/`ConfigurationCubit`, `HistoryPage`/
+the presentation for the competition-admin screens — `ProfilePage` (theme,
+language and sign out; no competition rows),
+`CompetitionEditPage`/`CompetitionEditCubit`, `HistoryPage`/
 `HistoryCubit` — even though those read `CompetitionRepository`/
 `LeaderboardRepository`, which stay put in `competition`/`leaderboard`. They
 moved here because they're conceptually "settings" screens, not because they
@@ -457,8 +598,8 @@ accent wash and no accent border — the accent survives only in the eyebrow
 text and the code badge, so the card is marked by being the one opaque,
 outlined surface in a list where every `CompetitionCard` is a borderless
 translucent neutral. It reads top to bottom as identity then invitation: the
-name starts at the card's very top edge with its rename button beside it
-(owner only), an `Active` eyebrow sits directly under it, then the
+name starts at the card's very top edge with its actions menu at the row's
+end, an `Active` eyebrow sits directly under it, then the
 player/match counts, all across the **full** card width,
 then a centred block of the join code over a 200px `JoinQrImage`, both big
 enough to read or scan off the page and captioned by nothing — the code
@@ -499,22 +640,34 @@ when the cubit is empty (a fresh launch, or after signing out) or when it
 holds a competition the user has since left. That competition is then
 **dropped from the list below**, with the rest headed by a
 `ListHeader(competitionsOther)`; the card carries its own `CompetitionActions`
-so rename/leave/delete stay reachable for it. **`CompetitionActions` renders
-only the callbacks it is handed, which is what lets one card split them
-across two rows**, and both cards split them the same way: **rename sits
-immediately after the name, and the destructive pair sits at the end of a
-row of its own** — naming and destroying are not the same kind of action and
-do not belong in one cluster. Rename is passed `compact: true`, which is a
-32px `AdaptiveIconButton` rather than the platform's 48px one; at full size
-the gap reads as a button placed at the end of the row rather than one
-attached to the title. It hugs the name because **the name and the button
-are one `Row` inside the surrounding `Expanded`/`Column`, with the name
-`Flexible` inside it** — the button is inflexible and sized first, so a long
-name ellipsises against it and a short one is followed immediately by it. A
-`Spacer` beside a `Flexible` name does not work here: both are flex 1, so
-they would split the free space and ellipsise a long name at half the row.
-`CompetitionCard` keeps `JoinCodeTag` outside that group at the row's end,
-and puts its invite button in the counts row ahead of leave/delete; the hero
+so its actions stay reachable for it. **`CompetitionActions` is one
+three-dots `AdaptiveMenuButton`, not a row of icon buttons** — Edit, Rename,
+Leave and Delete, each item present only when its callback is. Ownership
+decides which: an owner gets Edit/Rename/Delete, anyone else Leave alone
+(`CompetitionsPage._editCallback` and its siblings), and a card whose
+callbacks are all null renders no button at all (`hasActions`). The hero card
+carries the button at the end of the name's row, with the name `Expanded`
+beside it so a long name ellipsises against it; `CompetitionCard` carries it
+at the end of the counts row, after the invite button. They used to be split
+across two rows — a compact rename after the name and the destructive pair at
+the end of its own row — until four actions made a menu the better shape.
+**Edit is `go(Routes.competitionEdit(id))`, never `push`**: the target can be a
+competition other than the one whose shell you are in, which is the
+black-screen case in "Entering a competition is always `go`". A `go` there
+leaves the edit page with nothing to pop to, so `CompetitionEditPage`
+renders its own back action — `go(Routes.competitions(id))` — whenever
+`ModalRoute.canPop` is false and the sidebar is not suppressing back buttons.
+The page itself is titled `competitionEdit` ("Edit" / "Bewerken") to match
+the menu item that opens it, and **that menu item is the only way in**: the
+Settings page's Configuration row, the sidebar's, `SidebarSection.configuration`
+and the `configurationTitle` key were all removed with it, so on wide web
+nothing in the sidebar is highlighted while the page is open.
+`AdaptiveMenuButton` (`core/widgets/adaptive/adaptive_menu_button.dart`) is a
+`PopupMenuButton` of icon-plus-label rows on Material and wide web, and a
+`CupertinoActionSheet` with a Cancel button on Cupertino; destructive items
+render in `AdaptiveColors.destructive` / `isDestructiveAction`, and the
+glyph is `AdaptiveGlyph.more` (`ellipsis` / `more_vert`).
+`CompetitionCard` keeps `JoinCodeTag` at the end of the name's row; the hero
 card has no invite button of its own (it *is* the invite). Tapping the card is
 `go(Routes.competition(id))` exactly like a `CompetitionCard`, anywhere on it.
 `JoinQrImage` is the white quiet-zone box `JoinQrCard` was built around,
@@ -530,13 +683,13 @@ arrow after the name only competed with the name for the width it wraps
 into. Nothing else moves: the code and the QR are one centred block under
 the name in both, so the sheet is the hero card minus its chrome rather than
 a second arrangement of the same parts (it used to hold the code badge in the
-name's row, which is what `_nameWithCode` was for). `onRename`/`onLeave`/
-`onDelete` are left off for the same reason, which is what drops the action
-row entirely. It replaced a
+name's row, which is what `_nameWithCode` was for). `onEdit`/`onRename`/
+`onLeave`/`onDelete` are left off for the same reason, which is what drops
+the actions menu entirely. It replaced a
 `JoinQrCard` over a `JoinCodeCard`, so the invite sheet and the competitions
 page now show the competition the same way rather than two different ways.
-`SettingsPage` still renders `JoinCodeCard`/`JoinQrCard`, which is why both
-survive. Sourcing the overview is what put `CompetitionOverview? get overview`
+Both cards are gone: the settings page that still rendered them became the
+competition-free `ProfilePage`. Sourcing the overview is what put `CompetitionOverview? get overview`
 on `CompetitionState`'s sealed base — `LeaderboardPage` had only the
 `Competition` and needs the counts the card shows.
 
@@ -550,8 +703,8 @@ the inner tap wins, so pressing the badge copies rather than opening the
 competition; that is the point, and it is why the badge is the affordance
 rather than a separate Copy button. The timer/clipboard half is
 `core/widgets/copyable.dart`'s `Copyable`, a builder widget handing its child
-`(copied, copy)` — `JoinCodeCard`'s Copy button is the other caller, and the
-two had the same fifteen lines each before it existed.
+`(copied, copy)`, and `JoinCodeTag` is now its only caller (the other one,
+`JoinCodeCard`'s Copy button, went with the old settings page).
 
 **The competitions page's two actions live in the bar, and it has no floating
 action and no sign out.** `trailing` is a `Row` of two `AdaptiveBarAction`s —
@@ -854,7 +1007,7 @@ code; don't relitigate them.
     needs falls into one of four recurring buckets — grep an existing
     `<name>_state.dart` for the closest match before inventing a new shape:
     - **Fetch one thing, with a "not found" case** (`CompetitionState`,
-      `ConfigurationState`, `MatchDetailState`): `XLoading`/`XMissing`/
+      `CompetitionEditState`, `MatchDetailState`): `XLoading`/`XMissing`/
       `XFailed(failure)`/`XReady(...)`. A field that was nullable purely to
       mean "not loaded yet" becomes non-nullable on `XReady` — e.g.
       `MatchFormReady.competition`/`MatchDetailReady.match` — so
@@ -1102,7 +1255,36 @@ code; don't relitigate them.
   rebuilt per season on every edit/delete (see the comment on
   `recalc_season_from`), so every player in the season still gets a fresh
   event on every write, back-dated or not.
-- **Three tables are watched, and `players` is one of them.** `matches`
+- **Every realtime stream also ticks when the app comes back from the
+  background, because realtime has no replay.** `supabase_flutter`
+  disconnects the socket on `paused` and rejoins on `resumed`, and anything
+  written in between is simply never delivered — so before this, a match
+  logged on another phone while yours was in your pocket left your
+  leaderboard stale until the *next* write or a pull-to-refresh. It was
+  reported as "the leaderboard doesn't update"; every server-side layer
+  (publication, slot, `realtime.apply_rls`, a real member's channel) checked
+  out fine, which is what pointed at the device. `realtimeTicks` merges
+  `foregroundReturns()` (`core/data/foreground_returns.dart`) into its own
+  stream, so all four watching cubits refetch without knowing why.
+  **It fires only on a `resumed` that follows `hidden`**, never on a bare
+  `inactive` → `resumed`: Notification Center, a permission prompt, an
+  incoming-call banner or a focus change on web all blip through `inactive`
+  with the socket still connected, and a refetch across four cubits on each
+  of them is waste. `hidden` is the one state all three platforms pass
+  through before the socket can be lost — mobile on its way to `paused`, web
+  when the tab is switched away and throttled. The cost: a cubit with two
+  watchers (`LeaderboardCubit`, `TournamentCubit`) refetches twice on
+  return, a few milliseconds apart; Equatable swallows the second emit.
+  An expired token after a long background is not a problem here —
+  `SupabaseClient._getAccessToken` goes through `auth.getSession()`, which
+  refreshes before the request is sent.
+  `foreground_returns_test.dart` walks the states one legal step at a time
+  (`AppLifecycleListener` asserts on a jump like `paused` → `resumed`), and
+  **never `await`s a `StreamSubscription.cancel()` inside the test body** —
+  doing so hung `flutter test` outright, past `--timeout`, with the body
+  already finished; the test fires the cancel without awaiting it instead.
+- **Five tables are watched, and `players` is the one that was missed.**
+  `matches`
   (filtered by `competition_id`, feeding `MatchListCubit`), `player_ratings`
   (by `season_id`, or unfiltered before the season has a row, feeding
   `LeaderboardCubit`), and `players` (by `competition_id`, feeding both
@@ -1121,6 +1303,19 @@ code; don't relitigate them.
   channel also covers a rename, a deactivate/restore and a leave (which is
   an `update … set is_active = false`, not a delete, so `players` needs no
   `replica identity full` the way `matches` did).
+  The other two are the tournament pair, both feeding `TournamentCubit`:
+  `tournaments` (by `competition_id`) and `tournament_matches` (by
+  `tournament_id`). Both carry `replica identity full`, because cancelling a
+  tournament is a real delete and a default replica identity would deliver
+  only the primary key — leaving the subscriber nothing to filter on.
+- **`TournamentCubit` keeps two watchers for the same reason
+  `LeaderboardCubit` does.** `_watcher` on `tournaments` is started once and
+  never re-keyed; `_bracketWatcher` is keyed on `_watchedTournamentId` and is
+  torn down and rebuilt when that changes (including to `null`, when the
+  latest tournament is cancelled). `tournament_matches` carries no
+  `competition_id` column, so filtering it by competition is not an option —
+  keying on the tournament is what keeps the channel from delivering every
+  other competition's scores.
 - **`LeaderboardCubit` keeps two watchers, not one.** `_watcher` is keyed on
   `_watchedSeasonId` and is torn down and rebuilt whenever the season id
   changes (notably null → real, when the season's first match lands);
@@ -1355,7 +1550,7 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   Getting there needed three things:
   `SidebarSection` (`sidebar_section.enum.dart`) enumerating **every**
   destination the sidebar can reach — leaderboard, matches, newMatch,
-  players, history, configuration, competitions, language — not just the
+  players, competitions, language — not just the
   competition-scoped ones (it is named for the sidebar, not the competition,
   because `competitions`/`language`/`newMatch` are not competition sections);
   `current` covering all of them, so "you are already here" is a
@@ -1370,7 +1565,9 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   competition) composes it too, always with
   `current: SidebarSection.competitions`. Whether it also shows the
   per-competition group (New match button,
-  leaderboard/matches/settings/history/players, "Competition" section label)
+  leaderboard/matches/competitions, plus — for the owner only — the
+  "Competition" section label over Manage players, which is that group's
+  last row now that History is gone, so a non-owner gets no empty heading)
   is simply whether `CompetitionCubit` currently holds one — so the sidebar
   the user leaves behind is exactly the one they land on, with nothing in the
   per-competition group highlighted and "Competitions" highlighted instead,
@@ -1381,7 +1578,8 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   deleted that plumbing along with `HomeSidebarCompetition` itself.
   The sidebar's own account section (competition
   settings, the theme toggle, language, sign out) replaced the old gear-icon popover entirely, so
-  `AdaptiveMenuButton` was deleted rather than left unused. A page pushed
+  that gear-popover `AdaptiveMenuButton` was deleted (the name now belongs to
+  the competition cards' three-dots menu). A page pushed
   underneath the sidebar (History, Players, Settings, NewMatch — reached via
   `context.push`) would otherwise still get an auto-implied back button from
   `AdaptiveScaffold`'s app bar, since `Navigator.canPop()` is true regardless
@@ -1758,7 +1956,7 @@ edge to edge. Below two actions, off glass, or as soon as **any** member is a
 labelled action (`_isLabelled`, the private top-level check below the class),
 it is just the `Row` and each member keeps its own lens. That check reads the
 `label` off an `AdaptiveBarAction` in the list itself, so a member wrapped in
-anything else (a `BlocBuilder`, `CompetitionSettingsButton`,
+anything else (a `BlocBuilder`, `ProfileButton`,
 `GameTypeFilterButton`) counts as a glyph — which is what every wrapper in the
 app is. **Build a labelled action inline in the `actions` list**, the way
 `CompetitionsPage._joinButton` does; hidden behind a wrapper it would be
@@ -1774,7 +1972,7 @@ the two together are the whole glass-control vocabulary: an accent-free
 `AppGlass.barActionSize` (52) rather than `barHeight` (64) — smaller than the
 top bar's own 60px row, which is what `_actionSlot` centres it in, above.
 Every bar button
-goes through it — `CompetitionSettingsButton`, `GameTypeFilterButton`,
+goes through it — `ProfileButton`, `GameTypeFilterButton`,
 `CompetitionsPage`'s create/join pair, and
 `AdaptiveScaffold._glassLeading`'s hand-built back button — so the top bar's
 controls, the tab action and the FAB are all the same untinted lens with the
@@ -1973,7 +2171,7 @@ lens body included, and is the second file in the suite to set
 **`AdaptiveSwitch` is the one glass control that is not chrome.** On the glass
 path it is the package's own `LiquidGlassSwitch` — the iOS-26 sliding switch,
 whose thumb is picked up and carried rather than snapped — so the dark-mode
-toggle in `SettingsPage`'s System section (and any future `AdaptiveSwitch`)
+toggle in `ProfilePage`'s System section (and any future `AdaptiveSwitch`)
 reads as glass on iOS. Three things it does *not* do, each deliberate:
 - **It passes no `style`** — alone among the glass controls, since
   `LiquidGlassSwitch.defaultStyle` is a thumb-tuned clear
@@ -2118,8 +2316,8 @@ sheet, and nothing does now. Highlighting a sidebar section for such a page is
 `section == current`, so marking a task route as
 `SidebarSection.competitions` would make the row that leads back out
 unclickable.
-`SettingsPage` and `MatchDetailPage` gain a sidebar on wide web as a
-side effect of living in that subtree — `SettingsPage` is unreachable there
+`ProfilePage` and `MatchDetailPage` gain a sidebar on wide web as a
+side effect of living in that subtree — `ProfilePage` is unreachable there
 anyway (its rows are sidebar items), and a full-viewport match detail next to
 a sidebar-shaped app was the odd one out.
 
@@ -2145,7 +2343,7 @@ Two things had to move for `go` to be safe here:
 - **The `settings/*` routes are declared as siblings, not children of
   `settings`.** `go` builds a page for every route in the matched chain, so
   nesting them under `/competition/:id/settings` would have put `SettingsPage`
-  in the stack underneath Players/History/Configuration — and had it call
+  in the stack underneath Players/History/Edit — and had it call
   `setPageTitle` on the way past. The paths are unchanged
   (`path: 'settings/players'` under `/competition/:id`); only the nesting is.
 - **`PlayersCubit` moved up to the competition `ShellRoute`**, so every
@@ -2157,13 +2355,13 @@ Two things had to move for `go` to be safe here:
   same hoist; see "Leaderboard and Matches are routes, not tabs" for why).
   Sharing removes the staleness at the source, and that is still the reason
   there is no refresh-on-return machinery for it. It does watch `players`
-  now (see "Three tables are watched" above), but that covers somebody
+  now (see "Five tables are watched" above), but that covers somebody
   *else's* write, not a stale instance of your own. The one thing outside that shared
-  instance is the competition itself (a rename in Configuration), so
+  instance is the competition itself (a rename on the Edit page), so
   `SidebarShell._select` calls `CompetitionCubit.refresh()` on every hop.
 
 Native and narrow web are untouched by all of this: `Sidebar` still returns
-`child` unchanged below the breakpoint, so the bottom tab bar, `SettingsPage`
+`child` unchanged below the breakpoint, so the bottom tab bar, `ProfilePage`
 menu and every `context.push` still behave exactly as they did.
 
 ### Leaderboard and Matches are routes, not tabs
@@ -2181,7 +2379,7 @@ the bare `/competition/:id` URL redirects to, not a cubit `CompetitionScope`
 resets on entry.
 
 The trigger was the sidebar itself: a route it could highlight and deep-link
-to, matching how Players/History/Configuration already worked, rather than a
+to, matching how Players/History/Edit already worked, rather than a
 shared page with an internal tab enum the sidebar had to reach into.
 `LeaderboardCubit`/`MatchListCubit` each moved into their own branch's leaf
 `GoRoute` rather than the shared competition `ShellRoute` `PlayersCubit`
@@ -2270,10 +2468,10 @@ navigates itself via `context.go`/`push` rather than `onSelectTab`/`onNewMatch`
 callbacks — every call site would have passed the identical closure, the same
 reasoning that has `Sidebar` read `ThemeCubit` from context instead of a
 callback prop.
-`CompetitionSettingsButton` is the same move for the settings icon, which
-only the Leaderboard shows (in its non-wide-web app bar trailing slot) —
-Matches carries the game type filter alone, so the settings action is offered
-once per competition rather than on every tab.
+`ProfileButton` (`AdaptiveGlyph.profile`, pushing `Routes.profile`) is the
+same move for the profile icon, which only the Leaderboard shows (in its
+non-wide-web app bar trailing slot) — Matches carries the game type filter
+alone, so the profile action is offered once rather than on every tab.
 
 **A horizontal swipe across the page moves between the three tabs, and the
 tab bar is still the thing that says where you are.** `CompetitionShell`
@@ -2330,11 +2528,11 @@ is still rendered when there is *no* competition (the `else` branch of
   **The competition the sidebar renders must come from `CompetitionCubit`,
   never from the page's own cubit** — which is now structural, since the
   sidebar reads that cubit itself and takes no competition prop at all.
-  `ConfigurationCubit`/`HistoryCubit`/etc. all start out `loading` with their
+  `CompetitionEditCubit`/`HistoryCubit`/etc. all start out `loading` with their
   own `competition` field `null` even though `CompetitionCubit` already has
   the answer. Sourcing `canManageSettings` from the page's own cubit instead
   briefly evaluates to `false` while that cubit's own fetch is in flight, so
-  an owner-only nav row (e.g. "Competition settings") visibly disappears and
+  an owner-only nav row (e.g. "Manage players") visibly disappears and
   reappears a moment later.
   **Almost no test exercises this** — `kIsWeb` is always `false`
   under `flutter test`, so `useWideWeb` never trips regardless of the pumped
@@ -2351,6 +2549,200 @@ is still rendered when there is *no* competition (the `else` branch of
   outside `AdaptiveScaffold`'s own themed background, so a low-alpha neutral
   fill there blends against the page canvas rather than the app's actual
   surface colour and reads as stuck-in-light-mode regardless of theme.
+
+### Tournaments are a track of their own
+
+`/competition/:id/matches` heads itself with the running tournament's
+`TournamentCard`, files every finished one into the feed by date, and carries
+a trophy bar action; all three drive `features/tournament/`. The decision the
+whole feature hangs off:
+
+- **A bracket result is not an Elo result.** `set_tournament_result` writes
+  `tournament_matches` and nothing else — it never calls `create_match`, never
+  touches `matches`/`match_players`/`player_ratings`, and a tournament match
+  never appears in the Matches feed, in a streak, in a medal or on the rating
+  graph. `tournament_check.sql` asserts that directly: it hashes
+  `player_ratings` and counts `matches` either side of a whole tournament and
+  requires both unchanged. If tournaments should ever *feed* the ladder, that
+  is a new decision, not a bug.
+- **A bracket is 2, 4, 8 or 16 players, and nothing else.** That is the whole
+  answer to byes: a power-of-two field pairs off exactly, every round, so no
+  slot ever holds one player and nobody is skipped past a round. The
+  alternative was tried and reverted — see "There are no byes, by
+  construction" below for what was built, why it did not work, and what it
+  cost, so it is not rebuilt from scratch.
+- **One running tournament per competition**, enforced by a partial unique
+  index (`tournaments_one_active_per_competition`) as well as by
+  `start_tournament`'s own readable check — the index is what stops two
+  concurrent calls both winning. Which is why `cancel_tournament` exists at
+  all: without it an abandoned bracket would block the competition forever.
+  A *completed* tournament does not block anything, and its card stays on the
+  Matches page for good.
+- **Every tournament the competition has ever run keeps a card, and starting
+  a new one adds a card rather than replacing the last one's result.** The
+  running one (there is at most one) heads the page; a finished one takes its
+  place in the match feed at the day and time it finished — see "A finished
+  tournament is a feed entry" below. `TournamentRepository.all`/`brackets` fetch the whole
+  history in two queries — the roster of tournaments, and every bracket row
+  for the competition at once (`tournament_bracket` carries `competition_id`,
+  so one read covers every tournament's slots), assembled into one
+  `TournamentRun` (`domain/tournament_run.model.dart`, a tournament plus its
+  bracket) per tournament on `TournamentReady.runs`. `runs.first` is the
+  newest, and "is one running" is `hasRunning` — `!latest.isCompleted`, which
+  holds because the partial unique index means an active tournament can only
+  ever be the newest. That is what the trophy action's `active` state and its
+  tap target read. Deleting an old card is `cancel_tournament`, which the
+  bracket sheet still offers on a completed tournament for exactly that
+  reason.
+- **Only the newest bracket is watched.** `_watchBracket(runs.first.id)` —
+  an older tournament's slots are settled, and the `tournaments` channel
+  already covers a start or a cancel. The cost is that a re-score of a
+  finished tournament's final reaches other devices on the next refresh
+  rather than immediately.
+- **A bracket sheet is opened for one tournament, by id.**
+  `showTournamentBracketSheet(cubit:, tournamentId:)`, and the sheet reads
+  `TournamentReady.runOf(id)` on every build so realtime still flows into it.
+
+**A finished tournament is a feed entry, not a card pinned above the list.**
+`MatchFeedEntry` (`match/presentation/widgets/match_feed_entry.dart`) is the
+sealed pair `MatchFeedMatch`/`MatchFeedTournament` the Matches list is built
+from, and `groupByDay` groups *those* rather than bare `MatchEntry`s —
+`MatchDayGroup.entries`, keyed on `happenedAt` (a match's `playedAt`, a
+tournament's `TournamentRun.finishedAt`, which is `completedAt` with
+`createdAt` as the fallback the model's nullable column forces). So a
+tournament that finished at 15:00 sits between that day's 18:00 and 09:00
+matches, under the same `DayHeader`, and a tournament finished on a day with
+no matches gets a day header of its own.
+`groupByDay` therefore **sorts before grouping**, where it used to trust the
+order the server gave it (`MatchRepository.feed` returns `played_at desc`) and
+group consecutively. Merging a second source in is what broke that premise;
+the comparator is the same `newest first, ties by id desc` it always applied
+within a day, now applied across the whole list.
+Two consequences worth knowing:
+- **The game type filter does not hide them.** A tournament has no game type
+  — the same reason pre-picked placeholders sit above the game-type header —
+  so a filtered feed still carries its tournament cards. The card is a
+  trophy-headed surface rather than a scoreline, so it does not read as a
+  match of the filtered type.
+- **A tournament older than the loaded page lands at the bottom** rather than
+  being hidden, since the feed is paginated and the tournaments are not.
+  Loading more matches then fills in above it.
+
+**Seeding pairs the closest ratings, and there are no byes.**
+`start_tournament` refuses any field that is not 2, 4, 8 or 16
+(`A tournament needs 2, 4, 8 or 16 players`), orders the picked players by
+their current rating (tie-broken the way `leaderboard_base` ranks) and pairs
+each with their neighbour, so the two closest-rated players meet in round one.
+This is **not** the usual 1-v-N seeding, and it is the point: the request was
+that the closest-rated players play each other first.
+`tournaments.size` is that field, the bracket is a perfect tree, and a winner
+always walks into `slot / 2` of the round above.
+
+**There are no byes, by construction — and the construction is the decision.**
+An earlier attempt let any field from 2 to 16 in and spread the byes instead
+of padding: `ceil(entrants / 2)` slots per round, at most one leftover, its
+end alternating per round so nobody sat out twice running, and a
+`parent_slot` column because the tree stopped being a perfect power of two.
+It worked — every field from 2 to 16 completed in exactly N-1 matches, and no
+player ever drew two byes in a row — and it was still **reverted**, because a
+bracket that quietly gives somebody a round off reads as broken however few
+times it does it. Single elimination cannot do better: an odd count *must*
+leave one player over. So the constraint moved to the input. If this comes up
+again, the thing to reach for is a different number of players, or a format
+that is not single elimination — not a cleverer bye.
+What the revert took with it: `parent_slot` and its migration, the
+`settle_tournament_byes`/`advance_tournament_winner` helpers, and a
+`BracketView` that derived its geometry from the tree rather than from the
+round index.
+
+**Re-scoring is allowed right up until it would orphan the bracket.**
+`set_tournament_result` refuses a *winner change* when the parent slot has
+already been played, and allows a score correction that leaves the winner
+alone. Checking the parent rather than the whole subtree is the minimal rule:
+if the parent has no winner, nothing past it can have been affected. Draws are
+refused here whatever `competitions.allow_draws` says — a slot has to produce
+somebody for the next round.
+
+**A trophy is a season thing, like everything else on the leaderboard.**
+`tournaments.season_id` comes from `ensure_season`, `player_trophies` counts
+completed tournaments per (season, winner), and `public.leaderboard` carries it
+as a **trailing** `trophies` column (a `create or replace view` can only append
+— see that file's own header). `Leaderboard.trophies` then reaches
+`LeaderboardRow`, `ProfileSection` and `ProfileSheet`, each rendering the same
+`core/widgets/trophy_chip.dart` **at the head of the medals line, not in the
+name row** — a trophy is an award like a medal, and the name row is for the
+name, the streak and the Owner tag. Each surface therefore has one
+`_awardsRow`/`_awardChips` pair instead of a `_trophyChip` in the name row
+plus a separate medals row, and it renders for a player with trophies and no
+medals as readily as the other way round. The trophy leads the row so its
+position does not shift with how many medal kinds a player happens to hold.
+`TrophyChip` shows the count only above one, unlike `MedalChip`, which always
+does: one trophy is a trophy, and a "1" beside it reads as a rank.
+
+**The entrant roster is rendered the way every other player list is** —
+`List<Player>.byName`, an `AppSpacing.sm` gap under each row, and the viewer's
+own row in `AdaptiveColors.accent` — the same three rules
+`TeamPickerSheet._playerList` and the new match sheet's pre-pick roster
+follow. `_labelColor` is where the one extra rule this list has meets them:
+a player who cannot be added because sixteen are already picked stays
+`AppColors.neutral`, and that greying wins over the accent, since it says
+whether the row can be tapped at all. **`myPlayerId` is read by
+`showStartTournamentSheet` and passed in**, not read off `CompetitionCubit`
+inside the sheet's own `build` the way `NewMatchSheet` does it — the sheet is
+pumped bare by `start_tournament_sheet_test.dart`, and reading a provider in
+its build would charge every one of those tests a `CompetitionCubit`.
+
+**`AdaptiveGlyph.trophy` maps to `Icons.emoji_events` on *both* platform
+branches, and that is deliberate.** CupertinoIcons ships no trophy — the
+nearest shapes are `rosette` (already `AdaptiveGlyph.medal`, so it would say
+two things at once), `sportscourt`, `flag` and `star`. Rather than have iOS
+name a different object than every other platform, the Material glyph is used
+on both. It is the one break in the per-platform mapping; `adaptive_icon.dart`
+already imports `material.dart`, so it costs nothing. Do not "fix" it by
+pointing the Cupertino branch at `rosette`.
+
+**The bracket's geometry is derived, not laid out by hand.** `BracketView`
+gives round *r* a pitch of `2^r * unit` and a leading offset of
+`(2^r - 1) * unit / 2` (`unit` = tile height + gap), which is exactly what puts
+every parent on the midpoint of the two slots feeding it and the final on the
+midpoint of the whole bracket — `bracket_view_test.dart` asserts both directly
+rather than pinning pixel values. The connectors between two columns are their
+own `Column` on the same arithmetic: each is a `CustomPaint` whose height *is*
+the pitch, so it spans exactly from one child's centre line to the next's, and
+the spacer between connectors is that same pitch. Change one of the three
+constants and all of it follows; there is no magic number to keep in sync.
+**This only holds because a round always has half as many slots as the one
+below it**, which is what the 2/4/8/16 field size buys.
+
+**A `BracketMatchTile` keeps a 1px border whatever its state** — the
+next-playable tile is marked by colour and an accent fill, not a thicker
+border, because 1.5px overflowed the fixed 52px tile by exactly the pixel the
+border added.
+
+`TournamentCubit` is a `registerFactoryParam` provided by the **Matches branch's
+leaf route**, alongside `MatchListCubit` and under the same
+`key: ValueKey(competitionId)` — go_router keys pages by route pattern, so
+without that key a competition switch would keep the previous competition's
+bracket (the same trap the Leaderboard/Matches branches already document).
+`StartTournamentCubit` is separate and owns the picker's own selection, busy
+and failure, so a refused start is shown *in the sheet* rather than swallowed;
+the sheet returns the new tournament id and `TournamentButton` refreshes
+`TournamentCubit`, exactly the way the create/join competition sheets work.
+`TournamentBracketSheet` is handed the page's cubit with `BlocProvider.value`
+— a sheet route inherits nothing route-scoped, and building a second
+`TournamentCubit` would mean a second pair of realtime channels.
+
+**The card is a row, not a column with a chevron dropped into its first
+line.** `TournamentCard._card` is `[Expanded(details), chevron]`, so the
+chevron sits on the whole card's centre line however many pairings the body
+lists — it points at the card, not at its title. The status tag follows the
+same reasoning: `In progress` qualifies the tournament and stays beside the
+title, while `Champion` qualifies the *person* and sits behind the champion's
+name, the same place a `Tag` sits behind a player's name everywhere else. The
+trophy went with it — it heads the champion's name rather than the card's own
+title, so an unfinished bracket carries no trophy at all and a finished one
+names its champion exactly the way the bracket sheet does: trophy, name, tag,
+rather than the eyebrow-over-name block that block was.
 
 ### Every app icon comes from `ios/Runner/AppIcon.icon`
 
@@ -2688,7 +3080,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 405 tests at time of writing
+flutter test                    # 482 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 dart run flutter_launcher_icons     # assets/icon/*.png into android/ web/ (not ios/)
@@ -2717,6 +3109,7 @@ flutter build apk --debug        # verified green
 ./scripts/db.sh -f supabase/tests/player_rename_guard_check.sql  # claimed names, rolls back
 ./scripts/db.sh -f supabase/tests/no_op_recalc_check.sql  # no-op write guards, rolls back
 ./scripts/db.sh -f supabase/tests/incremental_recalc_check.sql  # boundary-scoped replay, rolls back
+./scripts/db.sh -f supabase/tests/tournament_check.sql  # seeding, field size, advancing, rolls back
 ```
 
 ## Git workflow

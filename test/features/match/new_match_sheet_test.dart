@@ -14,7 +14,9 @@ import 'package:keepscore2/core/widgets/selectable_row.dart';
 import 'package:keepscore2/core/widgets/swipe_navigator.dart';
 import 'package:keepscore2/features/match/domain/match_entry.model.dart';
 import 'package:keepscore2/features/match/domain/match_repository.dart';
+import 'package:keepscore2/features/match/domain/planned_match.model.dart';
 import 'package:keepscore2/features/match/presentation/cubit/match_form_cubit.dart';
+import 'package:keepscore2/features/match/presentation/cubit/planned_match_cubit.dart';
 import 'package:keepscore2/features/match/presentation/widgets/new_match_keys.enum.dart';
 import 'package:keepscore2/features/match/presentation/pages/new_match_sheet.dart';
 import 'package:keepscore2/app/dependency_injection/injector.dart';
@@ -24,6 +26,7 @@ import 'package:keepscore2/features/player/presentation/cubit/players_cubit.dart
 import 'package:keepscore2/features/player/presentation/pages/manage_players_sheet.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
@@ -57,10 +60,16 @@ typedef _Blocs = ({
   AuthBloc auth,
   CompetitionCubit competition,
   MatchFormCubit form,
+  PlannedMatchCubit planned,
   PlayerRepository players,
 });
 
-_Blocs _blocs() {
+_Blocs _blocs({
+  List<String> teamA = const [],
+  List<String> teamB = const [],
+  String? myPlayerId,
+}) {
+  SharedPreferences.setMockInitialValues(const {});
   final auth = MockAuthRepository();
   final matches = MockMatchRepository();
   final competitions = MockCompetitionRepository();
@@ -77,8 +86,18 @@ _Blocs _blocs() {
       competition: _competition(),
       playerCount: 3,
       matchCount: 0,
+      myPlayerId: myPlayerId,
     ),
   );
+  when(
+    () => matches.create(
+      competitionId: any(named: 'competitionId'),
+      teamA: any(named: 'teamA'),
+      teamB: any(named: 'teamB'),
+      scoreA: any(named: 'scoreA'),
+      scoreB: any(named: 'scoreB'),
+    ),
+  ).thenAnswer((_) async => 'm1');
   when(() => players.watch(any())).thenAnswer((_) => const Stream.empty());
   when(() => players.currentPlayers('c1')).thenAnswer(
     (_) async => [
@@ -99,18 +118,21 @@ _Blocs _blocs() {
   ).thenAnswer((_) async => []);
 
   final form = MatchFormCubit(matches, competitions, players, leaderboard, 'c1')
-    ..load();
+    ..load(teamA: teamA, teamB: teamB);
   final authBloc = AuthBloc(auth);
   final competitionCubit = CompetitionCubit(competitions, authBloc)
     ..select('c1');
+  final plannedMatchCubit = PlannedMatchCubit()..select('c1');
   addTearDown(form.close);
   addTearDown(authBloc.close);
   addTearDown(competitionCubit.close);
+  addTearDown(plannedMatchCubit.close);
 
   return (
     auth: authBloc,
     competition: competitionCubit,
     form: form,
+    planned: plannedMatchCubit,
     players: players,
   );
 }
@@ -121,6 +143,7 @@ Widget _app({required _Blocs blocs, required Widget home}) {
       BlocProvider.value(value: blocs.form),
       BlocProvider.value(value: blocs.auth),
       BlocProvider.value(value: blocs.competition),
+      BlocProvider.value(value: blocs.planned),
     ],
     child: MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -152,12 +175,37 @@ Widget _sheetOpener() {
   );
 }
 
+Widget _prePickedOpener(PlannedMatch planned) {
+  return Builder(
+    builder: (context) => Material(
+      child: Center(
+        child: TextButton(
+          onPressed: () => showAdaptiveSheet<void>(
+            context,
+            confirmsDismissal: true,
+            builder: (_) => NewMatchSheet(planned: planned),
+          ),
+          child: const Text('open'),
+        ),
+      ),
+    ),
+  );
+}
+
 MatchFormReady _ready(MatchFormCubit cubit) => cubit.state as MatchFormReady;
 
 Future<void> _pickTeamsMode(WidgetTester tester) async {
   await tester.tap(find.text('Teams'));
   await tester.pumpAndSettle();
 }
+
+Future<void> _pickPrePickMode(WidgetTester tester) async {
+  await tester.tap(find.text('Pre-pick'));
+  await tester.pumpAndSettle();
+}
+
+Finder _prePickRow(String name) =>
+    find.ancestor(of: find.text(name), matching: find.byType(SelectableRow));
 
 bool _scoreAHasFocus(WidgetTester tester) => tester
     .widget<EditableText>(find.byType(EditableText).first)
@@ -443,7 +491,7 @@ void main() {
     expect(_scoreAHasFocus(tester), isTrue);
   });
 
-  testWidgets('swiping the form moves between 1v1 and Teams', (tester) async {
+  testWidgets('swiping the form moves between the three modes', (tester) async {
     final blocs = _blocs();
 
     await tester.pumpWidget(
@@ -465,8 +513,15 @@ void main() {
     await tester.fling(find.byType(SwipeNavigator), const Offset(-200, 0), 800);
     await tester.pumpAndSettle();
 
-    expect(_ready(blocs.form).mode, MatchEntryMode.teams);
+    expect(_ready(blocs.form).mode, MatchEntryMode.prePick);
+    expect(find.text('Create matches'), findsOneWidget);
 
+    await tester.fling(find.byType(SwipeNavigator), const Offset(-200, 0), 800);
+    await tester.pumpAndSettle();
+
+    expect(_ready(blocs.form).mode, MatchEntryMode.prePick);
+
+    await tester.fling(find.byType(SwipeNavigator), const Offset(200, 0), 800);
     await tester.fling(find.byType(SwipeNavigator), const Offset(200, 0), 800);
     await tester.pumpAndSettle();
 
@@ -478,6 +533,141 @@ void main() {
 
     expect(_ready(blocs.form).mode, MatchEntryMode.oneVsOne);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the pre-pick roster reads like the player picker', (
+    tester,
+  ) async {
+    final blocs = _blocs(myPlayerId: 'p2');
+
+    await tester.pumpWidget(
+      _app(blocs: blocs, home: const Material(child: NewMatchSheet())),
+    );
+    await tester.pumpAndSettle();
+    await _pickPrePickMode(tester);
+
+    final tops = [
+      for (final name in ['Ada', 'Mia', 'Zoe'])
+        tester.getRect(_prePickRow(name)).top,
+    ];
+
+    expect(tops, equals(List.of(tops)..sort()));
+    expect(
+      tester.widget<SelectableRow>(_prePickRow('Ada')).labelColor,
+      isNotNull,
+    );
+    expect(tester.widget<SelectableRow>(_prePickRow('Zoe')).labelColor, isNull);
+  });
+
+  testWidgets('pre-picking players plans a match for every pairing', (
+    tester,
+  ) async {
+    final blocs = _blocs();
+
+    await tester.pumpWidget(
+      _app(blocs: blocs, home: _sheetOpener()),
+    );
+    await tester.pumpAndSettle();
+    await _openSheet(tester);
+    await _pickPrePickMode(tester);
+
+    expect(find.text('Pick at least two players.'), findsOneWidget);
+
+    await tester.tap(find.text('Ada'));
+    await tester.tap(find.text('Mia'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('1 match will show up on the list.'), findsOneWidget);
+
+    await tester.tap(find.text('Zoe'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('3 matches will show up on the list.'), findsOneWidget);
+
+    await tester.tap(find.text('Create matches'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(NewMatchSheet), findsNothing);
+    expect(blocs.planned.state.matches, hasLength(3));
+    expect(
+      blocs.planned.state.matches.map((match) => match.pairKey),
+      containsAll(<String>['p1|p2', 'p2|p3', 'p1|p3']),
+    );
+  });
+
+  testWidgets('a pre-picked match opens the sheet with both players in it', (
+    tester,
+  ) async {
+    final blocs = _blocs(teamA: const ['p2'], teamB: const ['p3']);
+
+    await tester.pumpWidget(
+      _app(
+        blocs: blocs,
+        home: const Material(
+          child: NewMatchSheet(
+            planned: PlannedMatch(playerAId: 'p2', playerBId: 'p3'),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(_ready(blocs.form).teamA.single.displayName, 'Ada');
+    expect(_ready(blocs.form).teamB.single.displayName, 'Mia');
+    expect(find.byKey(const ValueKey(NewMatchKey.modeToggle)), findsNothing);
+    expect(find.byType(SwipeNavigator), findsNothing);
+  });
+
+  testWidgets('saving a pre-picked match takes it off the planned list', (
+    tester,
+  ) async {
+    final blocs = _blocs(teamA: const ['p2'], teamB: const ['p3']);
+    await blocs.planned.plan(['p2', 'p3']);
+
+    await tester.pumpWidget(
+      _app(
+        blocs: blocs,
+        home: _prePickedOpener(
+          const PlannedMatch(playerAId: 'p2', playerBId: 'p3'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await _openSheet(tester);
+
+    await tester.enterText(find.byType(EditableText).first, '11');
+    await tester.enterText(find.byType(EditableText).last, '7');
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Save match'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(NewMatchSheet), findsNothing);
+    expect(blocs.planned.state.matches, isEmpty);
+  });
+
+  testWidgets('removing a pre-picked match from its sheet drops it', (
+    tester,
+  ) async {
+    final blocs = _blocs(teamA: const ['p2'], teamB: const ['p3']);
+    await blocs.planned.plan(['p2', 'p3']);
+
+    await tester.pumpWidget(
+      _app(
+        blocs: blocs,
+        home: _prePickedOpener(
+          const PlannedMatch(playerAId: 'p2', playerBId: 'p3'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await _openSheet(tester);
+
+    await tester.tap(find.text('Remove'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(NewMatchSheet), findsNothing);
+    expect(blocs.planned.state.matches, isEmpty);
   });
 
   testWidgets('dismissing an untouched sheet closes it without a prompt', (

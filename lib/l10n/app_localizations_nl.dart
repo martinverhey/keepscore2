@@ -30,7 +30,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get commonBack => 'Terug';
 
   @override
-  String get commonCopy => 'Kopiëren';
+  String get commonMoreActions => 'Meer acties';
 
   @override
   String get commonDone => 'Klaar';
@@ -211,39 +211,26 @@ class AppLocalizationsNl extends AppLocalizations {
       'Als gast kun je deelnemen aan een competitie en rondkijken, maar voor het maken van een competitie heb je een account nodig.';
 
   @override
-  String get competitionCodeHelp => 'Iedereen met deze code kan meedoen.';
-
-  @override
-  String get competitionQrInvite => 'Scan om direct mee te doen';
-
-  @override
-  String get competitionQrHelp =>
-      'Richt een camera op deze code — typen hoeft niet.';
-
-  @override
   String get competitionInviteTitle => 'Spelers uitnodigen';
 
   @override
   String get competitionInviteAction => 'Uitnodigen';
 
   @override
-  String get competitionUseQrInstead => 'Gebruik liever een QR-code';
-
-  @override
   String get competitionNotFound =>
       'Deze competitie bestaat niet meer, of je zit er niet meer in.';
 
   @override
-  String get competitionSettings => 'Instellingen';
+  String get profilePageTitle => 'Profiel';
+
+  @override
+  String get profileChangeName => 'Naam wijzigen';
 
   @override
   String get competitionSettingsSectionCompetition => 'Competitie';
 
   @override
   String get competitionSettingsSectionSystem => 'Systeem';
-
-  @override
-  String get configurationTitle => 'Configuratie';
 
   @override
   String get playersManageTitle => 'Spelers beheren';
@@ -255,13 +242,13 @@ class AppLocalizationsNl extends AppLocalizations {
   String get historyEmpty => 'Afgelopen seizoenen verschijnen hier.';
 
   @override
-  String get configurationSave => 'Wijzigingen opslaan';
+  String get competitionEditSave => 'Wijzigingen opslaan';
 
   @override
-  String get configurationSaved => 'Wijzigingen opgeslagen.';
+  String get competitionEditSaved => 'Wijzigingen opgeslagen.';
 
   @override
-  String get configurationOwnerOnly =>
+  String get competitionEditOwnerOnly =>
       'Alleen de beheerder kan deze instellingen wijzigen.';
 
   @override
@@ -304,6 +291,9 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get competitionRenameTitle => 'Competitie hernoemen';
+
+  @override
+  String get competitionEdit => 'Bewerken';
 
   @override
   String get competitionRename => 'Hernoemen';
@@ -509,6 +499,46 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get matchModeTeams => 'Teams';
+
+  @override
+  String get matchModePrePick => 'Vooraf';
+
+  @override
+  String get matchPrePickTitle => 'Spelers';
+
+  @override
+  String get matchPrePickCreate => 'Wedstrijden maken';
+
+  @override
+  String get matchPrePickNeedsPlayers => 'Kies minstens twee spelers.';
+
+  @override
+  String matchPrePickCount(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Er komen $countString wedstrijden in de lijst.',
+      one: 'Er komt 1 wedstrijd in de lijst.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get matchesPrePickedTitle => 'Vooraf gekozen';
+
+  @override
+  String get matchesPrePickedClear => 'Wissen';
+
+  @override
+  String get matchesPrePickedRemove => 'Verwijderen';
+
+  @override
+  String get matchesPrePickedVersus => 'vs';
 
   @override
   String get matchPlayerA => 'Speler 1';
@@ -767,6 +797,93 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get profileHistoryEmpty => 'Eerdere seizoenen verschijnen hier.';
+
+  @override
+  String get tournamentTitle => 'Toernooi';
+
+  @override
+  String get tournamentStart => 'Toernooi starten';
+
+  @override
+  String get tournamentNewTitle => 'Nieuw toernooi';
+
+  @override
+  String get tournamentSelectHint =>
+      'Kies 2, 4, 8 of 16 spelers. Spelers met de dichtstbijzijnde rating treffen elkaar het eerst.';
+
+  @override
+  String tournamentSelectedCount(int count, int max) {
+    return '$count van $max gekozen';
+  }
+
+  @override
+  String get tournamentBracketTitle => 'Schema';
+
+  @override
+  String tournamentRound(int round) {
+    return 'Ronde $round';
+  }
+
+  @override
+  String get tournamentFinalRound => 'Finale';
+
+  @override
+  String get tournamentSemiFinalRound => 'Halve finales';
+
+  @override
+  String get tournamentQuarterFinalRound => 'Kwartfinales';
+
+  @override
+  String get tournamentChampion => 'Kampioen';
+
+  @override
+  String get tournamentInProgress => 'Bezig';
+
+  @override
+  String get tournamentBye => 'Vrijgeloot';
+
+  @override
+  String get tournamentWaiting => 'Wacht nog';
+
+  @override
+  String get tournamentEnterScore => 'Score invoeren';
+
+  @override
+  String get tournamentSaveResult => 'Uitslag opslaan';
+
+  @override
+  String get tournamentNoDraw =>
+      'Een toernooiwedstrijd heeft een winnaar nodig.';
+
+  @override
+  String get tournamentRemove => 'Toernooi verwijderen';
+
+  @override
+  String get tournamentRemoveTitle => 'Toernooi verwijderen?';
+
+  @override
+  String get tournamentCancel => 'Toernooi annuleren';
+
+  @override
+  String get tournamentCancelTitle => 'Toernooi annuleren?';
+
+  @override
+  String get tournamentCancelConfirm =>
+      'Hiermee verdwijnen het schema en alle scores erin.';
+
+  @override
+  String get tournamentKeep => 'Behouden';
+
+  @override
+  String tournamentTrophies(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count toernooien gewonnen',
+      one: '1 toernooi gewonnen',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get settingsDarkModeTitle => 'Donkere modus';

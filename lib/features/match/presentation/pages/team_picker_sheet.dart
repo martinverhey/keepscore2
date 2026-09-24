@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import '../../../../core/extensions/build_context.extension.dart';
+import '../../../../core/extensions/player_list.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/selectable_row.dart';
@@ -112,7 +113,7 @@ class _TeamPickerSheetState extends State<TeamPickerSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        for (final player in _sortedByName(_selectable(side)))
+        for (final player in _selectable(side).byName)
           Padding(
             padding: const EdgeInsets.only(bottom: AppSpacing.sm),
             child: SelectableRow(
@@ -226,13 +227,4 @@ Widget _startAlignedStack(Widget? currentChild, List<Widget> previousChildren) {
     alignment: AlignmentDirectional.topStart,
     children: [...previousChildren, ?currentChild],
   );
-}
-
-List<Player> _sortedByName(List<Player> players) {
-  final sorted = List<Player>.of(players);
-  sorted.sort(
-    (a, b) =>
-        a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase()),
-  );
-  return sorted;
 }

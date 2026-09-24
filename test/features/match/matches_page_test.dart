@@ -17,13 +17,23 @@ import 'package:keepscore2/features/match/domain/match_entry.model.dart';
 import 'package:keepscore2/features/match/domain/match_repository.dart';
 import 'package:keepscore2/features/match/presentation/cubit/game_type_filter_cubit.dart';
 import 'package:keepscore2/features/match/presentation/cubit/match_list_cubit.dart';
+import 'package:keepscore2/features/match/presentation/cubit/planned_match_cubit.dart';
+import 'package:keepscore2/features/match/presentation/widgets/planned_match_card.dart';
 import 'package:keepscore2/features/match/presentation/widgets/day_header.dart';
 import 'package:keepscore2/features/match/presentation/pages/game_type_filter_sheet.dart';
 import 'package:keepscore2/features/match/presentation/widgets/game_type_filter_button.dart';
 import 'package:keepscore2/features/match/presentation/widgets/match_card.dart';
 import 'package:keepscore2/features/match/presentation/pages/matches.page.dart';
+import 'package:keepscore2/features/player/domain/player.model.dart';
 import 'package:keepscore2/features/player/domain/player_repository.dart';
 import 'package:keepscore2/features/player/presentation/cubit/players_cubit.dart';
+import 'package:keepscore2/features/tournament/domain/bracket.model.dart';
+import 'package:keepscore2/features/tournament/domain/tournament.model.dart';
+import 'package:keepscore2/features/tournament/domain/tournament_repository.dart';
+import 'package:keepscore2/features/tournament/presentation/cubit/tournament_cubit.dart';
+import 'package:keepscore2/features/tournament/presentation/widgets/tournament_button.dart';
+import 'package:keepscore2/features/tournament/presentation/widgets/tournament_card.dart';
+import 'package:keepscore2/features/tournament/presentation/widgets/bracket_view.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -35,6 +45,8 @@ class MockCompetitionRepository extends Mock implements CompetitionRepository {}
 class MockPlayerRepository extends Mock implements PlayerRepository {}
 
 class MockMatchRepository extends Mock implements MatchRepository {}
+
+class MockTournamentRepository extends Mock implements TournamentRepository {}
 
 const _competitionId = 'c1';
 
@@ -65,16 +77,69 @@ MatchEntry _match(int day, int index) => MatchEntry(
   ],
 );
 
+Tournament _tournament({
+  String id = 't1',
+  TournamentStatus status = TournamentStatus.active,
+  String? winnerPlayerId,
+  DateTime? completedAt,
+}) => Tournament(
+  id: id,
+  competitionId: _competitionId,
+  seasonId: 's1',
+  size: 4,
+  status: status,
+  createdAt: DateTime(2026, 9, 11),
+  winnerPlayerId: winnerPlayerId,
+  createdBy: 'u-ada',
+  completedAt: completedAt,
+);
+
+TournamentMatch _bracketMatch(
+  int round,
+  int slot, {
+  String? a,
+  String? b,
+  String? winner,
+}) => TournamentMatch(
+  id: 'tm$round-$slot',
+  tournamentId: 't1',
+  round: round,
+  slot: slot,
+  playerA: a == null ? null : TournamentEntrant(playerId: a, displayName: a),
+  playerB: b == null ? null : TournamentEntrant(playerId: b, displayName: b),
+  winnerPlayerId: winner,
+);
+
+Bracket _bracket() => Bracket.fromMatches([
+  _bracketMatch(1, 0, a: 'Ada', b: 'Bo'),
+  _bracketMatch(1, 1, a: 'Cas', b: 'Dee'),
+  _bracketMatch(2, 0),
+]);
+
+Bracket _finishedBracket() => Bracket.fromMatches([
+  _bracketMatch(1, 0, a: 'Ada', b: 'Bo', winner: 'Ada'),
+  _bracketMatch(1, 1, a: 'Cas', b: 'Dee', winner: 'Cas'),
+  _bracketMatch(2, 0, a: 'Ada', b: 'Cas', winner: 'Ada'),
+]);
+
+Player _player(String id, String name) =>
+    Player(id: id, competitionId: _competitionId, displayName: name, isActive: true);
+
 Future<GameTypeFilterCubit> _pumpMatchesPage(
   WidgetTester tester, {
   Set<GameType> played = const {GameType.oneVOne, GameType.twoVTwo},
   List<MatchEntry>? feed,
   bool hostsBar = false,
+  List<(Tournament, Bracket)> tournaments = const [],
+  List<Player> roster = const [],
+  List<String> prePick = const [],
+  PlannedMatchCubit? plannedMatches,
 }) async {
   final auth = MockAuthRepository();
   final competitions = MockCompetitionRepository();
   final players = MockPlayerRepository();
   final matches = MockMatchRepository();
+  final tournamentRepository = MockTournamentRepository();
 
   when(
     () => auth.currentUser,
@@ -82,7 +147,7 @@ Future<GameTypeFilterCubit> _pumpMatchesPage(
   when(() => auth.watchUser()).thenAnswer((_) => const Stream.empty());
   when(
     () => players.currentPlayers(_competitionId),
-  ).thenAnswer((_) async => []);
+  ).thenAnswer((_) async => roster);
   when(() => players.watch(any())).thenAnswer((_) => const Stream.empty());
   when(
     () => matches.watch(_competitionId),
@@ -105,21 +170,48 @@ Future<GameTypeFilterCubit> _pumpMatchesPage(
         ],
   );
 
+  when(() => tournamentRepository.all(any())).thenAnswer(
+    (_) async => [for (final (tournament, _) in tournaments) tournament],
+  );
+  when(() => tournamentRepository.brackets(any())).thenAnswer(
+    (_) async => {
+      for (final (tournament, bracket) in tournaments) tournament.id: bracket,
+    },
+  );
+  when(
+    () => tournamentRepository.watchTournaments(any()),
+  ).thenAnswer((_) => const Stream.empty());
+  when(
+    () => tournamentRepository.watchBracket(any()),
+  ).thenAnswer((_) => const Stream.empty());
+
   final authBloc = AuthBloc(auth);
   final gameTypeFilterCubit = GameTypeFilterCubit();
+  final plannedMatchCubit = plannedMatches ?? PlannedMatchCubit();
   addTearDown(authBloc.close);
   addTearDown(gameTypeFilterCubit.close);
+  if (plannedMatches == null) addTearDown(plannedMatchCubit.close);
+
+  await plannedMatchCubit.select(_competitionId);
+  if (prePick.isNotEmpty) await plannedMatchCubit.plan(prePick);
 
   await tester.pumpWidget(
     MultiBlocProvider(
       providers: [
         BlocProvider<AuthBloc>.value(value: authBloc),
         BlocProvider<GameTypeFilterCubit>.value(value: gameTypeFilterCubit),
+        BlocProvider<PlannedMatchCubit>.value(value: plannedMatchCubit),
         BlocProvider(create: (_) => CompetitionCubit(competitions, authBloc)),
-        BlocProvider(create: (_) => PlayersCubit(players, _competitionId)),
+        BlocProvider(
+          create: (_) => PlayersCubit(players, _competitionId)..load(),
+        ),
         BlocProvider(
           create: (_) =>
               MatchListCubit(matches, gameTypeFilterCubit, _competitionId),
+        ),
+        BlocProvider(
+          create: (_) =>
+              TournamentCubit(tournamentRepository, _competitionId)..load(),
         ),
       ],
       child: MaterialApp(
@@ -166,6 +258,13 @@ Finder _sheetOption(String label) => find.descendant(
   matching: find.text(label),
 );
 
+Tournament _finishedTournament() => _tournament(
+  id: 't0',
+  status: TournamentStatus.completed,
+  winnerPlayerId: 'Ada',
+  completedAt: DateTime(2026, 8, 4, 19, 30),
+);
+
 Finder _dayHeader(int day) => find.byWidgetPredicate(
   (widget) => widget is DayHeader && widget.day == DateTime(2026, 8, day),
 );
@@ -195,6 +294,96 @@ Finder _matchCard(String id) => find.byWidgetPredicate(
 
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
+
+  testWidgets('pre-picked matches head the list as scoreless placeholders', (
+    tester,
+  ) async {
+    await _pumpMatchesPage(
+      tester,
+      roster: [_player('p-ada', 'Ada'), _player('p-bo', 'Bo')],
+      prePick: const ['p-ada', 'p-bo'],
+    );
+
+    expect(find.byType(PlannedMatchCard), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(PlannedMatchCard),
+        matching: find.text('Ada'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byType(PlannedMatchCard),
+        matching: find.text('vs'),
+      ),
+      findsOneWidget,
+    );
+
+    final header = tester.getRect(find.text('Pre-picked'));
+    final placeholder = tester.getRect(find.byType(PlannedMatchCard));
+    final firstMatch = tester.getRect(find.byType(MatchCard).first);
+
+    expect(header.bottom, lessThanOrEqualTo(placeholder.top));
+    expect(placeholder.bottom, lessThanOrEqualTo(firstMatch.top));
+  });
+
+  testWidgets('a pre-picked match whose player left the roster is dropped', (
+    tester,
+  ) async {
+    await _pumpMatchesPage(
+      tester,
+      roster: [_player('p-ada', 'Ada')],
+      prePick: const ['p-ada', 'p-bo'],
+    );
+
+    expect(find.byType(PlannedMatchCard), findsNothing);
+    expect(find.text('Pre-picked'), findsNothing);
+  });
+
+  testWidgets('removing a placeholder takes it off the list', (tester) async {
+    await _pumpMatchesPage(
+      tester,
+      roster: [
+        _player('p-ada', 'Ada'),
+        _player('p-bo', 'Bo'),
+        _player('p-cas', 'Cas'),
+      ],
+      prePick: const ['p-ada', 'p-bo', 'p-cas'],
+    );
+
+    expect(find.byType(PlannedMatchCard), findsNWidgets(3));
+
+    await tester.tap(
+      find.descendant(
+        of: find.byType(PlannedMatchCard).first,
+        matching: find.byType(AdaptiveIconButton),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(PlannedMatchCard), findsNWidgets(2));
+
+    await tester.tap(find.text('Clear'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(PlannedMatchCard), findsNothing);
+  });
+
+  testWidgets('placeholders replace the empty state when nothing is played', (
+    tester,
+  ) async {
+    await _pumpMatchesPage(
+      tester,
+      feed: const [],
+      roster: [_player('p-ada', 'Ada'), _player('p-bo', 'Bo')],
+      prePick: const ['p-ada', 'p-bo'],
+    );
+
+    expect(find.byType(PlannedMatchCard), findsOneWidget);
+    expect(find.byType(EmptyState), findsNothing);
+    expect(find.byType(SpeechBubble), findsNothing);
+  });
 
   tearDown(() {
     AppPlatform.debugOverrideCupertino = null;
@@ -513,5 +702,126 @@ void main() {
     expect(header.left, greaterThanOrEqualTo(400));
     expect(header.right, lessThanOrEqualTo(1040));
     expect(tester.getRect(_matchCard('m5-0')).width, lessThanOrEqualTo(640));
+  });
+
+  testWidgets('no tournament means no card, but the action is still there', (
+    tester,
+  ) async {
+    await _pumpMatchesPage(tester);
+
+    expect(find.byType(TournamentCard), findsNothing);
+    expect(find.byType(TournamentButton), findsOneWidget);
+  });
+
+  testWidgets('a running tournament heads the page, above the first day', (
+    tester,
+  ) async {
+    await _pumpMatchesPage(
+      tester,
+      tournaments: [(_tournament(), _bracket())],
+    );
+
+    expect(find.byType(TournamentCard), findsOneWidget);
+    expect(
+      tester.getRect(find.byType(TournamentCard)).bottom,
+      lessThan(tester.getRect(_dayHeader(5)).top),
+    );
+  });
+
+  testWidgets('the card names the round and who is up next', (tester) async {
+    await _pumpMatchesPage(
+      tester,
+      tournaments: [(_tournament(), _bracket())],
+    );
+
+    expect(find.text('Semi-finals'), findsOneWidget);
+    expect(find.text('In progress'), findsOneWidget);
+    expect(find.text('Ada'), findsWidgets);
+  });
+
+  testWidgets('a finished tournament names its champion instead', (
+    tester,
+  ) async {
+    await _pumpMatchesPage(
+      tester,
+      tournaments: [(_finishedTournament(), _finishedBracket())],
+    );
+
+    expect(find.text('Champion'), findsOneWidget);
+    expect(find.text('In progress'), findsNothing);
+  });
+
+  testWidgets('a new tournament tops the page without dropping the last one', (
+    tester,
+  ) async {
+    await _pumpMatchesPage(
+      tester,
+      feed: [_match(4, 0), _match(4, 1)],
+      tournaments: [
+        (_tournament(), _bracket()),
+        (_finishedTournament(), _finishedBracket()),
+      ],
+    );
+
+    expect(find.byType(TournamentCard), findsNWidgets(2));
+    expect(find.text('In progress'), findsOneWidget);
+    expect(find.text('Champion'), findsOneWidget);
+    expect(
+      tester.getRect(find.byType(TournamentCard).first).bottom,
+      lessThan(tester.getRect(_dayHeader(4)).top),
+    );
+  });
+
+  testWidgets('a finished tournament sits in the feed on the day it ended', (
+    tester,
+  ) async {
+    await _pumpMatchesPage(
+      tester,
+      feed: [_match(5, 0), _match(4, 0), _match(4, 1)],
+      tournaments: [(_finishedTournament(), _finishedBracket())],
+    );
+
+    final card = tester.getRect(find.byType(TournamentCard));
+
+    expect(card.top, greaterThan(tester.getRect(_dayHeader(4)).bottom));
+    expect(
+      card.top,
+      greaterThanOrEqualTo(tester.getRect(_matchCard('m4-0')).bottom),
+    );
+    expect(card.bottom, lessThan(tester.getRect(_matchCard('m4-1')).top));
+  });
+
+  testWidgets('the chevron sits on the card\'s middle, not its title', (
+    tester,
+  ) async {
+    await _pumpMatchesPage(
+      tester,
+      tournaments: [(_tournament(), _bracket())],
+    );
+
+    final card = tester.getRect(find.byType(TournamentCard));
+    final chevron = tester.getRect(
+      find.descendant(
+        of: find.byType(TournamentCard),
+        matching: find.byWidgetPredicate(
+          (widget) =>
+              widget is AdaptiveIcon && widget.glyph == AdaptiveGlyph.chevronRight,
+        ),
+      ),
+    );
+
+    expect(chevron.center.dy, closeTo(card.center.dy, 1));
+  });
+
+  testWidgets('tapping the card opens the bracket', (tester) async {
+    await _pumpMatchesPage(
+      tester,
+      tournaments: [(_tournament(), _bracket())],
+    );
+
+    await tester.tap(find.byType(TournamentCard));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(BracketView), findsOneWidget);
   });
 }

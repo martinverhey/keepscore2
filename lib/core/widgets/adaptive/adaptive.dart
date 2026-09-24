@@ -11,6 +11,7 @@ export 'adaptive_glass.dart';
 export 'adaptive_icon.dart';
 export 'adaptive_loader.dart';
 export 'adaptive_material_scope.dart';
+export 'adaptive_menu_button.dart';
 export 'adaptive_page.dart';
 export 'adaptive_scaffold.dart';
 export 'adaptive_segmented.dart';

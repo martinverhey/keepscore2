@@ -12,6 +12,7 @@ import '../../../../core/widgets/state_views.dart';
 import '../../../competition/domain/competition.model.dart';
 import '../../domain/season.model.dart';
 import '../cubit/leaderboard_cubit.dart';
+import '../pages/season_sheet.dart';
 import 'leaderboard_row.dart';
 
 class LeaderboardList extends StatelessWidget {
@@ -54,41 +55,87 @@ class LeaderboardList extends StatelessWidget {
         retryLabel: context.l10n.commonRetry,
         onRetry: cubit.load,
       ),
-      LeaderboardReady() => _list(context, state),
+      LeaderboardReady() => _list(context, state, cubit),
     };
   }
 
-  Widget _list(BuildContext context, LeaderboardReady state) {
+  Widget _list(
+    BuildContext context,
+    LeaderboardReady state,
+    LeaderboardCubit cubit,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _seasonBar(context, state.season),
+        _seasonBar(context, state, cubit),
         const SizedBox(height: AppSpacing.md),
         _players(context, state),
       ],
     );
   }
 
-  Widget _seasonBar(BuildContext context, Season season) {
-    if (!isOwner) return _seasonHeader(context, season);
+  Widget _seasonBar(
+    BuildContext context,
+    LeaderboardReady state,
+    LeaderboardCubit cubit,
+  ) {
+    if (!isOwner) return _seasonHeader(context, state, cubit);
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.baseline,
       textBaseline: TextBaseline.alphabetic,
       children: [
-        Expanded(child: _seasonHeader(context, season)),
+        Expanded(child: _seasonHeader(context, state, cubit)),
         _manageButton(context),
       ],
     );
   }
 
-  Widget _seasonHeader(BuildContext context, Season season) {
-    return ListHeader(
-      title: season.label(context, seasonLength),
-      subtitle: context.l10n.leaderboardSeasonEnds(
-        season.endsAt.shortDayLabel(context),
+  Widget _seasonHeader(
+    BuildContext context,
+    LeaderboardReady state,
+    LeaderboardCubit cubit,
+  ) {
+    final season = state.viewedSeason;
+    return Align(
+      alignment: AlignmentDirectional.centerStart,
+      child: ListHeader(
+        title: season.label(context, seasonLength),
+        subtitle: _seasonSubtitle(context, state, season),
+        semanticLabel: context.l10n.leaderboardPickSeason,
+        onTap: state.hasHistory
+            ? () => _pickSeason(context, state, cubit)
+            : null,
       ),
     );
+  }
+
+  String _seasonSubtitle(
+    BuildContext context,
+    LeaderboardReady state,
+    Season season,
+  ) {
+    if (state.viewedFinishedSeason != null) return season.rangeLabel(context);
+    return context.l10n.leaderboardSeasonEnds(
+      season.endsAt.shortDayLabel(context),
+    );
+  }
+
+  Future<void> _pickSeason(
+    BuildContext context,
+    LeaderboardReady state,
+    LeaderboardCubit cubit,
+  ) async {
+    final picked = await showAdaptiveSheet<Season>(
+      context,
+      builder: (_) => SeasonSheet(
+        seasons: state.pickableSeasons,
+        selected: state.viewedSeason,
+        seasonLength: seasonLength,
+      ),
+    );
+    if (picked == null) return;
+    await cubit.viewSeason(picked == state.season ? null : picked.id);
   }
 
   Widget _manageButton(BuildContext context) {
@@ -108,21 +155,24 @@ class LeaderboardList extends StatelessWidget {
       );
     }
 
-    if (state.leaderboards.isEmpty) {
+    final leaderboards = state.viewedLeaderboards;
+    if (leaderboards.isEmpty) {
       return EmptyState(message: context.l10n.leaderboardNoPlayers);
     }
 
+    final isCurrent = state.viewedFinishedSeason == null;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        for (final leaderboard in state.leaderboards)
+        for (final leaderboard in leaderboards)
           LeaderboardRow(
             competitionId: competitionId,
             leaderboard: leaderboard,
             isMe: leaderboard.playerId == myPlayerId,
             myPlayerId: myPlayerId,
             seasonLength: seasonLength,
-            medals: state.medals[leaderboard.playerId],
+            medals: isCurrent ? state.medals[leaderboard.playerId] : null,
+            opensProfile: isCurrent,
           ),
       ],
     );

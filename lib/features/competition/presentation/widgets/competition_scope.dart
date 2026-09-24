@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../match/presentation/cubit/planned_match_cubit.dart';
 import '../cubit/competition_cubit.dart';
 
 class CompetitionScope extends StatefulWidget {
@@ -33,6 +34,7 @@ class _CompetitionScopeState extends State<CompetitionScope> {
 
   void _select() {
     context.read<CompetitionCubit>().select(widget.competitionId);
+    context.read<PlannedMatchCubit>().select(widget.competitionId);
   }
 
   @override

@@ -14,6 +14,7 @@ import '../../../../core/widgets/medal_chip.dart';
 import '../../../../core/widgets/sheet.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../../core/widgets/streak_badge.dart';
+import '../../../../core/widgets/trophy_chip.dart';
 import '../../../../core/widgets/swipe_navigator.dart';
 import '../../../../core/widgets/today_delta_badge.dart';
 import '../../../competition/domain/competition.model.dart';
@@ -130,9 +131,9 @@ class _ProfileSheetState extends State<ProfileSheet> {
             mainAxisSize: MainAxisSize.min,
             children: [
               _nameRow(state),
-              if (_medalSummary(state) case final medals?) ...[
+              if (_awardsRow(state) case final awards?) ...[
                 const SizedBox(height: 2),
-                medals,
+                awards,
               ],
             ],
           ),
@@ -167,12 +168,37 @@ class _ProfileSheetState extends State<ProfileSheet> {
     return StreakBadge(type: streak.type, count: streak.count);
   }
 
-  Widget? _medalSummary(ProfileOverviewState state) {
+  Widget? _awardsRow(ProfileOverviewState state) {
     if (state is! ProfileOverviewReady) return null;
-    final tally = state.medals;
-    if (tally == null || !tally.hasAny) return null;
 
-    return _medalRow(tally);
+    final chips = _awardChips(state);
+    if (chips.isEmpty) return null;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      spacing: AppSpacing.xs,
+      children: chips,
+    );
+  }
+
+  List<Widget> _awardChips(ProfileOverviewReady state) {
+    final trophies = state.leaderboard?.trophies ?? 0;
+    final tally = state.medals;
+
+    return [
+      if (trophies > 0) TrophyChip(count: trophies),
+      if (tally != null) ..._medalChips(tally),
+    ];
+  }
+
+  List<Widget> _medalChips(Medals medals) {
+    return [
+      if (medals.gold > 0) MedalChip(color: AppColors.gold, count: medals.gold),
+      if (medals.silver > 0)
+        MedalChip(color: AppColors.silver, count: medals.silver),
+      if (medals.bronze > 0)
+        MedalChip(color: AppColors.bronze, count: medals.bronze),
+    ];
   }
 
   Widget _tabs(BuildContext context, ProfileOverviewReady state) {
@@ -335,30 +361,6 @@ class _ProfileSheetState extends State<ProfileSheet> {
   }
 
   String _scoreline(BiggestWin win) => '${win.score} – ${win.opponentScore}';
-
-  Widget _medalRow(Medals medals) {
-    final chips = _medalChips(medals);
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        for (var i = 0; i < chips.length; i++) ...[
-          if (i > 0) const SizedBox(width: AppSpacing.xs),
-          chips[i],
-        ],
-      ],
-    );
-  }
-
-  List<Widget> _medalChips(Medals medals) {
-    return [
-      if (medals.gold > 0) MedalChip(color: AppColors.gold, count: medals.gold),
-      if (medals.silver > 0)
-        MedalChip(color: AppColors.silver, count: medals.silver),
-      if (medals.bronze > 0)
-        MedalChip(color: AppColors.bronze, count: medals.bronze),
-    ];
-  }
 
   Widget _ratingSummary(
     BuildContext context,

@@ -30,7 +30,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonBack => 'Back';
 
   @override
-  String get commonCopy => 'Copy';
+  String get commonMoreActions => 'More actions';
 
   @override
   String get commonDone => 'Done';
@@ -211,39 +211,26 @@ class AppLocalizationsEn extends AppLocalizations {
       'Guests can join a competition and look around, but creating one needs an account.';
 
   @override
-  String get competitionCodeHelp => 'Anyone with this code can join.';
-
-  @override
-  String get competitionQrInvite => 'Scan to join instantly';
-
-  @override
-  String get competitionQrHelp =>
-      'Point a camera at this code — no typing required.';
-
-  @override
   String get competitionInviteTitle => 'Invite players';
 
   @override
   String get competitionInviteAction => 'Invite';
 
   @override
-  String get competitionUseQrInstead => 'Use QR code instead';
-
-  @override
   String get competitionNotFound =>
       'This competition is gone, or you\'re no longer in it.';
 
   @override
-  String get competitionSettings => 'Settings';
+  String get profilePageTitle => 'Profile';
+
+  @override
+  String get profileChangeName => 'Change name';
 
   @override
   String get competitionSettingsSectionCompetition => 'Competition';
 
   @override
   String get competitionSettingsSectionSystem => 'System';
-
-  @override
-  String get configurationTitle => 'Configuration';
 
   @override
   String get playersManageTitle => 'Manage players';
@@ -255,13 +242,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get historyEmpty => 'Finished seasons will show up here.';
 
   @override
-  String get configurationSave => 'Save changes';
+  String get competitionEditSave => 'Save changes';
 
   @override
-  String get configurationSaved => 'Changes saved.';
+  String get competitionEditSaved => 'Changes saved.';
 
   @override
-  String get configurationOwnerOnly =>
+  String get competitionEditOwnerOnly =>
       'Only the owner can change these settings.';
 
   @override
@@ -304,6 +291,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get competitionRenameTitle => 'Rename competition';
+
+  @override
+  String get competitionEdit => 'Edit';
 
   @override
   String get competitionRename => 'Rename';
@@ -508,6 +498,46 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get matchModeTeams => 'Teams';
+
+  @override
+  String get matchModePrePick => 'Pre-pick';
+
+  @override
+  String get matchPrePickTitle => 'Players';
+
+  @override
+  String get matchPrePickCreate => 'Create matches';
+
+  @override
+  String get matchPrePickNeedsPlayers => 'Pick at least two players.';
+
+  @override
+  String matchPrePickCount(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString matches will show up on the list.',
+      one: '1 match will show up on the list.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get matchesPrePickedTitle => 'Pre-picked';
+
+  @override
+  String get matchesPrePickedClear => 'Clear';
+
+  @override
+  String get matchesPrePickedRemove => 'Remove';
+
+  @override
+  String get matchesPrePickedVersus => 'vs';
 
   @override
   String get matchPlayerA => 'Player 1';
@@ -765,6 +795,92 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileHistoryEmpty => 'Past seasons will show up here.';
+
+  @override
+  String get tournamentTitle => 'Tournament';
+
+  @override
+  String get tournamentStart => 'Start tournament';
+
+  @override
+  String get tournamentNewTitle => 'New tournament';
+
+  @override
+  String get tournamentSelectHint =>
+      'Pick 2, 4, 8 or 16 players. The closest-rated players meet first.';
+
+  @override
+  String tournamentSelectedCount(int count, int max) {
+    return '$count of $max selected';
+  }
+
+  @override
+  String get tournamentBracketTitle => 'Bracket';
+
+  @override
+  String tournamentRound(int round) {
+    return 'Round $round';
+  }
+
+  @override
+  String get tournamentFinalRound => 'Final';
+
+  @override
+  String get tournamentSemiFinalRound => 'Semi-finals';
+
+  @override
+  String get tournamentQuarterFinalRound => 'Quarter-finals';
+
+  @override
+  String get tournamentChampion => 'Champion';
+
+  @override
+  String get tournamentInProgress => 'In progress';
+
+  @override
+  String get tournamentBye => 'Bye';
+
+  @override
+  String get tournamentWaiting => 'Waiting';
+
+  @override
+  String get tournamentEnterScore => 'Enter score';
+
+  @override
+  String get tournamentSaveResult => 'Save result';
+
+  @override
+  String get tournamentNoDraw => 'A tournament match needs a winner.';
+
+  @override
+  String get tournamentRemove => 'Remove tournament';
+
+  @override
+  String get tournamentRemoveTitle => 'Remove tournament?';
+
+  @override
+  String get tournamentCancel => 'Cancel tournament';
+
+  @override
+  String get tournamentCancelTitle => 'Cancel tournament?';
+
+  @override
+  String get tournamentCancelConfirm =>
+      'This removes the bracket and every score in it.';
+
+  @override
+  String get tournamentKeep => 'Keep it';
+
+  @override
+  String tournamentTrophies(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tournaments won',
+      one: '1 tournament won',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get settingsDarkModeTitle => 'Dark mode';

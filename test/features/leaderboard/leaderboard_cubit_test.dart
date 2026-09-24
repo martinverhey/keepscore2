@@ -7,6 +7,8 @@ import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.da
 import 'package:keepscore2/features/leaderboard/domain/season_window.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/medals.model.dart';
+import 'package:keepscore2/features/leaderboard/domain/season.model.dart';
+import 'package:keepscore2/features/leaderboard/domain/season_leaderboard.model.dart';
 import 'package:keepscore2/features/leaderboard/presentation/cubit/leaderboard_cubit.dart';
 import 'package:keepscore2/features/profile/domain/profile_repository.dart';
 import 'package:keepscore2/features/profile/domain/rating_point.model.dart';
@@ -37,6 +39,29 @@ Leaderboard _leaderboard(String playerId, double rating, int rank) =>
 
 LeaderboardReady _ready(LeaderboardCubit cubit) =>
     cubit.state as LeaderboardReady;
+
+final _july = Season(
+  id: 's-july',
+  startsAt: DateTime.utc(2026, 6, 30, 22),
+  endsAt: _august,
+);
+
+SeasonLeaderboard _final(String playerId, int rank) => SeasonLeaderboard(
+  seasonId: 's-july',
+  competitionId: 'c1',
+  playerId: playerId,
+  displayName: playerId,
+  isClaimed: true,
+  rating: 1100,
+  played: 8,
+  wins: 6,
+  losses: 2,
+  draws: 0,
+  rank: rank,
+  startsAt: _july.startsAt,
+  endsAt: _july.endsAt,
+  medal: null,
+);
 
 RatingPoint _point(double rating) =>
     RatingPoint(playedAt: _august, ratingAfter: rating, ratingDelta: 10);
@@ -87,6 +112,9 @@ void main() {
       () => repository.watchPlayers(competitionId: any(named: 'competitionId')),
     ).thenAnswer((_) => playerTicks.stream);
     when(() => repository.medals('c1')).thenAnswer((_) async => const []);
+    when(
+      () => repository.finishedSeasons('c1'),
+    ).thenAnswer((_) async => const []);
     stubTrend(const []);
   });
 
@@ -360,4 +388,115 @@ void main() {
       expect(_ready(cubit).viewerTrend, isEmpty);
     },
   );
+
+  group('finished seasons', () {
+    void stubFinished() {
+      when(
+        () => repository.finishedSeasons('c1'),
+      ).thenAnswer((_) async => [_july]);
+      when(
+        () => repository.history(competitionId: 'c1', seasonId: 's-july'),
+      ).thenAnswer((_) async => [_final('p2', 1), _final('p1', 2)]);
+    }
+
+    blocTest<LeaderboardCubit, LeaderboardState>(
+      'offers the finished seasons next to the current one',
+      setUp: () {
+        stubSeason();
+        stubLeaderboards('s-august', [_leaderboard('p1', 1040, 1)]);
+        stubFinished();
+      },
+      build: build,
+      act: (cubit) => cubit.load(),
+      verify: (cubit) {
+        expect(_ready(cubit).hasHistory, isTrue);
+        expect(_ready(cubit).pickableSeasons.map((season) => season.id), [
+          's-august',
+          's-july',
+        ]);
+        expect(_ready(cubit).viewedSeason.id, 's-august');
+      },
+    );
+
+    blocTest<LeaderboardCubit, LeaderboardState>(
+      'viewing a finished season shows its final standings',
+      setUp: () {
+        stubSeason();
+        stubLeaderboards('s-august', [_leaderboard('p1', 1040, 1)]);
+        stubFinished();
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.load();
+        await cubit.viewSeason('s-july');
+      },
+      verify: (cubit) {
+        expect(_ready(cubit).viewedSeason, _july);
+        expect(_ready(cubit).viewedLeaderboards.map((row) => row.playerId), [
+          'p2',
+          'p1',
+        ]);
+        expect(_ready(cubit).leaderboards.single.playerId, 'p1');
+      },
+    );
+
+    blocTest<LeaderboardCubit, LeaderboardState>(
+      'going back to the current season shows the live table again',
+      setUp: () {
+        stubSeason();
+        stubLeaderboards('s-august', [_leaderboard('p1', 1040, 1)]);
+        stubFinished();
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.load();
+        await cubit.viewSeason('s-july');
+        await cubit.viewSeason(null);
+      },
+      verify: (cubit) {
+        expect(_ready(cubit).viewedSeason.id, 's-august');
+        expect(_ready(cubit).viewedLeaderboards.single.rating, 1040);
+      },
+    );
+
+    blocTest<LeaderboardCubit, LeaderboardState>(
+      'a realtime refresh keeps the finished season on screen',
+      setUp: () {
+        stubSeason();
+        stubLeaderboards('s-august', [_leaderboard('p1', 1040, 1)]);
+        stubFinished();
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.load();
+        await cubit.viewSeason('s-july');
+        await cubit.refresh();
+      },
+      verify: (cubit) {
+        expect(_ready(cubit).viewedSeason, _july);
+        expect(_ready(cubit).viewedLeaderboards, hasLength(2));
+      },
+    );
+
+    blocTest<LeaderboardCubit, LeaderboardState>(
+      'a failed fetch falls back to the current season',
+      setUp: () {
+        stubSeason();
+        stubLeaderboards('s-august', [_leaderboard('p1', 1040, 1)]);
+        stubFinished();
+        when(
+          () => repository.history(competitionId: 'c1', seasonId: 's-july'),
+        ).thenThrow(const NetworkFailure());
+      },
+      build: build,
+      act: (cubit) async {
+        await cubit.load();
+        await cubit.viewSeason('s-july');
+      },
+      verify: (cubit) {
+        expect(_ready(cubit).viewedSeason.id, 's-august');
+        expect(_ready(cubit).busy, isFalse);
+      },
+    );
+  });
 }

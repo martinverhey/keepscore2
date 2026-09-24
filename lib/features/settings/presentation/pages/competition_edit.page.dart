@@ -1,7 +1,9 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/app_router.dart';
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
@@ -14,16 +16,16 @@ import '../../../../core/widgets/settings_switch_row.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../competition/domain/competition.model.dart';
-import '../cubit/configuration_cubit.dart';
+import '../cubit/competition_edit_cubit.dart';
 
-class ConfigurationPage extends StatefulWidget {
-  const ConfigurationPage({super.key});
+class CompetitionEditPage extends StatefulWidget {
+  const CompetitionEditPage({super.key});
 
   @override
-  State<ConfigurationPage> createState() => _ConfigurationPageState();
+  State<CompetitionEditPage> createState() => _CompetitionEditPageState();
 }
 
-class _ConfigurationPageState extends State<ConfigurationPage> {
+class _CompetitionEditPageState extends State<CompetitionEditPage> {
   final _nameController = TextEditingController();
   final _kFactorController = TextEditingController();
   final _movCapController = TextEditingController();
@@ -31,7 +33,7 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
   @override
   void initState() {
     super.initState();
-    context.read<ConfigurationCubit>().load();
+    context.read<CompetitionEditCubit>().load();
   }
 
   @override
@@ -42,7 +44,7 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
     super.dispose();
   }
 
-  void _syncControllers(ConfigurationReady state) {
+  void _syncControllers(CompetitionEditReady state) {
     if (_nameController.text != state.name) {
       _nameController.text = state.name;
     }
@@ -56,55 +58,66 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<ConfigurationCubit, ConfigurationState>(
+    return BlocConsumer<CompetitionEditCubit, CompetitionEditState>(
       listenWhen: (previous, current) =>
-          current is ConfigurationReady &&
-          (previous is! ConfigurationReady ||
+          current is CompetitionEditReady &&
+          (previous is! CompetitionEditReady ||
               previous.competition != current.competition),
       listener: (context, state) =>
-          _syncControllers(state as ConfigurationReady),
+          _syncControllers(state as CompetitionEditReady),
       builder: (context, state) => _sidebar(context, state),
     );
   }
 
-  Widget _sidebar(BuildContext context, ConfigurationState state) {
-    final cubit = context.read<ConfigurationCubit>();
+  Widget _sidebar(BuildContext context, CompetitionEditState state) {
+    final cubit = context.read<CompetitionEditCubit>();
     final session = context.watch<AuthBloc>().state;
-    setPageTitle(context, context.l10n.configurationTitle);
+    setPageTitle(context, context.l10n.competitionEdit);
 
     return AdaptiveScaffold(
-      title: context.l10n.configurationTitle,
+      title: context.l10n.competitionEdit,
+      leading: _leading(context, cubit),
       body: _body(context, state, cubit: cubit, session: session),
+    );
+  }
+
+  Widget? _leading(BuildContext context, CompetitionEditCubit cubit) {
+    if (SuppressedBackButtonScope.of(context)) return null;
+    if (ModalRoute.of(context)?.canPop ?? false) return null;
+    return AdaptiveBarAction(
+      glyph: AdaptiveGlyph.back,
+      semanticLabel: context.l10n.commonBack,
+      onPressed: () => context.go(Routes.competitions(cubit.competitionId)),
     );
   }
 
   Widget _body(
     BuildContext context,
-    ConfigurationState state, {
-    required ConfigurationCubit cubit,
+    CompetitionEditState state, {
+    required CompetitionEditCubit cubit,
     required AuthSessionState session,
   }) {
     return switch (state) {
-      ConfigurationLoading() => const AdaptiveLoader(),
-      ConfigurationMissing() => EmptyState(
+      CompetitionEditLoading() => const AdaptiveLoader(),
+      CompetitionEditMissing() => EmptyState(
         message: context.l10n.competitionNotFound,
       ),
-      ConfigurationReady()
+      CompetitionEditReady()
           when !state.competition.isOwnedBy(session.user?.id) =>
-        EmptyState(message: context.l10n.configurationOwnerOnly),
-      ConfigurationFailed(:final failure) => ErrorRetry(
+        EmptyState(message: context.l10n.competitionEditOwnerOnly),
+      CompetitionEditFailed(:final failure) => ErrorRetry(
         message: failure.localized(context.l10n),
         retryLabel: context.l10n.commonRetry,
         onRetry: cubit.load,
       ),
-      ConfigurationReady() => _form(context, state, cubit),
+      CompetitionEditReady() => _form(context, state, cubit),
     };
   }
 
   Widget _form(
     BuildContext context,
-    ConfigurationReady state,
-    ConfigurationCubit cubit,
+    CompetitionEditReady state,
+    CompetitionEditCubit cubit,
   ) {
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -188,7 +201,7 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
           const SizedBox(height: AppSpacing.xl),
 
           AdaptiveButton(
-            label: context.l10n.configurationSave,
+            label: context.l10n.competitionEditSave,
             busy: state.busy,
             onPressed: state.canSubmit ? cubit.submit : null,
           ),
@@ -197,7 +210,7 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
             Padding(
               padding: const EdgeInsets.only(top: AppSpacing.md),
               child: Text(
-                context.l10n.configurationSaved,
+                context.l10n.competitionEditSaved,
                 style: const TextStyle(color: AppColors.positive),
               ),
             ),

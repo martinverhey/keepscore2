@@ -5,6 +5,13 @@ extension PlayerListActive on List<Player> {
       where((player) => player.isActive).toList(growable: false);
 }
 
+extension PlayerListByName on List<Player> {
+  List<Player> get byName => List<Player>.of(this)..sort(
+    (a, b) =>
+        a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase()),
+  );
+}
+
 extension PlayerListDisplayName on List<Player> {
   String? displayNameFor(String? playerId) {
     for (final player in this) {

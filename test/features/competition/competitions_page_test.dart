@@ -77,6 +77,7 @@ Future<MockCompetitionRepository> _pumpHarness(
   Size? surfaceSize,
   String? insideCompetitionId,
   String? recentCompetitionId,
+  bool useCupertino = false,
 }) async {
   SharedPreferences.setMockInitialValues({
     'recent_competition_id': ?recentCompetitionId,
@@ -85,7 +86,7 @@ Future<MockCompetitionRepository> _pumpHarness(
     await tester.binding.setSurfaceSize(surfaceSize);
     addTearDown(() => tester.binding.setSurfaceSize(null));
   }
-  AppPlatform.debugOverrideCupertino = false;
+  AppPlatform.debugOverrideCupertino = useCupertino;
 
   final auth = MockAuthRepository();
   final competitionRepository = MockCompetitionRepository();
@@ -126,6 +127,10 @@ Future<MockCompetitionRepository> _pumpHarness(
       GoRoute(
         path: '/competition/:id/competitions',
         builder: (_, _) => const _ShellStub(child: CompetitionsPage()),
+      ),
+      GoRoute(
+        path: '/competition/:id/settings/edit',
+        builder: (_, state) => Text('edit ${state.pathParameters['id']}'),
       ),
     ],
   );
@@ -382,7 +387,7 @@ void main() {
     expect(find.text(l10n.competitionsOther), findsNothing);
   });
 
-  testWidgets('the spotlighted name runs up to its rename button', (
+  testWidgets('the spotlighted name runs up to its actions menu', (
     tester,
   ) async {
     const longName = 'Office Table Tennis Winter Championship Ladder';
@@ -398,17 +403,79 @@ void main() {
       tester.element(find.byType(CompetitionsPage)),
     );
     final name = tester.getRect(find.text(longName));
-    final rename = tester.getRect(
-      find.descendant(
-        of: find.byType(ActiveCompetitionCard),
-        matching: find.byTooltip(l10n.competitionRename),
-      ),
-    );
+    final menu = tester.getRect(_menuButton(ActiveCompetitionCard, l10n));
     final card = tester.getRect(find.byType(ActiveCompetitionCard));
 
-    expect(name.right, greaterThan(rename.left - AppSpacing.xs));
-    expect(rename.right, greaterThan(card.right - AppSpacing.lg));
+    expect(name.right, greaterThanOrEqualTo(menu.left - AppSpacing.xs));
+    expect(menu.right, greaterThan(card.right - AppSpacing.lg));
   });
+
+  testWidgets('the owner menu offers edit, rename and delete', (tester) async {
+    await _pumpHarness(
+      tester,
+      isGuest: false,
+      competitions: [_overview('c1', 'Office Table Tennis', 'HDHS39')],
+      activeId: 'c1',
+    );
+
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(CompetitionsPage)),
+    );
+    expect(find.byTooltip(l10n.competitionRename), findsNothing);
+    expect(find.byTooltip(l10n.competitionDelete), findsNothing);
+
+    await _openMenu(tester, ActiveCompetitionCard, l10n);
+
+    expect(find.text(l10n.competitionEdit), findsOneWidget);
+    expect(find.text(l10n.competitionRename), findsOneWidget);
+    expect(find.text(l10n.competitionDelete), findsOneWidget);
+    expect(find.text(l10n.competitionLeave), findsNothing);
+  });
+
+  testWidgets('a member menu offers only leave', (tester) async {
+    await _pumpHarness(
+      tester,
+      isGuest: false,
+      competitions: [
+        _overview('c1', 'Office Table Tennis', 'HDHS39', ownerId: 'u-bob'),
+      ],
+    );
+
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(CompetitionsPage)),
+    );
+    await _openMenu(tester, CompetitionCard, l10n);
+
+    expect(find.text(l10n.competitionLeave), findsOneWidget);
+    expect(find.text(l10n.competitionEdit), findsNothing);
+    expect(find.text(l10n.competitionRename), findsNothing);
+    expect(find.text(l10n.competitionDelete), findsNothing);
+  });
+
+  for (final useCupertino in [false, true]) {
+    testWidgets('edit opens the competition edit page '
+        '(cupertino: $useCupertino)', (tester) async {
+      await _pumpHarness(
+        tester,
+        isGuest: false,
+        competitions: [
+          _overview('c1', 'Office Table Tennis', 'HDHS39'),
+          _overview('c2', 'Padel Friday', 'QQWW11'),
+        ],
+        activeId: 'c1',
+        useCupertino: useCupertino,
+      );
+
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(CompetitionsPage)),
+      );
+      await _openMenu(tester, CompetitionCard, l10n);
+      await tester.tap(find.text(l10n.competitionEdit));
+      await tester.pumpAndSettle();
+
+      expect(find.text('edit c2'), findsOneWidget);
+    });
+  }
 
   testWidgets('the spotlight fits a narrow phone without overflowing', (
     tester,
@@ -489,14 +556,8 @@ void main() {
       tester.element(find.byType(CompetitionsPage)),
     );
 
-    final delete = find.descendant(
-      of: find.byType(ActiveCompetitionCard),
-      matching: find.byTooltip(l10n.competitionDelete),
-    );
-
-    await tester.ensureVisible(delete);
-    await tester.pumpAndSettle();
-    await tester.tap(delete);
+    await _openMenu(tester, ActiveCompetitionCard, l10n);
+    await tester.tap(find.text(l10n.competitionDelete));
     await tester.pumpAndSettle();
     await tester.tap(
       find.descendant(
@@ -536,13 +597,8 @@ void main() {
       tester.element(find.byType(CompetitionsPage)),
     );
 
-    final leave = find.descendant(
-      of: find.byType(CompetitionCard),
-      matching: find.byTooltip(l10n.competitionLeave),
-    );
-    await tester.ensureVisible(leave);
-    await tester.pumpAndSettle();
-    await tester.tap(leave);
+    await _openMenu(tester, CompetitionCard, l10n);
+    await tester.tap(find.text(l10n.competitionLeave));
     await tester.pumpAndSettle();
     await tester.tap(
       find.descendant(
@@ -585,4 +641,28 @@ class _ShellStub extends StatelessWidget {
       const Positioned(top: 0, left: 0, child: Text('shell')),
     ],
   );
+}
+
+Finder _menuButton(Type card, AppLocalizations l10n) {
+  return find.descendant(
+    of: find.byType(card),
+    matching: find.byTooltip(l10n.commonMoreActions),
+  );
+}
+
+Future<void> _openMenu(
+  WidgetTester tester,
+  Type card,
+  AppLocalizations l10n,
+) async {
+  final menu = AppPlatform.useCupertino
+      ? find.descendant(
+          of: find.byType(card),
+          matching: find.bySemanticsLabel(l10n.commonMoreActions),
+        )
+      : _menuButton(card, l10n);
+  await tester.ensureVisible(menu);
+  await tester.pumpAndSettle();
+  await tester.tap(menu);
+  await tester.pumpAndSettle();
 }

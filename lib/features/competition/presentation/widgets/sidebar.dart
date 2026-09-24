@@ -177,25 +177,10 @@ class Sidebar extends StatelessWidget {
         onTap: () => _select(SidebarSection.matches),
       ),
       _competitionsItem(context),
-      const SizedBox(height: AppSpacing.lg),
-      const HorizontalDivider(),
-      SectionLabel(context.l10n.competitionSettingsSectionCompetition),
-      if (canManageSettings)
-        _navItem(
-          context,
-          glyph: AdaptiveGlyph.settings,
-          label: context.l10n.configurationTitle,
-          selected: current == SidebarSection.configuration,
-          onTap: () => _select(SidebarSection.configuration),
-        ),
-      _navItem(
-        context,
-        glyph: AdaptiveGlyph.history,
-        label: context.l10n.historyTitle,
-        selected: current == SidebarSection.history,
-        onTap: () => _select(SidebarSection.history),
-      ),
-      if (canManageSettings)
+      if (canManageSettings) ...[
+        const SizedBox(height: AppSpacing.lg),
+        const HorizontalDivider(),
+        SectionLabel(context.l10n.competitionSettingsSectionCompetition),
         _navItem(
           context,
           glyph: AdaptiveGlyph.players,
@@ -203,6 +188,7 @@ class Sidebar extends StatelessWidget {
           selected: current == SidebarSection.players,
           onTap: () => _select(SidebarSection.players),
         ),
+      ],
       const SizedBox(height: AppSpacing.md),
     ];
   }

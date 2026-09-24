@@ -18,7 +18,10 @@ import 'package:keepscore2/features/leaderboard/presentation/cubit/leaderboard_c
 import 'package:keepscore2/features/leaderboard/presentation/pages/leaderboard.page.dart';
 import 'package:keepscore2/features/match/domain/game_type.enum.dart';
 import 'package:keepscore2/features/match/domain/match_repository.dart';
+import 'package:keepscore2/features/tournament/domain/tournament_repository.dart';
+import 'package:keepscore2/features/tournament/presentation/cubit/tournament_cubit.dart';
 import 'package:keepscore2/features/match/presentation/cubit/game_type_filter_cubit.dart';
+import 'package:keepscore2/features/match/presentation/cubit/planned_match_cubit.dart';
 import 'package:keepscore2/features/match/presentation/cubit/match_list_cubit.dart';
 import 'package:keepscore2/features/match/presentation/pages/matches.page.dart';
 import 'package:keepscore2/features/player/domain/player.model.dart';
@@ -37,6 +40,8 @@ class MockCompetitionRepository extends Mock implements CompetitionRepository {}
 class MockPlayerRepository extends Mock implements PlayerRepository {}
 
 class MockMatchRepository extends Mock implements MatchRepository {}
+
+class MockTournamentRepository extends Mock implements TournamentRepository {}
 
 class MockLeaderboardRepository extends Mock implements LeaderboardRepository {}
 
@@ -90,6 +95,16 @@ void main() {
     final competitions = MockCompetitionRepository();
     final players = MockPlayerRepository();
     final matches = MockMatchRepository();
+    final tournaments = MockTournamentRepository();
+
+    when(() => tournaments.all(any())).thenAnswer((_) async => []);
+    when(() => tournaments.brackets(any())).thenAnswer((_) async => {});
+    when(
+      () => tournaments.watchTournaments(any()),
+    ).thenAnswer((_) => const Stream.empty());
+    when(
+      () => tournaments.watchBracket(any()),
+    ).thenAnswer((_) => const Stream.empty());
     final leaderboard = MockLeaderboardRepository();
 
     when(() => auth.currentUser).thenReturn(
@@ -124,6 +139,9 @@ void main() {
         () => matches.seasonGameTypes(id),
       ).thenAnswer((_) async => const <GameType>{});
       when(() => matches.watch(id)).thenAnswer((_) => const Stream.empty());
+      when(
+        () => leaderboard.finishedSeasons(any()),
+      ).thenAnswer((_) async => const []);
       when(() => leaderboard.currentSeason(id)).thenAnswer(
         (_) async => SeasonWindow(
           id: 'season-$id',
@@ -149,6 +167,8 @@ void main() {
 
     final authBloc = AuthBloc(auth);
     final gameTypeFilterCubit = GameTypeFilterCubit();
+    final plannedMatchCubit = PlannedMatchCubit();
+    addTearDown(plannedMatchCubit.close);
     addTearDown(authBloc.close);
     addTearDown(gameTypeFilterCubit.close);
 
@@ -218,13 +238,21 @@ void main() {
                           path: 'matches',
                           builder: (context, state) {
                             final id = state.pathParameters['id']!;
-                            return BlocProvider(
+                            return MultiBlocProvider(
                               key: ValueKey(id),
-                              create: (_) => MatchListCubit(
-                                matches,
-                                gameTypeFilterCubit,
-                                id,
-                              ),
+                              providers: [
+                                BlocProvider(
+                                  create: (_) => MatchListCubit(
+                                    matches,
+                                    gameTypeFilterCubit,
+                                    id,
+                                  ),
+                                ),
+                                BlocProvider(
+                                  create: (_) =>
+                                      TournamentCubit(tournaments, id)..load(),
+                                ),
+                              ],
                               child: MatchesPage(competitionId: id),
                             );
                           },
@@ -245,6 +273,7 @@ void main() {
         providers: [
           BlocProvider<AuthBloc>.value(value: authBloc),
           BlocProvider<GameTypeFilterCubit>.value(value: gameTypeFilterCubit),
+          BlocProvider<PlannedMatchCubit>.value(value: plannedMatchCubit),
           BlocProvider<ThemeCubit>(create: (_) => ThemeCubit()),
           BlocProvider(create: (_) => CompetitionCubit(competitions, authBloc)),
         ],

@@ -20,6 +20,7 @@ import '../../features/match/presentation/cubit/game_type_filter_cubit.dart';
 import '../../features/match/presentation/cubit/match_detail_cubit.dart';
 import '../../features/match/presentation/cubit/match_form_cubit.dart';
 import '../../features/match/presentation/cubit/match_list_cubit.dart';
+import '../../features/match/presentation/cubit/planned_match_cubit.dart';
 import '../../features/player/data/supabase_player_repository.dart';
 import '../../features/player/domain/player_repository.dart';
 import '../../features/player/presentation/cubit/players_cubit.dart';
@@ -28,10 +29,14 @@ import '../../features/profile/domain/profile_repository.dart';
 import '../../features/profile/presentation/cubit/profile_history_cubit.dart';
 import '../../features/profile/presentation/cubit/profile_overview_cubit.dart';
 import '../../features/profile/presentation/cubit/profile_versus_cubit.dart';
-import '../../features/settings/presentation/cubit/configuration_cubit.dart';
+import '../../features/settings/presentation/cubit/competition_edit_cubit.dart';
 import '../../features/settings/presentation/cubit/history_cubit.dart';
 import '../../features/settings/presentation/cubit/language_cubit.dart';
 import '../../features/settings/presentation/cubit/theme_cubit.dart';
+import '../../features/tournament/data/supabase_tournament_repository.dart';
+import '../../features/tournament/domain/tournament_repository.dart';
+import '../../features/tournament/presentation/cubit/start_tournament_cubit.dart';
+import '../../features/tournament/presentation/cubit/tournament_cubit.dart';
 
 final getIt = GetIt.instance;
 
@@ -66,9 +71,9 @@ Future<void> configureDependencies() async {
     ..registerLazySingleton<CompetitionCubit>(
       () => CompetitionCubit(getIt<CompetitionRepository>(), getIt<AuthBloc>()),
     )
-    ..registerFactoryParam<ConfigurationCubit, String, void>(
+    ..registerFactoryParam<CompetitionEditCubit, String, void>(
       (competitionId, _) =>
-          ConfigurationCubit(getIt<CompetitionRepository>(), competitionId),
+          CompetitionEditCubit(getIt<CompetitionRepository>(), competitionId),
     )
     ..registerFactoryParam<PlayersCubit, String, void>(
       (competitionId, _) =>
@@ -85,6 +90,7 @@ Future<void> configureDependencies() async {
       () => SupabaseMatchRepository(getIt<SupabaseClient>()),
     )
     ..registerLazySingleton<GameTypeFilterCubit>(() => GameTypeFilterCubit())
+    ..registerLazySingleton<PlannedMatchCubit>(() => PlannedMatchCubit())
     ..registerFactoryParam<LeaderboardCubit, String, void>(
       (competitionId, _) => LeaderboardCubit(
         getIt<LeaderboardRepository>(),
@@ -114,6 +120,20 @@ Future<void> configureDependencies() async {
         getIt<CompetitionRepository>(),
         getIt<PlayerRepository>(),
         matchId,
+        competitionId,
+      ),
+    )
+    ..registerLazySingleton<TournamentRepository>(
+      () => SupabaseTournamentRepository(getIt<SupabaseClient>()),
+    )
+    ..registerFactoryParam<TournamentCubit, String, void>(
+      (competitionId, _) =>
+          TournamentCubit(getIt<TournamentRepository>(), competitionId),
+    )
+    ..registerFactoryParam<StartTournamentCubit, String, void>(
+      (competitionId, _) => StartTournamentCubit(
+        getIt<TournamentRepository>(),
+        getIt<PlayerRepository>(),
         competitionId,
       ),
     )

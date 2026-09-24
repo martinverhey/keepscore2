@@ -19,12 +19,13 @@ import '../../features/match/presentation/cubit/match_list_cubit.dart';
 import '../../features/match/presentation/pages/matches.page.dart';
 import '../../features/player/presentation/cubit/players_cubit.dart';
 import '../../features/player/presentation/pages/players.page.dart';
-import '../../features/settings/presentation/cubit/configuration_cubit.dart';
+import '../../features/settings/presentation/cubit/competition_edit_cubit.dart';
 import '../../features/settings/presentation/cubit/history_cubit.dart';
-import '../../features/settings/presentation/pages/settings.page.dart';
-import '../../features/settings/presentation/pages/configuration.page.dart';
+import '../../features/settings/presentation/pages/profile.page.dart';
+import '../../features/settings/presentation/pages/competition_edit.page.dart';
 import '../../features/settings/presentation/pages/history.page.dart';
 import '../../features/settings/presentation/pages/language.page.dart';
+import '../../features/tournament/presentation/cubit/tournament_cubit.dart';
 import '../dependency_injection/injector.dart';
 import '../splash.page.dart';
 import 'go_router_refresh_stream.dart';
@@ -40,9 +41,8 @@ abstract final class Routes {
   static String leaderboard(String id) => '/competition/$id/leaderboard';
   static String matches(String id) => '/competition/$id/matches';
   static String competitions(String id) => '/competition/$id/competitions';
-  static String settings(String id) => '/competition/$id/settings';
-  static String configuration(String id) =>
-      '/competition/$id/settings/configuration';
+  static String profile(String id) => '/competition/$id/profile';
+  static String competitionEdit(String id) => '/competition/$id/settings/edit';
   static String players(String id) => '/competition/$id/settings/players';
   static String history(String id) => '/competition/$id/settings/history';
 }
@@ -196,10 +196,19 @@ GoRouter createRouter(AuthBloc authBloc) {
                             path: 'matches',
                             builder: (context, state) {
                               final id = state.pathParameters['id']!;
-                              return BlocProvider(
+                              return MultiBlocProvider(
                                 key: ValueKey(id),
-                                create: (_) =>
-                                    getIt<MatchListCubit>(param1: id),
+                                providers: [
+                                  BlocProvider(
+                                    create: (_) =>
+                                        getIt<MatchListCubit>(param1: id),
+                                  ),
+                                  BlocProvider(
+                                    create: (_) =>
+                                        getIt<TournamentCubit>(param1: id)
+                                          ..load(),
+                                  ),
+                                ],
                                 child: MatchesPage(competitionId: id),
                               );
                             },
@@ -218,23 +227,19 @@ GoRouter createRouter(AuthBloc authBloc) {
                     ],
                   ),
                   GoRoute(
-                    path: 'settings',
-                    pageBuilder: (context, state) => adaptivePage(
-                      context,
-                      child: SettingsPage(
-                        competitionId: state.pathParameters['id']!,
-                      ),
-                    ),
+                    path: 'profile',
+                    pageBuilder: (context, state) =>
+                        adaptivePage(context, child: const ProfilePage()),
                   ),
                   GoRoute(
-                    path: 'settings/configuration',
+                    path: 'settings/edit',
                     pageBuilder: (context, state) => adaptivePage(
                       context,
                       child: BlocProvider(
-                        create: (_) => getIt<ConfigurationCubit>(
+                        create: (_) => getIt<CompetitionEditCubit>(
                           param1: state.pathParameters['id']!,
                         ),
-                        child: const ConfigurationPage(),
+                        child: const CompetitionEditPage(),
                       ),
                     ),
                   ),

@@ -24,6 +24,8 @@ revoke all on public.matches        from anon, authenticated;
 revoke all on public.match_players  from anon, authenticated;
 revoke all on public.player_ratings from anon, authenticated;
 revoke all on public.seasons        from anon, authenticated;
+revoke all on public.tournaments        from anon, authenticated;
+revoke all on public.tournament_matches from anon, authenticated;
 
 grant select on public.competitions   to authenticated;
 grant delete on public.competitions   to authenticated;
@@ -40,3 +42,5 @@ grant select on public.matches        to authenticated;
 grant select on public.match_players  to authenticated;
 grant select on public.player_ratings to authenticated;
 grant select on public.seasons        to authenticated;
+grant select on public.tournaments        to authenticated;
+grant select on public.tournament_matches to authenticated;

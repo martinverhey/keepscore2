@@ -1,1 +1,1 @@
-enum MatchEntryMode { oneVsOne, teams }
+enum MatchEntryMode { oneVsOne, teams, prePick }

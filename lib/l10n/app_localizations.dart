@@ -140,11 +140,11 @@ abstract class AppLocalizations {
   /// **'Back'**
   String get commonBack;
 
-  /// No description provided for @commonCopy.
+  /// No description provided for @commonMoreActions.
   ///
   /// In en, this message translates to:
-  /// **'Copy'**
-  String get commonCopy;
+  /// **'More actions'**
+  String get commonMoreActions;
 
   /// No description provided for @commonDone.
   ///
@@ -446,24 +446,6 @@ abstract class AppLocalizations {
   /// **'Guests can join a competition and look around, but creating one needs an account.'**
   String get competitionGuestCannotCreate;
 
-  /// No description provided for @competitionCodeHelp.
-  ///
-  /// In en, this message translates to:
-  /// **'Anyone with this code can join.'**
-  String get competitionCodeHelp;
-
-  /// No description provided for @competitionQrInvite.
-  ///
-  /// In en, this message translates to:
-  /// **'Scan to join instantly'**
-  String get competitionQrInvite;
-
-  /// No description provided for @competitionQrHelp.
-  ///
-  /// In en, this message translates to:
-  /// **'Point a camera at this code — no typing required.'**
-  String get competitionQrHelp;
-
   /// No description provided for @competitionInviteTitle.
   ///
   /// In en, this message translates to:
@@ -476,23 +458,23 @@ abstract class AppLocalizations {
   /// **'Invite'**
   String get competitionInviteAction;
 
-  /// No description provided for @competitionUseQrInstead.
-  ///
-  /// In en, this message translates to:
-  /// **'Use QR code instead'**
-  String get competitionUseQrInstead;
-
   /// No description provided for @competitionNotFound.
   ///
   /// In en, this message translates to:
   /// **'This competition is gone, or you\'re no longer in it.'**
   String get competitionNotFound;
 
-  /// No description provided for @competitionSettings.
+  /// No description provided for @profilePageTitle.
   ///
   /// In en, this message translates to:
-  /// **'Settings'**
-  String get competitionSettings;
+  /// **'Profile'**
+  String get profilePageTitle;
+
+  /// No description provided for @profileChangeName.
+  ///
+  /// In en, this message translates to:
+  /// **'Change name'**
+  String get profileChangeName;
 
   /// No description provided for @competitionSettingsSectionCompetition.
   ///
@@ -505,12 +487,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'System'**
   String get competitionSettingsSectionSystem;
-
-  /// No description provided for @configurationTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Configuration'**
-  String get configurationTitle;
 
   /// No description provided for @playersManageTitle.
   ///
@@ -530,23 +506,23 @@ abstract class AppLocalizations {
   /// **'Finished seasons will show up here.'**
   String get historyEmpty;
 
-  /// No description provided for @configurationSave.
+  /// No description provided for @competitionEditSave.
   ///
   /// In en, this message translates to:
   /// **'Save changes'**
-  String get configurationSave;
+  String get competitionEditSave;
 
-  /// No description provided for @configurationSaved.
+  /// No description provided for @competitionEditSaved.
   ///
   /// In en, this message translates to:
   /// **'Changes saved.'**
-  String get configurationSaved;
+  String get competitionEditSaved;
 
-  /// No description provided for @configurationOwnerOnly.
+  /// No description provided for @competitionEditOwnerOnly.
   ///
   /// In en, this message translates to:
   /// **'Only the owner can change these settings.'**
-  String get configurationOwnerOnly;
+  String get competitionEditOwnerOnly;
 
   /// No description provided for @competitionSeasonLengthWarning.
   ///
@@ -619,6 +595,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Rename competition'**
   String get competitionRenameTitle;
+
+  /// No description provided for @competitionEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get competitionEdit;
 
   /// No description provided for @competitionRename.
   ///
@@ -973,6 +955,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Teams'**
   String get matchModeTeams;
+
+  /// No description provided for @matchModePrePick.
+  ///
+  /// In en, this message translates to:
+  /// **'Pre-pick'**
+  String get matchModePrePick;
+
+  /// No description provided for @matchPrePickTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Players'**
+  String get matchPrePickTitle;
+
+  /// No description provided for @matchPrePickCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'Create matches'**
+  String get matchPrePickCreate;
+
+  /// No description provided for @matchPrePickNeedsPlayers.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick at least two players.'**
+  String get matchPrePickNeedsPlayers;
+
+  /// No description provided for @matchPrePickCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 match will show up on the list.} other{{count} matches will show up on the list.}}'**
+  String matchPrePickCount(num count);
+
+  /// No description provided for @matchesPrePickedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pre-picked'**
+  String get matchesPrePickedTitle;
+
+  /// No description provided for @matchesPrePickedClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get matchesPrePickedClear;
+
+  /// No description provided for @matchesPrePickedRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get matchesPrePickedRemove;
+
+  /// No description provided for @matchesPrePickedVersus.
+  ///
+  /// In en, this message translates to:
+  /// **'vs'**
+  String get matchesPrePickedVersus;
 
   /// No description provided for @matchPlayerA.
   ///
@@ -1417,6 +1453,150 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Past seasons will show up here.'**
   String get profileHistoryEmpty;
+
+  /// No description provided for @tournamentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tournament'**
+  String get tournamentTitle;
+
+  /// No description provided for @tournamentStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start tournament'**
+  String get tournamentStart;
+
+  /// No description provided for @tournamentNewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New tournament'**
+  String get tournamentNewTitle;
+
+  /// No description provided for @tournamentSelectHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick 2, 4, 8 or 16 players. The closest-rated players meet first.'**
+  String get tournamentSelectHint;
+
+  /// No description provided for @tournamentSelectedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} of {max} selected'**
+  String tournamentSelectedCount(int count, int max);
+
+  /// No description provided for @tournamentBracketTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bracket'**
+  String get tournamentBracketTitle;
+
+  /// No description provided for @tournamentRound.
+  ///
+  /// In en, this message translates to:
+  /// **'Round {round}'**
+  String tournamentRound(int round);
+
+  /// No description provided for @tournamentFinalRound.
+  ///
+  /// In en, this message translates to:
+  /// **'Final'**
+  String get tournamentFinalRound;
+
+  /// No description provided for @tournamentSemiFinalRound.
+  ///
+  /// In en, this message translates to:
+  /// **'Semi-finals'**
+  String get tournamentSemiFinalRound;
+
+  /// No description provided for @tournamentQuarterFinalRound.
+  ///
+  /// In en, this message translates to:
+  /// **'Quarter-finals'**
+  String get tournamentQuarterFinalRound;
+
+  /// No description provided for @tournamentChampion.
+  ///
+  /// In en, this message translates to:
+  /// **'Champion'**
+  String get tournamentChampion;
+
+  /// No description provided for @tournamentInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'In progress'**
+  String get tournamentInProgress;
+
+  /// No description provided for @tournamentBye.
+  ///
+  /// In en, this message translates to:
+  /// **'Bye'**
+  String get tournamentBye;
+
+  /// No description provided for @tournamentWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting'**
+  String get tournamentWaiting;
+
+  /// No description provided for @tournamentEnterScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter score'**
+  String get tournamentEnterScore;
+
+  /// No description provided for @tournamentSaveResult.
+  ///
+  /// In en, this message translates to:
+  /// **'Save result'**
+  String get tournamentSaveResult;
+
+  /// No description provided for @tournamentNoDraw.
+  ///
+  /// In en, this message translates to:
+  /// **'A tournament match needs a winner.'**
+  String get tournamentNoDraw;
+
+  /// No description provided for @tournamentRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove tournament'**
+  String get tournamentRemove;
+
+  /// No description provided for @tournamentRemoveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove tournament?'**
+  String get tournamentRemoveTitle;
+
+  /// No description provided for @tournamentCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel tournament'**
+  String get tournamentCancel;
+
+  /// No description provided for @tournamentCancelTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel tournament?'**
+  String get tournamentCancelTitle;
+
+  /// No description provided for @tournamentCancelConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'This removes the bracket and every score in it.'**
+  String get tournamentCancelConfirm;
+
+  /// No description provided for @tournamentKeep.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep it'**
+  String get tournamentKeep;
+
+  /// No description provided for @tournamentTrophies.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 tournament won} other{{count} tournaments won}}'**
+  String tournamentTrophies(int count);
 
   /// No description provided for @settingsDarkModeTitle.
   ///

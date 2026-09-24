@@ -12,7 +12,7 @@ import '../../../../core/widgets/page_title.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../competition/domain/competition.model.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
-import '../../../competition/presentation/widgets/competition_settings_button.dart';
+import '../../../competition/presentation/widgets/profile_button.dart';
 import '../../../competition/presentation/widgets/join_code_tag.dart';
 import '../../../competition/presentation/pages/invite_sheet.dart';
 import '../../../player/presentation/cubit/players_cubit.dart';
@@ -94,7 +94,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
       onRefresh: _refresh,
       trailing: AppPlatform.useWideWeb(context)
           ? null
-          : CompetitionSettingsButton(competitionId: competitionId),
+          : ProfileButton(competitionId: competitionId),
       body: overview == null
           ? const AdaptiveLoader()
           : Padding(

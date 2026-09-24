@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
+import 'package:keepscore2/core/widgets/medal_chip.dart';
 import 'package:keepscore2/core/widgets/streak_badge.dart';
+import 'package:keepscore2/core/widgets/trophy_chip.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/medals.model.dart';
@@ -13,6 +15,7 @@ Leaderboard _leaderboard({
   StreakType streakType = StreakType.none,
   int streakCount = 0,
   double todayDelta = 0,
+  int trophies = 0,
   Medal? medal,
 }) => Leaderboard(
   seasonId: 's1',
@@ -30,6 +33,7 @@ Leaderboard _leaderboard({
   streakType: streakType,
   streakCount: streakCount,
   todayDelta: todayDelta,
+  trophies: trophies,
   medal: medal,
 );
 
@@ -186,6 +190,48 @@ void main() {
     expect(_offCenter(tester, 'Ada Lovelace'), lessThan(-4));
     expect(_offCenter(tester, '1080'), lessThan(-4));
   });
+
+  testWidgets('a tournament winner wears a trophy beside their medals', (
+    tester,
+  ) async {
+    await pumpRow(
+      tester,
+      _leaderboard(trophies: 1),
+      medals: const Medals(playerId: 'p1', gold: 2, silver: 0, bronze: 0),
+    );
+
+    final trophy = tester.getRect(find.byType(TrophyChip));
+
+    expect(
+      trophy.top,
+      greaterThanOrEqualTo(tester.getRect(find.text('Ada Lovelace')).bottom),
+    );
+    expect(
+      trophy.right,
+      lessThanOrEqualTo(tester.getRect(find.byType(MedalChip)).left),
+    );
+    expect(
+      find.descendant(of: find.byType(TrophyChip), matching: find.byType(Text)),
+      findsNothing,
+    );
+  });
+
+  testWidgets('more than one trophy is counted, not repeated', (tester) async {
+    await pumpRow(tester, _leaderboard(trophies: 3));
+
+    expect(find.byType(TrophyChip), findsOneWidget);
+    expect(
+      find.descendant(of: find.byType(TrophyChip), matching: find.text('3')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('nobody without a tournament win wears one', (tester) async {
+    await pumpRow(tester, _leaderboard());
+
+    expect(find.byType(TrophyChip), findsNothing);
+  });
+
 }
 
 double _offCenter(WidgetTester tester, String text) {

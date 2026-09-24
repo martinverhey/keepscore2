@@ -1,38 +1,35 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/extensions/date_time.extension.dart';
-import '../../domain/match_entry.model.dart';
+import 'match_feed_entry.dart';
 
 class MatchDayGroup extends Equatable {
-  const MatchDayGroup({required this.day, required this.matches});
+  const MatchDayGroup({required this.day, required this.entries});
 
   final DateTime day;
-  final List<MatchEntry> matches;
+  final List<MatchFeedEntry> entries;
 
   @override
-  List<Object?> get props => [day, matches];
+  List<Object?> get props => [day, entries];
 }
 
-List<MatchDayGroup> groupByDay(List<MatchEntry> matches) {
+List<MatchDayGroup> groupByDay(List<MatchFeedEntry> entries) {
+  final newestFirst = [...entries]..sort(_newestFirst);
   final groups = <MatchDayGroup>[];
 
-  for (final match in matches) {
-    final day = match.playedAt.dayOnly;
+  for (final entry in newestFirst) {
+    final day = entry.happenedAt.dayOnly;
     if (groups.isNotEmpty && groups.last.day == day) {
-      groups.last.matches.add(match);
+      groups.last.entries.add(entry);
     } else {
-      groups.add(MatchDayGroup(day: day, matches: [match]));
+      groups.add(MatchDayGroup(day: day, entries: [entry]));
     }
-  }
-
-  for (final group in groups) {
-    group.matches.sort(_newestFirst);
   }
 
   return groups;
 }
 
-int _newestFirst(MatchEntry a, MatchEntry b) {
-  final byTime = b.playedAt.compareTo(a.playedAt);
+int _newestFirst(MatchFeedEntry a, MatchFeedEntry b) {
+  final byTime = b.happenedAt.compareTo(a.happenedAt);
   return byTime != 0 ? byTime : b.id.compareTo(a.id);
 }

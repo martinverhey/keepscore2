@@ -24,7 +24,10 @@ import 'package:keepscore2/features/leaderboard/presentation/cubit/leaderboard_c
 import 'package:keepscore2/features/leaderboard/presentation/pages/leaderboard.page.dart';
 import 'package:keepscore2/features/match/domain/game_type.enum.dart';
 import 'package:keepscore2/features/match/domain/match_repository.dart';
+import 'package:keepscore2/features/tournament/domain/tournament_repository.dart';
+import 'package:keepscore2/features/tournament/presentation/cubit/tournament_cubit.dart';
 import 'package:keepscore2/features/match/presentation/cubit/game_type_filter_cubit.dart';
+import 'package:keepscore2/features/match/presentation/cubit/planned_match_cubit.dart';
 import 'package:keepscore2/features/match/presentation/cubit/match_list_cubit.dart';
 import 'package:keepscore2/features/match/presentation/pages/matches.page.dart';
 import 'package:keepscore2/features/player/domain/player_repository.dart';
@@ -43,6 +46,8 @@ class MockPlayerRepository extends Mock implements PlayerRepository {}
 
 class MockMatchRepository extends Mock implements MatchRepository {}
 
+class MockTournamentRepository extends Mock implements TournamentRepository {}
+
 class MockLeaderboardRepository extends Mock implements LeaderboardRepository {}
 
 class MockProfileRepository extends Mock implements ProfileRepository {}
@@ -60,7 +65,17 @@ Future<GoRouter> _pumpHarness(
   final competitions = MockCompetitionRepository();
   final players = MockPlayerRepository();
   final matches = MockMatchRepository();
+  final tournamentRepository = MockTournamentRepository();
   final leaderboard = MockLeaderboardRepository();
+
+  when(() => tournamentRepository.all(any())).thenAnswer((_) async => []);
+  when(() => tournamentRepository.brackets(any())).thenAnswer((_) async => {});
+  when(
+    () => tournamentRepository.watchTournaments(any()),
+  ).thenAnswer((_) => const Stream.empty());
+  when(
+    () => tournamentRepository.watchBracket(any()),
+  ).thenAnswer((_) => const Stream.empty());
 
   when(
     () => auth.currentUser,
@@ -107,6 +122,9 @@ Future<GoRouter> _pumpHarness(
 
   final seasonStart = DateTime.utc(2026, 8, 1);
   final seasonEnd = DateTime.utc(2026, 9, 1);
+  when(
+    () => leaderboard.finishedSeasons(any()),
+  ).thenAnswer((_) async => const []);
   when(() => leaderboard.currentSeason(_competitionId)).thenAnswer(
     (_) async =>
         SeasonWindow(id: 's1', startsAt: seasonStart, endsAt: seasonEnd),
@@ -128,6 +146,8 @@ Future<GoRouter> _pumpHarness(
 
   final authBloc = AuthBloc(auth);
   final gameTypeFilterCubit = GameTypeFilterCubit();
+  final plannedMatchCubit = PlannedMatchCubit();
+  addTearDown(plannedMatchCubit.close);
   addTearDown(authBloc.close);
   addTearDown(gameTypeFilterCubit.close);
 
@@ -186,12 +206,22 @@ Future<GoRouter> _pumpHarness(
                     routes: [
                       GoRoute(
                         path: 'matches',
-                        builder: (context, state) => BlocProvider(
-                          create: (_) => MatchListCubit(
-                            matches,
-                            gameTypeFilterCubit,
-                            state.pathParameters['id']!,
-                          ),
+                        builder: (context, state) => MultiBlocProvider(
+                          providers: [
+                            BlocProvider(
+                              create: (_) => MatchListCubit(
+                                matches,
+                                gameTypeFilterCubit,
+                                state.pathParameters['id']!,
+                              ),
+                            ),
+                            BlocProvider(
+                              create: (_) => TournamentCubit(
+                                tournamentRepository,
+                                state.pathParameters['id']!,
+                              )..load(),
+                            ),
+                          ],
                           child: MatchesPage(
                             competitionId: state.pathParameters['id']!,
                           ),
@@ -221,6 +251,7 @@ Future<GoRouter> _pumpHarness(
       providers: [
         BlocProvider<AuthBloc>.value(value: authBloc),
         BlocProvider<GameTypeFilterCubit>.value(value: gameTypeFilterCubit),
+        BlocProvider<PlannedMatchCubit>.value(value: plannedMatchCubit),
         BlocProvider<ThemeCubit>(create: (_) => ThemeCubit()),
         BlocProvider(create: (_) => CompetitionCubit(competitions, authBloc)),
         BlocProvider(
@@ -251,7 +282,7 @@ void main() {
     final l10n = AppLocalizations.of(
       tester.element(find.byType(LeaderboardPage)),
     );
-    expect(find.text(l10n.competitionSettings), findsNothing);
+    expect(find.text(l10n.profilePageTitle), findsNothing);
 
     await tester.tap(find.text('Office Table Tennis'));
     await tester.pumpAndSettle();
@@ -263,7 +294,7 @@ void main() {
       tester.widget<CompetitionTabBar>(find.byType(CompetitionTabBar)).current,
       CompetitionTab.competitions,
     );
-    expect(find.text(l10n.competitionSettings), findsNothing);
+    expect(find.text(l10n.profilePageTitle), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
