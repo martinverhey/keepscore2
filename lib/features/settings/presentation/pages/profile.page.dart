@@ -32,29 +32,32 @@ class ProfilePage extends StatelessWidget {
   }
 
   Widget _profile(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _identity(context),
-          const SizedBox(height: AppSpacing.xxl),
-          SectionLabel(context.l10n.competitionSettingsSectionSystem),
-          _themeRow(context),
-          NavRow(
-            label: context.l10n.settingsLanguageTitle,
-            onTap: () => context.push(Routes.language),
-          ),
-          const SizedBox(height: AppSpacing.xxl),
-          _version(context),
-          const SizedBox(height: AppSpacing.sm),
-          AdaptiveButton(
-            label: context.l10n.authSignOut,
-            kind: AdaptiveButtonKind.plain,
-            onPressed: () => context.read<AuthBloc>().add(const AuthSignOutRequested()),
-          ),
-        ],
+    return Align(
+      alignment: Alignment.topCenter,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _identity(context),
+            const SizedBox(height: AppSpacing.xxxl),
+            SectionLabel(context.l10n.competitionSettingsSectionSystem),
+            _themeRow(context),
+            NavRow(
+              label: context.l10n.settingsLanguageTitle,
+              onTap: () => context.push(Routes.language),
+            ),
+            const SizedBox(height: AppSpacing.xxl),
+            _version(context),
+            const SizedBox(height: AppSpacing.sm),
+            AdaptiveButton(
+              label: context.l10n.authSignOut,
+              kind: AdaptiveButtonKind.plain,
+              onPressed: () => context.read<AuthBloc>().add(const AuthSignOutRequested()),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -137,6 +137,22 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('the avatar starts at the top of the page, not the middle', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(800, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await _Harness().pump(tester);
+
+    final avatarTop = tester.getTopLeft(find.byType(InitialsCircle)).dy;
+    final pageHeight = tester.getSize(find.byType(ProfilePage)).height;
+
+    expect(avatarTop, lessThan(pageHeight / 8));
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('change name opens the name sheet prefilled and renames you', (
     tester,
   ) async {
