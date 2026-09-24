@@ -3,6 +3,10 @@
 Newest first. Each heading is an annotated `vX.Y.Z` tag; pushing that tag ships
 the build to TestFlight and Play internal testing.
 
+## v0.5.1 — 2026-09-25
+
+Re-release of v0.5.0, whose builds failed; no user-facing changes.
+
 ## v0.5.0 — 2026-09-25
 
 ### Added
