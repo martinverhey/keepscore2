@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'foreground_returns.dart';
+
 int _topicSequence = 0;
 
 Stream<void> realtimeTicks(
@@ -14,6 +16,7 @@ Stream<void> realtimeTicks(
   final name = '$topic:${_topicSequence++}';
 
   late final RealtimeChannel channel;
+  late final StreamSubscription<void> returns;
   late final StreamController<void> controller;
 
   controller = StreamController<void>(
@@ -35,8 +38,14 @@ Stream<void> realtimeTicks(
           },
         )
         ..subscribe();
+      returns = foregroundReturns().listen((_) {
+        if (!controller.isClosed) controller.add(null);
+      });
     },
-    onCancel: () => client.removeChannel(channel),
+    onCancel: () async {
+      await returns.cancel();
+      await client.removeChannel(channel);
+    },
   );
 
   return controller.stream;

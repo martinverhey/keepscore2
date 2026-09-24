@@ -1218,6 +1218,34 @@ code; don't relitigate them.
   rebuilt per season on every edit/delete (see the comment on
   `recalc_season_from`), so every player in the season still gets a fresh
   event on every write, back-dated or not.
+- **Every realtime stream also ticks when the app comes back from the
+  background, because realtime has no replay.** `supabase_flutter`
+  disconnects the socket on `paused` and rejoins on `resumed`, and anything
+  written in between is simply never delivered — so before this, a match
+  logged on another phone while yours was in your pocket left your
+  leaderboard stale until the *next* write or a pull-to-refresh. It was
+  reported as "the leaderboard doesn't update"; every server-side layer
+  (publication, slot, `realtime.apply_rls`, a real member's channel) checked
+  out fine, which is what pointed at the device. `realtimeTicks` merges
+  `foregroundReturns()` (`core/data/foreground_returns.dart`) into its own
+  stream, so all four watching cubits refetch without knowing why.
+  **It fires only on a `resumed` that follows `hidden`**, never on a bare
+  `inactive` → `resumed`: Notification Center, a permission prompt, an
+  incoming-call banner or a focus change on web all blip through `inactive`
+  with the socket still connected, and a refetch across four cubits on each
+  of them is waste. `hidden` is the one state all three platforms pass
+  through before the socket can be lost — mobile on its way to `paused`, web
+  when the tab is switched away and throttled. The cost: a cubit with two
+  watchers (`LeaderboardCubit`, `TournamentCubit`) refetches twice on
+  return, a few milliseconds apart; Equatable swallows the second emit.
+  An expired token after a long background is not a problem here —
+  `SupabaseClient._getAccessToken` goes through `auth.getSession()`, which
+  refreshes before the request is sent.
+  `foreground_returns_test.dart` walks the states one legal step at a time
+  (`AppLifecycleListener` asserts on a jump like `paused` → `resumed`), and
+  **never `await`s a `StreamSubscription.cancel()` inside the test body** —
+  doing so hung `flutter test` outright, past `--timeout`, with the body
+  already finished; the test fires the cancel without awaiting it instead.
 - **Five tables are watched, and `players` is the one that was missed.**
   `matches`
   (filtered by `competition_id`, feeding `MatchListCubit`), `player_ratings`
@@ -3012,7 +3040,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 469 tests at time of writing
+flutter test                    # 472 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 dart run flutter_launcher_icons     # assets/icon/*.png into android/ web/ (not ios/)
