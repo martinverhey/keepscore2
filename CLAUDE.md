@@ -573,8 +573,8 @@ accent wash and no accent border — the accent survives only in the eyebrow
 text and the code badge, so the card is marked by being the one opaque,
 outlined surface in a list where every `CompetitionCard` is a borderless
 translucent neutral. It reads top to bottom as identity then invitation: the
-name starts at the card's very top edge with its rename button beside it
-(owner only), an `Active` eyebrow sits directly under it, then the
+name starts at the card's very top edge with its actions menu at the row's
+end, an `Active` eyebrow sits directly under it, then the
 player/match counts, all across the **full** card width,
 then a centred block of the join code over a 200px `JoinQrImage`, both big
 enough to read or scan off the page and captioned by nothing — the code
@@ -615,22 +615,32 @@ when the cubit is empty (a fresh launch, or after signing out) or when it
 holds a competition the user has since left. That competition is then
 **dropped from the list below**, with the rest headed by a
 `ListHeader(competitionsOther)`; the card carries its own `CompetitionActions`
-so rename/leave/delete stay reachable for it. **`CompetitionActions` renders
-only the callbacks it is handed, which is what lets one card split them
-across two rows**, and both cards split them the same way: **rename sits
-immediately after the name, and the destructive pair sits at the end of a
-row of its own** — naming and destroying are not the same kind of action and
-do not belong in one cluster. Rename is passed `compact: true`, which is a
-32px `AdaptiveIconButton` rather than the platform's 48px one; at full size
-the gap reads as a button placed at the end of the row rather than one
-attached to the title. It hugs the name because **the name and the button
-are one `Row` inside the surrounding `Expanded`/`Column`, with the name
-`Flexible` inside it** — the button is inflexible and sized first, so a long
-name ellipsises against it and a short one is followed immediately by it. A
-`Spacer` beside a `Flexible` name does not work here: both are flex 1, so
-they would split the free space and ellipsise a long name at half the row.
-`CompetitionCard` keeps `JoinCodeTag` outside that group at the row's end,
-and puts its invite button in the counts row ahead of leave/delete; the hero
+so its actions stay reachable for it. **`CompetitionActions` is one
+three-dots `AdaptiveMenuButton`, not a row of icon buttons** — Edit, Rename,
+Leave and Delete, each item present only when its callback is. Ownership
+decides which: an owner gets Edit/Rename/Delete, anyone else Leave alone
+(`CompetitionsPage._editCallback` and its siblings), and a card whose
+callbacks are all null renders no button at all (`hasActions`). The hero card
+carries the button at the end of the name's row, with the name `Expanded`
+beside it so a long name ellipsises against it; `CompetitionCard` carries it
+at the end of the counts row, after the invite button. They used to be split
+across two rows — a compact rename after the name and the destructive pair at
+the end of its own row — until four actions made a menu the better shape.
+**Edit is `go(Routes.configuration(id))`, never `push`**: the target can be a
+competition other than the one whose shell you are in, which is the
+black-screen case in "Entering a competition is always `go`". A `go` there
+leaves the configuration page with nothing to pop to, so `ConfigurationPage`
+renders its own back action — `go(Routes.competitions(id))` — whenever
+`ModalRoute.canPop` is false and the sidebar is not suppressing back buttons.
+The page itself is titled `competitionEdit` ("Edit" / "Bewerken") to match
+the menu item that opens it; the Settings row and the sidebar row that lead
+there still read `configurationTitle`.
+`AdaptiveMenuButton` (`core/widgets/adaptive/adaptive_menu_button.dart`) is a
+`PopupMenuButton` of icon-plus-label rows on Material and wide web, and a
+`CupertinoActionSheet` with a Cancel button on Cupertino; destructive items
+render in `AdaptiveColors.destructive` / `isDestructiveAction`, and the
+glyph is `AdaptiveGlyph.more` (`ellipsis` / `more_vert`).
+`CompetitionCard` keeps `JoinCodeTag` at the end of the name's row; the hero
 card has no invite button of its own (it *is* the invite). Tapping the card is
 `go(Routes.competition(id))` exactly like a `CompetitionCard`, anywhere on it.
 `JoinQrImage` is the white quiet-zone box `JoinQrCard` was built around,
@@ -646,9 +656,9 @@ arrow after the name only competed with the name for the width it wraps
 into. Nothing else moves: the code and the QR are one centred block under
 the name in both, so the sheet is the hero card minus its chrome rather than
 a second arrangement of the same parts (it used to hold the code badge in the
-name's row, which is what `_nameWithCode` was for). `onRename`/`onLeave`/
-`onDelete` are left off for the same reason, which is what drops the action
-row entirely. It replaced a
+name's row, which is what `_nameWithCode` was for). `onEdit`/`onRename`/
+`onLeave`/`onDelete` are left off for the same reason, which is what drops
+the actions menu entirely. It replaced a
 `JoinQrCard` over a `JoinCodeCard`, so the invite sheet and the competitions
 page now show the competition the same way rather than two different ways.
 `SettingsPage` still renders `JoinCodeCard`/`JoinQrCard`, which is why both
@@ -1539,7 +1549,8 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   deleted that plumbing along with `HomeSidebarCompetition` itself.
   The sidebar's own account section (competition
   settings, the theme toggle, language, sign out) replaced the old gear-icon popover entirely, so
-  `AdaptiveMenuButton` was deleted rather than left unused. A page pushed
+  that gear-popover `AdaptiveMenuButton` was deleted (the name now belongs to
+  the competition cards' three-dots menu). A page pushed
   underneath the sidebar (History, Players, Settings, NewMatch — reached via
   `context.push`) would otherwise still get an auto-implied back button from
   `AdaptiveScaffold`'s app bar, since `Navigator.canPop()` is true regardless
@@ -3040,7 +3051,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 472 tests at time of writing
+flutter test                    # 476 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 dart run flutter_launcher_icons     # assets/icon/*.png into android/ web/ (not ios/)
