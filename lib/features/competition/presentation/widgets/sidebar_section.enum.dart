@@ -1,8 +1,1 @@
-enum SidebarSection {
-  leaderboard,
-  matches,
-  players,
-  history,
-  competitions,
-  language,
-}
+enum SidebarSection { leaderboard, matches, players, competitions, language }

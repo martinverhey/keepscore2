@@ -138,7 +138,7 @@ void main() {
         find.text(l10n.competitionSettingsSectionCompetition),
         findsOneWidget,
       );
-      expect(find.text(l10n.historyTitle), findsOneWidget);
+      expect(find.text(l10n.historyTitle), findsNothing);
       expect(find.text(l10n.playersManageTitle), findsOneWidget);
       expect(find.text(l10n.matchNew), findsOneWidget);
       expect(find.text(l10n.competitionsTitle), findsOneWidget);
@@ -299,7 +299,7 @@ void main() {
       useWideWebViewport(tester);
 
       final router = GoRouter(
-        initialLocation: '/competition/c1/settings/history',
+        initialLocation: '/competition/c1/settings/players',
         routes: [
           ShellRoute(
             builder: (context, state, child) =>
@@ -320,10 +320,10 @@ void main() {
                     ),
                   ),
                   GoRoute(
-                    path: 'settings/history',
+                    path: 'settings/players',
                     builder: (context, state) => const AdaptiveScaffold(
-                      title: 'history',
-                      body: Text('history body'),
+                      title: 'players',
+                      body: Text('players body'),
                     ),
                   ),
                 ],
@@ -344,19 +344,19 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('history body'), findsOneWidget);
+      expect(find.text('players body'), findsOneWidget);
 
       final l10n = AppLocalizations.of(
-        tester.element(find.text('history body')),
+        tester.element(find.text('players body')),
       );
 
-      expect(find.text(l10n.historyTitle), findsOneWidget);
+      expect(find.text(l10n.playersManageTitle), findsOneWidget);
 
       await tester.tap(find.text(l10n.leaderboardTitle));
       await tester.pumpAndSettle();
 
       expect(find.text('leaderboard body'), findsOneWidget);
-      expect(find.text('history body'), findsNothing);
+      expect(find.text('players body'), findsNothing);
       expect(find.text(l10n.leaderboardTitle), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
@@ -442,7 +442,7 @@ void main() {
             GoRoute(
               path: 'pushed',
               builder: (context, state) => Sidebar(
-                current: SidebarSection.history,
+                current: SidebarSection.players,
                 onSelectSection: (_) {},
                 child: const AdaptiveScaffold(
                   title: 'History',

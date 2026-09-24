@@ -89,8 +89,9 @@ from `Ends <date>` to the finished season's date range. A silent realtime
 refresh keeps the viewed season; a non-silent `load()` returns to the current
 one, and a failed fetch falls back to it rather than showing an empty table.
 With no finished season the header is plain text, as before.
-`/competition/:id/settings/history` (`HistoryPage`) still exists and is
-reached only from the wide-web sidebar's History row; it shows one finished
+`/competition/:id/settings/history` (`HistoryPage`) still exists but **nothing
+links to it any more** — the sidebar's History row was removed once the
+leaderboard header took over the job; it shows one finished
 season at a time through `SeasonFilterButton` in the app bar's `trailing`
 slot, which opens that same `SeasonSheet` over `HistoryState.seasons`, and heads the list with a
 `ListHeader` naming the season the same way (only the subtitle differs:
@@ -448,9 +449,9 @@ or moved:
   already exists, so a guest may open and read a bracket but never starts one;
   `TournamentBracketSheet._canScore` is `session.canWrite` on top of that, and
   Cancel tournament is narrower still (creator or owner, like a match).
-- **History** (`history.page.dart`) is deliberately *outside*
-  this gate — it's read-only historical data a guest may read. Its only
-  entry point is the wide-web sidebar's History row: the profile page
+- **Past seasons** (the leaderboard's season header, and the now
+  unlinked `history.page.dart`) are deliberately *outside*
+  this gate — it's read-only historical data a guest may read. The profile page
   (`profile.page.dart`, reached from the Leaderboard's profile bar action)
   carries no competition rows at all — no History, no Manage players, no
   join code or QR. It heads itself with the viewer's own `InitialsCircle`
@@ -1549,7 +1550,7 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   Getting there needed three things:
   `SidebarSection` (`sidebar_section.enum.dart`) enumerating **every**
   destination the sidebar can reach — leaderboard, matches, newMatch,
-  players, history, competitions, language — not just the
+  players, competitions, language — not just the
   competition-scoped ones (it is named for the sidebar, not the competition,
   because `competitions`/`language`/`newMatch` are not competition sections);
   `current` covering all of them, so "you are already here" is a
@@ -1564,7 +1565,9 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   competition) composes it too, always with
   `current: SidebarSection.competitions`. Whether it also shows the
   per-competition group (New match button,
-  leaderboard/matches/settings/history/players, "Competition" section label)
+  leaderboard/matches/competitions, plus — for the owner only — the
+  "Competition" section label over Manage players, which is that group's
+  last row now that History is gone, so a non-owner gets no empty heading)
   is simply whether `CompetitionCubit` currently holds one — so the sidebar
   the user leaves behind is exactly the one they land on, with nothing in the
   per-competition group highlighted and "Competitions" highlighted instead,
