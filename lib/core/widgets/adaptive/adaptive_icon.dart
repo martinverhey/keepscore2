@@ -57,7 +57,7 @@ class AdaptiveIcon extends StatelessWidget {
     AdaptiveGlyph.chevronRight => Icons.chevron_right,
     AdaptiveGlyph.chevronDown => Icons.keyboard_arrow_down,
     AdaptiveGlyph.check => Icons.check,
-    AdaptiveGlyph.invite => Icons.ios_share,
+    AdaptiveGlyph.invite => Icons.share,
     AdaptiveGlyph.rename => Icons.edit,
     AdaptiveGlyph.delete => Icons.delete,
     AdaptiveGlyph.restore => Icons.restore_from_trash,
@@ -74,11 +74,7 @@ class AdaptiveIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Icon(
-      AppPlatform.useCupertino ? _cupertino : _material,
-      color: color,
-      size: size,
-    );
+    return Icon(AppPlatform.useCupertino ? _cupertino : _material, color: color, size: size);
   }
 }
 
