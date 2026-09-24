@@ -14,6 +14,7 @@ class ActiveCompetitionCard extends StatelessWidget {
     super.key,
     required this.overview,
     this.onOpen,
+    this.onEdit,
     this.onRename,
     this.onLeave,
     this.onDelete,
@@ -21,6 +22,7 @@ class ActiveCompetitionCard extends StatelessWidget {
 
   final CompetitionOverview overview;
   final VoidCallback? onOpen;
+  final VoidCallback? onEdit;
   final VoidCallback? onRename;
   final VoidCallback? onLeave;
   final VoidCallback? onDelete;
@@ -59,10 +61,6 @@ class ActiveCompetitionCard extends StatelessWidget {
           _identity(context),
           const SizedBox(height: AppSpacing.lg),
           _codeAndQr(),
-          if (_hasRowActions) ...[
-            const SizedBox(height: AppSpacing.xs),
-            _actionRow(),
-          ],
         ],
       ),
     );
@@ -102,7 +100,7 @@ class ActiveCompetitionCard extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Flexible(
+        Expanded(
           child: Text(
             overview.competition.name,
             style: AppTypography.headlineMedium,
@@ -110,8 +108,7 @@ class ActiveCompetitionCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
         ),
-        if (onRename != null)
-          CompetitionActions(onRename: onRename, compact: true),
+        if (_actions().hasActions) _actions(),
       ],
     );
   }
@@ -136,12 +133,12 @@ class ActiveCompetitionCard extends StatelessWidget {
     );
   }
 
-  bool get _hasRowActions => onLeave != null || onDelete != null;
-
-  Widget _actionRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [CompetitionActions(onLeave: onLeave, onDelete: onDelete)],
+  CompetitionActions _actions() {
+    return CompetitionActions(
+      onEdit: onEdit,
+      onRename: onRename,
+      onLeave: onLeave,
+      onDelete: onDelete,
     );
   }
 }

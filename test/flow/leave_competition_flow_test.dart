@@ -209,11 +209,14 @@ void main() {
     expect(find.byType(CompetitionsPage), findsOneWidget);
     expect(find.byType(CompetitionTabBar), findsOneWidget);
 
-    final leave = find.descendant(
-      of: find.byType(ActiveCompetitionCard),
-      matching: find.byTooltip(l10n.competitionLeave),
+    await tester.tap(
+      find.descendant(
+        of: find.byType(ActiveCompetitionCard),
+        matching: find.byTooltip(l10n.commonMoreActions),
+      ),
     );
-    await tester.tap(leave);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.competitionLeave));
     await tester.pumpAndSettle();
     await tester.tap(find.text(l10n.competitionLeave));
     await tester.pumpAndSettle();

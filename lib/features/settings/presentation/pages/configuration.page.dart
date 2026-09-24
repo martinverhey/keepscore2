@@ -1,7 +1,9 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/app_router.dart';
 import '../../../../core/error/failure_messages.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
@@ -70,11 +72,22 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
   Widget _sidebar(BuildContext context, ConfigurationState state) {
     final cubit = context.read<ConfigurationCubit>();
     final session = context.watch<AuthBloc>().state;
-    setPageTitle(context, context.l10n.configurationTitle);
+    setPageTitle(context, context.l10n.competitionEdit);
 
     return AdaptiveScaffold(
-      title: context.l10n.configurationTitle,
+      title: context.l10n.competitionEdit,
+      leading: _leading(context, cubit),
       body: _body(context, state, cubit: cubit, session: session),
+    );
+  }
+
+  Widget? _leading(BuildContext context, ConfigurationCubit cubit) {
+    if (SuppressedBackButtonScope.of(context)) return null;
+    if (ModalRoute.of(context)?.canPop ?? false) return null;
+    return AdaptiveBarAction(
+      glyph: AdaptiveGlyph.back,
+      semanticLabel: context.l10n.commonBack,
+      onPressed: () => context.go(Routes.competitions(cubit.competitionId)),
     );
   }
 

@@ -9,6 +9,7 @@
   "commonDelete": "Verwijderen",
   "commonLoading": "Laden…",
   "commonBack": "Terug",
+  "commonMoreActions": "Meer acties",
   "commonCopy": "Kopiëren",
   "commonDone": "Klaar",
   "commonNext": "Volgende",
@@ -106,6 +107,7 @@
   "competitionAllowDrawsHelp": "Maakt het mogelijk een wedstrijd met gelijke score op te slaan.",
 
   "competitionRenameTitle": "Competitie hernoemen",
+  "competitionEdit": "Bewerken",
   "competitionRename": "Hernoemen",
   "competitionLeave": "Competitie verlaten",
   "competitionLeaveConfirmTitle": "{name} verlaten?",

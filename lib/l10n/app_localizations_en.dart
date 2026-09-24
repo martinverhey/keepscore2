@@ -30,6 +30,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonBack => 'Back';
 
   @override
+  String get commonMoreActions => 'More actions';
+
+  @override
   String get commonCopy => 'Copy';
 
   @override
@@ -304,6 +307,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get competitionRenameTitle => 'Rename competition';
+
+  @override
+  String get competitionEdit => 'Edit';
 
   @override
   String get competitionRename => 'Rename';

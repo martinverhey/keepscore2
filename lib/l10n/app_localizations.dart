@@ -140,6 +140,12 @@ abstract class AppLocalizations {
   /// **'Back'**
   String get commonBack;
 
+  /// No description provided for @commonMoreActions.
+  ///
+  /// In en, this message translates to:
+  /// **'More actions'**
+  String get commonMoreActions;
+
   /// No description provided for @commonCopy.
   ///
   /// In en, this message translates to:
@@ -619,6 +625,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Rename competition'**
   String get competitionRenameTitle;
+
+  /// No description provided for @competitionEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get competitionEdit;
 
   /// No description provided for @competitionRename.
   ///

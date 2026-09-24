@@ -9,6 +9,7 @@
   "commonDelete": "Delete",
   "commonLoading": "Loading…",
   "commonBack": "Back",
+  "commonMoreActions": "More actions",
   "commonCopy": "Copy",
   "commonDone": "Done",
   "commonNext": "Next",
@@ -106,6 +107,7 @@
   "competitionAllowDrawsHelp": "Lets a match be saved with equal scores.",
 
   "competitionRenameTitle": "Rename competition",
+  "competitionEdit": "Edit",
   "competitionRename": "Rename",
   "competitionLeave": "Leave competition",
   "competitionLeaveConfirmTitle": "Leave {name}?",

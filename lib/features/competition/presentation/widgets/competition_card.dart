@@ -13,6 +13,7 @@ class CompetitionCard extends StatelessWidget {
     super.key,
     required this.overview,
     required this.onTap,
+    this.onEdit,
     this.onRename,
     this.onLeave,
     this.onDelete,
@@ -20,6 +21,7 @@ class CompetitionCard extends StatelessWidget {
 
   final CompetitionOverview overview;
   final VoidCallback onTap;
+  final VoidCallback? onEdit;
   final VoidCallback? onRename;
   final VoidCallback? onLeave;
   final VoidCallback? onDelete;
@@ -60,18 +62,10 @@ class CompetitionCard extends StatelessWidget {
   }
 
   Widget _name(Competition competition) {
-    return Row(
-      children: [
-        Flexible(
-          child: Text(
-            competition.name,
-            style: AppTypography.titleSmall,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-        if (onRename != null)
-          CompetitionActions(onRename: onRename, compact: true),
-      ],
+    return Text(
+      competition.name,
+      style: AppTypography.titleSmall,
+      overflow: TextOverflow.ellipsis,
     );
   }
 
@@ -86,8 +80,17 @@ class CompetitionCard extends StatelessWidget {
           ),
         ),
         _inviteButton(context),
-        CompetitionActions(onLeave: onLeave, onDelete: onDelete),
+        if (_actions().hasActions) _actions(),
       ],
+    );
+  }
+
+  CompetitionActions _actions() {
+    return CompetitionActions(
+      onEdit: onEdit,
+      onRename: onRename,
+      onLeave: onLeave,
+      onDelete: onDelete,
     );
   }
 

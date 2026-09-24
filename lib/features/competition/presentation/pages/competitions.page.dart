@@ -134,6 +134,7 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
               CompetitionCard(
                 overview: overview,
                 onTap: () => context.go(Routes.competition(overview.id)),
+                onEdit: _editCallback(context, overview, myUserId),
                 onRename: _renameCallback(context, overview, myUserId),
                 onLeave: _leaveCallback(context, overview, myUserId),
                 onDelete: _deleteCallback(context, overview, myUserId),
@@ -171,6 +172,7 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
         ActiveCompetitionCard(
           overview: active,
           onOpen: () => context.go(Routes.competition(active.id)),
+          onEdit: _editCallback(context, active, myUserId),
           onRename: _renameCallback(context, active, myUserId),
           onLeave: _leaveCallback(context, active, myUserId),
           onDelete: _deleteCallback(context, active, myUserId),
@@ -276,6 +278,15 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
       if (result == null || !context.mounted) return null;
       if (result.competitionId case final competitionId?) return competitionId;
     }
+  }
+
+  VoidCallback? _editCallback(
+    BuildContext context,
+    CompetitionOverview overview,
+    String? myUserId,
+  ) {
+    if (!overview.competition.isOwnedBy(myUserId)) return null;
+    return () => context.go(Routes.configuration(overview.id));
   }
 
   VoidCallback? _renameCallback(
