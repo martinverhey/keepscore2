@@ -122,6 +122,9 @@ Future<GoRouter> _pumpHarness(
 
   final seasonStart = DateTime.utc(2026, 8, 1);
   final seasonEnd = DateTime.utc(2026, 9, 1);
+  when(
+    () => leaderboard.finishedSeasons(any()),
+  ).thenAnswer((_) async => const []);
   when(() => leaderboard.currentSeason(_competitionId)).thenAnswer(
     (_) async =>
         SeasonWindow(id: 's1', startsAt: seasonStart, endsAt: seasonEnd),

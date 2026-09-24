@@ -165,6 +165,9 @@ void main() {
         () => matches.seasonGameTypes(id),
       ).thenAnswer((_) async => const <GameType>{});
       when(() => matches.watch(id)).thenAnswer((_) => const Stream.empty());
+      when(
+        () => leaderboard.finishedSeasons(any()),
+      ).thenAnswer((_) async => const []);
       when(() => leaderboard.currentSeason(id)).thenAnswer(
         (_) async => SeasonWindow(
           id: 'season-$id',

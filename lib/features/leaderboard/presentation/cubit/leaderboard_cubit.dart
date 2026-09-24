@@ -4,6 +4,7 @@ import '../../../../core/data/realtime.dart';
 import '../../../../core/error/failure.dart';
 import '../../../profile/domain/profile_repository.dart';
 import '../../../profile/domain/rating_point.model.dart';
+import '../../domain/leaderboard.model.dart';
 import '../../domain/leaderboard_repository.dart';
 import '../../domain/season.model.dart';
 import 'leaderboard_state.dart';
@@ -36,6 +37,7 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
     if (!silent) emit(const LeaderboardLoading());
     try {
       final medalsFuture = _repository.medals(competitionId);
+      final finishedFuture = _repository.finishedSeasons(competitionId);
       final window = await _repository.currentSeason(competitionId);
       if (isClosed) return;
 
@@ -56,9 +58,11 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
       final leaderboards = await leaderboardsFuture;
       final medalTallies = await medalsFuture;
       final viewerTrend = await trendFuture;
+      final finishedSeasons = await finishedFuture;
       if (isClosed) return;
 
       final medals = {for (final tally in medalTallies) tally.playerId: tally};
+      final kept = _keptView(silent ? _ready : null, finishedSeasons);
 
       emit(
         LeaderboardReady(
@@ -66,6 +70,10 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
           leaderboards: leaderboards,
           medals: medals,
           viewerTrend: viewerTrend,
+          finishedSeasons: finishedSeasons,
+          viewedSeasonId: kept?.viewedSeasonId,
+          finishedLeaderboards: kept?.finishedLeaderboards ?? const [],
+          busy: kept?.busy ?? false,
         ),
       );
       _watch(season.id);
@@ -79,6 +87,70 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
   }
 
   Future<void> refresh() => load(silent: true);
+
+  LeaderboardReady? _keptView(
+    LeaderboardReady? previous,
+    List<Season> finishedSeasons,
+  ) {
+    final viewedSeasonId = previous?.viewedSeasonId;
+    if (viewedSeasonId == null) return null;
+    final stillFinished = finishedSeasons.any(
+      (finished) => finished.id == viewedSeasonId,
+    );
+    return stillFinished ? previous : null;
+  }
+
+  Future<void> viewSeason(String? seasonId) async {
+    final ready = _ready;
+    if (ready == null || seasonId == ready.viewedSeasonId) return;
+
+    final isFinished = ready.finishedSeasons.any(
+      (finished) => finished.id == seasonId,
+    );
+    if (seasonId == null || !isFinished) {
+      emit(_viewingCurrent(ready));
+      return;
+    }
+
+    emit(
+      ready.copyWith(
+        viewedSeasonId: seasonId,
+        finishedLeaderboards: const [],
+        busy: true,
+      ),
+    );
+
+    try {
+      final standings = await _repository.history(
+        competitionId: competitionId,
+        seasonId: seasonId,
+      );
+      final latest = _ready;
+      if (isClosed || latest == null) return;
+      if (latest.viewedSeasonId != seasonId) return;
+      emit(
+        latest.copyWith(
+          finishedLeaderboards: standings
+              .map(Leaderboard.fromSeasonLeaderboard)
+              .toList(growable: false),
+          busy: false,
+        ),
+      );
+    } on Failure {
+      final latest = _ready;
+      if (isClosed || latest == null) return;
+      if (latest.viewedSeasonId != seasonId) return;
+      emit(_viewingCurrent(latest));
+    }
+  }
+
+  LeaderboardReady _viewingCurrent(LeaderboardReady ready) {
+    return ready.copyWith(
+      viewCurrentSeason: true,
+      finishedLeaderboards: const [],
+      busy: false,
+    );
+  }
 
   Future<void> setViewer(String? playerId) async {
     if (playerId == _viewerPlayerId) return;

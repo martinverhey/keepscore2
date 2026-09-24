@@ -73,18 +73,28 @@ the feature's `presentation/widgets/leaderboard_list.dart`) and `MatchesPage`
 (`features/match/presentation/pages/matches.page.dart`) are each a full routed page — own
 `AdaptiveScaffold`, own `LeaderboardCubit`/`MatchListCubit` loaded in their own `initState`.
 Players has its own settings route, not a branch — see "Leaderboard and Matches are
-routes, not tabs" for why. The leaderboard tab always shows the
+routes, not tabs" for why. The leaderboard tab opens on the
 current calendar window — which has no row until the first match lands in it.
-It has no season picker: that moved to
-`/competition/:id/settings/history` (`HistoryPage`), which shows one
-finished season at a time — `SeasonFilterButton` in the app bar's `trailing`
-slot opens `SeasonSheet`, which picks among `HistoryState.seasons` (the lean,
-already-loaded season list — id/starts_at/ends_at only, no leaderboards — so
-the picker itself needs no separate fetch), selecting one fetches just that
-season's leaderboard, and the chosen season heads the list as a `ListHeader`
-— the same title-plus-subtitle block `LeaderboardList._seasonBar` uses, so
-both pages name their season identically; only the subtitle differs
-(`Ends <date>` for the running season, the finished season's date range in
+**Once the competition has a finished season, the season header above the
+list is itself the season picker**: `ListHeader(onTap:)` adds a chevron-down
+after the title and makes the block tappable, and it opens the same
+`SeasonSheet` over `LeaderboardReady.pickableSeasons` (the current season
+first, then `finishedSeasons` newest first). Picking a finished season calls
+`LeaderboardCubit.viewSeason(id)`, which fetches that season's final standings
+from `history` into `finishedLeaderboards`; `viewSeason(null)` goes back. Only
+the list follows the pick — `ProfileSection` above it stays on the current
+season, a past row carries no all-time medal tally and opens no profile (the
+sheet would show the *current* season's stats), and the subtitle switches
+from `Ends <date>` to the finished season's date range. A silent realtime
+refresh keeps the viewed season; a non-silent `load()` returns to the current
+one, and a failed fetch falls back to it rather than showing an empty table.
+With no finished season the header is plain text, as before.
+`/competition/:id/settings/history` (`HistoryPage`) still exists and is
+reached only from the wide-web sidebar's History row; it shows one finished
+season at a time through `SeasonFilterButton` in the app bar's `trailing`
+slot, which opens that same `SeasonSheet` over `HistoryState.seasons`, and heads the list with a
+`ListHeader` naming the season the same way (only the subtitle differs:
+`Ends <date>` for the running season, the finished season's date range in
 History). Neither tab filters by game type —
 that's Matches-only, see below.
 
@@ -3067,7 +3077,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 476 tests at time of writing
+flutter test                    # 482 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 dart run flutter_launcher_icons     # assets/icon/*.png into android/ web/ (not ios/)

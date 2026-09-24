@@ -91,8 +91,8 @@ void main() {
       addTearDown(authEvents.close);
 
       final gameTypeFilterCubit = GameTypeFilterCubit();
-    final plannedMatchCubit = PlannedMatchCubit();
-    addTearDown(plannedMatchCubit.close);
+      final plannedMatchCubit = PlannedMatchCubit();
+      addTearDown(plannedMatchCubit.close);
       addTearDown(gameTypeFilterCubit.close);
 
       when(() => competitions.myCompetitions()).thenAnswer((_) async => []);
@@ -217,6 +217,9 @@ void main() {
 
       final seasonStart = DateTime.utc(2026, 8, 1);
       final seasonEnd = DateTime.utc(2026, 9, 1);
+      when(
+        () => leaderboard.finishedSeasons(any()),
+      ).thenAnswer((_) async => const []);
       when(() => leaderboard.currentSeason(_competitionId)).thenAnswer(
         (_) async =>
             SeasonWindow(id: 's1', startsAt: seasonStart, endsAt: seasonEnd),
@@ -294,7 +297,7 @@ void main() {
           providers: [
             BlocProvider<AuthBloc>.value(value: authBloc),
             BlocProvider<GameTypeFilterCubit>.value(value: gameTypeFilterCubit),
-          BlocProvider<PlannedMatchCubit>.value(value: plannedMatchCubit),
+            BlocProvider<PlannedMatchCubit>.value(value: plannedMatchCubit),
             BlocProvider(
               create: (_) => CompetitionCubit(competitions, authBloc),
             ),

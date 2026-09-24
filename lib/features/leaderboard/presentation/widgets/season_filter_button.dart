@@ -30,7 +30,7 @@ class SeasonFilterButton extends StatelessWidget {
   }
 
   Future<void> _pick(BuildContext context) async {
-    final seasonId = await showAdaptiveSheet<String>(
+    final season = await showAdaptiveSheet<Season>(
       context,
       builder: (_) => SeasonSheet(
         seasons: seasons,
@@ -38,6 +38,6 @@ class SeasonFilterButton extends StatelessWidget {
         seasonLength: seasonLength,
       ),
     );
-    if (seasonId != null) onSelected(seasonId);
+    if (season?.id case final seasonId?) onSelected(seasonId);
   }
 }

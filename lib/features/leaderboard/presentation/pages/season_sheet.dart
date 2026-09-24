@@ -33,7 +33,7 @@ class SeasonSheet extends StatelessWidget {
               kind: season == selected
                   ? AdaptiveButtonKind.tinted
                   : AdaptiveButtonKind.plain,
-              onPressed: () => Navigator.of(context).pop(season.id),
+              onPressed: () => Navigator.of(context).pop(season),
             ),
         ],
       ),
