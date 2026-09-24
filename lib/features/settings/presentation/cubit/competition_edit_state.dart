@@ -3,26 +3,26 @@ import 'package:equatable/equatable.dart';
 import '../../../../core/error/failure.dart';
 import '../../../competition/domain/competition.model.dart';
 
-sealed class ConfigurationState extends Equatable {
-  const ConfigurationState();
+sealed class CompetitionEditState extends Equatable {
+  const CompetitionEditState();
 }
 
-class ConfigurationLoading extends ConfigurationState {
-  const ConfigurationLoading();
+class CompetitionEditLoading extends CompetitionEditState {
+  const CompetitionEditLoading();
 
   @override
   List<Object?> get props => [];
 }
 
-class ConfigurationMissing extends ConfigurationState {
-  const ConfigurationMissing();
+class CompetitionEditMissing extends CompetitionEditState {
+  const CompetitionEditMissing();
 
   @override
   List<Object?> get props => [];
 }
 
-class ConfigurationFailed extends ConfigurationState {
-  const ConfigurationFailed(this.failure);
+class CompetitionEditFailed extends CompetitionEditState {
+  const CompetitionEditFailed(this.failure);
 
   final Failure failure;
 
@@ -30,8 +30,8 @@ class ConfigurationFailed extends ConfigurationState {
   List<Object?> get props => [failure];
 }
 
-class ConfigurationReady extends ConfigurationState {
-  const ConfigurationReady({
+class CompetitionEditReady extends CompetitionEditState {
+  const CompetitionEditReady({
     required this.competition,
     required this.name,
     required this.seasonLength,
@@ -44,15 +44,16 @@ class ConfigurationReady extends ConfigurationState {
     this.failure,
   });
 
-  factory ConfigurationReady.of(Competition competition) => ConfigurationReady(
-    competition: competition,
-    name: competition.name,
-    seasonLength: competition.seasonLength,
-    kFactor: '${competition.kFactor}',
-    movEnabled: competition.movEnabled,
-    movCap: _formatCap(competition.movCap),
-    allowDraws: competition.allowDraws,
-  );
+  factory CompetitionEditReady.of(Competition competition) =>
+      CompetitionEditReady(
+        competition: competition,
+        name: competition.name,
+        seasonLength: competition.seasonLength,
+        kFactor: '${competition.kFactor}',
+        movEnabled: competition.movEnabled,
+        movCap: _formatCap(competition.movCap),
+        allowDraws: competition.allowDraws,
+      );
 
   final Competition competition;
   final String name;
@@ -80,7 +81,7 @@ class ConfigurationReady extends ConfigurationState {
 
   bool get canSubmit => nameIsValid && kFactorIsValid && movCapIsValid && !busy;
 
-  ConfigurationReady copyWith({
+  CompetitionEditReady copyWith({
     Competition? competition,
     String? name,
     SeasonLength? seasonLength,
@@ -93,7 +94,7 @@ class ConfigurationReady extends ConfigurationState {
     Failure? failure,
     bool clearFailure = false,
   }) {
-    return ConfigurationReady(
+    return CompetitionEditReady(
       competition: competition ?? this.competition,
       name: name ?? this.name,
       seasonLength: seasonLength ?? this.seasonLength,

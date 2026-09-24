@@ -3,35 +3,35 @@ import 'package:bloc/bloc.dart';
 import '../../../../core/error/failure.dart';
 import '../../../competition/domain/competition.model.dart';
 import '../../../competition/domain/competition_repository.dart';
-import 'configuration_state.dart';
+import 'competition_edit_state.dart';
 
-export 'configuration_state.dart';
+export 'competition_edit_state.dart';
 
-class ConfigurationCubit extends Cubit<ConfigurationState> {
-  ConfigurationCubit(this._repository, this.competitionId)
-    : super(const ConfigurationLoading());
+class CompetitionEditCubit extends Cubit<CompetitionEditState> {
+  CompetitionEditCubit(this._repository, this.competitionId)
+    : super(const CompetitionEditLoading());
 
   final CompetitionRepository _repository;
   final String competitionId;
 
-  ConfigurationReady? get _ready => switch (state) {
-    ConfigurationReady ready => ready,
+  CompetitionEditReady? get _ready => switch (state) {
+    CompetitionEditReady ready => ready,
     _ => null,
   };
 
   Future<void> load() async {
-    emit(const ConfigurationLoading());
+    emit(const CompetitionEditLoading());
     try {
       final overview = await _repository.overview(competitionId);
       if (isClosed) return;
       emit(
         overview == null
-            ? const ConfigurationMissing()
-            : ConfigurationReady.of(overview.competition),
+            ? const CompetitionEditMissing()
+            : CompetitionEditReady.of(overview.competition),
       );
     } on Failure catch (failure) {
       if (isClosed) return;
-      emit(ConfigurationFailed(failure));
+      emit(CompetitionEditFailed(failure));
     }
   }
 
@@ -53,7 +53,7 @@ class ConfigurationCubit extends Cubit<ConfigurationState> {
   void allowDrawsChanged(bool value) =>
       _edit((ready) => ready.copyWith(allowDraws: value));
 
-  void _edit(ConfigurationReady Function(ConfigurationReady) apply) {
+  void _edit(CompetitionEditReady Function(CompetitionEditReady) apply) {
     final ready = _ready;
     if (ready == null) return;
     emit(apply(ready).copyWith(saved: false, clearFailure: true));
@@ -74,7 +74,7 @@ class ConfigurationCubit extends Cubit<ConfigurationState> {
         allowDraws: ready.allowDraws,
       );
       if (isClosed) return;
-      emit(ConfigurationReady.of(competition).copyWith(saved: true));
+      emit(CompetitionEditReady.of(competition).copyWith(saved: true));
     } on Failure catch (failure) {
       if (isClosed) return;
       final latest = _ready;

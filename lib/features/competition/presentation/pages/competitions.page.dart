@@ -286,7 +286,7 @@ class _CompetitionsPageState extends State<CompetitionsPage> {
     String? myUserId,
   ) {
     if (!overview.competition.isOwnedBy(myUserId)) return null;
-    return () => context.go(Routes.configuration(overview.id));
+    return () => context.go(Routes.competitionEdit(overview.id));
   }
 
   VoidCallback? _renameCallback(

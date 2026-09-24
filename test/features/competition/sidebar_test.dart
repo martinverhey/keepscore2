@@ -138,7 +138,6 @@ void main() {
         find.text(l10n.competitionSettingsSectionCompetition),
         findsOneWidget,
       );
-      expect(find.text(l10n.configurationTitle), findsOneWidget);
       expect(find.text(l10n.historyTitle), findsOneWidget);
       expect(find.text(l10n.playersManageTitle), findsOneWidget);
       expect(find.text(l10n.matchNew), findsOneWidget);
@@ -163,9 +162,6 @@ void main() {
 
       await tester.tap(find.text(l10n.playersManageTitle));
       expect(selected, SidebarSection.players);
-
-      await tester.tap(find.text(l10n.configurationTitle));
-      expect(selected, SidebarSection.configuration);
 
       await tester.tap(find.text(l10n.competitionsTitle));
       expect(selected, SidebarSection.competitions);

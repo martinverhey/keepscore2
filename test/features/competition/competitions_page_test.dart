@@ -129,9 +129,8 @@ Future<MockCompetitionRepository> _pumpHarness(
         builder: (_, _) => const _ShellStub(child: CompetitionsPage()),
       ),
       GoRoute(
-        path: '/competition/:id/settings/configuration',
-        builder: (_, state) =>
-            Text('configuration ${state.pathParameters['id']}'),
+        path: '/competition/:id/settings/edit',
+        builder: (_, state) => Text('edit ${state.pathParameters['id']}'),
       ),
     ],
   );
@@ -454,7 +453,7 @@ void main() {
   });
 
   for (final useCupertino in [false, true]) {
-    testWidgets('edit opens the competition configuration '
+    testWidgets('edit opens the competition edit page '
         '(cupertino: $useCupertino)', (tester) async {
       await _pumpHarness(
         tester,
@@ -474,7 +473,7 @@ void main() {
       await tester.tap(find.text(l10n.competitionEdit));
       await tester.pumpAndSettle();
 
-      expect(find.text('configuration c2'), findsOneWidget);
+      expect(find.text('edit c2'), findsOneWidget);
     });
   }
 

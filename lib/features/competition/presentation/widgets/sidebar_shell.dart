@@ -27,9 +27,6 @@ class SidebarShell extends StatelessWidget {
     if (location == Routes.language) return SidebarSection.language;
     if (location.endsWith('/settings/players')) return SidebarSection.players;
     if (location.endsWith('/settings/history')) return SidebarSection.history;
-    if (location.endsWith('/settings/configuration')) {
-      return SidebarSection.configuration;
-    }
     if (location.endsWith('/settings')) return null;
     if (location.contains('/match/')) return SidebarSection.matches;
     if (location.endsWith('/matches')) return SidebarSection.matches;
@@ -61,7 +58,6 @@ class SidebarShell extends StatelessWidget {
       SidebarSection.matches => Routes.matches(competitionId),
       SidebarSection.players => Routes.players(competitionId),
       SidebarSection.history => Routes.history(competitionId),
-      SidebarSection.configuration => Routes.configuration(competitionId),
       SidebarSection.competitions || SidebarSection.language => null,
     };
   }

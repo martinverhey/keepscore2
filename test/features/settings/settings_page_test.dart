@@ -190,7 +190,6 @@ void main() {
         tester.element(find.byType(SettingsPage)),
       );
 
-      expect(find.text(l10n.configurationTitle), findsNothing);
       expect(find.text(l10n.playersManageTitle), findsNothing);
       expect(find.text(l10n.historyTitle), findsOneWidget);
       expect(tester.takeException(), isNull);

@@ -246,9 +246,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get competitionSettingsSectionSystem => 'System';
 
   @override
-  String get configurationTitle => 'Configuration';
-
-  @override
   String get playersManageTitle => 'Manage players';
 
   @override
@@ -258,13 +255,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get historyEmpty => 'Finished seasons will show up here.';
 
   @override
-  String get configurationSave => 'Save changes';
+  String get competitionEditSave => 'Save changes';
 
   @override
-  String get configurationSaved => 'Changes saved.';
+  String get competitionEditSaved => 'Changes saved.';
 
   @override
-  String get configurationOwnerOnly =>
+  String get competitionEditOwnerOnly =>
       'Only the owner can change these settings.';
 
   @override

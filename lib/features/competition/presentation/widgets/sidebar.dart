@@ -180,14 +180,6 @@ class Sidebar extends StatelessWidget {
       const SizedBox(height: AppSpacing.lg),
       const HorizontalDivider(),
       SectionLabel(context.l10n.competitionSettingsSectionCompetition),
-      if (canManageSettings)
-        _navItem(
-          context,
-          glyph: AdaptiveGlyph.settings,
-          label: context.l10n.configurationTitle,
-          selected: current == SidebarSection.configuration,
-          onTap: () => _select(SidebarSection.configuration),
-        ),
       _navItem(
         context,
         glyph: AdaptiveGlyph.history,

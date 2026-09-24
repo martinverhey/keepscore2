@@ -512,12 +512,6 @@ abstract class AppLocalizations {
   /// **'System'**
   String get competitionSettingsSectionSystem;
 
-  /// No description provided for @configurationTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Configuration'**
-  String get configurationTitle;
-
   /// No description provided for @playersManageTitle.
   ///
   /// In en, this message translates to:
@@ -536,23 +530,23 @@ abstract class AppLocalizations {
   /// **'Finished seasons will show up here.'**
   String get historyEmpty;
 
-  /// No description provided for @configurationSave.
+  /// No description provided for @competitionEditSave.
   ///
   /// In en, this message translates to:
   /// **'Save changes'**
-  String get configurationSave;
+  String get competitionEditSave;
 
-  /// No description provided for @configurationSaved.
+  /// No description provided for @competitionEditSaved.
   ///
   /// In en, this message translates to:
   /// **'Changes saved.'**
-  String get configurationSaved;
+  String get competitionEditSaved;
 
-  /// No description provided for @configurationOwnerOnly.
+  /// No description provided for @competitionEditOwnerOnly.
   ///
   /// In en, this message translates to:
   /// **'Only the owner can change these settings.'**
-  String get configurationOwnerOnly;
+  String get competitionEditOwnerOnly;
 
   /// No description provided for @competitionSeasonLengthWarning.
   ///

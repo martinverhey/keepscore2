@@ -3,7 +3,6 @@ enum SidebarSection {
   matches,
   players,
   history,
-  configuration,
   competitions,
   language,
 }

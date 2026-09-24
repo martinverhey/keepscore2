@@ -87,12 +87,6 @@ class _SettingsPageState extends State<SettingsPage> {
           _qrToggle(context, competition.joinCode),
           const SizedBox(height: AppSpacing.lg),
           SectionLabel(context.l10n.competitionSettingsSectionCompetition),
-          if (session.canWrite && isOwner)
-            NavRow(
-              label: context.l10n.configurationTitle,
-              onTap: () =>
-                  context.push(Routes.configuration(widget.competitionId)),
-            ),
           NavRow(
             label: context.l10n.historyTitle,
             onTap: () => context.push(Routes.history(widget.competitionId)),
