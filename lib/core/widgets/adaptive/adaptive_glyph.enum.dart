@@ -5,6 +5,7 @@ enum AdaptiveGlyph {
   players,
   history,
   settings,
+  profile,
   more,
   filter,
   competitions,

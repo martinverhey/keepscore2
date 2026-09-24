@@ -146,12 +146,6 @@ abstract class AppLocalizations {
   /// **'More actions'**
   String get commonMoreActions;
 
-  /// No description provided for @commonCopy.
-  ///
-  /// In en, this message translates to:
-  /// **'Copy'**
-  String get commonCopy;
-
   /// No description provided for @commonDone.
   ///
   /// In en, this message translates to:
@@ -452,24 +446,6 @@ abstract class AppLocalizations {
   /// **'Guests can join a competition and look around, but creating one needs an account.'**
   String get competitionGuestCannotCreate;
 
-  /// No description provided for @competitionCodeHelp.
-  ///
-  /// In en, this message translates to:
-  /// **'Anyone with this code can join.'**
-  String get competitionCodeHelp;
-
-  /// No description provided for @competitionQrInvite.
-  ///
-  /// In en, this message translates to:
-  /// **'Scan to join instantly'**
-  String get competitionQrInvite;
-
-  /// No description provided for @competitionQrHelp.
-  ///
-  /// In en, this message translates to:
-  /// **'Point a camera at this code — no typing required.'**
-  String get competitionQrHelp;
-
   /// No description provided for @competitionInviteTitle.
   ///
   /// In en, this message translates to:
@@ -482,23 +458,17 @@ abstract class AppLocalizations {
   /// **'Invite'**
   String get competitionInviteAction;
 
-  /// No description provided for @competitionUseQrInstead.
-  ///
-  /// In en, this message translates to:
-  /// **'Use QR code instead'**
-  String get competitionUseQrInstead;
-
   /// No description provided for @competitionNotFound.
   ///
   /// In en, this message translates to:
   /// **'This competition is gone, or you\'re no longer in it.'**
   String get competitionNotFound;
 
-  /// No description provided for @competitionSettings.
+  /// No description provided for @profilePageTitle.
   ///
   /// In en, this message translates to:
-  /// **'Settings'**
-  String get competitionSettings;
+  /// **'Profile'**
+  String get profilePageTitle;
 
   /// No description provided for @competitionSettingsSectionCompetition.
   ///

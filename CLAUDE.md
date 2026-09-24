@@ -26,11 +26,11 @@ Theme and language are app-wide, competition-independent preferences, both
 persisted to `SharedPreferences` and read back in `main()` before `runApp`.
 `LanguagePreference.locale` feeds `MaterialApp`/`CupertinoApp`'s `locale`, with
 `system` meaning "no override, follow the device", and `/settings/language` is a
-real page reached from the settings page's System section (and from the wide-web
+real page reached from the profile page's System section (and from the wide-web
 sidebar's account section).
 
 **Theme is deliberately *not* a page** — it's a toggle rendered inline
-in both of those places (settings page System section, sidebar account section),
+in both of those places (profile page System section, sidebar account section),
 so `ThemePreference` is `{light, dark}` with no `system` value and there is no
 `Routes.theme`. Losing `system` means there is nothing left for the device to
 follow at runtime, so the device's brightness is instead read *once*, as the
@@ -50,7 +50,7 @@ have passed the identical closure — the same reasoning that later moved
 section below). The cost of that is that **every widget test mounting a
 `Sidebar`, or a page composed with one, now needs a `ThemeCubit` and an
 `AuthBloc` in scope** — in the app both come from `KeepScoreApp`'s root
-`MultiBlocProvider`, but `sidebar_test.dart`, `settings_page_test.dart` and
+`MultiBlocProvider`, but `sidebar_test.dart`, `profile_page_test.dart` and
 `competition_content_page_test.dart` each provide their own (the test file kept
 its old name across the rename below — it now pumps a `StatefulShellRoute` and
 asserts against `LeaderboardPage`).
@@ -438,9 +438,13 @@ or moved:
   already exists, so a guest may open and read a bracket but never starts one;
   `TournamentBracketSheet._canScore` is `session.canWrite` on top of that, and
   Cancel tournament is narrower still (creator or owner, like a match).
-- **History** (`settings.page.dart`) is deliberately *outside*
-  this gate — it's read-only historical data a guest may read. Manage
-  players in the same menu stays gated to the owner.
+- **History** (`history.page.dart`) is deliberately *outside*
+  this gate — it's read-only historical data a guest may read. Its only
+  entry point is the wide-web sidebar's History row: the profile page
+  (`profile.page.dart`, reached from the Leaderboard's profile bar action)
+  carries no competition rows at all — no History, no Manage players, no
+  join code or QR — only the System section (theme, language), the app
+  version and sign out.
 - **Edit a competition** — the owner-only Edit item in the competition
   cards' actions menu (`CompetitionsPage._editCallback`) is the only entry
   point to the edit page (`CompetitionEditPage`).
@@ -460,7 +464,8 @@ lib/
 
 `features/settings/` is the one deliberate exception to "a feature owns the
 domain it presents": alongside its own theme-preference domain, it also holds
-the presentation for the competition-admin menu — `SettingsPage`,
+the presentation for the competition-admin screens — `ProfilePage` (theme,
+language and sign out; no competition rows),
 `CompetitionEditPage`/`CompetitionEditCubit`, `HistoryPage`/
 `HistoryCubit` — even though those read `CompetitionRepository`/
 `LeaderboardRepository`, which stay put in `competition`/`leaderboard`. They
@@ -665,8 +670,8 @@ name's row, which is what `_nameWithCode` was for). `onEdit`/`onRename`/
 the actions menu entirely. It replaced a
 `JoinQrCard` over a `JoinCodeCard`, so the invite sheet and the competitions
 page now show the competition the same way rather than two different ways.
-`SettingsPage` still renders `JoinCodeCard`/`JoinQrCard`, which is why both
-survive. Sourcing the overview is what put `CompetitionOverview? get overview`
+Both cards are gone: the settings page that still rendered them became the
+competition-free `ProfilePage`. Sourcing the overview is what put `CompetitionOverview? get overview`
 on `CompetitionState`'s sealed base — `LeaderboardPage` had only the
 `Competition` and needs the counts the card shows.
 
@@ -680,8 +685,8 @@ the inner tap wins, so pressing the badge copies rather than opening the
 competition; that is the point, and it is why the badge is the affordance
 rather than a separate Copy button. The timer/clipboard half is
 `core/widgets/copyable.dart`'s `Copyable`, a builder widget handing its child
-`(copied, copy)` — `JoinCodeCard`'s Copy button is the other caller, and the
-two had the same fifteen lines each before it existed.
+`(copied, copy)`, and `JoinCodeTag` is now its only caller (the other one,
+`JoinCodeCard`'s Copy button, went with the old settings page).
 
 **The competitions page's two actions live in the bar, and it has no floating
 action and no sign out.** `trailing` is a `Row` of two `AdaptiveBarAction`s —
@@ -1931,7 +1936,7 @@ edge to edge. Below two actions, off glass, or as soon as **any** member is a
 labelled action (`_isLabelled`, the private top-level check below the class),
 it is just the `Row` and each member keeps its own lens. That check reads the
 `label` off an `AdaptiveBarAction` in the list itself, so a member wrapped in
-anything else (a `BlocBuilder`, `CompetitionSettingsButton`,
+anything else (a `BlocBuilder`, `ProfileButton`,
 `GameTypeFilterButton`) counts as a glyph — which is what every wrapper in the
 app is. **Build a labelled action inline in the `actions` list**, the way
 `CompetitionsPage._joinButton` does; hidden behind a wrapper it would be
@@ -1947,7 +1952,7 @@ the two together are the whole glass-control vocabulary: an accent-free
 `AppGlass.barActionSize` (52) rather than `barHeight` (64) — smaller than the
 top bar's own 60px row, which is what `_actionSlot` centres it in, above.
 Every bar button
-goes through it — `CompetitionSettingsButton`, `GameTypeFilterButton`,
+goes through it — `ProfileButton`, `GameTypeFilterButton`,
 `CompetitionsPage`'s create/join pair, and
 `AdaptiveScaffold._glassLeading`'s hand-built back button — so the top bar's
 controls, the tab action and the FAB are all the same untinted lens with the
@@ -2146,7 +2151,7 @@ lens body included, and is the second file in the suite to set
 **`AdaptiveSwitch` is the one glass control that is not chrome.** On the glass
 path it is the package's own `LiquidGlassSwitch` — the iOS-26 sliding switch,
 whose thumb is picked up and carried rather than snapped — so the dark-mode
-toggle in `SettingsPage`'s System section (and any future `AdaptiveSwitch`)
+toggle in `ProfilePage`'s System section (and any future `AdaptiveSwitch`)
 reads as glass on iOS. Three things it does *not* do, each deliberate:
 - **It passes no `style`** — alone among the glass controls, since
   `LiquidGlassSwitch.defaultStyle` is a thumb-tuned clear
@@ -2291,8 +2296,8 @@ sheet, and nothing does now. Highlighting a sidebar section for such a page is
 `section == current`, so marking a task route as
 `SidebarSection.competitions` would make the row that leads back out
 unclickable.
-`SettingsPage` and `MatchDetailPage` gain a sidebar on wide web as a
-side effect of living in that subtree — `SettingsPage` is unreachable there
+`ProfilePage` and `MatchDetailPage` gain a sidebar on wide web as a
+side effect of living in that subtree — `ProfilePage` is unreachable there
 anyway (its rows are sidebar items), and a full-viewport match detail next to
 a sidebar-shaped app was the odd one out.
 
@@ -2336,7 +2341,7 @@ Two things had to move for `go` to be safe here:
   `SidebarShell._select` calls `CompetitionCubit.refresh()` on every hop.
 
 Native and narrow web are untouched by all of this: `Sidebar` still returns
-`child` unchanged below the breakpoint, so the bottom tab bar, `SettingsPage`
+`child` unchanged below the breakpoint, so the bottom tab bar, `ProfilePage`
 menu and every `context.push` still behave exactly as they did.
 
 ### Leaderboard and Matches are routes, not tabs
@@ -2443,10 +2448,10 @@ navigates itself via `context.go`/`push` rather than `onSelectTab`/`onNewMatch`
 callbacks — every call site would have passed the identical closure, the same
 reasoning that has `Sidebar` read `ThemeCubit` from context instead of a
 callback prop.
-`CompetitionSettingsButton` is the same move for the settings icon, which
-only the Leaderboard shows (in its non-wide-web app bar trailing slot) —
-Matches carries the game type filter alone, so the settings action is offered
-once per competition rather than on every tab.
+`ProfileButton` (`AdaptiveGlyph.profile`, pushing `Routes.profile`) is the
+same move for the profile icon, which only the Leaderboard shows (in its
+non-wide-web app bar trailing slot) — Matches carries the game type filter
+alone, so the profile action is offered once rather than on every tab.
 
 **A horizontal swipe across the page moves between the three tabs, and the
 tab bar is still the thing that says where you are.** `CompetitionShell`

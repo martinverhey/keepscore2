@@ -33,9 +33,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonMoreActions => 'More actions';
 
   @override
-  String get commonCopy => 'Copy';
-
-  @override
   String get commonDone => 'Done';
 
   @override
@@ -214,30 +211,17 @@ class AppLocalizationsEn extends AppLocalizations {
       'Guests can join a competition and look around, but creating one needs an account.';
 
   @override
-  String get competitionCodeHelp => 'Anyone with this code can join.';
-
-  @override
-  String get competitionQrInvite => 'Scan to join instantly';
-
-  @override
-  String get competitionQrHelp =>
-      'Point a camera at this code — no typing required.';
-
-  @override
   String get competitionInviteTitle => 'Invite players';
 
   @override
   String get competitionInviteAction => 'Invite';
 
   @override
-  String get competitionUseQrInstead => 'Use QR code instead';
-
-  @override
   String get competitionNotFound =>
       'This competition is gone, or you\'re no longer in it.';
 
   @override
-  String get competitionSettings => 'Settings';
+  String get profilePageTitle => 'Profile';
 
   @override
   String get competitionSettingsSectionCompetition => 'Competition';

@@ -21,6 +21,7 @@ class AdaptiveIcon extends StatelessWidget {
     AdaptiveGlyph.players => CupertinoIcons.person_2_fill,
     AdaptiveGlyph.history => CupertinoIcons.clock_fill,
     AdaptiveGlyph.settings => CupertinoIcons.gear,
+    AdaptiveGlyph.profile => CupertinoIcons.person_crop_circle,
     AdaptiveGlyph.more => CupertinoIcons.ellipsis,
     AdaptiveGlyph.filter => CupertinoIcons.line_horizontal_3_decrease,
     AdaptiveGlyph.competitions => CupertinoIcons.rectangle_stack_fill,
@@ -50,6 +51,7 @@ class AdaptiveIcon extends StatelessWidget {
     AdaptiveGlyph.players => Icons.groups,
     AdaptiveGlyph.history => Icons.history,
     AdaptiveGlyph.settings => Icons.settings,
+    AdaptiveGlyph.profile => Icons.account_circle_outlined,
     AdaptiveGlyph.more => Icons.more_vert,
     AdaptiveGlyph.filter => Icons.filter_list,
     AdaptiveGlyph.competitions => Icons.layers,
@@ -74,7 +76,11 @@ class AdaptiveIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Icon(AppPlatform.useCupertino ? _cupertino : _material, color: color, size: size);
+    return Icon(
+      AppPlatform.useCupertino ? _cupertino : _material,
+      color: color,
+      size: size,
+    );
   }
 }
 

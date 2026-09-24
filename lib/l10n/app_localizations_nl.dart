@@ -33,9 +33,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String get commonMoreActions => 'Meer acties';
 
   @override
-  String get commonCopy => 'Kopiëren';
-
-  @override
   String get commonDone => 'Klaar';
 
   @override
@@ -214,30 +211,17 @@ class AppLocalizationsNl extends AppLocalizations {
       'Als gast kun je deelnemen aan een competitie en rondkijken, maar voor het maken van een competitie heb je een account nodig.';
 
   @override
-  String get competitionCodeHelp => 'Iedereen met deze code kan meedoen.';
-
-  @override
-  String get competitionQrInvite => 'Scan om direct mee te doen';
-
-  @override
-  String get competitionQrHelp =>
-      'Richt een camera op deze code — typen hoeft niet.';
-
-  @override
   String get competitionInviteTitle => 'Spelers uitnodigen';
 
   @override
   String get competitionInviteAction => 'Uitnodigen';
 
   @override
-  String get competitionUseQrInstead => 'Gebruik liever een QR-code';
-
-  @override
   String get competitionNotFound =>
       'Deze competitie bestaat niet meer, of je zit er niet meer in.';
 
   @override
-  String get competitionSettings => 'Instellingen';
+  String get profilePageTitle => 'Profiel';
 
   @override
   String get competitionSettingsSectionCompetition => 'Competitie';

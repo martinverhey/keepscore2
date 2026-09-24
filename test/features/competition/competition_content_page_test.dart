@@ -248,7 +248,7 @@ Future<GoRouter> _pumpHarness(
       providers: [
         BlocProvider<AuthBloc>.value(value: authBloc),
         BlocProvider<GameTypeFilterCubit>.value(value: gameTypeFilterCubit),
-          BlocProvider<PlannedMatchCubit>.value(value: plannedMatchCubit),
+        BlocProvider<PlannedMatchCubit>.value(value: plannedMatchCubit),
         BlocProvider<ThemeCubit>(create: (_) => ThemeCubit()),
         BlocProvider(create: (_) => CompetitionCubit(competitions, authBloc)),
         BlocProvider(
@@ -279,7 +279,7 @@ void main() {
     final l10n = AppLocalizations.of(
       tester.element(find.byType(LeaderboardPage)),
     );
-    expect(find.text(l10n.competitionSettings), findsNothing);
+    expect(find.text(l10n.profilePageTitle), findsNothing);
 
     await tester.tap(find.text('Office Table Tennis'));
     await tester.pumpAndSettle();
@@ -291,7 +291,7 @@ void main() {
       tester.widget<CompetitionTabBar>(find.byType(CompetitionTabBar)).current,
       CompetitionTab.competitions,
     );
-    expect(find.text(l10n.competitionSettings), findsNothing);
+    expect(find.text(l10n.profilePageTitle), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
