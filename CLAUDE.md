@@ -417,8 +417,7 @@ or moved:
   `widgets/players.dart`, `isRegistered: session.canWrite`. **Every entry
   point *into* player management is a step stricter than that: owner-only,
   `session.canWrite && competition.isOwnedBySession(session)`** — the
-  Settings row and the sidebar's Players row (`canManageSettings`, the same
-  flag Configuration uses), the leaderboard's Manage players button
+  Settings row and the sidebar's Players row (`canManageSettings`), the leaderboard's Manage players button
   (`LeaderboardList.isOwner`), and the team picker's
   (`TeamPickerSheet.canManagePlayers`). A registered non-owner reaching the
   sheet another way still sees the roster and may rename themselves —
@@ -440,8 +439,11 @@ or moved:
   `TournamentBracketSheet._canScore` is `session.canWrite` on top of that, and
   Cancel tournament is narrower still (creator or owner, like a match).
 - **History** (`settings.page.dart`) is deliberately *outside*
-  this gate — it's read-only historical data a guest may read. Competition
-  Settings and Manage players in the same menu stay gated, both to the owner.
+  this gate — it's read-only historical data a guest may read. Manage
+  players in the same menu stays gated to the owner.
+- **Edit a competition** — the owner-only Edit item in the competition
+  cards' actions menu (`CompetitionsPage._editCallback`) is the only entry
+  point to the edit page (`CompetitionEditPage`).
 
 ## Architecture
 
@@ -459,7 +461,7 @@ lib/
 `features/settings/` is the one deliberate exception to "a feature owns the
 domain it presents": alongside its own theme-preference domain, it also holds
 the presentation for the competition-admin menu — `SettingsPage`,
-`ConfigurationPage`/`ConfigurationCubit`, `HistoryPage`/
+`CompetitionEditPage`/`CompetitionEditCubit`, `HistoryPage`/
 `HistoryCubit` — even though those read `CompetitionRepository`/
 `LeaderboardRepository`, which stay put in `competition`/`leaderboard`. They
 moved here because they're conceptually "settings" screens, not because they
@@ -626,15 +628,17 @@ beside it so a long name ellipsises against it; `CompetitionCard` carries it
 at the end of the counts row, after the invite button. They used to be split
 across two rows — a compact rename after the name and the destructive pair at
 the end of its own row — until four actions made a menu the better shape.
-**Edit is `go(Routes.configuration(id))`, never `push`**: the target can be a
+**Edit is `go(Routes.competitionEdit(id))`, never `push`**: the target can be a
 competition other than the one whose shell you are in, which is the
 black-screen case in "Entering a competition is always `go`". A `go` there
-leaves the configuration page with nothing to pop to, so `ConfigurationPage`
+leaves the edit page with nothing to pop to, so `CompetitionEditPage`
 renders its own back action — `go(Routes.competitions(id))` — whenever
 `ModalRoute.canPop` is false and the sidebar is not suppressing back buttons.
 The page itself is titled `competitionEdit` ("Edit" / "Bewerken") to match
-the menu item that opens it; the Settings row and the sidebar row that lead
-there still read `configurationTitle`.
+the menu item that opens it, and **that menu item is the only way in**: the
+Settings page's Configuration row, the sidebar's, `SidebarSection.configuration`
+and the `configurationTitle` key were all removed with it, so on wide web
+nothing in the sidebar is highlighted while the page is open.
 `AdaptiveMenuButton` (`core/widgets/adaptive/adaptive_menu_button.dart`) is a
 `PopupMenuButton` of icon-plus-label rows on Material and wide web, and a
 `CupertinoActionSheet` with a Cancel button on Cupertino; destructive items
@@ -980,7 +984,7 @@ code; don't relitigate them.
     needs falls into one of four recurring buckets — grep an existing
     `<name>_state.dart` for the closest match before inventing a new shape:
     - **Fetch one thing, with a "not found" case** (`CompetitionState`,
-      `ConfigurationState`, `MatchDetailState`): `XLoading`/`XMissing`/
+      `CompetitionEditState`, `MatchDetailState`): `XLoading`/`XMissing`/
       `XFailed(failure)`/`XReady(...)`. A field that was nullable purely to
       mean "not loaded yet" becomes non-nullable on `XReady` — e.g.
       `MatchFormReady.competition`/`MatchDetailReady.match` — so
@@ -1523,7 +1527,7 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   Getting there needed three things:
   `SidebarSection` (`sidebar_section.enum.dart`) enumerating **every**
   destination the sidebar can reach — leaderboard, matches, newMatch,
-  players, history, configuration, competitions, language — not just the
+  players, history, competitions, language — not just the
   competition-scoped ones (it is named for the sidebar, not the competition,
   because `competitions`/`language`/`newMatch` are not competition sections);
   `current` covering all of them, so "you are already here" is a
@@ -2314,7 +2318,7 @@ Two things had to move for `go` to be safe here:
 - **The `settings/*` routes are declared as siblings, not children of
   `settings`.** `go` builds a page for every route in the matched chain, so
   nesting them under `/competition/:id/settings` would have put `SettingsPage`
-  in the stack underneath Players/History/Configuration — and had it call
+  in the stack underneath Players/History/Edit — and had it call
   `setPageTitle` on the way past. The paths are unchanged
   (`path: 'settings/players'` under `/competition/:id`); only the nesting is.
 - **`PlayersCubit` moved up to the competition `ShellRoute`**, so every
@@ -2328,7 +2332,7 @@ Two things had to move for `go` to be safe here:
   there is no refresh-on-return machinery for it. It does watch `players`
   now (see "Five tables are watched" above), but that covers somebody
   *else's* write, not a stale instance of your own. The one thing outside that shared
-  instance is the competition itself (a rename in Configuration), so
+  instance is the competition itself (a rename on the Edit page), so
   `SidebarShell._select` calls `CompetitionCubit.refresh()` on every hop.
 
 Native and narrow web are untouched by all of this: `Sidebar` still returns
@@ -2350,7 +2354,7 @@ the bare `/competition/:id` URL redirects to, not a cubit `CompetitionScope`
 resets on entry.
 
 The trigger was the sidebar itself: a route it could highlight and deep-link
-to, matching how Players/History/Configuration already worked, rather than a
+to, matching how Players/History/Edit already worked, rather than a
 shared page with an internal tab enum the sidebar had to reach into.
 `LeaderboardCubit`/`MatchListCubit` each moved into their own branch's leaf
 `GoRoute` rather than the shared competition `ShellRoute` `PlayersCubit`
@@ -2499,11 +2503,11 @@ is still rendered when there is *no* competition (the `else` branch of
   **The competition the sidebar renders must come from `CompetitionCubit`,
   never from the page's own cubit** — which is now structural, since the
   sidebar reads that cubit itself and takes no competition prop at all.
-  `ConfigurationCubit`/`HistoryCubit`/etc. all start out `loading` with their
+  `CompetitionEditCubit`/`HistoryCubit`/etc. all start out `loading` with their
   own `competition` field `null` even though `CompetitionCubit` already has
   the answer. Sourcing `canManageSettings` from the page's own cubit instead
   briefly evaluates to `false` while that cubit's own fetch is in flight, so
-  an owner-only nav row (e.g. "Competition settings") visibly disappears and
+  an owner-only nav row (e.g. "Manage players") visibly disappears and
   reappears a moment later.
   **Almost no test exercises this** — `kIsWeb` is always `false`
   under `flutter test`, so `useWideWeb` never trips regardless of the pumped
