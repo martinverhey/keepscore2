@@ -141,7 +141,7 @@ void main() {
     );
 
     expect(find.byType(StreakBadge), findsOneWidget);
-    expect(_glyphCount(tester, AdaptiveGlyph.ice), 3);
+    expect(_glyphCount(tester, AdaptiveGlyph.ice), 2);
     expect(_glyphCount(tester, AdaptiveGlyph.fire), 0);
 
     await pumpRow(
@@ -149,7 +149,7 @@ void main() {
       _leaderboard(streakType: StreakType.win, streakCount: 12),
     );
 
-    expect(_glyphCount(tester, AdaptiveGlyph.fire), 3);
+    expect(_glyphCount(tester, AdaptiveGlyph.fire), 2);
     expect(_glyphCount(tester, AdaptiveGlyph.ice), 0);
   });
 
@@ -158,7 +158,7 @@ void main() {
   ) async {
     await pumpRow(
       tester,
-      _leaderboard(streakType: StreakType.loss, streakCount: 2),
+      _leaderboard(streakType: StreakType.loss, streakCount: 4),
     );
 
     expect(find.byType(StreakBadge), findsNothing);

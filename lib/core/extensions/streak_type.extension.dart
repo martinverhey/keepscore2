@@ -7,10 +7,10 @@ import '../widgets/adaptive/adaptive.dart';
 extension StreakTypeTier on StreakType {
   int tier(int count) {
     if (this == StreakType.none) return 0;
-    if (count >= 25) return 4;
-    if (count >= 10) return 3;
-    if (count >= 5) return 2;
-    if (count >= 3) return 1;
+    if (count >= 50) return 4;
+    if (count >= 25) return 3;
+    if (count >= 10) return 2;
+    if (count >= 5) return 1;
     return 0;
   }
 
@@ -26,16 +26,14 @@ extension StreakTypeBadge on StreakType {
     return tier >= 4 ? 1 : tier;
   }
 
-  Color glyphColor(int count) => switch (this) {
-    StreakType.loss =>
-      tier(count) >= 4 ? AppColors.iceEliteCore : AppColors.iceCore,
-    _ => tier(count) >= 4 ? AppColors.fireEliteCore : AppColors.fireCore,
-  };
+  Color glyphColor(BuildContext context, int count) =>
+      switch ((this, tier(count))) {
+        (StreakType.loss, >= 4) => AdaptiveColors.iceElite(context),
+        (StreakType.loss, _) => AppColors.iceCore,
+        (_, >= 4) => AppColors.fireEliteCore,
+        _ => AppColors.fireCore,
+      };
 
-  Color badgeFill(int count) => switch (this) {
-    StreakType.loss =>
-      tier(count) >= 4 ? AppColors.iceEliteBadgeFill : AppColors.iceBadgeFill,
-    _ =>
-      tier(count) >= 4 ? AppColors.fireEliteBadgeFill : AppColors.fireBadgeFill,
-  };
+  Color badgeFill(BuildContext context, int count) =>
+      glyphColor(context, count).withValues(alpha: AppOpacity.badgeFill);
 }

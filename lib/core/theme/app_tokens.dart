@@ -16,7 +16,9 @@ abstract final class AppRadius {
   static const double lg = 20;
   static const BorderRadius card = BorderRadius.all(Radius.circular(md));
   static const BorderRadius pill = BorderRadius.all(Radius.circular(999));
-  static const BorderRadius sheet = BorderRadius.vertical(top: Radius.circular(lg));
+  static const BorderRadius sheet = BorderRadius.vertical(
+    top: Radius.circular(lg),
+  );
 }
 
 abstract final class AppOpacity {
@@ -60,7 +62,8 @@ abstract final class AppColors {
   static const Color fireCore = Color(0xFFFF6D00);
   static const Color fireEliteCore = Color(0xFF9333EA);
   static const Color iceCore = Color(0xFF29B6F6);
-  static const Color iceEliteCore = Color(0xFF1D4ED8);
+  static const Color iceEliteCore = Color(0xFF4469D0);
+  static const Color iceEliteCoreOnDark = Color(0xFF3B82F6);
 
   static const Color modalSurface = Color(0xFFFAFAFA);
   static const Color modalSurfaceOnDark = Color(0xFF1F2023);
@@ -72,19 +75,21 @@ abstract final class AppColors {
   static const Color splashGradientStart = Color(0xFFFF9400);
   static const Color splashGradientEnd = Color(0xFFFF6900);
 
-  static final Color neutralSurface = neutralSoft.withValues(alpha: AppOpacity.neutralSurfaceFill);
-  static final Color fireBadgeFill = fireCore.withValues(alpha: AppOpacity.badgeFill);
-  static final Color fireEliteBadgeFill = fireEliteCore.withValues(alpha: AppOpacity.badgeFill);
-  static final Color iceBadgeFill = iceCore.withValues(alpha: AppOpacity.badgeFill);
-  static final Color iceEliteBadgeFill = iceEliteCore.withValues(alpha: AppOpacity.badgeFill);
+  static final Color neutralSurface = neutralSoft.withValues(
+    alpha: AppOpacity.neutralSurfaceFill,
+  );
   static final Color glassTint = white.withValues(alpha: AppOpacity.glassFill);
   static final Color glassTintOnDark = modalSurfaceOnDark.withValues(
     alpha: AppOpacity.glassFillOnDark,
   );
-  static final Color glassActionTint = white.withValues(alpha: AppOpacity.glassActionFill);
+  static final Color glassActionTint = white.withValues(
+    alpha: AppOpacity.glassActionFill,
+  );
   static const Color glassActionTintOnDark = transparent;
   static final Color glassRim = white.withValues(alpha: AppOpacity.glassRim);
-  static final Color glassRimOnDark = white.withValues(alpha: AppOpacity.glassRimOnDark);
+  static final Color glassRimOnDark = white.withValues(
+    alpha: AppOpacity.glassRimOnDark,
+  );
 }
 
 abstract final class AppGlass {
@@ -109,7 +114,9 @@ abstract final class AppGlass {
 }
 
 abstract final class AppTypography {
-  static const List<FontFeature> tabularFigures = [FontFeature.tabularFigures()];
+  static const List<FontFeature> tabularFigures = [
+    FontFeature.tabularFigures(),
+  ];
 
   static const String brandFontFamily = 'Permanent Marker';
 
@@ -181,14 +188,25 @@ abstract final class AppTypography {
     fontSize: labelLargeSize,
     fontWeight: FontWeight.w600,
   );
-  static const TextStyle eyebrow = TextStyle(fontSize: bodyMediumSize, fontWeight: FontWeight.w700);
-  static const TextStyle caption = TextStyle(fontSize: labelLargeSize, color: AppColors.neutral);
-  static final TextStyle captionStrong = caption.copyWith(fontWeight: FontWeight.w700);
+  static const TextStyle eyebrow = TextStyle(
+    fontSize: bodyMediumSize,
+    fontWeight: FontWeight.w700,
+  );
+  static const TextStyle caption = TextStyle(
+    fontSize: labelLargeSize,
+    color: AppColors.neutral,
+  );
+  static final TextStyle captionStrong = caption.copyWith(
+    fontWeight: FontWeight.w700,
+  );
   static const TextStyle captionSmall = TextStyle(
     fontSize: captionSmallSize,
     color: AppColors.neutral,
   );
-  static const TextStyle labelTiny = TextStyle(fontSize: labelTinySize, color: AppColors.neutral);
+  static const TextStyle labelTiny = TextStyle(
+    fontSize: labelTinySize,
+    color: AppColors.neutral,
+  );
   static const TextStyle brandInitial = TextStyle(
     fontFamily: brandFontFamily,
     fontSize: brandInitialSize,

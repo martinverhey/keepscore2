@@ -14,6 +14,12 @@ abstract final class AdaptiveColors {
   static Color teamB(BuildContext context) =>
       _forBrightness(context, AppColors.teamB, AppColors.teamBOnDark);
 
+  static Color iceElite(BuildContext context) => _forBrightness(
+    context,
+    AppColors.iceEliteCore,
+    AppColors.iceEliteCoreOnDark,
+  );
+
   static Color modalSurface(BuildContext context) => _forBrightness(
     context,
     AppColors.modalSurface,

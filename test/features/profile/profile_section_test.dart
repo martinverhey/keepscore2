@@ -144,7 +144,7 @@ void main() {
           .widgetList<AdaptiveIcon>(find.byType(AdaptiveIcon))
           .where((icon) => icon.glyph == AdaptiveGlyph.ice)
           .length,
-      2,
+      1,
     );
     expect(find.text(l10n.profileLossStreakLabel), findsOneWidget);
     expect(find.text('6'), findsOneWidget);

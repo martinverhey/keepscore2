@@ -78,4 +78,27 @@ void main() {
       });
     }
   });
+
+  test('the elite streak tier clears 3:1 against the surface they are '
+      'drawn on', () {
+    for (final brightness in Brightness.values) {
+      final surface = AppTheme.material(brightness).colorScheme.surface;
+      final dark = brightness == Brightness.dark;
+
+      final glyphs = {
+        'fireElite': AppColors.fireEliteCore,
+        'iceElite': dark
+            ? AppColors.iceEliteCoreOnDark
+            : AppColors.iceEliteCore,
+      };
+
+      glyphs.forEach((name, glyph) {
+        expect(
+          contrast(glyph, surface),
+          greaterThan(3),
+          reason: '$name on the $brightness surface',
+        );
+      });
+    }
+  });
 }

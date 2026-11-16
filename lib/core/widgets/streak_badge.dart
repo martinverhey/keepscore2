@@ -7,7 +7,13 @@ import '../theme/app_tokens.dart';
 import 'adaptive/adaptive.dart';
 
 class StreakBadge extends StatelessWidget {
-  const StreakBadge({super.key, required this.type, required this.count});
+  static const _overlappedGlyphWidth = 0.85;
+
+  const StreakBadge({
+    super.key,
+    required this.type,
+    required this.count,
+  });
 
   final StreakType type;
   final int count;
@@ -26,23 +32,39 @@ class StreakBadge extends StatelessWidget {
           ),
           decoration: BoxDecoration(
             borderRadius: AppRadius.pill,
-            color: type.badgeFill(count),
+            color: type.badgeFill(context, count),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (var i = 0; i < type.glyphCount(count); i++) ...[
-                if (i > 0) const SizedBox(width: 2),
-                AdaptiveIcon(
-                  type.glyph,
-                  color: type.glyphColor(count),
-                  size: 13,
-                ),
-              ],
-            ],
-          ),
+          child: _glyphs(context),
         ),
       ),
+    );
+  }
+
+  Widget _glyphs(BuildContext context) {
+    final glyphCount = type.glyphCount(count);
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (var i = 0; i < glyphCount; i++)
+          i < glyphCount - 1 ? _overlapped(_glyph(context)) : _glyph(context),
+      ],
+    );
+  }
+
+  Widget _overlapped(Widget glyph) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      widthFactor: _overlappedGlyphWidth,
+      child: glyph,
+    );
+  }
+
+  Widget _glyph(BuildContext context) {
+    return AdaptiveIcon(
+      type.glyph,
+      color: type.glyphColor(context, count),
+      size: 13,
     );
   }
 }
