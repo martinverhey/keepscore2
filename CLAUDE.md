@@ -364,8 +364,17 @@ refreshes the list when either sheet closes — realtime does it.
 - **A streak is badged in both directions**: fire for a win streak, ice for a
   loss streak (`AdaptiveGlyph.fire`/`ice`), on the leaderboard row, in
   `ProfileSection`'s name row and in `ProfileSheet` alike. The tiers are
-  shared by both — 3/5/10/25, one glyph per tier up to three, then a single
-  *elite*-coloured glyph at 25 (purple for fire, dark blue for ice) — and
+  shared by both — 5/10/25/50, so nothing is badged below five games: one
+  glyph at 5, two at 10, three at 25, then a single *elite*-coloured glyph
+  at 50 (purple for fire, dark blue for ice;
+  `test/core/extensions/streak_type_extension_test.dart`). A red/green
+  *mythic* tier above it was tried and dropped. Only the elite ice
+  carries a dark-mode twin, resolved through `AdaptiveColors.iceElite`,
+  which is why `glyphColor`/`badgeFill` take a `BuildContext`; the fill is
+  the glyph colour at `AppOpacity.badgeFill`, derived rather than stored.
+  The elite colours are held to 3:1 on both themes' page surface by
+  `adaptive_colors_test.dart`; the first-tier orange and sky blue are not,
+  and fall under it on the light surface — and
   `StreakType` itself resolves glyph, colour, fill and count
   (`StreakTypeBadge` in `core/extensions/streak_type.extension.dart`), so
   `StreakBadge` takes a type plus a count and nothing branches at the call
@@ -373,13 +382,31 @@ refreshes the list when either sheet closes — realtime does it.
   The loss half was dropped once (`6225d10`) precisely because no test
   covered it — `leaderboard_row_test.dart`, `profile_section_test.dart` and
   `profile_sheet_test.dart` each count ice glyphs now. `ProfileSheet`'s
-  overview carries one stat card per direction (current streak + best), each
-  headed by a badge slot that is **always** laid out — empty below the first
-  tier, so the two numbers beside it hold their place instead of sliding
-  across the card the moment a streak starts — and each followed by its own
-  milestone legend in its own colour — the ladder is the
-  same for both, so the legend reads as part of the card above it rather
-  than as a shared footnote under the pair.
+  overview carries **one** streak card of three cells under a `Streak`
+  heading (the way `Games` heads its own card): the current streak's
+  badge, its count (labelled Wins / Losing, or Current when there is
+  none), and whichever of the two record streaks is longer — `Best` for
+  the win streak, `Worst` for the loss streak, with a tie going to `Best`
+  (`_longestStreakBlock`). The
+  badge slot is **always** laid out — empty below the first tier — so the
+  two numbers hold their place instead of sliding across the card the
+  moment a streak starts. Under it sits a single milestone legend whose
+  badges are `StackedStreakBadge` (`core/widgets/stacked_streak_badge.dart`):
+  a fire `StreakBadge` over an ice one, with the tier's `5+` label behind
+  the pair, and the four tiers spread across the card's width in one
+  `Row` (`spaceEvenly`) — the ladder is the same for both directions, so
+  one legend says it once. Stacking the pair vertically is what makes all
+  four tiers fit one row on a phone: side by side, the 25+ pair alone was
+  ~95px and the row overflowed into a second line. Three earlier shapes
+  were dropped: a diagonal split of each glyph (neither icon stayed
+  readable), the ice pill half behind the fire one, and the two pills
+  fused side by side into one two-tone pill (which is what
+  `StreakBadge.borderRadius`/`padding` existed for, removed with it).
+  Inside every `StreakBadge` the 2–3 glyphs of a tier overlap rather than
+  sit apart — each but the last is an `Align(widthFactor:
+  _overlappedGlyphWidth)` — which keeps a 25+ badge narrow enough to stack
+  in the legend and to sit in a leaderboard row's name line;
+  `test/core/widgets/streak_badge_test.dart` pins it.
 - **A claimed player's name belongs to the person behind it.** The owner may
   rename an *unclaimed* player and their own row, and may deactivate or
   restore anyone; renaming a row somebody has claimed is that person's alone,
@@ -988,6 +1015,10 @@ code; don't relitigate them.
     trimmed text) each time it's needed — the same shape `ratingOf`/
     `teamRating` already use for values that depend on more than just the
     state's own fields.
+- **A value that exists to be tuned is a named `static const` at the top
+  of its class, before the constructor** — never a literal buried in a
+  widget, and never a top-level const parked above or below the class. `streak_badge.dart`'s
+  `_overlappedGlyphWidth` is the shape: one place to look, one name to change.
 - **One class or enum per file.** This applies to Cubit states and to domain
   enums/models alike:
   - **Every Cubit's state lives in its own `<name>_state.dart` file**, next to
@@ -1208,8 +1239,7 @@ code; don't relitigate them.
   was, verbatim, the single most-repeated color expression in the app (a
   neutral card/row background, a dozen-odd call sites) — instead of routing
   every one of those through the opacity token individually, it's
-  pre-combined once as `AppColors.neutralSurface`, and `AppColors.fireBadgeFill`
-  is the same move for the streak-badge background. `AppColors.white`/
+  pre-combined once as `AppColors.neutralSurface`. `AppColors.white`/
   `AppColors.transparent` name the two raw hex literals (`0xFFFFFFFF`,
   `0x00000000`) that show up where a *theme-independent* color is genuinely
   needed — the QR code's white quiet zone has to stay white in dark mode for
@@ -3080,7 +3110,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 482 tests at time of writing
+flutter test                    # 488 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 dart run flutter_launcher_icons     # assets/icon/*.png into android/ web/ (not ios/)

@@ -715,10 +715,22 @@ class AppLocalizationsNl extends AppLocalizations {
   String get profileLossStreakLabel => 'Verliesreeks';
 
   @override
-  String get profileBestWinStreakLabel => 'Beste winreeks';
+  String get profileStreakTitle => 'Reeks';
 
   @override
-  String get profileBestLossStreakLabel => 'Slechtste verliesreeks';
+  String get profileStreakWinsLabel => 'Gewonnen';
+
+  @override
+  String get profileStreakLosingLabel => 'Verliezend';
+
+  @override
+  String get profileStreakCurrentLabel => 'Huidig';
+
+  @override
+  String get profileStreakBestLabel => 'Beste';
+
+  @override
+  String get profileStreakWorstLabel => 'Slechtste';
 
   @override
   String get profileTrendTitle => 'Trend';

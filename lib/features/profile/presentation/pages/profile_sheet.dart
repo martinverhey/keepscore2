@@ -12,6 +12,7 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/medal_chip.dart';
 import '../../../../core/widgets/sheet.dart';
+import '../../../../core/widgets/stacked_streak_badge.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../../core/widgets/streak_badge.dart';
 import '../../../../core/widgets/trophy_chip.dart';
@@ -23,7 +24,9 @@ import '../../../leaderboard/domain/medals.model.dart';
 import '../../../leaderboard/domain/season_leaderboard.model.dart';
 import '../../../match/domain/match_entry.model.dart';
 import '../../../match/presentation/widgets/match_card.dart';
+import '../../domain/best_streaks.model.dart';
 import '../../domain/head_to_head_record.model.dart';
+import '../../domain/streak.model.dart';
 import '../cubit/profile_history_cubit.dart';
 import '../cubit/profile_overview_cubit.dart';
 import '../cubit/profile_versus_cubit.dart';
@@ -274,7 +277,12 @@ class _ProfileSheetState extends State<ProfileSheet> {
             losses: leaderboard.losses,
             draws: leaderboard.draws,
           ),
-          const SizedBox(height: AppSpacing.md),
+          const SizedBox(height: AppSpacing.lg),
+          Text(
+            context.l10n.profileStreakTitle,
+            style: AppTypography.bodyMedium,
+          ),
+          const SizedBox(height: AppSpacing.sm),
           _streaksRow(context, state),
         ],
         if (state.recentMatches.isNotEmpty) ...[
@@ -483,82 +491,67 @@ class _ProfileSheetState extends State<ProfileSheet> {
   }
 
   Widget _streaksRow(BuildContext context, ProfileOverviewReady state) {
-    final streak = state.streak;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _streakCard(
-          context,
-          StreakType.win,
-          current: streak.type == StreakType.win ? streak.count : 0,
-          best: state.bestStreaks.win,
-        ),
+        _streakCard(context, state),
         const SizedBox(height: AppSpacing.sm),
-        _streakMilestoneRow(StreakType.win),
-        const SizedBox(height: AppSpacing.md),
-        _streakCard(
-          context,
-          StreakType.loss,
-          current: streak.type == StreakType.loss ? streak.count : 0,
-          best: state.bestStreaks.loss,
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        _streakMilestoneRow(StreakType.loss),
+        _streakMilestoneRow(),
       ],
     );
   }
 
-  Widget _streakCard(
-    BuildContext context,
-    StreakType type, {
-    required int current,
-    required int best,
-  }) {
+  Widget _streakCard(BuildContext context, ProfileOverviewReady state) {
+    final streak = state.streak;
+
     return _statCard([
-      _streakBadgeBlock(type, current),
-      _statBlock(_streakLabel(context, type), '$current'),
-      _statBlock(_bestStreakLabel(context, type), '$best'),
+      _streakBadgeBlock(streak),
+      _statBlock(_currentStreakLabel(context, streak.type), '${streak.count}'),
+      _longestStreakBlock(context, state.bestStreaks),
     ]);
   }
 
-  Widget _streakBadgeBlock(StreakType type, int count) {
+  Widget _longestStreakBlock(BuildContext context, BestStreaks bestStreaks) {
+    return bestStreaks.loss > bestStreaks.win
+        ? _statBlock(
+            context.l10n.profileStreakWorstLabel,
+            '${bestStreaks.loss}',
+          )
+        : _statBlock(context.l10n.profileStreakBestLabel, '${bestStreaks.win}');
+  }
+
+  Widget _streakBadgeBlock(Streak streak) {
     return Expanded(
       child: Center(
-        child: type.hasBadge(count)
-            ? StreakBadge(type: type, count: count)
+        child: streak.type.hasBadge(streak.count)
+            ? StreakBadge(type: streak.type, count: streak.count)
             : const SizedBox.shrink(),
       ),
     );
   }
 
-  String _streakLabel(BuildContext context, StreakType type) =>
-      type == StreakType.loss
-      ? context.l10n.profileLossStreakLabel
-      : context.l10n.profileWinStreakLabel;
+  String _currentStreakLabel(BuildContext context, StreakType type) =>
+      switch (type) {
+        StreakType.win => context.l10n.profileStreakWinsLabel,
+        StreakType.loss => context.l10n.profileStreakLosingLabel,
+        StreakType.none => context.l10n.profileStreakCurrentLabel,
+      };
 
-  String _bestStreakLabel(BuildContext context, StreakType type) =>
-      type == StreakType.loss
-      ? context.l10n.profileBestLossStreakLabel
-      : context.l10n.profileBestWinStreakLabel;
-
-  Widget _streakMilestoneRow(StreakType type) {
-    return Wrap(
-      alignment: WrapAlignment.center,
-      spacing: AppSpacing.sm,
-      runSpacing: AppSpacing.xs,
+  Widget _streakMilestoneRow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        for (final games in const [3, 5, 10, 25])
-          _streakMilestoneItem(type, games),
+        for (final games in const [5, 10, 25, 50])
+          _streakMilestoneItem(games),
       ],
     );
   }
 
-  Widget _streakMilestoneItem(StreakType type, int games) {
+  Widget _streakMilestoneItem(int games) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        StreakBadge(type: type, count: games),
+        StackedStreakBadge(count: games),
         const SizedBox(width: AppSpacing.xs),
         Text('$games+', style: AppTypography.labelTiny),
       ],

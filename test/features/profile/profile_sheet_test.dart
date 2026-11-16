@@ -6,6 +6,7 @@ import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 import 'package:keepscore2/core/widgets/medal_chip.dart';
 import 'package:keepscore2/core/widgets/streak_badge.dart';
 import 'package:keepscore2/core/widgets/sheet.dart';
+import 'package:keepscore2/core/widgets/stacked_streak_badge.dart';
 import 'package:keepscore2/core/widgets/swipe_navigator.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard.model.dart';
@@ -238,8 +239,8 @@ void main() {
     },
   );
 
-  testWidgets('the overview carries a loss streak card and badges the streak '
-      'in ice', (tester) async {
+  testWidgets('the overview carries one streak card with the current loss '
+      'streak badged in ice and a one-row legend', (tester) async {
     when(() => leaderboardRepository.currentSeason('c1')).thenAnswer(
       (_) async =>
           SeasonWindow(id: 's1', startsAt: _august, endsAt: _september),
@@ -267,7 +268,7 @@ void main() {
         totalPlayed: 20,
         bestStreaks: BestStreaks(win: 7, loss: 9),
         bestRating: 1050,
-        streak: Streak(type: StreakType.loss, count: 4),
+        streak: Streak(type: StreakType.loss, count: 8),
         recentPlayed: RecentPlayed.zero(),
       ),
     );
@@ -285,45 +286,106 @@ void main() {
 
     final l10n = AppLocalizations.of(tester.element(find.byType(ProfileSheet)));
 
-    expect(find.text(l10n.profileWinStreakLabel), findsOneWidget);
-    expect(find.text(l10n.profileBestWinStreakLabel), findsOneWidget);
-    expect(find.text('7'), findsOneWidget);
-
-    expect(find.text(l10n.profileLossStreakLabel), findsOneWidget);
-    expect(find.text(l10n.profileBestLossStreakLabel), findsOneWidget);
-    expect(find.text('4'), findsOneWidget);
+    expect(find.text(l10n.profileStreakTitle), findsOneWidget);
+    expect(find.text(l10n.profileStreakLosingLabel), findsOneWidget);
+    expect(find.text(l10n.profileStreakWorstLabel), findsOneWidget);
+    expect(find.text(l10n.profileStreakBestLabel), findsNothing);
+    expect(find.text('8'), findsOneWidget);
+    expect(find.text('7'), findsNothing);
     expect(find.text('9'), findsOneWidget);
 
-    expect(
-      tester
-          .widgetList<AdaptiveIcon>(find.byType(AdaptiveIcon))
-          .where((icon) => icon.glyph == AdaptiveGlyph.ice)
-          .length,
-      9,
-    );
     expect(find.byType(StreakBadge), findsNWidgets(10));
-
-    expect(find.text('25+'), findsNWidgets(2));
-    final lossCardLabel = tester
-        .getRect(find.text(l10n.profileLossStreakLabel))
-        .top;
-    final milestoneRows = tester
-        .widgetList<Text>(find.text('25+'))
-        .map((text) => tester.getRect(find.byWidget(text)).top)
-        .toList();
-    expect(milestoneRows.first, lessThan(lossCardLabel));
-    expect(milestoneRows.last, greaterThan(lossCardLabel));
-
-    expect(
-      _offCentreInCard(tester, l10n.profileWinStreakLabel),
-      moreOrLessEquals(0, epsilon: 0.5),
+    final legendBadges = find.descendant(
+      of: find.byType(StackedStreakBadge).first,
+      matching: find.byType(StreakBadge),
     );
+    final fireRect = tester.getRect(legendBadges.first);
+    final iceRect = tester.getRect(legendBadges.last);
+    expect(tester.widget<StreakBadge>(legendBadges.first).type, StreakType.win);
+    expect(iceRect.top, greaterThan(fireRect.bottom));
     expect(
-      _offCentreInCard(tester, l10n.profileLossStreakLabel),
-      moreOrLessEquals(0, epsilon: 0.5),
+      iceRect.center.dx,
+      moreOrLessEquals(fireRect.center.dx, epsilon: 0.5),
+    );
+    final firstLabelTop = tester.getRect(find.text('5+')).top;
+    for (final label in const ['10+', '25+', '50+']) {
+      expect(tester.getRect(find.text(label)).top, firstLabelTop);
+    }
+    expect(find.byType(StackedStreakBadge), findsNWidgets(4));
+    expect(_glyphCount(tester, AdaptiveGlyph.ice), 9);
+    expect(_glyphCount(tester, AdaptiveGlyph.fire), 7);
+
+    final streakLabel = find.text(l10n.profileStreakLosingLabel);
+    expect(
+      tester.getRect(find.text('25+')).top,
+      greaterThan(tester.getRect(streakLabel).bottom),
+    );
+
+    final card = find
+        .ancestor(of: streakLabel, matching: find.byType(Container))
+        .first;
+    final cardRect = tester.getRect(card);
+    expect(
+      tester.getRect(streakLabel).center.dx,
+      moreOrLessEquals(cardRect.center.dx, epsilon: 0.5),
     );
 
     expect(tester.takeException(), isNull);
+    await cubit.close();
+  });
+
+  testWidgets('the streak card names the best win streak when it outruns '
+      'the worst loss streak', (tester) async {
+    when(() => leaderboardRepository.currentSeason('c1')).thenAnswer(
+      (_) async =>
+          SeasonWindow(id: 's1', startsAt: _august, endsAt: _september),
+    );
+    when(
+      () => leaderboardRepository.leaderboards(
+        competitionId: 'c1',
+        seasonId: 's1',
+      ),
+    ).thenAnswer(
+      (_) async => [
+        _leaderboard(rating: 1050, played: 10, wins: 6, losses: 3, draws: 1),
+      ],
+    );
+    when(
+      () => profileRepository.ratingHistory(seasonId: 's1', playerId: 'p1'),
+    ).thenAnswer((_) async => const []);
+    when(
+      () => profileRepository.profileStats(
+        playerId: 'p1',
+        seasonId: any(named: 'seasonId'),
+      ),
+    ).thenAnswer(
+      (_) async => const ProfileStats(
+        totalPlayed: 20,
+        bestStreaks: BestStreaks(win: 7, loss: 3),
+        bestRating: 1050,
+        streak: Streak(type: StreakType.win, count: 2),
+        recentPlayed: RecentPlayed.zero(),
+      ),
+    );
+
+    when(
+      () => matchRepository.recentForPlayer(playerId: 'p1'),
+    ).thenAnswer((_) async => const []);
+    when(
+      () => leaderboardRepository.medals('c1'),
+    ).thenAnswer((_) async => const []);
+
+    final cubit = buildOverviewCubit()..load();
+    await cubit.stream.firstWhere((state) => state is ProfileOverviewReady);
+    await pumpSheet(tester, cubit);
+
+    final l10n = AppLocalizations.of(tester.element(find.byType(ProfileSheet)));
+
+    expect(find.text(l10n.profileStreakWinsLabel), findsNWidgets(2));
+    expect(find.text(l10n.profileStreakBestLabel), findsOneWidget);
+    expect(find.text(l10n.profileStreakWorstLabel), findsNothing);
+    expect(find.text('7'), findsOneWidget);
+
     await cubit.close();
   });
 
@@ -1040,8 +1102,9 @@ ProfileTab _selectedTab(WidgetTester tester) {
       .value;
 }
 
-double _offCentreInCard(WidgetTester tester, String label) {
-  final block = find.text(label);
-  final card = find.ancestor(of: block, matching: find.byType(Container)).first;
-  return tester.getRect(block).center.dx - tester.getRect(card).center.dx;
+int _glyphCount(WidgetTester tester, AdaptiveGlyph glyph) {
+  return tester
+      .widgetList<AdaptiveIcon>(find.byType(AdaptiveIcon))
+      .where((icon) => icon.glyph == glyph)
+      .length;
 }

@@ -1328,17 +1328,41 @@ abstract class AppLocalizations {
   /// **'Loss streak'**
   String get profileLossStreakLabel;
 
-  /// No description provided for @profileBestWinStreakLabel.
+  /// No description provided for @profileStreakTitle.
   ///
   /// In en, this message translates to:
-  /// **'Best win streak'**
-  String get profileBestWinStreakLabel;
+  /// **'Streak'**
+  String get profileStreakTitle;
 
-  /// No description provided for @profileBestLossStreakLabel.
+  /// No description provided for @profileStreakWinsLabel.
   ///
   /// In en, this message translates to:
-  /// **'Worst loss streak'**
-  String get profileBestLossStreakLabel;
+  /// **'Wins'**
+  String get profileStreakWinsLabel;
+
+  /// No description provided for @profileStreakLosingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Losing'**
+  String get profileStreakLosingLabel;
+
+  /// No description provided for @profileStreakCurrentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Current'**
+  String get profileStreakCurrentLabel;
+
+  /// No description provided for @profileStreakBestLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Best'**
+  String get profileStreakBestLabel;
+
+  /// No description provided for @profileStreakWorstLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Worst'**
+  String get profileStreakWorstLabel;
 
   /// No description provided for @profileTrendTitle.
   ///

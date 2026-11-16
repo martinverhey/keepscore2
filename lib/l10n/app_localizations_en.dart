@@ -713,10 +713,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileLossStreakLabel => 'Loss streak';
 
   @override
-  String get profileBestWinStreakLabel => 'Best win streak';
+  String get profileStreakTitle => 'Streak';
 
   @override
-  String get profileBestLossStreakLabel => 'Worst loss streak';
+  String get profileStreakWinsLabel => 'Wins';
+
+  @override
+  String get profileStreakLosingLabel => 'Losing';
+
+  @override
+  String get profileStreakCurrentLabel => 'Current';
+
+  @override
+  String get profileStreakBestLabel => 'Best';
+
+  @override
+  String get profileStreakWorstLabel => 'Worst';
 
   @override
   String get profileTrendTitle => 'Trend';
