@@ -5,7 +5,6 @@ import 'package:flutter/widgets.dart';
 import '../../theme/app_tokens.dart';
 import 'adaptive_floating_action.dart';
 import 'adaptive_glass.dart';
-import 'adaptive_icon.dart';
 
 class AdaptiveBottomBarAction {
   const AdaptiveBottomBarAction({
@@ -63,7 +62,7 @@ class AdaptiveBottomBarHost extends StatelessWidget {
           Positioned(
             right: AppGlass.barEdgeInset,
             bottom: AppGlass.barEdgeInset,
-            child: _glassAction(context, action),
+            child: _action(action),
           ),
       ],
     );
@@ -123,21 +122,6 @@ class AdaptiveBottomBarHost extends StatelessWidget {
       );
     }
     return child;
-  }
-
-  Widget _glassAction(BuildContext context, AdaptiveBottomBarAction action) {
-    return Semantics(
-      button: true,
-      label: action.label,
-      child: LiquidGlassTabBarAction(
-        onTap: action.onPressed,
-        size: AppGlass.barHeight,
-        child: AdaptiveIcon(
-          action.glyph,
-          color: AdaptiveGlass.glyphColorOf(context),
-        ),
-      ),
-    );
   }
 
   Widget _action(AdaptiveBottomBarAction action) {

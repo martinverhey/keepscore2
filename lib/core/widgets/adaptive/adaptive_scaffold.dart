@@ -75,6 +75,7 @@ class AdaptiveScaffold extends StatelessWidget {
     }
     return CupertinoPageScaffold(
       child: _floated(
+        context,
         _cupertinoScrollView(
           _sliverBody(inset, pinsCaption: true),
           suppressBack,
@@ -97,6 +98,7 @@ class AdaptiveScaffold extends StatelessWidget {
         children: [
           Positioned.fill(
             child: _floated(
+              context,
               _glassScrollView(context, bottomInset),
               extraBottom: bottomInset,
             ),
@@ -425,17 +427,36 @@ class AdaptiveScaffold extends StatelessWidget {
           ];
   }
 
-  Widget _floated(Widget child, {double extraBottom = 0}) {
+  Widget _floated(
+    BuildContext context,
+    Widget child, {
+    double extraBottom = 0,
+  }) {
     if (floatingAction == null) return child;
     return Stack(
       children: [
         Positioned.fill(child: child),
-        Positioned(
-          right: AppSpacing.md,
-          bottom: AppSpacing.md + extraBottom,
-          child: SafeArea(top: false, child: floatingAction!),
-        ),
+        if (AdaptiveGlass.isEnabled(context))
+          _glassFloatingAction(extraBottom)
+        else
+          _platformFloatingAction(extraBottom),
       ],
+    );
+  }
+
+  Widget _glassFloatingAction(double extraBottom) {
+    return Positioned(
+      right: AppGlass.barEdgeInset,
+      bottom: AppGlass.barEdgeInset + extraBottom,
+      child: floatingAction!,
+    );
+  }
+
+  Widget _platformFloatingAction(double extraBottom) {
+    return Positioned(
+      right: AppSpacing.md,
+      bottom: AppSpacing.md + extraBottom,
+      child: SafeArea(top: false, child: floatingAction!),
     );
   }
 }

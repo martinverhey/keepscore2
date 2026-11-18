@@ -36,8 +36,11 @@ class AdaptiveFloatingAction extends StatelessWidget {
     return Semantics(
       button: true,
       label: semanticLabel,
-      child: LiquidGlassFab(
-        onPressed: busy ? null : onPressed,
+      child: LiquidGlassTabBarAction(
+        onTap: busy ? null : onPressed,
+        size: AppGlass.barHeight,
+        style: AdaptiveGlass.controlStyleOf(context),
+        touch: AdaptiveGlass.controlTouch,
         child: _child(AdaptiveGlass.glyphColorOf(context)),
       ),
     );

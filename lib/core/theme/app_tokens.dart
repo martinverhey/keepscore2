@@ -81,8 +81,10 @@ abstract final class AppGlass {
   static const double barTabLabelInset = 38;
   static const double barEdgeInset = 21;
   static const double barMargin = AppSpacing.md;
-  static const double barIconSize = 24;
-  static const double barActionSize = 56;
+  static const double barIconSize = 20;
+  static const double barBackIconSize = 28.5;
+  static const double barBackIconNudge = 1.2;
+  static const double barActionSize = 44;
   static const double topBarHeight = 60;
   static const double topBarSubtitleHeight = 20;
   static const double topBarSubtitleRise = 16;

@@ -1651,9 +1651,10 @@ its changelog first. **The package still imports the old
 `package:flutter/material.dart`**, so wherever it reads `Theme.of` it reads the
 *old* library's `Theme`, which nothing in this app provides (`cupertino_ui`'s
 `CupertinoApp` on iOS) — it always gets the light fallback. Never leave a
-light/dark choice to the package: `LiquidGlassTabBar` picks its own
-`defaultStyle`/`defaultDarkStyle` and its item colours that way, so
-`AdaptiveGlass.tabBarStyleOf`/`tabItemStyleOf` hand it the pick explicitly,
+light/dark choice to the package: `LiquidGlassTabBar` picks its item
+colours that way, so `AdaptiveGlass.tabItemStyleOf` hands it the pick
+explicitly (its bar style comes from `controlStyleOf`, which makes
+the same light/dark pick),
 off `AdaptiveColors.isDark` (`AdaptiveGlass.brightnessOf`).
 
 `AdaptiveGlass.isEnabled(context)` is the runtime check the widgets branch on,
@@ -1662,31 +1663,83 @@ not the bare `AppPlatform.useLiquidGlass` getter: it also refuses glass under
 reduce-transparency flag, so that setting alone cannot turn glass off — this
 is the closest proxy available.
 
-**Every glass component wears `liquid_glass_easy`'s own default look — do
-not tune it.** No tint, rim, blur, refraction or shadow of ours is applied
-anywhere: a lone `AdaptiveBarAction` and `AdaptiveFloatingAction` pass no
-`style`, the grouped capsule is `LiquidGlassTabBarAction.defaultStyle` plus
-the capsule shape a lens needs (`AdaptiveGlass.groupedBarActionStyle`), the
-tab bar is `LiquidGlassTabBar.defaultStyle`/`defaultDarkStyle` with the
-default `LiquidGlassTabItemStyle` except its selected colour, which is
-`AdaptiveColors.accent` rather than the system blue, the sheet panel is
+**Every glass control wears one `liquid_glass_easy` style per brightness,
+and `AdaptiveGlass.controlStyleOf` is where it is chosen.** Both are the
+package's tab bar presets, `LiquidGlassTabBar.defaultStyle` on light and
+`defaultDarkStyle` on dark, each with its fill replaced and nothing else.
+The two presets already share their frost (blur 2.5, refraction 1.2/16, the
+same soft shadow); the fills are what make the modes read alike.
+`_darkControlFill` is a neutral `#383838` at the dark preset's own 55%, where
+the preset ships a blue-tinted `#1C1C1F` — matched to a native iOS 26
+dark-mode screenshot (Contacts' `+` and search field), whose body samples
+`#1F1F1F` over a black page, where the preset came out near `#0F0F11`.
+`_lightControlFill` is white at that same 55% rather than the light preset's
+68%, so both modes carry the same amount of fill. Light mode used to be
+`LiquidGlassTabBarAction.defaultStyle` (clear body, no blur, no shadow) and
+was moved onto the frosted preset to match dark.
+Both styles are `static final`, built once: `LiquidGlassStyle` has no value
+equality, so a `copyWith` per build is a new object every frame, and
+`adaptive_bar_action_test.dart`'s unchanged-lens assertion compares by
+identity. A black page cannot separate tint from opacity, so only the dark
+fill's product over black is matched — re-sample over a light backdrop before tuning it again. The tab bar, the `+` beside it, every
+`AdaptiveBarAction`, the grouped capsule (`groupedBarActionStyleOf`, plus the
+capsule shape a lens needs) and `AdaptiveFloatingAction` all pass it, and
+every one of them also passes `AdaptiveGlass.controlTouch` as its `touch` —
+the package's own `LiquidGlassFlex` with only `holdScale` (0.12, the swell
+while the finger is down) and `tapScale` (0.08, the pop when a quick tap
+completes) raised from its 0.03/0.02 defaults, which on a 44pt button were
+about a point and read as no response at all. The grouped capsule takes it
+on its one `LiquidGlassLens`, so the whole capsule swells rather than the
+pressed glyph, the way iOS groups behave. Left to themselves the three components each ship a different
+default (the tab bar a frosted capsule with a shadow, the FAB a faint frost
+with a heavier one, the action clear), which is what made them read as three
+implementations. Passing a style works because the package resolves
+`defaultStyle.merge(style)`, and `merge` takes body colour, blur,
+saturation, refraction and shadow from the passed style outright, falling
+back to the component's own default only for `shape` and `specular` — so
+each control keeps its own shape (the tab bar its continuous capsule, the FAB
+its circle) and nothing else. Both presets do carry a shape of their own
+(continuous corners at radius 100), so it is that shape every control gets; the package clamps a radius to half the shorter side, which turns it
+into a full round on the square actions and the FAB. To retune all of them,
+change that one function, composing from a package `defaultStyle` rather than building a
+`LiquidGlassStyle()` from scratch. The tab bar's items keep the default
+`LiquidGlassTabItemStyle` except its selected colour, which is
+`AdaptiveColors.accent` rather than the system blue; the sheet panel is
 `LiquidGlassSheet.defaultStyle` on `LiquidGlassSheet.defaultShape()` (with
-one exception, its tint — see the sheet paragraph below), and the scroll edges and the switch take no colour or style at all. **The glyphs on
+one exception, its tint — see the sheet paragraph below); and the scroll edges and the switch take no colour or style at all. **The glyphs on
 the glass actions are the menu's colours**: `AdaptiveGlass.glyphColorOf`
 reads them off the same resolved `LiquidGlassTabItemStyle` the tab bar uses —
 the unselected colour (black on light, white on dark) normally, the selected
 one (our accent) for an `active` action — so the `+`, the profile/invite
 buttons and the tab bar cannot drift apart. **The geometry is the package's
 too, where native iOS does not say otherwise**: `AppGlass.barHeight` (62),
-`barItemPadding` (4) and `barActionSize` (56, the top bar's actions) mirror
-the constructor defaults of `LiquidGlassTabBar` and
-`LiquidGlassTabBarAction`. They exist as
+and `barItemPadding` (4) mirror the constructor defaults of
+`LiquidGlassTabBar`. They exist as
 constants only because the floating insets and the top bar's layout are
 computed from them, and the package exposes its defaults as constructor
 defaults rather than readable statics — so **when the package changes a
-default, change the mirror with it**; the bar's `height` and the actions'
-`size` are deliberately not passed, so the package's own value is what
-renders.
+default, change the mirror with it**; the bar's `height` is deliberately not
+passed, so the package's own value is what renders. **The top bar's actions
+are the exception, and are native's size rather than the package's:**
+`AppGlass.barActionSize` is 44 (the package's `LiquidGlassTabBarAction`
+default is 56) and `barIconSize` 20, measured off a native iOS 26 dark-mode
+screenshot (Contacts on a 402pt iPhone at 3×: the back button is 132px, 44pt,
+its chevron about 20pt). At 56 the back button read visibly oversized. A lone
+`AdaptiveBarAction` therefore passes both `size` and an explicit glyph size —
+left to the package, the glyph would be 46% of the circle, larger than the
+`barIconSize` the grouped capsule's slots already used, so a back button
+beside a capsule wore a bigger glyph than its neighbours. **The back chevron
+is the one glyph sized on its own**: `CupertinoIcons.chevron_back` fills only
+about 60% of its em box, so at `barIconSize` it measured 22×37px at 3× against
+native's 32×56px. `AppGlass.barBackIconSize` (28.5) is the size the tab
+bar's `+` glyph renders at (the package's 46% of its 62 circle), which on
+device read as the right match for both, and
+`barBackIconNudge` (1.2) shifts it left of centre the way iOS optically centres
+its own (native's chevron box sits 3.5px at 3× left of the circle's centre).
+Both are applied in `AdaptiveBarAction._glyph`, keyed on `AdaptiveGlyph.back`,
+so every back button — `AdaptiveScaffold._glassLeading` and any page's own —
+gets them and no other bar glyph does. The `+` beside the
+tab bar stays `barHeight` (62), which is native's size in a tab bar row.
 **The bar's position is native iOS's, not the package's.** The package puts
 the capsule `margin.bottom` (24) *above the safe-area inset*, 58pt from the
 edge on a Face ID phone, which sat visibly higher than every system app.
@@ -1764,17 +1817,24 @@ hits would otherwise be a silent, total loss of interaction. Icons go through
 `iconBuilder` rather than `icon` so `AdaptiveIcon` stays the one source of
 glyph truth.
 
-**A glass action on iOS is a FAB everywhere else — they are the same thing,
-in the two shapes the package itself has.** A page's own primary action
-(Players' add) is `AdaptiveFloatingAction`: the package's `LiquidGlassFab` on
-iOS, its default style and size, a Material `FloatingActionButton` or the
-Cupertino accent circle elsewhere. The action beside the tab bar ("New
-match") is the package's `bottomNavigationBarAction` shape instead — a
-default `LiquidGlassTabBarAction`, built by `AdaptiveBottomBarHost._glassAction`
-— and falls back to that same `AdaptiveFloatingAction` off glass, so
-**"New match" is a FAB on Android**, never a third tab. Do not add a bespoke
-glass circle or a tab-shaped action to one of these surfaces without the
-other — the mapping is the rule.
+**A glass action on iOS is a FAB everywhere else, and there is exactly one
+of it.** `AdaptiveFloatingAction` is both a page's own primary action
+(Players' add) and the "New match" `+` beside the tab bar —
+`AdaptiveBottomBarHost` renders it on every path, glass or not. On glass it
+is a `LiquidGlassTabBarAction` at `AppGlass.barHeight` (62), native's size in
+a tab bar row; elsewhere a Material `FloatingActionButton` or the Cupertino
+accent circle at `AdaptiveFloatingAction.diameter` (56), which is also the
+number the off-glass layouts reserve room for. It is not the package's
+`LiquidGlassFab` because that component takes no `touch`, so it could never
+swell on press like every other control. **Placement is shared too:** on
+glass both sit `AppGlass.barEdgeInset` (21) from the right and bottom screen
+edges, inside the home-indicator inset the way native iOS places them —
+`AdaptiveBottomBarHost._floating` for the `+`,
+`AdaptiveScaffold._glassFloatingAction` for a page's own, deliberately with
+no `SafeArea`. Off glass the scaffold's keeps its old `AppSpacing.md` above
+the safe area. So **"New match" is a FAB on Android**, never a third tab, and
+the Players add button on iOS is pixel-for-pixel the `+`. Do not add a
+bespoke glass circle to one of these surfaces without the other.
 
 **"New match" is an action beside the capsule, not a tab inside it.** The
 capsule groups the two destinations (Leaderboard, Matches); logging a match is
@@ -1921,7 +1981,7 @@ title row is `topBarHeight` (60) whatever else the bar carries, and **an
 action never takes its height from that row** — `_row` is
 `crossAxisAlignment: start`, so the subtitle band cannot drag the actions
 down with it, and each action sits in `_actionSlot`, a `topBarHeight`-tall
-`Center`, so it keeps its own `barActionSize` (56) square and still rides
+`Center`, so it keeps its own `barActionSize` (44) square and still rides
 the title's centre line. `topBarHeight` used to *be* `barActionSize`, which
 made the slot unnecessary; shrinking the actions without shortening the bar
 split them, and `adaptive_glass_test.dart`'s "centres an action smaller than
@@ -2016,14 +2076,14 @@ On glass it wraps the row in a single `LiquidGlassLens` and a
 as a bare tappable slot instead of its own lens, so two lenses never sit
 edge to edge. Below two actions, or off glass, it is just the `Row` and each
 member keeps its own lens. The capsule's style is
-`AdaptiveGlass.groupedBarActionStyle()` — `LiquidGlassTabBarAction.defaultStyle`
-with a capsule shape — so it wears the same look a lone action gets by
-passing no style.
+`AdaptiveGlass.groupedBarActionStyleOf(context)` — `controlStyleOf` with a
+capsule shape — so it wears the same look a lone action does.
 
 **`AdaptiveBarAction` is the small sibling of `AdaptiveFloatingAction`**, and
 the two together are the whole glass-control vocabulary: an accent-free
 `LiquidGlassTabBarAction` carrying `AdaptiveGlass.glyphColorOf`, at
-`AppGlass.barActionSize` (56, the package's default action size) — smaller
+`AppGlass.barActionSize` (44, native iOS's toolbar button, not the package's
+56) — smaller
 than the top bar's own 60px row, which is what `_actionSlot` centres it in, above.
 Every bar button
 goes through it — `ProfileButton`, `GameTypeFilterButton`, the leaderboard's
@@ -2052,7 +2112,7 @@ dead next to a `+` that did not. `AdaptiveBarAction._grouped` is now the same
 **Two or more bar actions go in one `AdaptiveBarActionGroup`, never a bare
 `Row` — which is one capsule-shaped lens with the glyphs inside it, the iOS 26
 toolbar grouping.** The capsule is a plain `LiquidGlassLens` carrying the same
-`LiquidGlassTabBarAction.defaultStyle` a lone `AdaptiveBarAction` gets for
+`AdaptiveGlass.controlStyleOf` a lone `AdaptiveBarAction` gets for
 its own lens, with a `barActionSize / 2` capsule shape, so a group is exactly
 one bar action stretched over both glyphs. Its members must then *not* paint glass
 of their own, which is what `GroupedBarActionScope` says: `AdaptiveBarAction`
@@ -2312,8 +2372,7 @@ orange too; both were rejected on sight. The glyph is the tab bar's
 unselected colour, black on light and white on dark, which is also why the
 package's own `foregroundColor` default of plain white is not enough — it
 vanishes over a light page.
-Neither passes a style or a size, so the package's own look applies as
-shipped. The tab action carries `AdaptiveGlyph.add`, the same bare `+` as the competitions
+Both wear `AdaptiveGlass.controlStyleOf`, like every other glass control. The tab action carries `AdaptiveGlyph.add`, the same bare `+` as the competitions
 and players FABs, rather than `newMatch`'s filled plus-in-a-circle.
 
 **To change one facet of a component's look, compose from its

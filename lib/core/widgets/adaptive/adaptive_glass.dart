@@ -9,7 +9,7 @@ export 'package:liquid_glass_easy/liquid_glass_easy.dart'
     show
         LiquidGlassLens,
         LiquidGlassEdge,
-        LiquidGlassFab,
+        LiquidGlassFlex,
         LiquidGlassScrollEdge,
         LiquidGlassSheet,
         LiquidGlassShape,
@@ -18,9 +18,26 @@ export 'package:liquid_glass_easy/liquid_glass_easy.dart'
         LiquidGlassTabBar,
         LiquidGlassTabBarAction,
         LiquidGlassTabBarItem,
-        LiquidGlassTabItemStyle;
+        LiquidGlassTabItemStyle,
+        LiquidGlassTouch;
 
 class AdaptiveGlass extends StatelessWidget {
+  static const Color _darkControlFill = Color(0x8C383838);
+  static const Color _lightControlFill = Color(0x8CFFFFFF);
+  static const double _controlHoldScale = 0.12;
+  static const double _controlTapScale = 0.08;
+
+  static const LiquidGlassTouch controlTouch = LiquidGlassTouch.flexing(
+    LiquidGlassFlex(holdScale: _controlHoldScale, tapScale: _controlTapScale),
+  );
+
+  static final LiquidGlassStyle _darkControlStyle = LiquidGlassTabBar
+      .defaultDarkStyle
+      .copyWith(color: _darkControlFill);
+  static final LiquidGlassStyle _lightControlStyle = LiquidGlassTabBar
+      .defaultStyle
+      .copyWith(color: _lightControlFill);
+
   const AdaptiveGlass({
     super.key,
     required this.child,
@@ -40,16 +57,16 @@ class AdaptiveGlass extends StatelessWidget {
   static bool isEnabled(BuildContext context) =>
       AppPlatform.useLiquidGlass && !MediaQuery.highContrastOf(context);
 
-  static LiquidGlassStyle groupedBarActionStyle() {
-    return LiquidGlassTabBarAction.defaultStyle.copyWith(
-      shape: const LiquidGlassShape(cornerRadius: AppGlass.barActionSize / 2),
-    );
+  static LiquidGlassStyle controlStyleOf(BuildContext context) {
+    return brightnessOf(context) == Brightness.dark
+        ? _darkControlStyle
+        : _lightControlStyle;
   }
 
-  static LiquidGlassStyle tabBarStyleOf(BuildContext context) {
-    return brightnessOf(context) == Brightness.dark
-        ? LiquidGlassTabBar.defaultDarkStyle
-        : LiquidGlassTabBar.defaultStyle;
+  static LiquidGlassStyle groupedBarActionStyleOf(BuildContext context) {
+    return controlStyleOf(context).copyWith(
+      shape: const LiquidGlassShape(cornerRadius: AppGlass.barActionSize / 2),
+    );
   }
 
   static LiquidGlassTabItemStyle tabItemStyleOf(BuildContext context) {

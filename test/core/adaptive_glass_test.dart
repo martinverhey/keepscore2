@@ -135,20 +135,21 @@ void main() {
       expect(actions, 1);
     });
 
-    testWidgets('measures the glass bar from the screen edge, like the action', (
-      tester,
-    ) async {
-      AppPlatform.debugOverrideCupertino = true;
-      AppPlatform.debugOverrideLiquidGlass = true;
+    testWidgets(
+      'measures the glass bar from the screen edge, like the action',
+      (tester) async {
+        AppPlatform.debugOverrideCupertino = true;
+        AppPlatform.debugOverrideLiquidGlass = true;
 
-      await _pumpInset(
-        tester,
-        AdaptiveBottomBarHost(bar: _paddingProbe(), child: const SizedBox()),
-      );
+        await _pumpInset(
+          tester,
+          AdaptiveBottomBarHost(bar: _paddingProbe(), child: const SizedBox()),
+        );
 
-      expect(_probedPadding.bottom, 0);
-      expect(_probedPadding.top, 0);
-    });
+        expect(_probedPadding.bottom, 0);
+        expect(_probedPadding.top, 0);
+      },
+    );
 
     testWidgets('renders the action as a fab without glass', (tester) async {
       AppPlatform.debugOverrideCupertino = false;
@@ -237,13 +238,13 @@ void main() {
       AppPlatform.debugOverrideLiquidGlass = true;
       await pumpGlass(tester, _floatingAction(() {}));
 
-      expect(find.byType(LiquidGlassFab), findsOneWidget);
+      expect(find.byType(LiquidGlassTabBarAction), findsOneWidget);
       expect(find.byType(CupertinoButton), findsNothing);
 
       AppPlatform.debugOverrideLiquidGlass = false;
       await pumpGlass(tester, _floatingAction(() {}));
 
-      expect(find.byType(LiquidGlassFab), findsNothing);
+      expect(find.byType(LiquidGlassTabBarAction), findsNothing);
       expect(find.byType(CupertinoButton), findsOneWidget);
     });
 
@@ -258,7 +259,7 @@ void main() {
         tester
             .widget<AdaptiveIcon>(
               find.descendant(
-                of: find.byType(LiquidGlassFab),
+                of: find.byType(LiquidGlassTabBarAction),
                 matching: find.byType(AdaptiveIcon),
               ),
             )
@@ -275,7 +276,7 @@ void main() {
 
       expect(find.bySemanticsLabel('Add competition'), findsOneWidget);
 
-      await tester.tap(find.byType(LiquidGlassFab));
+      await tester.tap(find.byType(LiquidGlassTabBarAction));
       await tester.pumpAndSettle();
 
       expect(taps, 1);
@@ -289,7 +290,7 @@ void main() {
 
       expect(find.byType(AdaptiveLoader), findsOneWidget);
 
-      await tester.tap(find.byType(LiquidGlassFab));
+      await tester.tap(find.byType(LiquidGlassTabBarAction));
       await tester.pump();
 
       expect(taps, 0);

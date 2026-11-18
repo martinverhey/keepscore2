@@ -40,7 +40,7 @@ class AdaptiveBottomTabBar extends StatelessWidget {
       items: [for (final item in items) _glassItem(item)],
       selectedIndex: selectedIndex,
       onChanged: onTap,
-      style: AdaptiveGlass.tabBarStyleOf(context),
+      style: AdaptiveGlass.controlStyleOf(context),
       itemStyle: AdaptiveGlass.tabItemStyleOf(context),
       width: _glassBarWidth(context),
       alignment: _glassAlignment(),

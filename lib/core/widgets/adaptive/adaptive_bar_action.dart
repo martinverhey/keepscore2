@@ -60,20 +60,32 @@ class AdaptiveBarAction extends StatelessWidget {
   Widget _slot(BuildContext context) {
     return SizedBox.square(
       dimension: AppGlass.barActionSize,
-      child: Center(
-        child: AdaptiveIcon(
-          glyph,
-          color: _glyphColor(context),
-          size: AppGlass.barIconSize,
-        ),
-      ),
+      child: Center(child: _glyph(context)),
     );
   }
 
   Widget _lens(BuildContext context) {
     return LiquidGlassTabBarAction(
       onTap: onPressed,
-      child: AdaptiveIcon(glyph, color: _glyphColor(context)),
+      size: AppGlass.barActionSize,
+      style: AdaptiveGlass.controlStyleOf(context),
+      touch: AdaptiveGlass.controlTouch,
+      child: _glyph(context),
+    );
+  }
+
+  Widget _glyph(BuildContext context) {
+    final icon = AdaptiveIcon(
+      glyph,
+      color: _glyphColor(context),
+      size: glyph == AdaptiveGlyph.back
+          ? AppGlass.barBackIconSize
+          : AppGlass.barIconSize,
+    );
+    if (glyph != AdaptiveGlyph.back) return icon;
+    return Transform.translate(
+      offset: const Offset(-AppGlass.barBackIconNudge, 0),
+      child: icon,
     );
   }
 
