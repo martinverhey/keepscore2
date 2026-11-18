@@ -9,7 +9,8 @@ environment:
 dependencies:
   bloc: ^9.2.1
   crypto: ^3.0.7
-  cupertino_icons: ^1.0.9
+  cupertino_icons: ^2.0.0
+  cupertino_ui: ^1.1.7
   equatable: ^3.0.0
   flutter:
     sdk: flutter
@@ -23,7 +24,8 @@ dependencies:
   go_router: ^18.0.1
   google_sign_in: ^7.2.0
   intl: ^0.20.2
-  liquid_glass_easy: ^4.2.0
+  liquid_glass_easy: ^5.2.0
+  material_ui: ^1.11.1
   mobile_scanner: ^7.4.0
   package_info_plus: ^10.2.1
   qr_flutter: ^4.1.0

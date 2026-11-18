@@ -1,11 +1,11 @@
 import 'dart:math';
 
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/theme/app_theme.dart';
 import 'package:keepscore2/core/theme/app_tokens.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
+import 'package:material_ui/material_ui.dart';
 
 double contrast(Color a, Color b) {
   final first = a.computeLuminance();

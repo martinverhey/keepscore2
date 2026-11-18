@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keepscore2/app/app.dart';
 import 'package:keepscore2/app/dependency_injection/injector.dart';
 import 'package:keepscore2/core/error/failure.dart';
 import 'package:keepscore2/core/widgets/adaptive/app_platform.dart';
@@ -10,6 +10,7 @@ import 'package:keepscore2/features/competition/presentation/pages/join_competit
 import 'package:keepscore2/features/competition/presentation/widgets/join_result.dart';
 import 'package:keepscore2/features/player/domain/player.model.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockCompetitionRepository extends Mock implements CompetitionRepository {}
@@ -42,7 +43,7 @@ Future<MockCompetitionRepository> _pumpHarness(
 
   await tester.pumpWidget(
     MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: KeepScoreApp.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: _OpenerStub(code: code),
     ),

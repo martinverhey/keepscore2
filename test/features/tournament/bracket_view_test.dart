@@ -1,9 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keepscore2/app/app.dart';
 import 'package:keepscore2/features/tournament/domain/bracket.model.dart';
 import 'package:keepscore2/features/tournament/presentation/widgets/bracket_match_tile.dart';
 import 'package:keepscore2/features/tournament/presentation/widgets/bracket_view.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 
 TournamentMatch _match(
   int round,
@@ -45,7 +46,7 @@ Future<void> _pump(
 }) async {
   await tester.pumpWidget(
     MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: KeepScoreApp.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: BracketView(

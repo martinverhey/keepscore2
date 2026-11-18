@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keepscore2/app/app.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 import 'package:keepscore2/core/widgets/sparkline.dart';
 import 'package:keepscore2/core/widgets/streak_badge.dart';
@@ -49,7 +50,7 @@ Future<void> _pump(
   await tester.pumpWidget(
     WidgetsApp(
       color: const Color(0xFFFFFFFF),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: KeepScoreApp.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       builder: (context, _) => ProfileSection(
         competitionId: 'c1',

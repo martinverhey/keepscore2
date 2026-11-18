@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:keepscore2/app/app.dart';
 import 'package:keepscore2/app/dependency_injection/injector.dart';
 import 'package:keepscore2/app/router/app_router.dart';
 import 'package:keepscore2/core/data/recent_competition_store.dart';
@@ -15,6 +15,7 @@ import 'package:keepscore2/features/competition/domain/competition_repository.da
 import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_list_cubit.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -86,7 +87,7 @@ void main() {
         ],
         child: MaterialApp.router(
           routerConfig: router,
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: KeepScoreApp.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
         ),
       ),

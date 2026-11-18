@@ -1,5 +1,5 @@
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../theme/app_tokens.dart';
 import 'app_platform.dart';
@@ -26,34 +26,16 @@ abstract final class AdaptiveColors {
     AppColors.modalSurfaceOnDark,
   );
 
-  static Color glassTint(BuildContext context) =>
-      _forBrightness(context, AppColors.glassTint, AppColors.glassTintOnDark);
-
-  static Color glassActionTint(BuildContext context) => _forBrightness(
-    context,
-    AppColors.glassActionTint,
-    AppColors.glassActionTintOnDark,
-  );
-
-  static Color glassRim(BuildContext context) =>
-      _forBrightness(context, AppColors.glassRim, AppColors.glassRimOnDark);
+  static Color glassSheetTint(BuildContext context) =>
+      modalSurface(context).withValues(alpha: AppOpacity.glassSheetFill);
 
   static bool isDark(BuildContext context) =>
       _forBrightness(context, AppColors.white, AppColors.black) ==
       AppColors.black;
 
-  static Color glassSheetTint(BuildContext context) =>
-      modalSurface(context).withValues(alpha: AppOpacity.glassSheetFill);
-
-  static Color scrollEdgeTint(BuildContext context) =>
-      pageBackground(context).withValues(alpha: AppOpacity.scrollEdgeFill);
-
   static Color destructive(BuildContext context) => AppPlatform.useCupertino
       ? CupertinoDynamicColor.resolve(CupertinoColors.destructiveRed, context)
       : Theme.of(context).colorScheme.error;
-
-  static Color glassGlyph(BuildContext context) =>
-      _forBrightness(context, AppColors.black, AppColors.white);
 
   static Color pageBackground(BuildContext context) => AppPlatform.useCupertino
       ? CupertinoTheme.of(context).scaffoldBackgroundColor

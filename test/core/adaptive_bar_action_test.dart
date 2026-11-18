@@ -1,9 +1,9 @@
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keepscore2/app/app.dart';
 import 'package:keepscore2/core/theme/app_tokens.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
-import 'package:keepscore2/l10n/app_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 
 Future<void> _pumpGlassAction(
   WidgetTester tester, {
@@ -12,7 +12,7 @@ Future<void> _pumpGlassAction(
   AppPlatform.debugOverrideLiquidGlass = true;
   await tester.pumpWidget(
     CupertinoApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: KeepScoreApp.localizationsDelegates,
       home: AdaptiveBarAction(
         glyph: AdaptiveGlyph.filter,
         active: active,
@@ -30,7 +30,7 @@ Future<void> _pumpGroup(
   AppPlatform.debugOverrideLiquidGlass = glass;
   await tester.pumpWidget(
     CupertinoApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: KeepScoreApp.localizationsDelegates,
       home: AdaptiveBarActionGroup(
         actions: [
           for (var index = 0; index < actionCount; index++)
@@ -44,11 +44,9 @@ Future<void> _pumpGroup(
 Color? _glyphColor(WidgetTester tester) =>
     tester.widget<Icon>(find.byType(Icon)).color;
 
-Color? _lensTint(WidgetTester tester) => tester
+LiquidGlassStyle? _lensStyle(WidgetTester tester) => tester
     .widget<LiquidGlassTabBarAction>(find.byType(LiquidGlassTabBarAction))
-    .style!
-    .appearance
-    .color;
+    .style;
 
 Future<Color?> _pumpAndReadGlyphColor(
   WidgetTester tester, {
@@ -65,11 +63,11 @@ Future<Color?> _pumpAndReadGlyphColor(
   await tester.pumpWidget(
     useCupertino
         ? CupertinoApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            localizationsDelegates: KeepScoreApp.localizationsDelegates,
             home: action,
           )
         : MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            localizationsDelegates: KeepScoreApp.localizationsDelegates,
             home: action,
           ),
   );
@@ -83,7 +81,7 @@ void main() {
     AppPlatform.debugOverrideCupertino = null;
   });
 
-  testWidgets('an active glass action paints its glyph in the accent', (
+  testWidgets('an active glass action paints its glyph like a selected tab', (
     tester,
   ) async {
     await _pumpGlassAction(tester, active: true);
@@ -103,12 +101,11 @@ void main() {
     tester,
   ) async {
     await _pumpGlassAction(tester, active: true);
-    final active = _lensTint(tester);
+    final active = _lensStyle(tester);
 
     await _pumpGlassAction(tester, active: false);
 
-    expect(active, _lensTint(tester));
-    expect(active, AppColors.glassActionTint);
+    expect(active, _lensStyle(tester));
   });
 
   testWidgets('two glass actions share one capsule', (tester) async {
@@ -125,7 +122,7 @@ void main() {
     AppPlatform.debugOverrideCupertino = true;
     await tester.pumpWidget(
       CupertinoApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: KeepScoreApp.localizationsDelegates,
         home: Center(
           child: AdaptiveBarActionGroup(
             actions: [

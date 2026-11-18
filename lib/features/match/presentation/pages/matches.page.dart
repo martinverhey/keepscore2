@@ -159,11 +159,7 @@ class _MatchesPageState extends State<MatchesPage> {
       for (final match in context.watch<PlannedMatchCubit>().state.matches)
         if (roster.displayNameFor(match.playerAId) case final playerAName?)
           if (roster.displayNameFor(match.playerBId) case final playerBName?)
-            (
-              match: match,
-              playerAName: playerAName,
-              playerBName: playerBName,
-            ),
+            (match: match, playerAName: playerAName, playerBName: playerBName),
     ];
   }
 

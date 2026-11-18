@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keepscore2/app/app.dart';
 import 'package:keepscore2/features/profile/domain/rating_point.model.dart';
 import 'package:keepscore2/features/profile/presentation/widgets/rating_trend_graph.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
@@ -17,7 +18,7 @@ Future<Rect> _pump(WidgetTester tester, List<RatingPoint> points) async {
   await tester.pumpWidget(
     WidgetsApp(
       color: const Color(0xFFFFFFFF),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: KeepScoreApp.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       builder: (context, _) => Align(
         alignment: Alignment.topLeft,

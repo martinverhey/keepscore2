@@ -7,14 +7,12 @@ import 'app_platform.dart';
 
 export 'package:liquid_glass_easy/liquid_glass_easy.dart'
     show
-        LiquidGlassAppearance,
-        LiquidGlassBlur,
         LiquidGlassLens,
-        LiquidGlassRefraction,
         LiquidGlassEdge,
+        LiquidGlassFab,
         LiquidGlassScrollEdge,
+        LiquidGlassSheet,
         LiquidGlassShape,
-        OpticalBorder,
         LiquidGlassStyle,
         LiquidGlassSwitch,
         LiquidGlassTabBar,
@@ -26,13 +24,11 @@ class AdaptiveGlass extends StatelessWidget {
   const AdaptiveGlass({
     super.key,
     required this.child,
-    this.cornerRadius = AppGlass.cornerRadius,
     this.tint,
     this.opaqueFallback,
   });
 
   final Widget child;
-  final double cornerRadius;
   final Color? tint;
   final Widget? opaqueFallback;
 
@@ -44,67 +40,40 @@ class AdaptiveGlass extends StatelessWidget {
   static bool isEnabled(BuildContext context) =>
       AppPlatform.useLiquidGlass && !MediaQuery.highContrastOf(context);
 
-  static LiquidGlassShape shapeOf(
-    BuildContext context, {
-    double cornerRadius = AppGlass.cornerRadius,
-  }) {
-    final dark = AdaptiveColors.isDark(context);
-    return LiquidGlassShape(
-      cornerRadius: cornerRadius,
-      lightColor: AdaptiveColors.glassRim(context),
-      lightIntensity: dark
-          ? AppGlass.rimIntensityOnDark
-          : AppGlass.rimIntensity,
-      borderType: OpticalBorder(
-        ambientIntensity: dark
-            ? AppGlass.rimAmbientOnDark
-            : AppGlass.rimAmbient,
-      ),
+  static LiquidGlassStyle groupedBarActionStyle() {
+    return LiquidGlassTabBarAction.defaultStyle.copyWith(
+      shape: const LiquidGlassShape(cornerRadius: AppGlass.barActionSize / 2),
     );
   }
 
-  static LiquidGlassStyle barActionStyle(BuildContext context) =>
-      actionStyle(context, cornerRadius: AppGlass.barActionSize / 2);
-
-  static LiquidGlassStyle actionStyle(
-    BuildContext context, {
-    required double cornerRadius,
-  }) {
-    const base = LiquidGlassTabBarAction.defaultStyle;
-    return base.copyWith(
-      shape: shapeOf(context, cornerRadius: cornerRadius),
-      appearance: base.appearance.copyWith(
-        color: AdaptiveColors.glassActionTint(context),
-      ),
-    );
+  static LiquidGlassStyle tabBarStyleOf(BuildContext context) {
+    return brightnessOf(context) == Brightness.dark
+        ? LiquidGlassTabBar.defaultDarkStyle
+        : LiquidGlassTabBar.defaultStyle;
   }
 
-  static LiquidGlassStyle styleOf(
-    BuildContext context, {
-    double cornerRadius = AppGlass.cornerRadius,
-    Color? tint,
-  }) {
-    return LiquidGlassStyle(
-      shape: shapeOf(context, cornerRadius: cornerRadius),
-      appearance: LiquidGlassAppearance(
-        color: tint ?? AdaptiveColors.glassTint(context),
-        blur: const LiquidGlassBlur(
-          sigmaX: AppGlass.blurSigma,
-          sigmaY: AppGlass.blurSigma,
-        ),
-      ),
-      refraction: const LiquidGlassRefraction(
-        distortion: AppGlass.distortion,
-        distortionWidth: AppGlass.distortionWidth,
-      ),
-    );
+  static LiquidGlassTabItemStyle tabItemStyleOf(BuildContext context) {
+    return LiquidGlassTabItemStyle(
+      selectedColor: AdaptiveColors.accent(context),
+    ).resolve(brightnessOf(context));
+  }
+
+  static Color glyphColorOf(BuildContext context, {bool active = false}) {
+    return tabItemStyleOf(context).colorFor(selected: active);
+  }
+
+  static Brightness brightnessOf(BuildContext context) {
+    return AdaptiveColors.isDark(context) ? Brightness.dark : Brightness.light;
   }
 
   @override
   Widget build(BuildContext context) {
     if (!isEnabled(context)) return opaqueFallback ?? child;
     return LiquidGlassLens(
-      style: styleOf(context, cornerRadius: cornerRadius, tint: tint),
+      style: LiquidGlassSheet.defaultStyle.copyWith(
+        shape: LiquidGlassSheet.defaultShape(),
+        color: tint,
+      ),
       child: child,
     );
   }

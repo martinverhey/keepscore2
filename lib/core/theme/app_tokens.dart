@@ -34,13 +34,7 @@ abstract final class AppOpacity {
   static const double fieldBorder = 0.4;
   static const double winnerBorder = 0.6;
   static const double shadow = 0.18;
-  static const double glassFill = 0.22;
-  static const double glassFillOnDark = 0.28;
-  static const double glassActionFill = 0.15;
-  static const double scrollEdgeFill = 0.9;
   static const double glassSheetFill = 1;
-  static const double glassRim = 0.7;
-  static const double glassRimOnDark = 0.32;
 }
 
 abstract final class AppColors {
@@ -78,39 +72,21 @@ abstract final class AppColors {
   static final Color neutralSurface = neutralSoft.withValues(
     alpha: AppOpacity.neutralSurfaceFill,
   );
-  static final Color glassTint = white.withValues(alpha: AppOpacity.glassFill);
-  static final Color glassTintOnDark = modalSurfaceOnDark.withValues(
-    alpha: AppOpacity.glassFillOnDark,
-  );
-  static final Color glassActionTint = white.withValues(
-    alpha: AppOpacity.glassActionFill,
-  );
-  static const Color glassActionTintOnDark = transparent;
-  static final Color glassRim = white.withValues(alpha: AppOpacity.glassRim);
-  static final Color glassRimOnDark = white.withValues(
-    alpha: AppOpacity.glassRimOnDark,
-  );
 }
 
 abstract final class AppGlass {
-  static const double cornerRadius = 28;
-  static const double barHeight = 64;
-  static const double barMaxWidth = 420;
+  static const double barHeight = 62;
+  static const double barItemPadding = 4;
+  static const double barTabMinWidth = 89 + 30;
+  static const double barTabLabelInset = 38;
+  static const double barEdgeInset = 21;
   static const double barMargin = AppSpacing.md;
-  static const double barCornerRadius = barHeight / 2;
   static const double barIconSize = 24;
-  static const double barActionSize = 52;
+  static const double barActionSize = 56;
   static const double topBarHeight = 60;
   static const double topBarSubtitleHeight = 20;
   static const double topBarSubtitleRise = 16;
-  static const double rimIntensity = 0.25;
-  static const double rimIntensityOnDark = 0.1;
-  static const double rimAmbient = 1;
-  static const double rimAmbientOnDark = 0.35;
   static const double scrollEdgeFade = 0;
-  static const double blurSigma = 5;
-  static const double distortion = 0.13;
-  static const double distortionWidth = 34;
 }
 
 abstract final class AppTypography {

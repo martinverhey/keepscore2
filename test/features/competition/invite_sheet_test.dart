@@ -1,14 +1,15 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keepscore2/app/app.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/presentation/pages/invite_sheet.dart';
-import 'package:keepscore2/features/competition/presentation/widgets/competition_invite_card.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/competition_actions.dart';
+import 'package:keepscore2/features/competition/presentation/widgets/competition_invite_card.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/join_code_tag.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/join_qr_image.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 
 CompetitionOverview _overview() => CompetitionOverview(
   competition: Competition(
@@ -32,7 +33,7 @@ CompetitionOverview _overview() => CompetitionOverview(
 Future<void> _openSheet(WidgetTester tester) async {
   await tester.pumpWidget(
     MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: KeepScoreApp.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Builder(
         builder: (context) => AdaptiveScaffold(

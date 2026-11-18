@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keepscore2/app/app.dart';
 import 'package:keepscore2/features/match/domain/match_entry.model.dart';
 import 'package:keepscore2/features/match/presentation/pages/match_score_sheet.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 
 MatchEntry _match({required bool oneVsOne}) => MatchEntry(
   id: 'm1',
@@ -41,7 +42,7 @@ MatchEntry _match({required bool oneVsOne}) => MatchEntry(
 Future<void> _pump(WidgetTester tester, {required bool oneVsOne}) {
   return tester.pumpWidget(
     MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: KeepScoreApp.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Material(
         child: MatchScoreSheet(match: _match(oneVsOne: oneVsOne)),

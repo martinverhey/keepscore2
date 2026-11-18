@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:keepscore2/app/app.dart';
 import 'package:keepscore2/core/data/recent_competition_store.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 import 'package:keepscore2/features/auth/domain/auth_repository.dart';
@@ -26,8 +26,8 @@ import 'package:keepscore2/features/leaderboard/presentation/pages/leaderboard.p
 import 'package:keepscore2/features/match/domain/game_type.enum.dart';
 import 'package:keepscore2/features/match/domain/match_repository.dart';
 import 'package:keepscore2/features/match/presentation/cubit/game_type_filter_cubit.dart';
-import 'package:keepscore2/features/match/presentation/cubit/planned_match_cubit.dart';
 import 'package:keepscore2/features/match/presentation/cubit/match_list_cubit.dart';
+import 'package:keepscore2/features/match/presentation/cubit/planned_match_cubit.dart';
 import 'package:keepscore2/features/match/presentation/pages/matches.page.dart';
 import 'package:keepscore2/features/player/domain/player.model.dart';
 import 'package:keepscore2/features/player/domain/player_repository.dart';
@@ -35,6 +35,7 @@ import 'package:keepscore2/features/player/presentation/cubit/players_cubit.dart
 import 'package:keepscore2/features/profile/domain/profile_repository.dart';
 import 'package:keepscore2/features/settings/presentation/cubit/theme_cubit.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -193,7 +194,7 @@ void main() {
         ],
         child: MaterialApp.router(
           routerConfig: router,
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: KeepScoreApp.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
         ),
       ),

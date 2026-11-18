@@ -1,7 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../theme/app_tokens.dart';
-import 'adaptive_colors.dart';
 import 'adaptive_glass.dart';
 import 'adaptive_icon.dart';
 import 'grouped_bar_action_scope.dart';
@@ -74,13 +73,10 @@ class AdaptiveBarAction extends StatelessWidget {
   Widget _lens(BuildContext context) {
     return LiquidGlassTabBarAction(
       onTap: onPressed,
-      size: AppGlass.barActionSize,
-      style: AdaptiveGlass.barActionStyle(context),
       child: AdaptiveIcon(glyph, color: _glyphColor(context)),
     );
   }
 
-  Color _glyphColor(BuildContext context) => active
-      ? AdaptiveColors.accent(context)
-      : AdaptiveColors.glassGlyph(context);
+  Color _glyphColor(BuildContext context) =>
+      AdaptiveGlass.glyphColorOf(context, active: active);
 }

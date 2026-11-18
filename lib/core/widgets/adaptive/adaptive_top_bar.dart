@@ -1,7 +1,6 @@
 import 'package:flutter/widgets.dart';
 
 import '../../theme/app_tokens.dart';
-import 'adaptive_colors.dart';
 import 'adaptive_glass.dart';
 
 class AdaptiveTopBar extends StatelessWidget {
@@ -81,10 +80,7 @@ class AdaptiveTopBar extends StatelessWidget {
 
   Widget _scrollEdge(BuildContext context) {
     return IgnorePointer(
-      child: LiquidGlassScrollEdge(
-        edge: LiquidGlassEdge.top,
-        color: AdaptiveColors.scrollEdgeTint(context),
-      ),
+      child: LiquidGlassScrollEdge(edge: LiquidGlassEdge.top),
     );
   }
 

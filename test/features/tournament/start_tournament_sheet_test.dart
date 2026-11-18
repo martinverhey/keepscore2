@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keepscore2/app/app.dart';
 import 'package:keepscore2/core/error/failure.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 import 'package:keepscore2/core/widgets/selectable_row.dart';
@@ -10,6 +10,7 @@ import 'package:keepscore2/features/tournament/domain/tournament_repository.dart
 import 'package:keepscore2/features/tournament/presentation/cubit/start_tournament_cubit.dart';
 import 'package:keepscore2/features/tournament/presentation/pages/start_tournament_sheet.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockPlayerRepository extends Mock implements PlayerRepository {}
@@ -43,7 +44,7 @@ Future<MockTournamentRepository> _pump(
 
   await tester.pumpWidget(
     MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: KeepScoreApp.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: BlocProvider(
         create: (_) =>

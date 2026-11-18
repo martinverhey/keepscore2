@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
+import 'package:keepscore2/app/app.dart';
 import 'package:keepscore2/core/theme/app_tokens.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 import 'package:keepscore2/core/widgets/list_header.dart';
@@ -18,12 +18,12 @@ import 'package:keepscore2/features/match/domain/match_repository.dart';
 import 'package:keepscore2/features/match/presentation/cubit/game_type_filter_cubit.dart';
 import 'package:keepscore2/features/match/presentation/cubit/match_list_cubit.dart';
 import 'package:keepscore2/features/match/presentation/cubit/planned_match_cubit.dart';
-import 'package:keepscore2/features/match/presentation/widgets/planned_match_card.dart';
-import 'package:keepscore2/features/match/presentation/widgets/day_header.dart';
 import 'package:keepscore2/features/match/presentation/pages/game_type_filter_sheet.dart';
+import 'package:keepscore2/features/match/presentation/pages/matches.page.dart';
+import 'package:keepscore2/features/match/presentation/widgets/day_header.dart';
 import 'package:keepscore2/features/match/presentation/widgets/game_type_filter_button.dart';
 import 'package:keepscore2/features/match/presentation/widgets/match_card.dart';
-import 'package:keepscore2/features/match/presentation/pages/matches.page.dart';
+import 'package:keepscore2/features/match/presentation/widgets/planned_match_card.dart';
 import 'package:keepscore2/features/player/domain/player.model.dart';
 import 'package:keepscore2/features/player/domain/player_repository.dart';
 import 'package:keepscore2/features/player/presentation/cubit/players_cubit.dart';
@@ -31,10 +31,11 @@ import 'package:keepscore2/features/tournament/domain/bracket.model.dart';
 import 'package:keepscore2/features/tournament/domain/tournament.model.dart';
 import 'package:keepscore2/features/tournament/domain/tournament_repository.dart';
 import 'package:keepscore2/features/tournament/presentation/cubit/tournament_cubit.dart';
+import 'package:keepscore2/features/tournament/presentation/widgets/bracket_view.dart';
 import 'package:keepscore2/features/tournament/presentation/widgets/tournament_button.dart';
 import 'package:keepscore2/features/tournament/presentation/widgets/tournament_card.dart';
-import 'package:keepscore2/features/tournament/presentation/widgets/bracket_view.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -219,7 +220,7 @@ Future<GameTypeFilterCubit> _pumpMatchesPage(
         ),
       ],
       child: MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: KeepScoreApp.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: hostsBar
             ? _hostedPage()
@@ -437,7 +438,7 @@ void main() {
           .ancestor(of: find.byType(EmptyState), matching: find.byType(Center))
           .first,
     );
-    final action = tester.getRect(find.byType(AdaptiveFloatingAction));
+    final action = tester.getRect(find.byType(LiquidGlassTabBarAction));
 
     expect(region.bottom, lessThanOrEqualTo(action.top));
     expect(region.bottom, greaterThan(action.top - AppSpacing.lg));

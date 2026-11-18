@@ -1,5 +1,5 @@
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../theme/app_tokens.dart';
 import '../scroll_dismissible_sheet.dart';
@@ -122,7 +122,6 @@ Widget _cupertinoSurface(BuildContext context, WidgetBuilder builder) {
     );
   }
   return AdaptiveGlass(
-    cornerRadius: AppRadius.lg,
     tint: AdaptiveColors.glassSheetTint(context),
     child: _cupertinoContent(context, builder),
   );

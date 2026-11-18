@@ -1,23 +1,9 @@
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keepscore2/app/app.dart';
 import 'package:keepscore2/core/theme/app_tokens.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
-import 'package:keepscore2/l10n/app_localizations.dart';
-
-LiquidGlassAppearance _appearanceOf(WidgetTester tester) {
-  return tester
-      .widget<LiquidGlassTabBarAction>(find.byType(LiquidGlassTabBarAction))
-      .style!
-      .appearance;
-}
-
-LiquidGlassShape _rimOf(WidgetTester tester) {
-  return tester
-      .widget<LiquidGlassTabBarAction>(find.byType(LiquidGlassTabBarAction))
-      .style!
-      .shape!;
-}
+import 'package:material_ui/material_ui.dart';
 
 Future<void> pumpGlass(
   WidgetTester tester,
@@ -27,7 +13,7 @@ Future<void> pumpGlass(
 }) {
   return tester.pumpWidget(
     CupertinoApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: KeepScoreApp.localizationsDelegates,
       theme: CupertinoThemeData(
         brightness: dark ? Brightness.dark : Brightness.light,
       ),
@@ -149,6 +135,21 @@ void main() {
       expect(actions, 1);
     });
 
+    testWidgets('measures the glass bar from the screen edge, like the action', (
+      tester,
+    ) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+
+      await _pumpInset(
+        tester,
+        AdaptiveBottomBarHost(bar: _paddingProbe(), child: const SizedBox()),
+      );
+
+      expect(_probedPadding.bottom, 0);
+      expect(_probedPadding.top, 0);
+    });
+
     testWidgets('renders the action as a fab without glass', (tester) async {
       AppPlatform.debugOverrideCupertino = false;
       AppPlatform.debugOverrideLiquidGlass = false;
@@ -197,6 +198,35 @@ void main() {
 
       expect(tapped, [1]);
     });
+
+    testWidgets('sizes the capsule to its tabs, never past the action', (
+      tester,
+    ) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+      await pumpGlass(tester, _tabBar((_) {}, reservesTrailingAction: true));
+
+      final width = tester
+          .widget<LiquidGlassTabBar>(find.byType(LiquidGlassTabBar))
+          .width;
+      final screen = tester.getSize(find.byType(LiquidGlassTabBar)).width;
+
+      expect(
+        width,
+        greaterThanOrEqualTo(
+          AppGlass.barItemPadding * 2 + 2 * AppGlass.barTabMinWidth,
+        ),
+      );
+      expect(
+        width,
+        lessThan(
+          screen -
+              AppGlass.barEdgeInset * 2 -
+              AppGlass.barHeight -
+              AppSpacing.sm,
+        ),
+      );
+    });
   });
 
   group('AdaptiveFloatingAction', () {
@@ -207,49 +237,14 @@ void main() {
       AppPlatform.debugOverrideLiquidGlass = true;
       await pumpGlass(tester, _floatingAction(() {}));
 
-      expect(find.byType(LiquidGlassTabBarAction), findsOneWidget);
+      expect(find.byType(LiquidGlassFab), findsOneWidget);
       expect(find.byType(CupertinoButton), findsNothing);
 
       AppPlatform.debugOverrideLiquidGlass = false;
       await pumpGlass(tester, _floatingAction(() {}));
 
-      expect(find.byType(LiquidGlassTabBarAction), findsNothing);
+      expect(find.byType(LiquidGlassFab), findsNothing);
       expect(find.byType(CupertinoButton), findsOneWidget);
-    });
-
-    testWidgets('whitens its body in light mode and clears it in dark', (
-      tester,
-    ) async {
-      AppPlatform.debugOverrideCupertino = true;
-      AppPlatform.debugOverrideLiquidGlass = true;
-
-      await pumpGlass(tester, _floatingAction(() {}));
-      final light = _appearanceOf(tester);
-
-      await pumpGlass(tester, _floatingAction(() {}), dark: true);
-      final dark = _appearanceOf(tester);
-
-      expect(light.color, AppColors.glassActionTint);
-      expect(dark.color, AppColors.glassActionTintOnDark);
-      expect(light.blur, LiquidGlassTabBarAction.defaultStyle.appearance.blur);
-      expect(
-        light.shadow,
-        LiquidGlassTabBarAction.defaultStyle.appearance.shadow,
-      );
-    });
-
-    testWidgets('softens its rim in dark mode', (tester) async {
-      AppPlatform.debugOverrideCupertino = true;
-      AppPlatform.debugOverrideLiquidGlass = true;
-
-      await pumpGlass(tester, _floatingAction(() {}), dark: true);
-      final darkRim = _rimOf(tester);
-
-      await pumpGlass(tester, _floatingAction(() {}));
-      final lightRim = _rimOf(tester);
-
-      expect(darkRim.lightIntensity, lessThan(lightRim.lightIntensity));
-      expect(darkRim.lightColor.a, lessThan(lightRim.lightColor.a));
     });
 
     testWidgets('paints its glyph in the label colour, not the accent', (
@@ -263,7 +258,7 @@ void main() {
         tester
             .widget<AdaptiveIcon>(
               find.descendant(
-                of: find.byType(LiquidGlassTabBarAction),
+                of: find.byType(LiquidGlassFab),
                 matching: find.byType(AdaptiveIcon),
               ),
             )
@@ -280,7 +275,7 @@ void main() {
 
       expect(find.bySemanticsLabel('Add competition'), findsOneWidget);
 
-      await tester.tap(find.byType(LiquidGlassTabBarAction));
+      await tester.tap(find.byType(LiquidGlassFab));
       await tester.pumpAndSettle();
 
       expect(taps, 1);
@@ -294,7 +289,7 @@ void main() {
 
       expect(find.byType(AdaptiveLoader), findsOneWidget);
 
-      await tester.tap(find.byType(LiquidGlassTabBarAction));
+      await tester.tap(find.byType(LiquidGlassFab));
       await tester.pump();
 
       expect(taps, 0);
@@ -376,7 +371,7 @@ void main() {
       final height = tester.getSize(find.byType(CupertinoPageScaffold)).height;
       expect(
         tester.getRect(find.byKey(const Key('body'))).bottom,
-        lessThanOrEqualTo(height - AdaptiveBottomBarHost.glassInset),
+        lessThanOrEqualTo(height - AdaptiveBottomBarHost.glassBarTop),
       );
     });
 
@@ -388,7 +383,7 @@ void main() {
       final height = tester.getSize(find.byType(CupertinoPageScaffold)).height;
       expect(
         tester.getRect(find.byKey(const Key('fab'))).bottom,
-        lessThanOrEqualTo(height - AdaptiveBottomBarHost.glassInset),
+        lessThanOrEqualTo(height - AdaptiveBottomBarHost.glassBarTop),
       );
     });
 
@@ -751,7 +746,7 @@ bool _hasGlyph(WidgetTester tester, AdaptiveGlyph glyph) {
 Future<void> _pumpPushedScaffold(WidgetTester tester) async {
   await tester.pumpWidget(
     CupertinoApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: KeepScoreApp.localizationsDelegates,
       home: Builder(
         builder: (context) => CupertinoButton(
           onPressed: () => Navigator.of(

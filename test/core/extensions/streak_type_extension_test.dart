@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/extensions/streak_type.extension.dart';
 import 'package:keepscore2/core/theme/app_theme.dart';
 import 'package:keepscore2/core/theme/app_tokens.dart';
 import 'package:keepscore2/features/profile/domain/streak_type.enum.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
   test('the ladder climbs at 5, 10, 25 and 50 games', () {

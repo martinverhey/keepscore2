@@ -1,5 +1,5 @@
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../theme/app_tokens.dart';
 import 'adaptive_colors.dart';
@@ -36,14 +36,9 @@ class AdaptiveFloatingAction extends StatelessWidget {
     return Semantics(
       button: true,
       label: semanticLabel,
-      child: LiquidGlassTabBarAction(
-        onTap: busy ? null : onPressed,
-        size: AppGlass.barHeight,
-        style: AdaptiveGlass.actionStyle(
-          context,
-          cornerRadius: AppGlass.barHeight / 2,
-        ),
-        child: _child(AdaptiveColors.glassGlyph(context)),
+      child: LiquidGlassFab(
+        onPressed: busy ? null : onPressed,
+        child: _child(AdaptiveGlass.glyphColorOf(context)),
       ),
     );
   }

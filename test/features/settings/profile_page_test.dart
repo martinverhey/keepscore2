@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keepscore2/app/app.dart';
 import 'package:keepscore2/core/config/app_version.dart';
 import 'package:keepscore2/features/auth/domain/auth_repository.dart';
 import 'package:keepscore2/features/auth/domain/auth_user.model.dart';
@@ -15,6 +15,7 @@ import 'package:keepscore2/features/profile/presentation/widgets/initials_circle
 import 'package:keepscore2/features/settings/presentation/cubit/theme_cubit.dart';
 import 'package:keepscore2/features/settings/presentation/pages/profile.page.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}
@@ -97,7 +98,7 @@ class _Harness {
           BlocProvider<ThemeCubit>(create: (_) => ThemeCubit()),
         ],
         child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: KeepScoreApp.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: const ProfilePage(),
         ),

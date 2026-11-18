@@ -4,4 +4,5 @@ analyzer:
     - android/**
     - ios/**
     - web/**
+    - lib/l10n/app_localizations.dart
 include: package:flutter_lints/flutter.yaml

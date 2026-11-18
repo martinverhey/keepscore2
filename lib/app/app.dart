@@ -1,8 +1,9 @@
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_localizations/flutter_localizations.dart'
+    show GlobalWidgetsLocalizations;
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../core/extensions/build_context.extension.dart';
 import '../core/extensions/language_preference.extension.dart';
@@ -22,6 +23,13 @@ import 'dependency_injection/injector.dart';
 import 'router/app_router.dart';
 
 class KeepScoreApp extends StatefulWidget {
+  static const localizationsDelegates = <LocalizationsDelegate<Object?>>[
+    AppLocalizations.delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
+
   const KeepScoreApp({super.key});
 
   @override
@@ -39,13 +47,6 @@ class _KeepScoreAppState extends State<KeepScoreApp> {
   late final CompetitionListCubit _competitionListCubit =
       getIt<CompetitionListCubit>();
   late final GoRouter _router = createRouter(_authBloc);
-
-  static const _localizationsDelegates = <LocalizationsDelegate<Object?>>[
-    AppLocalizations.delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +84,7 @@ class _KeepScoreAppState extends State<KeepScoreApp> {
         theme: AppTheme.cupertino(preference.brightness),
         routerConfig: _router,
         locale: locale,
-        localizationsDelegates: _localizationsDelegates,
+        localizationsDelegates: KeepScoreApp.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         debugShowCheckedModeBanner: false,
         builder: (context, child) => Material(
@@ -100,7 +101,7 @@ class _KeepScoreAppState extends State<KeepScoreApp> {
       themeMode: preference.mode,
       routerConfig: _router,
       locale: locale,
-      localizationsDelegates: _localizationsDelegates,
+      localizationsDelegates: KeepScoreApp.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       debugShowCheckedModeBanner: false,
     );

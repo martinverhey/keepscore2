@@ -1,10 +1,9 @@
 import 'dart:math' as math;
 
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../theme/app_tokens.dart';
-import 'adaptive_colors.dart';
 import 'adaptive_glass.dart';
 import 'adaptive_icon.dart';
 import 'app_platform.dart';
@@ -37,22 +36,13 @@ class AdaptiveBottomTabBar extends StatelessWidget {
   }
 
   Widget _glassBar(BuildContext context) {
-    return LiquidGlassTabBar.withImpeller(
+    return LiquidGlassTabBar(
       items: [for (final item in items) _glassItem(item)],
       selectedIndex: selectedIndex,
       onChanged: onTap,
-      style: AdaptiveGlass.styleOf(
-        context,
-        cornerRadius: AppGlass.barCornerRadius,
-      ),
-      itemStyle: LiquidGlassTabItemStyle(
-        selectedColor: AdaptiveColors.accent(context),
-        unselectedColor: AppColors.neutral,
-        iconSize: AppGlass.barIconSize,
-        labelFontSize: AppTypography.labelTinySize,
-      ),
+      style: AdaptiveGlass.tabBarStyleOf(context),
+      itemStyle: AdaptiveGlass.tabItemStyleOf(context),
       width: _glassBarWidth(context),
-      height: AppGlass.barHeight,
       alignment: _glassAlignment(),
       margin: _glassMargin(),
     );
@@ -67,11 +57,42 @@ class AdaptiveBottomTabBar extends StatelessWidget {
   }
 
   double _glassBarWidth(BuildContext context) {
+    final content =
+        AppGlass.barItemPadding * 2 + items.length * _glassTabWidth(context);
     final available =
         MediaQuery.sizeOf(context).width -
-        AppGlass.barMargin * 2 -
+        AppGlass.barEdgeInset * 2 -
         _glassActionSpace;
-    return math.max(0, math.min(available, AppGlass.barMaxWidth));
+    return math.max(0, math.min(content, available));
+  }
+
+  double _glassTabWidth(BuildContext context) {
+    final widestLabel = items
+        .map((item) => _labelWidth(context, item.label))
+        .fold(0.0, math.max);
+    return math.max(
+      AppGlass.barTabMinWidth,
+      widestLabel + AppGlass.barTabLabelInset,
+    );
+  }
+
+  double _labelWidth(BuildContext context, String label) {
+    final itemStyle = AdaptiveGlass.tabItemStyleOf(context);
+    final painter = TextPainter(
+      text: TextSpan(
+        text: label,
+        style: DefaultTextStyle.of(context).style.copyWith(
+          fontSize: itemStyle.labelFontSize,
+          fontWeight: itemStyle.selectedFontWeight,
+        ),
+      ),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: 1,
+    )..layout();
+    final width = painter.width;
+    painter.dispose();
+    return width;
   }
 
   Alignment _glassAlignment() =>
@@ -80,10 +101,10 @@ class AdaptiveBottomTabBar extends StatelessWidget {
   EdgeInsets _glassMargin() {
     return reservesTrailingAction
         ? const EdgeInsets.only(
-            left: AppGlass.barMargin,
-            bottom: AppGlass.barMargin,
+            left: AppGlass.barEdgeInset,
+            bottom: AppGlass.barEdgeInset,
           )
-        : const EdgeInsets.only(bottom: AppGlass.barMargin);
+        : const EdgeInsets.only(bottom: AppGlass.barEdgeInset);
   }
 
   double get _glassActionSpace =>

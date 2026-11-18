@@ -1,9 +1,11 @@
+import 'dart:math' as math;
+
 import 'package:flutter/widgets.dart';
 
 import '../../theme/app_tokens.dart';
-import 'adaptive_colors.dart';
 import 'adaptive_floating_action.dart';
 import 'adaptive_glass.dart';
+import 'adaptive_icon.dart';
 
 class AdaptiveBottomBarAction {
   const AdaptiveBottomBarAction({
@@ -29,7 +31,7 @@ class AdaptiveBottomBarHost extends StatelessWidget {
   final Widget? bar;
   final AdaptiveBottomBarAction? action;
 
-  static const double glassInset = AppGlass.barHeight + AppGlass.barMargin;
+  static const double glassBarTop = AppGlass.barEdgeInset + AppGlass.barHeight;
 
   static double insetOf(BuildContext context) {
     return context
@@ -50,15 +52,18 @@ class AdaptiveBottomBarHost extends StatelessWidget {
     return Stack(
       children: [
         Positioned.fill(
-          child: _AdaptiveBottomBarInset(inset: glassInset, child: child),
+          child: _AdaptiveBottomBarInset(
+            inset: _glassInset(context),
+            child: child,
+          ),
         ),
         _scrollEdge(context),
-        Positioned.fill(child: _bar(context)),
+        Positioned.fill(child: _bar(context, removeBottom: true)),
         if (action case final action?)
           Positioned(
-            right: AppGlass.barMargin,
-            bottom: MediaQuery.paddingOf(context).bottom + AppGlass.barMargin,
-            child: _action(action),
+            right: AppGlass.barEdgeInset,
+            bottom: AppGlass.barEdgeInset,
+            child: _glassAction(context, action),
           ),
       ],
     );
@@ -69,17 +74,15 @@ class AdaptiveBottomBarHost extends StatelessWidget {
       left: 0,
       right: 0,
       bottom: 0,
-      height:
-          glassInset +
-          MediaQuery.paddingOf(context).bottom +
-          AppGlass.scrollEdgeFade,
+      height: glassBarTop + AppGlass.scrollEdgeFade,
       child: IgnorePointer(
-        child: LiquidGlassScrollEdge(
-          edge: LiquidGlassEdge.bottom,
-          color: AdaptiveColors.scrollEdgeTint(context),
-        ),
+        child: LiquidGlassScrollEdge(edge: LiquidGlassEdge.bottom),
       ),
     );
+  }
+
+  double _glassInset(BuildContext context) {
+    return math.max(0, glassBarTop - MediaQuery.paddingOf(context).bottom);
   }
 
   Widget _stacked(BuildContext context) {
@@ -97,10 +100,11 @@ class AdaptiveBottomBarHost extends StatelessWidget {
     );
   }
 
-  Widget _bar(BuildContext context) {
+  Widget _bar(BuildContext context, {bool removeBottom = false}) {
     return MediaQuery.removePadding(
       context: context,
       removeTop: true,
+      removeBottom: removeBottom,
       child: bar!,
     );
   }
@@ -119,6 +123,21 @@ class AdaptiveBottomBarHost extends StatelessWidget {
       );
     }
     return child;
+  }
+
+  Widget _glassAction(BuildContext context, AdaptiveBottomBarAction action) {
+    return Semantics(
+      button: true,
+      label: action.label,
+      child: LiquidGlassTabBarAction(
+        onTap: action.onPressed,
+        size: AppGlass.barHeight,
+        child: AdaptiveIcon(
+          action.glyph,
+          color: AdaptiveGlass.glyphColorOf(context),
+        ),
+      ),
+    );
   }
 
   Widget _action(AdaptiveBottomBarAction action) {

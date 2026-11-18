@@ -1,15 +1,15 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keepscore2/app/app.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 import 'package:keepscore2/core/widgets/streak_badge.dart';
 import 'package:keepscore2/features/profile/domain/streak_type.enum.dart';
-import 'package:keepscore2/l10n/app_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
   testWidgets('a badge with several glyphs overlaps them', (tester) async {
     await tester.pumpWidget(
       const MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: KeepScoreApp.localizationsDelegates,
         home: Center(child: StreakBadge(type: StreakType.win, count: 25)),
       ),
     );

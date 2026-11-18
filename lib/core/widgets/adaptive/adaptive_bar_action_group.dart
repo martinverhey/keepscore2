@@ -17,7 +17,7 @@ class AdaptiveBarActionGroup extends StatelessWidget {
       return _row();
     }
     return LiquidGlassLens(
-      style: AdaptiveGlass.barActionStyle(context),
+      style: AdaptiveGlass.groupedBarActionStyle(),
       child: GroupedBarActionScope(child: _row()),
     );
   }

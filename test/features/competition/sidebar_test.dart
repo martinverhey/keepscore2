@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:keepscore2/app/app.dart';
 import 'package:keepscore2/core/theme/app_tokens.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 import 'package:keepscore2/features/auth/domain/auth_repository.dart';
@@ -11,10 +11,11 @@ import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/sidebar.dart';
-import 'package:keepscore2/features/competition/presentation/widgets/sidebar_shell.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/sidebar_section.enum.dart';
+import 'package:keepscore2/features/competition/presentation/widgets/sidebar_shell.dart';
 import 'package:keepscore2/features/settings/presentation/cubit/theme_cubit.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -102,7 +103,7 @@ void main() {
 
   Widget wrap(Widget child, {bool selected = true}) => withProviders(
     MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: KeepScoreApp.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: child,
     ),
@@ -289,7 +290,7 @@ void main() {
       await tester.pumpWidget(
         withProviders(
           MaterialApp.router(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            localizationsDelegates: KeepScoreApp.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             routerConfig: router,
           ),
@@ -358,7 +359,7 @@ void main() {
       await tester.pumpWidget(
         withProviders(
           MaterialApp.router(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            localizationsDelegates: KeepScoreApp.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             routerConfig: router,
           ),
@@ -411,7 +412,7 @@ void main() {
     await tester.pumpWidget(
       withProviders(
         MaterialApp.router(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: KeepScoreApp.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           routerConfig: router,
         ),
@@ -445,7 +446,7 @@ void main() {
           ),
         ],
         child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: KeepScoreApp.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Sidebar(
             current: SidebarSection.leaderboard,

@@ -1,9 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keepscore2/app/app.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 import 'package:keepscore2/features/tournament/domain/bracket.model.dart';
 import 'package:keepscore2/features/tournament/presentation/pages/tournament_score_sheet.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 
 TournamentMatch _match({int? scoreA, int? scoreB}) => TournamentMatch(
   id: 'm1-0',
@@ -19,7 +20,7 @@ TournamentMatch _match({int? scoreA, int? scoreB}) => TournamentMatch(
 Future<void> _pump(WidgetTester tester, TournamentMatch match) async {
   await tester.pumpWidget(
     MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: KeepScoreApp.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(body: TournamentScoreSheet(match: match)),
     ),
@@ -84,7 +85,7 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: KeepScoreApp.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Builder(
           builder: (context) => Scaffold(
