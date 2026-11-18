@@ -17,9 +17,12 @@ class DayHeader extends StatelessWidget {
       color: AdaptiveColors.pageBackground(context),
       child: Padding(
         padding: const EdgeInsets.only(top: textInset, bottom: AppSpacing.sm),
-        child: Text(
-          day.matchDayLabel(context),
-          style: AppTypography.captionStrong,
+        child: Align(
+          alignment: Alignment.center,
+          child: Text(
+            day.matchDayLabel(context),
+            style: AppTypography.captionStrong,
+          ),
         ),
       ),
     );

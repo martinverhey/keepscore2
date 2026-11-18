@@ -122,8 +122,12 @@ Bracket _finishedBracket() => Bracket.fromMatches([
   _bracketMatch(2, 0, a: 'Ada', b: 'Cas', winner: 'Ada'),
 ]);
 
-Player _player(String id, String name) =>
-    Player(id: id, competitionId: _competitionId, displayName: name, isActive: true);
+Player _player(String id, String name) => Player(
+  id: id,
+  competitionId: _competitionId,
+  displayName: name,
+  isActive: true,
+);
 
 Future<GameTypeFilterCubit> _pumpMatchesPage(
   WidgetTester tester, {
@@ -542,6 +546,24 @@ void main() {
     );
   });
 
+  testWidgets('the bar centres the day on the list header it took over', (
+    tester,
+  ) async {
+    AppPlatform.debugOverrideCupertino = true;
+    AppPlatform.debugOverrideLiquidGlass = true;
+    await _pumpMatchesPage(tester);
+
+    await _scrollTo(tester, _scrollOntoCaptionLine(tester, 5));
+
+    expect(
+      tester.getRect(_barDay(5)).center.dx,
+      moreOrLessEquals(
+        tester.getRect(_dayHeaderLabel(5)).center.dx,
+        epsilon: 0.5,
+      ),
+    );
+  });
+
   testWidgets('one day name replaces the other without shifting sideways', (
     tester,
   ) async {
@@ -555,7 +577,10 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
 
-    expect(tester.getRect(_barDay(4)).left, tester.getRect(_barDay(5)).left);
+    expect(
+      tester.getRect(_barDay(4)).center.dx,
+      moreOrLessEquals(tester.getRect(_barDay(5)).center.dx, epsilon: 0.5),
+    );
   });
 
   testWidgets('the filter offers only the game types played this season', (
@@ -716,10 +741,7 @@ void main() {
   testWidgets('a running tournament heads the page, above the first day', (
     tester,
   ) async {
-    await _pumpMatchesPage(
-      tester,
-      tournaments: [(_tournament(), _bracket())],
-    );
+    await _pumpMatchesPage(tester, tournaments: [(_tournament(), _bracket())]);
 
     expect(find.byType(TournamentCard), findsOneWidget);
     expect(
@@ -729,10 +751,7 @@ void main() {
   });
 
   testWidgets('the card names the round and who is up next', (tester) async {
-    await _pumpMatchesPage(
-      tester,
-      tournaments: [(_tournament(), _bracket())],
-    );
+    await _pumpMatchesPage(tester, tournaments: [(_tournament(), _bracket())]);
 
     expect(find.text('Semi-finals'), findsOneWidget);
     expect(find.text('In progress'), findsOneWidget);
@@ -794,10 +813,7 @@ void main() {
   testWidgets('the chevron sits on the card\'s middle, not its title', (
     tester,
   ) async {
-    await _pumpMatchesPage(
-      tester,
-      tournaments: [(_tournament(), _bracket())],
-    );
+    await _pumpMatchesPage(tester, tournaments: [(_tournament(), _bracket())]);
 
     final card = tester.getRect(find.byType(TournamentCard));
     final chevron = tester.getRect(
@@ -805,7 +821,8 @@ void main() {
         of: find.byType(TournamentCard),
         matching: find.byWidgetPredicate(
           (widget) =>
-              widget is AdaptiveIcon && widget.glyph == AdaptiveGlyph.chevronRight,
+              widget is AdaptiveIcon &&
+              widget.glyph == AdaptiveGlyph.chevronRight,
         ),
       ),
     );
@@ -814,10 +831,7 @@ void main() {
   });
 
   testWidgets('tapping the card opens the bracket', (tester) async {
-    await _pumpMatchesPage(
-      tester,
-      tournaments: [(_tournament(), _bracket())],
-    );
+    await _pumpMatchesPage(tester, tournaments: [(_tournament(), _bracket())]);
 
     await tester.tap(find.byType(TournamentCard));
     await tester.pumpAndSettle();

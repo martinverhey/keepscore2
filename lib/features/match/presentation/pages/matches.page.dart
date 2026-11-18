@@ -219,7 +219,6 @@ class _MatchesPageState extends State<MatchesPage> {
       valueListenable: _currentDay,
       builder: (context, day, _) => AnimatedSwitcher(
         duration: const Duration(milliseconds: 200),
-        layoutBuilder: _startAlignedStack,
         child: day == null
             ? const SizedBox.shrink()
             : Text(
@@ -616,11 +615,4 @@ class _MatchesPageState extends State<MatchesPage> {
       ),
     );
   }
-}
-
-Widget _startAlignedStack(Widget? current, List<Widget> previous) {
-  return Stack(
-    alignment: AlignmentDirectional.centerStart,
-    children: [...previous, ?current],
-  );
 }
