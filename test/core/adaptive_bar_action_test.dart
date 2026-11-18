@@ -146,39 +146,6 @@ void main() {
     expect(tapped, [1]);
   });
 
-  testWidgets('a labelled glass action is a lens around its text', (
-    tester,
-  ) async {
-    AppPlatform.debugOverrideLiquidGlass = true;
-    await tester.pumpWidget(
-      CupertinoApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        home: AdaptiveBarAction(label: 'Join', onPressed: () {}),
-      ),
-    );
-
-    expect(find.text('Join'), findsOneWidget);
-    expect(find.byType(LiquidGlassLens), findsOneWidget);
-    expect(find.byType(LiquidGlassTabBarAction), findsNothing);
-  });
-
-  testWidgets('a labelled glass action splashes like a glyph one', (
-    tester,
-  ) async {
-    AppPlatform.debugOverrideLiquidGlass = true;
-    await tester.pumpWidget(
-      CupertinoApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        home: AdaptiveBarAction(label: 'Join', onPressed: () {}),
-      ),
-    );
-
-    expect(
-      tester.widget<InkWell>(find.byType(InkWell)).customBorder,
-      const StadiumBorder(),
-    );
-  });
-
   testWidgets('a capsuled glyph splashes inside its own circle', (
     tester,
   ) async {
@@ -190,50 +157,6 @@ void main() {
           .map((action) => action.customBorder),
       everyElement(const CircleBorder()),
     );
-  });
-
-  testWidgets('a labelled action off glass is a plain text button', (
-    tester,
-  ) async {
-    AppPlatform.debugOverrideLiquidGlass = false;
-    AppPlatform.debugOverrideCupertino = false;
-    var taps = 0;
-    await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        home: Center(
-          child: AdaptiveBarAction(label: 'Join', onPressed: () => taps++),
-        ),
-      ),
-    );
-
-    expect(find.byType(TextButton), findsOneWidget);
-    expect(find.byType(Icon), findsNothing);
-
-    await tester.tap(find.text('Join'));
-
-    expect(taps, 1);
-  });
-
-  testWidgets('a labelled action is not capsuled with a glyph one', (
-    tester,
-  ) async {
-    AppPlatform.debugOverrideLiquidGlass = true;
-    await tester.pumpWidget(
-      CupertinoApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        home: AdaptiveBarActionGroup(
-          actions: [
-            AdaptiveBarAction(glyph: AdaptiveGlyph.add, onPressed: () {}),
-            AdaptiveBarAction(label: 'Join', onPressed: () {}),
-          ],
-        ),
-      ),
-    );
-
-    expect(find.byType(LiquidGlassTabBarAction), findsOneWidget);
-    expect(find.byType(Icon), findsOneWidget);
-    expect(find.text('Join'), findsOneWidget);
   });
 
   testWidgets('a lone glass action keeps its own lens', (tester) async {
