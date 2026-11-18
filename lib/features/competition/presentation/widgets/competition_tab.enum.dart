@@ -1,1 +1,1 @@
-enum CompetitionTab { leaderboard, matches, competitions }
+enum CompetitionTab { leaderboard, matches }

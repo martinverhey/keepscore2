@@ -284,7 +284,7 @@ double _scrollOntoCaptionLine(WidgetTester tester, int day) {
   final captionLine =
       tester.getRect(bar).top +
       MediaQuery.paddingOf(tester.element(bar)).top +
-      AdaptiveTopBar.subtitleTop;
+      AdaptiveTopBar.subtitleTopFor(hasCaption: true);
   return tester.getRect(_dayHeaderLabel(day)).top - captionLine;
 }
 

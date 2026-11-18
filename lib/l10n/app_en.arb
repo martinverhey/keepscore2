@@ -44,13 +44,12 @@
   "authUpgradeBody": "Guests can look around, but you need an account to create competitions and create matches. Your history stays with you.",
 
   "competitionsTitle": "Competitions",
-  "competitionsPlaceholder": "Your competitions will show up here.",
   "competitionsCreateShort": "Create",
-  "competitionsJoinTip": "Press 'Join' to join an existing competition.",
-  "competitionsCreateTip": "Create your own competition with the + button.",
-  "competitionsActive": "Active",
-  "competitionsOther": "Other competitions",
-  "competitionsAdd": "Add competition",
+  "competitionSwitch": "Switch competition, now {name}",
+  "@competitionSwitch": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "welcomeBody": "Join a competition with its code, or start one of your own.",
   "competitionsCreate": "Create competition",
   "competitionsJoin": "Join competition",
   "competitionsJoinShort": "Join",
@@ -74,6 +73,18 @@
   "@competitionMatches": {
     "placeholders": { "count": { "type": "int" } }
   },
+  "competitionCurrent": "Current",
+  "competitionPlayedToday": "Played today",
+  "competitionPlayedYesterday": "Played yesterday",
+  "competitionPlayedDaysAgo": "Played {count} days ago",
+  "@competitionPlayedDaysAgo": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "competitionPlayedOn": "Last played {date}",
+  "@competitionPlayedOn": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "competitionNotPlayed": "Not played yet",
   "competitionGuestCannotCreate": "Guests can join a competition and look around, but creating one needs an account.",
   "competitionInviteTitle": "Invite players",
   "competitionInviteAction": "Invite",

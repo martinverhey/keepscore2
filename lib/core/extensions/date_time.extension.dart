@@ -25,3 +25,24 @@ extension DateTimeMatchDayLabel on DateTime {
         : DateFormat.yMMMMEEEEd(context.languageTag).format(this);
   }
 }
+
+extension DateTimeLastPlayedLabel on DateTime {
+  static const int _recentDays = 7;
+
+  String lastPlayedLabel(BuildContext context, {DateTime? now}) {
+    final today = (now ?? DateTime.now()).dayOnly;
+    final playedOn = toLocal().dayOnly;
+    final difference = today.difference(playedOn).inDays;
+
+    if (difference <= 0) return context.l10n.competitionPlayedToday;
+    if (difference == 1) return context.l10n.competitionPlayedYesterday;
+    if (difference < _recentDays) {
+      return context.l10n.competitionPlayedDaysAgo(difference);
+    }
+
+    final date = playedOn.year == today.year
+        ? DateFormat.MMMd(context.languageTag).format(playedOn)
+        : DateFormat.yMMMd(context.languageTag).format(playedOn);
+    return context.l10n.competitionPlayedOn(date);
+  }
+}

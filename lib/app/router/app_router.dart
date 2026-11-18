@@ -10,7 +10,7 @@ import '../../features/auth/presentation/pages/sign_in.page.dart';
 import '../../features/auth/presentation/pages/upgrade_account.page.dart';
 import '../../features/competition/presentation/cubit/competition_list_cubit.dart';
 import '../../features/competition/presentation/pages/competition_shell.dart';
-import '../../features/competition/presentation/pages/competitions.page.dart';
+import '../../features/competition/presentation/pages/welcome.page.dart';
 import '../../features/competition/presentation/widgets/competition_scope.dart';
 import '../../features/competition/presentation/widgets/sidebar_shell.dart';
 import '../../features/leaderboard/presentation/cubit/leaderboard_cubit.dart';
@@ -40,38 +40,35 @@ abstract final class Routes {
   static String competition(String id) => '/competition/$id';
   static String leaderboard(String id) => '/competition/$id/leaderboard';
   static String matches(String id) => '/competition/$id/matches';
-  static String competitions(String id) => '/competition/$id/competitions';
   static String profile(String id) => '/competition/$id/profile';
   static String competitionEdit(String id) => '/competition/$id/settings/edit';
   static String players(String id) => '/competition/$id/settings/players';
   static String history(String id) => '/competition/$id/settings/history';
 }
 
+Future<String?> resolveHomeTarget(CompetitionListCubit competitions) async {
+  await competitions.ensureLoaded();
+  final state = competitions.state;
+  if (state is! CompetitionListReady) return null;
+
+  final recentId = await RecentCompetitionStore.get();
+  if (recentId != null) {
+    if (competitions.isMember(recentId)) return Routes.competition(recentId);
+    await RecentCompetitionStore.clear();
+  }
+
+  if (state.competitions.isEmpty) return null;
+  return Routes.competition(state.competitions.first.id);
+}
+
 GoRouter createRouter(AuthBloc authBloc) {
-  Future<String?>? pendingRecentCompetitionTarget;
-  var recentCompetitionResolvedOnce = false;
+  Future<String?>? pendingHomeTarget;
 
-  // Resolves to a competition route only once membership is confirmed, so a
-  // stale id (left the competition, or a guest's anonymous session was
-  // replaced by a new one) never gets a chance to render the competition
-  // shell before bouncing back to Routes.home — it goes straight there.
-  Future<String?> resolveRecentCompetitionTarget() {
-    final future = pendingRecentCompetitionTarget ??= () async {
-      final recentId = await RecentCompetitionStore.get();
-      if (recentId == null) return null;
-
-      final competitions = getIt<CompetitionListCubit>();
-      await competitions.ensureLoaded();
-      if (competitions.state is! CompetitionListReady) return null;
-      if (competitions.isMember(recentId)) return Routes.competition(recentId);
-
-      await RecentCompetitionStore.clear();
-      return null;
-    }();
-    future.whenComplete(() {
-      pendingRecentCompetitionTarget = null;
-      recentCompetitionResolvedOnce = true;
-    });
+  Future<String?> resolveHomeTargetOnce() {
+    final future = pendingHomeTarget ??= resolveHomeTarget(
+      getIt<CompetitionListCubit>(),
+    );
+    future.whenComplete(() => pendingHomeTarget = null);
     return future;
   }
 
@@ -92,13 +89,9 @@ GoRouter createRouter(AuthBloc authBloc) {
 
       final isEntryPoint =
           location == Routes.signIn || location == Routes.splash;
-      final isUnsettledHome =
-          location == Routes.home &&
-          (pendingRecentCompetitionTarget != null ||
-              !recentCompetitionResolvedOnce);
 
-      if (isEntryPoint || isUnsettledHome) {
-        final target = await resolveRecentCompetitionTarget();
+      if (isEntryPoint || location == Routes.home) {
+        final target = await resolveHomeTargetOnce();
         if (target != null) return target;
         return location == Routes.home ? null : Routes.home;
       }
@@ -123,7 +116,7 @@ GoRouter createRouter(AuthBloc authBloc) {
           GoRoute(
             path: Routes.home,
             pageBuilder: (context, state) =>
-                adaptivePage(context, child: const CompetitionsPage()),
+                adaptivePage(context, child: const WelcomePage()),
           ),
           GoRoute(
             path: Routes.language,
@@ -212,15 +205,6 @@ GoRouter createRouter(AuthBloc authBloc) {
                                 child: MatchesPage(competitionId: id),
                               );
                             },
-                          ),
-                        ],
-                      ),
-                      StatefulShellBranch(
-                        routes: [
-                          GoRoute(
-                            path: 'competitions',
-                            builder: (context, state) =>
-                                const CompetitionsPage(),
                           ),
                         ],
                       ),

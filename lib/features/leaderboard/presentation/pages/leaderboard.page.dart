@@ -13,7 +13,7 @@ import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../competition/domain/competition.model.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
 import '../../../competition/presentation/widgets/profile_button.dart';
-import '../../../competition/presentation/widgets/join_code_tag.dart';
+import '../../../competition/presentation/widgets/competition_caption.dart';
 import '../../../competition/presentation/pages/invite_sheet.dart';
 import '../../../player/presentation/cubit/players_cubit.dart';
 import '../../../profile/presentation/widgets/profile_section.dart';
@@ -92,27 +92,58 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
     return AdaptiveScaffold(
       title: context.l10n.leaderboardTitle,
       onRefresh: _refresh,
-      trailing: AppPlatform.useWideWeb(context)
-          ? null
-          : ProfileButton(competitionId: competitionId),
-      body: overview == null
-          ? const AdaptiveLoader()
-          : Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.md,
-                AppSpacing.sm,
-                AppSpacing.md,
-                AppSpacing.xl,
+      trailing: _actions(context, overview, competitionId),
+      titleCaption: const CompetitionCaption(),
+      onTitleTap: () => openCompetitionSwitcher(context),
+      slivers: overview == null
+          ? const [
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: AdaptiveLoader(),
               ),
-              child: _content(
-                context,
-                overview,
-                competitionId: competitionId,
-                isOwner: isOwner,
-                myPlayerId: myPlayerId,
-                myDisplayName: myDisplayName,
+            ]
+          : [
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.md,
+                  AppSpacing.sm,
+                  AppSpacing.md,
+                  AppSpacing.xl,
+                ),
+                sliver: SliverToBoxAdapter(
+                  child: _content(
+                    context,
+                    overview,
+                    competitionId: competitionId,
+                    isOwner: isOwner,
+                    myPlayerId: myPlayerId,
+                    myDisplayName: myDisplayName,
+                  ),
+                ),
               ),
-            ),
+            ],
+    );
+  }
+
+  Widget _actions(
+    BuildContext context,
+    CompetitionOverview? overview,
+    String competitionId,
+  ) {
+    return AdaptiveBarActionGroup(
+      actions: [
+        if (overview != null) _inviteButton(context, overview),
+        if (!AppPlatform.useWideWeb(context))
+          ProfileButton(competitionId: competitionId),
+      ],
+    );
+  }
+
+  Widget _inviteButton(BuildContext context, CompetitionOverview overview) {
+    return AdaptiveBarAction(
+      glyph: AdaptiveGlyph.invite,
+      semanticLabel: context.l10n.competitionInviteAction,
+      onPressed: () => showInviteSheet(context, overview: overview),
     );
   }
 
@@ -143,8 +174,6 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _competitionHeader(context, overview, competitionId),
-        const SizedBox(height: AppSpacing.sm),
         if (myPlayerId != null && myDisplayName != null)
           ProfileSection(
             competitionId: competitionId,
@@ -167,66 +196,6 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
               context.push<Object?>(Routes.players(competitionId)),
         ),
       ],
-    );
-  }
-
-  Widget _competitionHeader(
-    BuildContext context,
-    CompetitionOverview overview,
-    String competitionId,
-  ) {
-    return Row(
-      children: [
-        Expanded(
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: _competitionButton(
-              context,
-              overview.competition,
-              competitionId,
-            ),
-          ),
-        ),
-        _inviteButton(context, overview),
-        const SizedBox(width: AppSpacing.xs),
-        JoinCodeTag(code: overview.competition.joinCode),
-      ],
-    );
-  }
-
-  Widget _competitionButton(
-    BuildContext context,
-    Competition competition,
-    String competitionId,
-  ) {
-    return AdaptiveTappable(
-      onTap: () => context.go(Routes.competitions(competitionId)),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Flexible(
-            child: Text(
-              competition.name,
-              style: AppTypography.bodyLarge.copyWith(color: AppColors.neutral),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.xs),
-          const AdaptiveIcon(
-            AdaptiveGlyph.chevronRight,
-            color: AppColors.neutral,
-            size: 16,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _inviteButton(BuildContext context, CompetitionOverview overview) {
-    return AdaptiveIconButton(
-      glyph: AdaptiveGlyph.invite,
-      semanticLabel: context.l10n.competitionInviteAction,
-      onPressed: () => showInviteSheet(context, overview: overview),
     );
   }
 }

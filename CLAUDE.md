@@ -62,13 +62,13 @@ with `SignInMode.upgrade`, which routes the two email steps to
 renders `GuestNotice`, which carries the refusal *and* the way out; the page pops
 itself when `AuthBloc` reports the user is no longer anonymous.
 
-`/competition/:id` redirects to `/competition/:id/leaderboard` — Leaderboard, Matches and
-Competitions are each a real route, not a tab switch inside one page: a
+`/competition/:id` redirects to `/competition/:id/leaderboard` — Leaderboard and Matches
+are each a real route, not a tab switch inside one page: a
 `StatefulShellRoute.indexedStack` with
 one branch per route (`features/competition/.../competition_shell.dart`'s `CompetitionShell`
 wraps the `navigationShell`; see "Leaderboard and Matches are routes, not tabs" below for why
 and how). `LeaderboardPage` (`features/leaderboard/presentation/pages/leaderboard.page.dart`,
-join code + invite + `ProfileSection` + the actual ranked list, which is `LeaderboardList` in
+`ProfileSection` + the actual ranked list, which is `LeaderboardList` in
 the feature's `presentation/widgets/leaderboard_list.dart`) and `MatchesPage`
 (`features/match/presentation/pages/matches.page.dart`) are each a full routed page — own
 `AdaptiveScaffold`, own `LeaderboardCubit`/`MatchListCubit` loaded in their own `initState`.
@@ -99,14 +99,121 @@ slot, which opens that same `SeasonSheet` over `HistoryState.seasons`, and heads
 History). Neither tab filters by game type —
 that's Matches-only, see below.
 
+**Which competition you are in, and how you change it, is a caption under
+the Leaderboard and Matches titles — there is no Competitions tab and no
+competitions list page any more.** `CompetitionCaption`
+(`competition/presentation/widgets/competition_caption.dart`) is the
+competition's name plus a small chevron-down in accent `captionStrong`,
+ellipsised; it is display only. The tap belongs to the whole title zone:
+`LeaderboardPage` and `MatchesPage` both pass
+`AdaptiveScaffold(titleCaption:, onTitleTap:)`, and
+`onTitleTap` is `openCompetitionSwitcher` (bottom of the same file), so
+"Leaderboard" and the name under it are one target rather than a 20px line.
+
+**The scaffold places the caption per platform, because only iOS glass has a
+subtitle slot of its own** — Flutter 3.47's `AppBar`/`SliverAppBar` and
+`CupertinoSliverNavigationBar` carry no subtitle at all.
+- **iOS glass**: it is `AdaptiveTopBar.caption`, a line of its own
+  directly under the title, and a `subtitle` (Matches' day) goes one line
+  *below* it — title, competition, day. Each line is
+  `AppGlass.topBarSubtitleHeight`; `barHeightFor`/`insetFor`/`bandHeightOf`
+  take `hasSubtitle` and `hasCaption` and count lines, so Matches' bar is
+  one band taller than Leaderboard's. `subtitleTopFor(hasCaption:)` is where
+  the subtitle actually sits, and **Matches' day handover reads it rather
+  than `subtitleTop`** (`_dayAtCaptionLine`, and `matches_page_test.dart`'s
+  alignment tests) — with the caption above it, the day's caption line moved
+  down a band, and a threshold left on `subtitleTop` would flip the day one
+  band early. `AdaptiveTopBar.onTitleTap` wraps the title column — the whole
+  `Expanded` between the actions — in an opaque `GestureDetector`.
+- **Material and wide web**: `_materialTitle` hands the app bar a two-line
+  `Column` (title over caption, start-aligned) as its `title`, wrapped in
+  the same tap. `SliverAppBar.large` mounts that title twice, expanded and
+  collapsed, so a test finds two `CompetitionCaption`s and taps
+  `.hitTestable().first`. The collapsed toolbar's 64px holds both lines.
+- **Cupertino without glass** (iOS under Increase Contrast, macOS): the
+  nav bar's large title cannot take a second line and still collapse, so the
+  caption falls back to a tappable `PinnedHeaderSliver` row on the page
+  background (`_pinnedCaption`, `_sliverBody(pinsCaption: true)` from that
+  one call site); Matches' pinned day headers stack below it through
+  `constraints.overlap`. That is why `titleCaption` is slivers-only
+  (asserted) and `LeaderboardPage` is a `slivers` page rather than a `body`
+  box.
+Before this it was a pill in the body (a tinted `AdaptiveButton`, far too
+big on Android, which also scrolled away), then a 32px chip, then a
+full-width line under the bar.
+It was built as the bar's `leading` on both tabs first and dropped: beside
+two trailing actions, glass at 393pt left the page title 69pt, so
+"Leaderboard"/"Matches" ellipsised to a couple of letters; and then as the
+first thing in the body, which scrolled out of sight. It replaced the third
+tab, the sidebar's Competitions row, and the leaderboard's competition-name
+shortcut and `JoinCodeTag`; the leaderboard keeps only an Invite bar action,
+grouped with `ProfileButton`. The trigger was that players are in two or
+three competitions, expected the tab to be a switcher, got a page, and read
+its spotlight card as a button that went nowhere.
+`competition_content_page_test.dart` scrolls thirty rows down and opens the
+switcher from the collapsed bar's caption; `adaptive_glass_test.dart` pins the
+glass placement (left edge on the title's, below it, above the first sliver),
+that both lines take the tap, and that a subtitle lands under the caption.
+
+**The switcher is a sheet.** `showCompetitionSwitcherSheet`
+(`pages/competition_switcher_sheet.dart`): one `CompetitionSwitcherRow` per
+competition (name, the current one in accent with a `Current` tag behind it,
+when it was last played, the three-dots `CompetitionActions`), then Join /
+Create side by side as the pinned primary button (Create only when
+`session.canWrite`). The caption is `DateTime.lastPlayedLabel`
+(`date_time.extension.dart`) off `CompetitionOverview.lastPlayedAt`: today,
+yesterday, `N days ago` inside a week, a date after that, and `Not played
+yet` for a competition with no matches. A row carries no invite button — the
+leaderboard's Invite bar action is the one way to the code. Opening it refreshes `CompetitionListCubit` silently, or
+loads it if nothing has yet. A Material popup menu anchored to the switcher was
+built next to it behind a debug toggle and dropped in favour of the sheet;
+so was the old `CompetitionsPage`, kept for a while as a fallback for `/`.
+
+**The sheet does not navigate; it returns a `CompetitionSwitcherChoice`** —
+`CompetitionSwitchChoice(id)`, `CompetitionJoinChoice`,
+`CompetitionCreateChoice` or `CompetitionActionChoice(callback)` (Edit) — and
+the leaderboard runs it with `runCompetitionSwitcherChoice` from its own, page-level
+context once the sheet has closed. That is load-bearing: the sheet lives on
+the root navigator, attached to `SidebarShell`'s page, which a `go` to
+another competition (or to the Edit page) does not replace — so a sheet that
+navigated itself would stay open on top of where it sent you. Rename, Leave,
+Delete and Invite run in place with the sheet's own context, so a refused
+action shows its `FailureText` in the sheet. Leaving or deleting the
+competition you are in emits `CompetitionMissing`, which the sheet listens
+for and closes itself on. `competitionActionsFor`
+(`pages/competition_flows.dart`) is the one place the four owner/member
+callbacks are built — it captures `GoRouter.of(context)` eagerly so Edit
+still navigates after the sheet that built it has popped.
+`startJoinCompetition` / `startCreateCompetition` in the same file are the
+scanner → join-sheet loop and the create sheet, followed by a list refresh
+and a `go` into the new competition; `WelcomePage` and the switcher both
+call them.
+
+**`/` is a redirect, not a page, whenever there is anything to enter.**
+`resolveHomeTarget` (`app_router.dart`) runs for every visit to `/`, not just
+the first: the recent competition if you are still in it, otherwise the
+newest one (`myCompetitions` is ordered `last_played_at desc`), and only an
+empty list — or a failed load — renders `/` at all. That is also where
+leaving your current competition lands you: `Missing` → `go(home)` → the next
+competition, or the welcome screen if none remain. `WelcomePage`
+(`pages/welcome.page.dart`) is that empty case: the app name, one line, Join
+and Create (a guest gets Join plus the `GuestNotice`), and sign out. It also
+`go`es to the first competition itself if the list turns non-empty while it
+is on screen (a failed load retried), since the redirect only runs on
+navigation. **`CompetitionShell`'s `Missing` listener calls
+`CompetitionListCubit.forget(id)` before going home**, because the redirect
+answers from the cached list: a competition removed server-side would still
+be in it, and `/` would send you straight back into the competition that
+just reported itself missing — a loop.
+
 Logging a match, inspecting one, and joining or creating a competition are all
 sheets, not routes — there is no `match/*` route, no `Routes.match`, no
 `Routes.joinCompetition` and no `Routes.createCompetition`, so none of them is
 deep-linkable, and each builds its own cubit inside the `showAdaptiveSheet`
 builder rather than in a `GoRoute`. `showJoinCompetitionSheet` and
 `showCreateCompetitionSheet` each return the competition's id (or null), and
-`CompetitionsPage` is what refreshes `CompetitionListCubit` and goes to the
-competition — neither sheet navigates. `CreateCompetitionSheet`
+`startJoinCompetition`/`startCreateCompetition` are what refresh
+`CompetitionListCubit` and go to the competition — neither sheet navigates. `CreateCompetitionSheet`
 (`competition/presentation/pages/create_competition_sheet.dart`) replaced
 `CreateCompetitionPage` and the `/create` route outright: same
 `CreateCompetitionCubit`, same name field and season-length segmented control,
@@ -116,11 +223,10 @@ competition", which is what retired the `competitionCreateSubmit` key) and
 Cancel beside it. `showNewMatchSheet` builds the teams and submits.
 
 **Join opens the camera first, and the code field is the way out of it.**
-`CompetitionsPage._join` shows `showJoinScannerSheet`
+`startJoinCompetition` shows `showJoinScannerSheet`
 (`competition/presentation/pages/join_scanner_sheet.dart`) and only then
 `showJoinCompetitionSheet`, so the six-character code is the fallback rather
-than the front door — the QR a competition already shows off every
-`CompetitionCard`, `InviteSheet` and `ActiveCompetitionCard` encodes nothing
+than the front door — the QR `InviteSheet` shows encodes nothing
 but that code (`JoinQrImage(code: code)`), which is what makes scanning and
 typing the same flow. The scanner pops a `JoinScanResult`: `scanned(code)`
 from the camera, `manualEntry()` (a null `code`) from the "Enter code
@@ -150,7 +256,7 @@ camera.** With `code != null` the sheet is confirm-shaped throughout
 (`isScanned`): the `JoinCode` phase renders `JoinLookUpSheet` — a spinner, or
 the lookup's failure — rather than `JoinCodeSheet`, and `Back` pops the sheet
 with `JoinResult.back()` instead of calling `JoinCompetitionCubit.back()`.
-`CompetitionsPage._scanAndJoin` loops on that: scanner → sheet → `back()` →
+`_scanAndJoin` (`competition_flows.dart`) loops on that: scanner → sheet → `back()` →
 a *fresh* scanner sheet. It has to be fresh rather than a sheet stacked on
 the live one, because `DetectionSpeed.noDuplicates` would refuse to re-read
 the QR still in frame; a new `QrScannerView` is a new controller with no
@@ -448,9 +554,9 @@ write-capable surface, gated on `session.canWrite` from `AuthBloc` (passed
 down as `isRegistered`). Keep this list current when a gated surface is added
 or moved:
 
-- **Create competition** — `competitions.page.dart`, `canCreate: session.canWrite`,
-  which is whether the bar's create action is rendered at all; the join action
-  is always there.
+- **Create competition** — the switcher sheet's Create button and
+  `WelcomePage`'s Create button, each rendered only when `session.canWrite`;
+  Join is always there.
 - **Add/manage players, owner settings** — `players.page.dart` →
   `widgets/players.dart`, `isRegistered: session.canWrite`. **Every entry
   point *into* player management is a step stricter than that: owner-only,
@@ -490,8 +596,8 @@ or moved:
   the shell-scoped `PlayersCubit`), not `profiles.display_name`, so it is
   what the leaderboard shows and it is per competition. Below that: the
   System section (theme, language), the app version and sign out.
-- **Edit a competition** — the owner-only Edit item in the competition
-  cards' actions menu (`CompetitionsPage._editCallback`) is the only entry
+- **Edit a competition** — the owner-only Edit item in a switcher row's
+  actions menu (`competitionActionsFor`) is the only entry
   point to the edit page (`CompetitionEditPage`).
 
 ## Architecture
@@ -534,8 +640,8 @@ could not see it — so the sidebar's competition was flattened into a
 `HomeSidebarCompetition` and smuggled to them as go_router `extra`. The
 concept existed three times over (`RecentCompetitionStore`, the route-scoped
 cubit, and that `extra` copy); hoisting collapsed it to one and deleted the
-`extra` threading, `HomeSidebarCompetition`, and `CompetitionsPage`/
-`LanguagePage`'s `sidebarCompetition` constructor params.
+`extra` threading, `HomeSidebarCompetition`, and the old competitions
+page's and `LanguagePage`'s `sidebarCompetition` constructor params.
 
 **The route drives the cubit, never the reverse.** `CompetitionScope`
 (`features/competition/presentation/widgets/competition_scope.dart`) is the
@@ -560,13 +666,13 @@ discipline, and these three rules are what replace it — all four covered in
   when the session stops being authenticated. Without that, signing out and
   back in as someone else leaves the previous user's competition in the
   sidebar — the router's recent-competition redirect catches the *routing*
-  side of that, but not the in-memory copy. `CompetitionsPage` calls
-  `clearIfSelected(id)` after a successful leave/delete for the same reason,
+  side of that, but not the in-memory copy. `competitionActionsFor`'s
+  leave/delete call `clearIfSelected(id)` after a successful leave/delete for the same reason,
   though that one emits `CompetitionMissing` rather than `CompetitionLoading`
   — see below.
 
 **Leaving or deleting a competition resets two things.**
-`CompetitionsPage._forget` is that reset, shared by both actions:
+`_forget` (`competition_flows.dart`) is that reset, shared by both actions:
 `CompetitionCubit.clearIfSelected(id)` and
 `RecentCompetitionStore.clearIfRecent(id)`. The list itself needs nothing,
 since `CompetitionListCubit._mutate` already refreshes. Clearing the recent id
@@ -577,13 +683,12 @@ has to be recorded at the moment we know.
 
 **Leaving or deleting the competition whose shell you are standing in drops
 you out of that shell, and `clearIfSelected` emitting `CompetitionMissing` is
-the whole mechanism.** Both entry points are on the competitions list itself —
-the spotlight card's own leave/delete icon buttons, reachable at `/` and at
-the in-shell `/competition/:id/competitions` branch — so the page you land on is the list
-you were already looking at, minus the tab bar. Nothing in `CompetitionsPage`
-navigates: it clears the cubit, and `CompetitionShell`'s existing
+the whole mechanism.** Both entry points are in each switcher row's actions
+menu, and neither navigates: `competitionActionsFor` clears the cubit, and
+`CompetitionShell`'s existing
 `BlocListener` on `CompetitionMissing` (which already handles a competition
-that vanished server-side) clears the recent id and `go`es to `Routes.home`.
+that vanished server-side) clears the recent id and `go`es to `Routes.home`,
+which redirects into the next competition or shows the welcome screen.
 `Missing` is the honest state — `overview()` would return null for a
 competition you are no longer a member of — and routing the departure through
 it is what avoids a second, parallel "the competition went away" path.
@@ -605,8 +710,8 @@ kept the departed competition's group.
 paths are spelled out separately in the cubit for that reason; the shared
 `_clear()` helper they used to call was hiding the distinction.
 `test/flow/leave_competition_flow_test.dart` walks the real path (leaderboard
-→ Competitions branch → the card's Leave button → confirm) and is the only
-thing watching it.
+→ the competition caption → the switcher row's Leave → confirm → the welcome screen) and is the
+only thing watching it.
 
 "No competition selected" is deliberately **not** a fifth state: it is never
 rendered. Only pages inside the competition subtree switch on
@@ -615,74 +720,45 @@ they build, so `CompetitionLoading` is the honest initial (and post-sign-out)
 value; leaving or deleting lands on `CompetitionMissing` instead, per above. The sidebar reads `state.competition` opportunistically and treats
 `null` as "hide the competition group".
 
-**The competitions page spotlights the active competition above the list.**
-`ActiveCompetitionCard`
-(`competition/presentation/widgets/active_competition_card.dart`) is the
-hero `CompetitionsPage` renders first — **surfaced rather than tinted**: a
-solid `AdaptiveColors.modalSurface` fill on `AppRadius.lg` corners inside a
-plain grey hairline (`AppColors.neutral` at `AppOpacity.controlBorder`). No
-accent wash and no accent border — the accent survives only in the eyebrow
-text and the code badge, so the card is marked by being the one opaque,
-outlined surface in a list where every `CompetitionCard` is a borderless
-translucent neutral. It reads top to bottom as identity then invitation: the
-name starts at the card's very top edge with its actions menu at the row's
-end, an `Active` eyebrow sits directly under it, then the
-player/match counts, all across the **full** card width,
-then a centred block of the join code over a 200px `JoinQrImage`, both big
-enough to read or scan off the page and captioned by nothing — the code
-above the QR says which is which without a line of prose under them. The
-eyebrow is the `competitionsActive` key, one word (`Active` / `Actief`) — it used to read
-"Active competition" from a line of its own *above* the name, which both said
-what the card's own position already says and held an empty band open over
-the title; `competitions_page_test.dart` pins where it landed, between the
-name's bottom and the counts' top and flush with the name's left edge.
+**`InviteSheet` is one card, and that is the whole sheet.**
+`showInviteSheet` takes a `CompetitionOverview` rather than a bare code and
+renders `CompetitionInviteCard`
+(`competition/presentation/widgets/competition_invite_card.dart`): a solid
+`AdaptiveColors.modalSurface` fill on `AppRadius.lg` corners inside a plain
+grey hairline (`AppColors.neutral` at `AppOpacity.controlBorder`), the name,
+the player/match counts, then a centred block of the join code over a 200px
+`JoinQrImage`, captioned by nothing — the code above the QR says which is
+which. It is what is left of `ActiveCompetitionCard`, the hero of the old
+competitions page, minus its tap, its `Active` eyebrow and its actions menu.
+Sourcing the overview is what put `CompetitionOverview? get overview` on
+`CompetitionState`'s sealed base — `LeaderboardPage` had only the
+`Competition` and needs the counts the card shows.
 **The code is a `JoinCodeTag(style: TagStyle.codeLarge)` stretched to the
-QR's own width** (`_codeWidth`, the QR size plus
-`JoinQrImage`'s own padding, so the two edges line up by construction rather
-than by a matching literal) — the same copy-on-tap badge a `CompetitionCard`
-wears, at `headlineMedium` instead of `labelLarge`, so the code and the QR
-read as one pair of ways in rather than as a badge on the name and a picture
-below it. **Nothing that wraps may go inside that `SizedBox`**, which is a
-layout constraint rather than a taste: `AdaptiveScaffold`'s non-scrolling
-body sizes itself from `getMaxIntrinsicHeight(crossAxisExtent)`, and
+QR's own width** (`_codeWidth`, the QR size plus `JoinQrImage`'s own padding,
+so the two edges line up by construction rather than by a matching literal).
+**Nothing that wraps may go inside that `SizedBox`**, which is a layout
+constraint rather than a taste: `AdaptiveScaffold`'s non-scrolling body sizes
+itself from `getMaxIntrinsicHeight(crossAxisExtent)`, and
 `RenderConstrainedBox` forwards the *incoming* width to its child for that
 query instead of its own — so a wrapping `Text` in a fixed-width box is
 measured at the card's full width, comes back one line short, and the page
 **overflows by the lines it will actually wrap to** rather than growing and
-scrolling. A `Scan to join` caption under the QR is what found this; the
-code badge and the QR that are left are a single line and a fixed square, so
-their measured height is honest at any width. It is the same "pad, never
-constrain" rule the wide-web section states, biting through a plain
-`SizedBox` on a phone. So "which competition am I in" and "how does someone
-else get in" are both answered without opening anything. **The QR
-carries no tap of its own** — it is a thing to scan, not a button, and a
-nested tap target inside a card that is itself one tap only made the card's
-own destination ambiguous;
-`InviteSheet` renders this very card, and is still reached from every
-`CompetitionCard`'s invite button (see below). Which competition that is comes from
-`CompetitionCubit`, the same app-wide answer the sidebar reads, matched
-against the already-loaded `CompetitionListReady.competitions` for the counts
-and ownership — so the page makes no extra request, and renders no hero at all
-when the cubit is empty (a fresh launch, or after signing out) or when it
-holds a competition the user has since left. That competition is then
-**dropped from the list below**, with the rest headed by a
-`ListHeader(competitionsOther)`; the card carries its own `CompetitionActions`
-so its actions stay reachable for it. **`CompetitionActions` is one
-three-dots `AdaptiveMenuButton`, not a row of icon buttons** — Edit, Rename,
-Leave and Delete, each item present only when its callback is. Ownership
-decides which: an owner gets Edit/Rename/Delete, anyone else Leave alone
-(`CompetitionsPage._editCallback` and its siblings), and a card whose
-callbacks are all null renders no button at all (`hasActions`). The hero card
-carries the button at the end of the name's row, with the name `Expanded`
-beside it so a long name ellipsises against it; `CompetitionCard` carries it
-at the end of the counts row, after the invite button. They used to be split
-across two rows — a compact rename after the name and the destructive pair at
-the end of its own row — until four actions made a menu the better shape.
+scrolling. A `Scan to join` caption under the QR is what found this. It is
+the same "pad, never constrain" rule the wide-web section states, biting
+through a plain `SizedBox` on a phone. **The QR carries no tap of its own** —
+it is a thing to scan, not a button.
+
+**`CompetitionActions` is one three-dots `AdaptiveMenuButton`, not a row of
+icon buttons** — Edit, Rename, Leave and Delete, each item present only when
+its callback is. Ownership decides which: an owner gets Edit/Rename/Delete,
+anyone else Leave alone (`competitionActionsFor`), and a set whose callbacks
+are all null renders no button at all (`hasActions`). It sits at the end of
+each `CompetitionSwitcherRow`.
 **Edit is `go(Routes.competitionEdit(id))`, never `push`**: the target can be a
 competition other than the one whose shell you are in, which is the
 black-screen case in "Entering a competition is always `go`". A `go` there
 leaves the edit page with nothing to pop to, so `CompetitionEditPage`
-renders its own back action — `go(Routes.competitions(id))` — whenever
+renders its own back action — `go(Routes.leaderboard(id))` — whenever
 `ModalRoute.canPop` is false and the sidebar is not suppressing back buttons.
 The page itself is titled `competitionEdit` ("Edit" / "Bewerken") to match
 the menu item that opens it, and **that menu item is the only way in**: the
@@ -694,127 +770,35 @@ nothing in the sidebar is highlighted while the page is open.
 `CupertinoActionSheet` with a Cancel button on Cupertino; destructive items
 render in `AdaptiveColors.destructive` / `isDestructiveAction`, and the
 glyph is `AdaptiveGlyph.more` (`ellipsis` / `more_vert`).
-`CompetitionCard` keeps `JoinCodeTag` at the end of the name's row; the hero
-card has no invite button of its own (it *is* the invite). Tapping the card is
-`go(Routes.competition(id))` exactly like a `CompetitionCard`, anywhere on it.
-`JoinQrImage` is the white quiet-zone box `JoinQrCard` was built around,
-split out so the hero can render the same code at its own size.
-
-**`InviteSheet` is that same card with its open affordances taken off, and
-that is the whole sheet.** `showInviteSheet` takes a `CompetitionOverview`
-rather than a bare code, and renders `ActiveCompetitionCard` with a null
-`onOpen` — which drops the `Active` eyebrow and the tap together, since both
-say "this is a destination" and in a sheet it is not one. There is no chevron
-on either surface any more: the whole hero card is the tap target, so an
-arrow after the name only competed with the name for the width it wraps
-into. Nothing else moves: the code and the QR are one centred block under
-the name in both, so the sheet is the hero card minus its chrome rather than
-a second arrangement of the same parts (it used to hold the code badge in the
-name's row, which is what `_nameWithCode` was for). `onEdit`/`onRename`/
-`onLeave`/`onDelete` are left off for the same reason, which is what drops
-the actions menu entirely. It replaced a
-`JoinQrCard` over a `JoinCodeCard`, so the invite sheet and the competitions
-page now show the competition the same way rather than two different ways.
-Both cards are gone: the settings page that still rendered them became the
-competition-free `ProfilePage`. Sourcing the overview is what put `CompetitionOverview? get overview`
-on `CompetitionState`'s sealed base — `LeaderboardPage` had only the
-`Competition` and needs the counts the card shows.
 
 **The join code copies itself wherever it is shown.** `JoinCodeTag`
-(`competition/presentation/widgets/join_code_tag.dart`) is the one code badge
-— the competitions list card, the hero card (at `TagStyle.codeLarge`) and the
-leaderboard's own header all render it — and tapping it writes the code to
-the clipboard and swaps its own label to `competitionCodeCopied` for two
-seconds. Inside a tappable card
-the inner tap wins, so pressing the badge copies rather than opening the
-competition; that is the point, and it is why the badge is the affordance
-rather than a separate Copy button. The timer/clipboard half is
+(`competition/presentation/widgets/join_code_tag.dart`) is the one code badge,
+and tapping it writes the code to the clipboard and swaps its own label to
+`competitionCodeCopied` for two seconds. The timer/clipboard half is
 `core/widgets/copyable.dart`'s `Copyable`, a builder widget handing its child
-`(copied, copy)`, and `JoinCodeTag` is now its only caller (the other one,
-`JoinCodeCard`'s Copy button, went with the old settings page).
+`(copied, copy)`, and `JoinCodeTag` is its only caller.
 
-**The competitions page's two actions live in the bar, and it has no floating
-action and no sign out.** `trailing` is a `Row` of two `AdaptiveBarAction`s —
-create (`AdaptiveGlyph.add`, opening
-`showCreateCompetitionSheet`, rendered only when `session.canWrite`) and **join,
-which is the word `Join` rather than a glyph** (`competitionsJoinShort`;
-`competitionsJoin`, "Join competition", stays as its `semanticLabel`), always
-rendered. That order is mirrored by the tail insets below — swap one and the
-other has to follow. Three icons were tried for
-join and none read — `#` for the six-character code, an arrow entering a wall,
-a person with a plus badge — which is what the label variant on
-`AdaptiveBarAction` below exists for. Note `competitionsJoinShort` and
-`joinConfirm` are the same word in both languages (`Join` / `Deelnemen`), so a
-widget test that has the join sheet open must scope its `find.text` to the
-sheet — `join_competition_from_competition_flow_test.dart` does. It replaced an `AdaptiveFloatingAction`
-that opened a `CompetitionAddSheet` chooser; that sheet existed only to split
-one button into two, so it and `CompetitionAddAction` were deleted with it.
-Unlike every other page's `trailing`,
-this one is **not** gated on `AppPlatform.useWideWeb` — the sidebar has no
-create or join row, so the bar is the only way in at every width.
+Note `competitionsJoinShort` and `joinConfirm` are the same word in both
+languages (`Join` / `Deelnemen`), so a widget test that has the join sheet
+open must scope its `find.text` to the sheet —
+`join_competition_from_competition_flow_test.dart` does.
 
-**The empty state is two speech bubbles hanging off the bar, over a
-placeholder line.** `_emptySection` is `_joinBubble` / `_createBubble` at the
-top, then `Spacer`/`EmptyState(competitionsPlaceholder)`/`Spacer`, then
-`_signOutButton`; the empty branch is `Expanded` so those spacers have height
-to take — the body is a non-scrolling `SliverFillRemaining`, which gives the
-column the viewport's remaining extent as its minimum, so the line sits
-centred and sign out is pinned to the bottom of the screen. Each bubble is a
-`SpeechBubble` (`core/widgets/speech_bubble.dart`) carrying an accent
-`AppTypography.eyebrow` header naming the action and a `caption` body saying
-what to press. **The header of the join bubble is `competitionsJoinShort`,
-literally the same key the bar button renders**, so the two can never drift
-apart — which also means `find.text('Join')` now matches twice on this page,
-and `competitions_page_test.dart`'s `_barAction` helper scopes to
-`AdaptiveBarActionGroup` for that reason (this is the third collision on that
-word, after `joinConfirm`).
-
-**The tail is the pointer, and its inset is what aims it.**
-`SpeechBubble.tailInset` is measured from the bubble's *right* edge, so
-`_joinTailInset` (10) lands under the rightmost bar action, `Join`, and
-`_createTailInset` (90) under the `+` beside it, and the two bubbles read as
-speech from two different buttons rather than as a stack of cards. **The
-smaller inset always belongs to whichever action the bar renders last**, so
-reordering `_actions` means swapping these two constants with it. The path is
-one `Path` — an `RRect` plus the triangle, filled once — because
-`AppColors.neutralSurface` is translucent and two overlapping opaque shapes
-would seam along the join. `_bubblePath` clamps the tail inside the corner
-radii so a narrow bubble cannot grow a tail out of its own rounded corner —
-**that clamp floors the effective inset at `AppRadius.lg + _tailWidth` (38)**,
-so any smaller value, `_joinTailInset`'s 10 included, renders at 38 and
-tuning below that does nothing.
-Aiming is approximate by nature: the bar actions differ in size between glass,
-Material and wide web, so the headers are what actually disambiguate and the
-tails carry direction.
-
-**A bubble may hang the other way up, or off the side.** `SpeechBubble.tail`
-(`SpeechBubbleTail.top`/`bottom`/`left`, defaulting to `top`) moves the
-triangle to another edge and flips which side of the padding makes room for
-it. **`tailInset` is always measured from the corner nearest whatever the
-bubble points at** — from the *right* edge for a `top`/`bottom` tail, since
-both of those hang under a bar action at the top right, and from the *top*
-edge for `left`, which points at the sidebar's New match button near the top
-of the screen. `_verticalTailPath` and `_sideTailPath` are separate paths
-rather than one generalized one; each clamps its tail inside the corner radii
-along its own axis, so the `AppRadius.lg + _tailWidth` (38) floor described
-above applies to a `left` tail's distance from the *top*. Matches' empty
-state is the one call site for both `bottom` (native and narrow web) and
-`left` (wide web) — see "Matches' own empty state" below. There is no `right`
-member: nothing points that way, and the codebase does not keep unused
-enum members around (`CurvedArrowDirection` is the precedent).
-
-`competitionsEmpty` ("You're not in any competition yet") is gone — a
-first-time user already knows the list is empty, and the screen's one chance to
-teach was being spent restating it. Three earlier shapes were built here and
-rejected, so don't rebuild any of them: copies of the create/join actions *in*
-the empty state (a filled Join over a tinted Create); a `CurvedArrow` per bar
-action with the action's name as its caption (which is why
-`CurvedArrowDirection` briefly had an `up` member, then a `down` one, and the
-enum went entirely — and `CurvedArrow` itself is now gone too, deleted with
-Matches' sidebar hint, its last call site); and a single
-explanatory paragraph naming both buttons in prose. Nothing here persists a
-"has seen it" flag and nothing needs to — the empty state *is* the first-run
-state, and it disappears the moment the user joins.
+**A speech bubble's tail is the pointer, and its inset is what aims it.**
+`SpeechBubble` (`core/widgets/speech_bubble.dart`) takes a required
+`SpeechBubbleTail` — `bottom` or `left` — which moves the triangle to that
+edge and makes room for it in the padding. **`tailInset` is measured from the
+corner nearest whatever the bubble points at**: from the *right* edge for
+`bottom`, which hangs over the bottom-right new-match action, and from the
+*top* edge for `left`, which points at the sidebar's New match button near
+the top of the screen. The path is one `Path` — an `RRect` plus the triangle,
+filled once — because `AppColors.neutralSurface` is translucent and two
+overlapping opaque shapes would seam along the join. `_bottomTailPath` and
+`_sideTailPath` each clamp the tail inside the corner radii along their own
+axis, so **the effective inset is floored at `AppRadius.lg + _tailWidth`
+(38)** and tuning below that does nothing. Matches' empty state is the one
+call site — see "Matches' own empty state" below. A `top` tail existed for
+the old competitions page's join/create bubbles and went with it; the
+codebase does not keep unused enum members around.
 
 ### The competition list is a cache, not a fetch-on-open
 
@@ -826,18 +810,18 @@ away, dropped to `CompetitionListLoading`, and painted a full-page spinner
 over a fetch that measures ~85 ms end to end (4.9 ms of it in Postgres). The
 data was never the slow part; the state wipe was.
 
-`CompetitionsPage.initState` therefore calls `ensureLoaded()`, not `load()`:
+`WelcomePage.initState` therefore
+calls `ensureLoaded()`, not `load()`:
 it fetches only when there is no data yet, dedupes concurrent callers onto
 one in-flight request, and returns immediately once `CompetitionListReady`
 holds a list. A failure is not cached — `CompetitionListFailed` is not
 `Ready`, so the next `ensureLoaded()` retries.
 
 Because the list is now cached, **every write to it has to say so**. `rename`/
-`leave`/`delete` already refreshed through `_mutate`; `CompetitionsPage`
-calls `CompetitionListCubit.refresh()` itself when either the create or the
-join sheet comes back with an id. The page's `State` survives that — a sheet
-is not a route change, and `initState` never re-runs — so without that
-explicit refresh the new competition would be missing from the list. (It already was, before the cache: nothing but pull-to-refresh ever
+`leave`/`delete` already refreshed through `_mutate`; `startJoinCompetition`/
+`startCreateCompetition` call `CompetitionListCubit.refresh()` themselves when
+the join or create sheet comes back with an id — otherwise the new
+competition would be missing from the switcher. (It already was, before the cache: nothing but pull-to-refresh ever
 refetched it.)
 
 The cubit subscribes to `AuthBloc` and resets to `CompetitionListLoading` when
@@ -846,21 +830,24 @@ does — otherwise signing out and back in as someone else serves the previous
 user's competitions from cache.
 
 **The router's recent-competition redirect reads this cubit instead of making
-its own request.** `resolveRecentCompetitionTarget` in `app_router.dart` used
+its own request.** The recent-competition check in `app_router.dart` (now
+`resolveHomeTarget`) used
 to call `CompetitionRepository.overview(recentId)` to confirm membership, and
 `redirect` **awaits** it before `/` may build — so a cold start with a stale
 recent id paid `overview` and then `myCompetitions` in series, two round trips
 against the same view, with the route blocked throughout. It now awaits
 `CompetitionListCubit.ensureLoaded()` and asks `isMember(recentId)`: one
-request, and its result is already in the cubit by the time `CompetitionsPage`
-builds, so `ensureLoaded()` there is a no-op. `test/app/app_router_test.dart`
-asserts exactly one `myCompetitions()` call and zero `overview()` calls.
+request, and the same answer also picks the competition to fall through to
+when the recent one is gone. `test/app/app_router_test.dart` asserts exactly
+one `myCompetitions()` call and zero `overview()` calls, and pins
+`resolveHomeTarget`'s order directly: recent if still a member, else the
+newest, else `null`.
 
 The distinction that test file exists to protect: **only a load that actually
 succeeded may clear `RecentCompetitionStore`.** The check is
 `state is! CompetitionListReady` first, `isMember` second — a `Failed` state
 means "we don't know", so the stored id survives a network blip instead of
-being wiped and dumping the user on the list page permanently.
+being wiped.
 
 ## Coding conventions — read this before writing `lib/**`
 
@@ -1257,12 +1244,9 @@ code; don't relitigate them.
   see that the list is empty, so a line restating it spends the screen's one
   sentence saying nothing. Every one of them is phrased that way now, in both
   languages, and on the same pattern: `<subject> will show up here.` /
-  `<subject> verschijnen hier.` — `competitionsPlaceholder`, `matchesEmpty`,
-  `playersEmpty`, `historyEmpty`, `profileVersusEmpty` (which keeps its
-  `{name}` placeholder) and `profileHistoryEmpty`. Match it when adding a
-  sixth. The same reasoning is what retired `competitionsEmpty` outright —
-  see "The empty state is two speech bubbles" above, where the teaching moved
-  into the bubbles instead.
+  `<subject> verschijnen hier.` — `matchesEmpty`, `playersEmpty`,
+  `historyEmpty`, `profileVersusEmpty` (which keeps its `{name}`
+  placeholder) and `profileHistoryEmpty`. Match it when adding a sixth.
 - Blocs that hold form state are `registerFactory`; session-wide ones are
   `registerLazySingleton`; ones scoped to a single competition are
   `registerFactoryParam<T, String, void>` and take the id as a constructor
@@ -1386,8 +1370,7 @@ the treatment below. Mirrors `debugOverrideCupertino` with
 - **Custom tappable rows get hover/cursor feedback everywhere, not just wide
   web.** Every hand-rolled `GestureDetector(behavior: opaque, onTap: …)` around
   a row/tile (`LeaderboardRow`, `NavRow`, `SelectableRow`, `MatchTile`,
-  `CompetitionCard`, `ProfileSection`, the team-picker tile, the
-  competition-name header) is `AdaptiveTappable` instead
+  `CompetitionSwitcherRow`, `ProfileSection`, the team-picker tile) is `AdaptiveTappable` instead
   (`core/widgets/adaptive/adaptive_tappable.dart`): `InkWell` (hover cursor +
   ripple, clipped to the same `borderRadius` as the row's own decoration) on
   Material, plain `GestureDetector` on Cupertino. A mouse on any width benefits
@@ -1462,8 +1445,8 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   already doing; the horizontal result is identical to the old
   `ConstrainedBox` at every width. This is the same "pad, never constrain"
   rule the app bar, the FAB and `_constrainedSlivers` already follow, and the
-  competitions page's spotlight card is what first made a page tall enough to
-  expose it.
+  old competitions page's spotlight card is what first made a page tall enough
+  to expose it.
   The app bar's ends and the FAB are **not** part of `body`, so nothing
   centers them for free — `leading`/`actions` sit in the `SliverAppBar`'s
   own slots and the FAB is `Scaffold.floatingActionButton`, all three
@@ -1579,10 +1562,10 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   otherwise passing back the identical closure or the identical data.
   Getting there needed three things:
   `SidebarSection` (`sidebar_section.enum.dart`) enumerating **every**
-  destination the sidebar can reach — leaderboard, matches, newMatch,
-  players, competitions, language — not just the
+  destination the sidebar can reach — leaderboard, matches, players,
+  language — not just the
   competition-scoped ones (it is named for the sidebar, not the competition,
-  because `competitions`/`language`/`newMatch` are not competition sections);
+  because `language` is not a competition section);
   `current` covering all of them, so "you are already here" is a
   `section == current` early return rather than the `onOpenLanguage: () {}` /
   `onNewMatch: () {}` null-object callbacks each page used to pass; and an
@@ -1591,19 +1574,14 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   (`competitionId`/`competitionName`/`canManageSettings`) it used to be
   splatted into and the `HomeSidebarCompetition` value object that later
   bundled them.
-  `CompetitionsPage` (the top-level competitions list, outside any
-  competition) composes it too, always with
-  `current: SidebarSection.competitions`. Whether it also shows the
-  per-competition group (New match button,
-  leaderboard/matches/competitions, plus — for the owner only — the
+  Whether it shows the per-competition group (New match button,
+  leaderboard/matches, plus — for the owner only — the
   "Competition" section label over Manage players, which is that group's
   last row now that History is gone, so a non-owner gets no empty heading)
-  is simply whether `CompetitionCubit` currently holds one — so the sidebar
-  the user leaves behind is exactly the one they land on, with nothing in the
-  per-competition group highlighted and "Competitions" highlighted instead,
-  letting them jump straight back in without a second trip through the list.
-  Landing on `/` on a fresh launch, or after signing out, leaves the cubit
-  empty, so the group is hidden — there's nothing to carry over. This used to
+  is simply whether `CompetitionCubit` currently holds one. On `/` (the
+  welcome screen, so no competitions at all) the cubit is empty and the
+  nav list is empty with it; there is no Competitions row any more — the
+  leaderboard's `CompetitionCaption` is the switcher on wide web too. This used to
   be threaded from page to page as go_router `extra`; hoisting the cubit
   deleted that plumbing along with `HomeSidebarCompetition` itself.
   The sidebar's own account section (competition
@@ -1728,8 +1706,7 @@ and `AdaptiveFloatingAction` makes it at `AppGlass.barHeight / 2`.
 `LiquidGlassTabBarAction.defaultStyle` ships a fully transparent body — the
 refraction alone — which over a light page leaves the button all but
 invisible; every control the eye is meant to find (the bar actions, the
-capsule they group into, the labelled action's lens, the FAB and the tab
-action) sits on `AdaptiveColors.glassActionTint`, white at
+capsule they group into, the FAB and the tab action) sits on `AdaptiveColors.glassActionTint`, white at
 `AppOpacity.glassActionFill` (0.45), well above the `glassFill` (0.22) the
 tab bar capsule's *surface* uses — a button has to out-read the bar it sits
 next to. `glassActionTintOnDark` is `AppColors.transparent`, i.e. the
@@ -1928,7 +1905,7 @@ caption and nothing else.
 **The handover point is a geometric alignment, not a tuned number.** The day
 changes at exactly the scroll offset where the list's own day label lands on
 the row the bar's caption occupies — `_dayAtCaptionLine`'s threshold is
-`pixels + padding.top + AdaptiveTopBar.subtitleTop - DayHeader.textInset`,
+`pixels + padding.top + AdaptiveTopBar.subtitleTopFor(hasCaption: true) - DayHeader.textInset`,
 the two insets that separate each label from its own box's top. Both labels
 are `AppTypography.captionStrong`, so aligning their tops aligns them
 outright: the caption appears in the same pixel row the header label just
@@ -1948,12 +1925,17 @@ offset — but note that at any real scroll velocity the 200 ms
 pixels of threshold do, which is why nudging the threshold by hand feels
 like it does almost nothing.
 
-The caption cross-fades through an `AnimatedSwitcher`, and that switcher
-needs `layoutBuilder: _startAlignedStack` — the default one stacks the
-outgoing child on the incoming one with `alignment: Alignment.center`, so a
-shorter day name visibly jumps sideways to sit centred over the longer one
-for the length of the fade. A start-aligned `Stack` is the whole fix, and
-`matches_page_test.dart` pins it by comparing both names' `left` mid-fade.
+**The day is centred, in the list and in the bar alike.** `DayHeader`
+centres its label, and `AdaptiveTopBar._subtitleLine` is therefore *not*
+inside the title column: it is a `Positioned` across the whole bar
+(`barMargin` to `barMargin`) centred on the screen, because the title
+column sits between the actions and centring in it would put the bar's day
+off the list header's by half the trailing actions' width. It carries the
+same `onTitleTap` as the title column (`_tappable`), so the band under the
+caption still opens the switcher. The cross-fade uses `AnimatedSwitcher`'s
+default centred layout; a start-aligned `Stack` was needed only while the day
+was left-aligned. `matches_page_test.dart` pins the bar's day on the list
+header's centre and the two names' centres mid-fade.
 
 **`null` is a real value here**: before the first header clears that edge
 nothing has scrolled behind the bar, so the subtitle is empty rather than
@@ -1977,24 +1959,15 @@ Three things this shape is deliberately avoiding:
   never again. `_rememberDays` is called from `_matchesSection`, the one place
   that actually knows the content changed.
 
-**Two or more *glyph* bar actions share one capsule, via
-`AdaptiveBarActionGroup`.**
+**Two or more bar actions share one capsule, via `AdaptiveBarActionGroup`.**
 On glass it wraps the row in a single `LiquidGlassLens` and a
 `GroupedBarActionScope`; each `AdaptiveBarAction` reads that scope and renders
 as a bare tappable slot instead of its own lens, so two lenses never sit
-edge to edge. Below two actions, off glass, or as soon as **any** member is a
-labelled action (`_isLabelled`, the private top-level check below the class),
-it is just the `Row` and each member keeps its own lens. That check reads the
-`label` off an `AdaptiveBarAction` in the list itself, so a member wrapped in
-anything else (a `BlocBuilder`, `ProfileButton`,
-`GameTypeFilterButton`) counts as a glyph — which is what every wrapper in the
-app is. **Build a labelled action inline in the `actions` list**, the way
-`CompetitionsPage._joinButton` does; hidden behind a wrapper it would be
-capsuled anyway. The
-capsule's style is `AdaptiveGlass.barActionStyle(context)` —
-`LiquidGlassTabBarAction.defaultStyle` with its shape swapped for the themed
-rim and its body for the themed fill — which is the one expression the group,
-the lone lens and the labelled lens all share.
+edge to edge. Below two actions, or off glass, it is just the `Row` and each
+member keeps its own lens. The capsule's style is
+`AdaptiveGlass.barActionStyle(context)` — `LiquidGlassTabBarAction.defaultStyle`
+with its shape swapped for the themed rim and its body for the themed fill —
+which is the one expression the group and the lone lens share.
 
 **`AdaptiveBarAction` is the small sibling of `AdaptiveFloatingAction`**, and
 the two together are the whole glass-control vocabulary: an accent-free
@@ -2002,47 +1975,32 @@ the two together are the whole glass-control vocabulary: an accent-free
 `AppGlass.barActionSize` (52) rather than `barHeight` (64) — smaller than the
 top bar's own 60px row, which is what `_actionSlot` centres it in, above.
 Every bar button
-goes through it — `ProfileButton`, `GameTypeFilterButton`,
-`CompetitionsPage`'s create/join pair, and
-`AdaptiveScaffold._glassLeading`'s hand-built back button — so the top bar's
+goes through it — `ProfileButton`, `GameTypeFilterButton`, the leaderboard's
+invite action, and `AdaptiveScaffold._glassLeading`'s hand-built back button — so the top bar's
 controls, the tab action and the FAB are all the same untinted lens with the
 same black/white glyph. Off glass it is exactly the `AdaptiveIconButton` those
 call sites used before, which is what a bar button already is on every other
 platform; that is how it satisfies the "a glass action is a FAB everywhere
 else" pairing rule without inventing an Android affordance.
-**It takes either a `glyph` or a `label`, never both** (asserted, the same
-shape `AdaptiveScaffold` uses for `body`/`slivers`) — a bar action whose
-meaning no icon carries says the word instead. The label variant is a bare
-padded text slot at `AppGlass.barActionSize` tall inside its own
-`LiquidGlassLens`, and off glass an `AdaptiveButton(kind: plain,
-expand: false)` — a `TextButton` on Material, a medium `CupertinoButton` on
-Cupertino, which is what a bar text button already is on both. It is a
-`LiquidGlassLens` rather than a `LiquidGlassTabBarAction` on the glass path
-because that component takes a single `size` and paints a circle, which
-no word fits.
+**It takes a glyph and nothing else.** A labelled variant (a word in a
+pill-shaped `LiquidGlassLens`, a plain `AdaptiveButton` off glass, never
+capsuled with a glyph) existed for the old competitions page's `Join` and
+was deleted with its last call site. A bar action no icon carries would mean
+building it again — a `LiquidGlassLens` rather than a
+`LiquidGlassTabBarAction`, since that one paints a circle no word fits.
 
 **Every glass slot the lens does not tap for itself brings its own ink.**
 `LiquidGlassTabBarAction` wraps its child in a transparent `Material` plus a
 circle-clipped `InkWell`, so a lone glyph action splashes on press for free —
-but the labelled action and every member of a capsule are bare slots inside a
-lens we built, and those used to be an `AdaptiveTappable`, which is a plain
+but every member of a capsule is a bare slot inside a lens we built, and those used to be an `AdaptiveTappable`, which is a plain
 `GestureDetector` on Cupertino and therefore on every glass path. They pressed
 dead next to a `+` that did not. `AdaptiveBarAction._grouped` is now the same
-`Material`/`InkWell` pair the package uses, clipped by `_inkShape()` — a
-`CircleBorder` for a glyph slot, a `StadiumBorder` for a labelled one, which
-at `barActionSize` tall is exactly the lens's own `barActionSize / 2` corner.
-`adaptive_bar_action_test.dart` pins both borders. **A labelled action never joins a capsule** — it is always that
-lone lens, and its presence is what drops the whole group back to a plain
-`Row` (see the group above). A pill-shaped word stretched into a capsule
-beside a circular glyph reads as one wide button with a stray icon in it
-rather than as two controls, and `CompetitionsPage`'s create/join pair is
-where that showed: the glyph keeps its circle, the word keeps its pill, and
-`AppSpacing.xs` sits between them.
+`Material`/`InkWell` pair the package uses, clipped to a `CircleBorder`;
+`adaptive_bar_action_test.dart` pins it.
 
 **Two or more bar actions go in one `AdaptiveBarActionGroup`, never a bare
 `Row` — which is one capsule-shaped lens with the glyphs inside it, the iOS 26
-toolbar grouping, whenever every one of them is a glyph, and the plain `Row`
-of individual lenses otherwise.** The capsule is a plain `LiquidGlassLens` carrying the same
+toolbar grouping.** The capsule is a plain `LiquidGlassLens` carrying the same
 `LiquidGlassTabBarAction.defaultStyle.copyWith(shape: AdaptiveGlass.shapeOf(…,
 cornerRadius: barActionSize / 2))` a lone `AdaptiveBarAction` gives its own
 lens, so a group is exactly one bar action stretched over both glyphs — same
@@ -2051,8 +2009,7 @@ of their own, which is what `GroupedBarActionScope` says: `AdaptiveBarAction`
 reads it and renders a bare `barActionSize` square of glyph over the shared
 lens instead of its own `LiquidGlassTabBarAction`. Below two actions there is
 nothing to group and the widget is the plain `Row` — as it is off glass, where
-the call sites' old `Row` is all this ever was, and as it is for any set
-carrying a labelled action. The group still owns every one of those cases, so
+the call sites' old `Row` is all this ever was. The group still owns every one of those cases, so
 call sites keep handing it the actions and never branch themselves.
 
 **`LiquidGlassGroup`/`LiquidGlassBlender` is the road not taken here, and it
@@ -2095,8 +2052,7 @@ the new-match action is on.** `_matchesSection` returns a non-scrolling
 `SliverFillRemaining` when the list is empty, and `_emptyState` is a `Stack` of
 a `Center`ed `EmptyState` under a `Positioned` `SpeechBubble` whose header is
 `matchNew` — the same key the
-new-match action itself renders, the way the competitions page's join bubble
-reuses `competitionsJoinShort`. The old `matchesCreateHintTabBar` line and its
+new-match action itself renders. The old `matchesCreateHintTabBar` line and its
 downward `CurvedArrow` are gone; the bubble's tail is what points now.
 **Which edge is the one thing `_newMatchBubble` branches on.** Native and
 narrow web put the action at the bottom right, so the bubble is
@@ -2139,10 +2095,9 @@ because the shell passes `bar: null`, so without the explicit
 `useWideWeb` early return the FAB fallback applied a floating action's worth
 of bottom padding to a page that has no floating action — the centred line sat
 ~80px high for no reason. Every other platform is untouched.
-**Both of the bubble's dimensions have to be forced here, unlike on the
-competitions page.** Its `Column` needs `MainAxisSize.min` because the `Stack`
-hands it a bounded height to expand into, where the competitions page's
-`Column` child had an unbounded one; and it is `Positioned` across the full
+**Both of the bubble's dimensions have to be forced here.** Its `Column`
+needs `MainAxisSize.min` because the `Stack` hands it a bounded height to
+expand into; and it is `Positioned` across the full
 width rather than `Align`ed, because a shrink-wrapped bubble moves its own
 right edge — which is the edge `tailInset` is measured from on the `bottom`
 tail, so the tail would no longer point at the action. (The `left` tail is
@@ -2343,9 +2298,8 @@ explicit `leading` bypasses the suppression outright. A page may also read
 platform's own arrow — `CreateCompetitionPage` did that until it became a
 sheet, and nothing does now. Highlighting a sidebar section for such a page is
 *not* the alternative — `Sidebar._select` early-returns on
-`section == current`, so marking a task route as
-`SidebarSection.competitions` would make the row that leads back out
-unclickable.
+`section == current`, so marking a task route as the section it was
+reached from would make the row that leads back out unclickable.
 `ProfilePage` and `MatchDetailPage` gain a sidebar on wide web as a
 side effect of living in that subtree — `ProfilePage` is unreachable there
 anyway (its rows are sidebar items), and a full-viewport match detail next to
@@ -2396,8 +2350,7 @@ menu and every `context.push` still behave exactly as they did.
 
 ### Leaderboard and Matches are routes, not tabs
 
-`/competition/:id/leaderboard`, `/competition/:id/matches` and
-`/competition/:id/competitions` are each a real
+`/competition/:id/leaderboard` and `/competition/:id/matches` are each a real
 `GoRoute`, branches of one `StatefulShellRoute.indexedStack` — not, as they
 used to be, one `CompetitionContent` page switching on a `CompetitionTabCubit`
 enum. `CompetitionTabCubit` is gone entirely: a shell above the page used to
@@ -2458,8 +2411,8 @@ else in the suite:
   (leaderboard → `push('/')` → `go('/competition/c2')`) and asserts both
   cubits and the player list actually followed.
 - **Entering a competition is always `go`, never `push`** — from the
-  competition card, after joining (`CompetitionsPage._join`) and after
-  creating (`CompetitionsPage._create`) alike. `push` keeps
+  switcher, after joining (`startJoinCompetition`) and after creating
+  (`startCreateCompetition`) alike. `push` keeps
   the existing stack and mounts the *whole* new match chain on top of it, so
   a second competition route mounts the competition `ShellRoute`'s
   `navigatorKey`, both `StatefulShellBranch.navigatorKey`s and
@@ -2469,13 +2422,13 @@ else in the suite:
   crash and no error widget** (release's `RenderErrorBox` is light grey, so a
   thrown exception looks nothing like this). It only bites when a competition
   route is already below — launch → recent-competition redirect into A → any
-  `push(Routes.home)` (Settings' "All competitions"; the leaderboard's
-  competition-name button used to be the other one, see the Competitions
-  branch below) → join → black. A fresh launch with no recent
+  `push(Routes.home)` (Settings' "All competitions" and the leaderboard's
+  old competition-name button both did that) → join → black. A fresh launch with no recent
   competition has only `/` beneath, so the identical tap works, which is what
   made it look intermittent and kept it off the simulator.
   `test/flow/join_competition_from_competition_flow_test.dart` drives the real
-  `CompetitionsPage` and join sheet from inside competition c1 and is the only
+  competition caption, switcher sheet and join sheet from inside competition c1
+  and is the only
   thing watching this; `guest_join_competition_flow_test.dart` starts from a
   bare `/home` stub and cannot see it.
 
@@ -2503,7 +2456,7 @@ same move for the profile icon, which only the Leaderboard shows (in its
 non-wide-web app bar trailing slot) — Matches carries the game type filter
 alone, so the profile action is offered once rather than on every tab.
 
-**A horizontal swipe across the page moves between the three tabs, and the
+**A horizontal swipe across the page moves between the two tabs, and the
 tab bar is still the thing that says where you are.** `CompetitionShell`
 wraps `navigationShell` in `SwipeNavigator`
 (`core/widgets/swipe_navigator.dart`) and hands it the neighbouring
@@ -2518,42 +2471,14 @@ a tab tap, instantly. A deeper horizontal recognizer wins the arena over it
 precedence you want. `competition_content_page_test.dart` walks both
 directions plus the no-op at the first tab.
 
-**The third branch is Competitions, and it renders the same `CompetitionsPage`
-that `/` does — deliberately, so the tab bar survives the tap.** It used to be
-a `NavRow` in `SettingsPage`'s User section pushing `Routes.home`; that row is
-gone, and so is that section's `SectionLabel`. A tab item that navigated to `/` would have left the bar
-behind on arrival, since `/` sits outside the competition `ShellRoute`
-entirely; a branch at `/competition/:id/competitions` keeps the user inside
-competition `:id`'s shell, so Leaderboard and Matches are still one tap away
-without picking anything. **The leaderboard's competition-name button leads
-here too** — `LeaderboardPage._competitionButton` is
-`go(Routes.competitions(competitionId))`, not a `push(Routes.home)`, for
-exactly the reason the branch exists: sending it to `/` dropped the tab bar
-on arrival, and pushing a second competition-adjacent stack is what the
-black-screen bullet above is about. Picking a tile from there is the usual
-`context.go(Routes.competition(id))` and lands on that competition's
-leaderboard. **`CompetitionShell._newMatch` is live on this branch like every
-other one**, because `CompetitionsPage` no longer has a floating action of its
-own to collide with it (see "The competitions page's two actions live in the
-bar" below). It used to return `null` here — `AdaptiveBottomBarHost`'s action
-and `AdaptiveScaffold.floatingAction` both sit bottom-right, so the new-match
-action would have stacked under the page's add-competition FAB — which is also
-why `reservesTrailingAction` was never narrowed to match: it stays
-`isRegistered`, so the glass capsule's width and alignment never change across
-a tab switch.
-`AdaptiveGlyph.competitions` is the stack glyph
-(`CupertinoIcons.rectangle_stack_fill` / `Icons.layers`), shared with the
-sidebar's Competitions row.
-
-**The sidebar mirrors that order: Competitions sits directly under Matches,
-inside `_competitionNavItems`, above the divider and the Competition admin
-group.** It used to be the lone row under a "User" `SectionLabel` at the
-bottom of the nav list; with it moved up, that label headed nothing and went
-away, which retired `competitionSettingsSectionUser` from both ARBs — it was
-the last user of the key once `SettingsPage`'s own User section went. The row
-is still rendered when there is *no* competition (the `else` branch of
-`_navList`'s `hasCompetition`), where it is the whole nav list — hence
-`_competitionsItem`, called from both places rather than spelled out twice.
+**There used to be a third branch, Competitions, and it is gone** — along
+with `Routes.competitions`, `CompetitionTab.competitions`,
+`SidebarSection.competitions`, the sidebar's Competitions row and
+`AdaptiveGlyph.competitions`. It rendered `CompetitionsPage` inside the
+shell so the tab bar survived the tap; the competition caption replaced it
+(see "Which competition you are in" near the top). `reservesTrailingAction`
+stays `isRegistered` on both remaining tabs, so the glass capsule's width
+never changes across a tab switch.
 
   **The competition the sidebar renders must come from `CompetitionCubit`,
   never from the page's own cubit** — which is now structural, since the
@@ -3110,7 +3035,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 488 tests at time of writing
+flutter test                    # 474 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 dart run flutter_launcher_icons     # assets/icon/*.png into android/ web/ (not ios/)

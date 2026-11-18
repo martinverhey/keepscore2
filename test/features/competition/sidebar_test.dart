@@ -141,30 +141,17 @@ void main() {
       expect(find.text(l10n.historyTitle), findsNothing);
       expect(find.text(l10n.playersManageTitle), findsOneWidget);
       expect(find.text(l10n.matchNew), findsOneWidget);
-      expect(find.text(l10n.competitionsTitle), findsOneWidget);
+      expect(find.text(l10n.competitionsTitle), findsNothing);
       expect(find.text(l10n.settingsDarkModeTitle), findsOneWidget);
       expect(find.text(l10n.settingsLanguageTitle), findsOneWidget);
       expect(find.text(l10n.authSignOut), findsOneWidget);
       expect(find.text('body content'), findsOneWidget);
-
-      expect(
-        tester.getRect(find.text(l10n.competitionsTitle)).top,
-        inExclusiveRange(
-          tester.getRect(find.text(l10n.matchesTitle)).top,
-          tester
-              .getRect(find.text(l10n.competitionSettingsSectionCompetition))
-              .top,
-        ),
-      );
 
       await tester.tap(find.text(l10n.matchesTitle));
       expect(selected, SidebarSection.matches);
 
       await tester.tap(find.text(l10n.playersManageTitle));
       expect(selected, SidebarSection.players);
-
-      await tester.tap(find.text(l10n.competitionsTitle));
-      expect(selected, SidebarSection.competitions);
 
       await tester.tap(find.text(l10n.settingsLanguageTitle));
       expect(selected, SidebarSection.language);
@@ -232,7 +219,7 @@ void main() {
       await tester.pumpWidget(
         wrap(
           Sidebar(
-            current: SidebarSection.competitions,
+            current: null,
             onSelectSection: (_) {},
             child: const Center(child: Text('body content')),
           ),
@@ -251,42 +238,8 @@ void main() {
         find.text(l10n.competitionSettingsSectionCompetition),
         findsNothing,
       );
-      expect(find.text(l10n.competitionsTitle), findsOneWidget);
+      expect(find.text(l10n.competitionsTitle), findsNothing);
       expect(find.text(l10n.settingsLanguageTitle), findsOneWidget);
-
-      expect(tester.takeException(), isNull);
-    },
-  );
-
-  testWidgets(
-    'wide web keeps the competition-scoped items when Competitions was '
-    'reached from within one, so the user can jump straight back',
-    (tester) async {
-      useWideWebViewport(tester);
-
-      SidebarSection? selected;
-
-      await tester.pumpWidget(
-        wrap(
-          Sidebar(
-            current: SidebarSection.competitions,
-            onSelectSection: (section) => selected = section,
-            child: const Center(child: Text('body content')),
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      final l10n = AppLocalizations.of(
-        tester.element(find.text('body content')),
-      );
-
-      expect(find.text('Office Table Tennis'), findsOneWidget);
-      expect(find.text(l10n.leaderboardTitle), findsOneWidget);
-      expect(find.text(l10n.playersManageTitle), findsOneWidget);
-
-      await tester.tap(find.text(l10n.leaderboardTitle));
-      expect(selected, SidebarSection.leaderboard);
 
       expect(tester.takeException(), isNull);
     },

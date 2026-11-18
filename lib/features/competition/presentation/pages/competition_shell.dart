@@ -12,6 +12,7 @@ import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../match/presentation/pages/new_match_sheet.dart';
 import '../../../player/presentation/cubit/players_cubit.dart';
 import '../cubit/competition_cubit.dart';
+import '../cubit/competition_list_cubit.dart';
 import '../widgets/competition_tab.enum.dart';
 import '../widgets/competition_tab_bar.dart';
 
@@ -54,6 +55,9 @@ class _CompetitionShellState extends State<CompetitionShell> {
       listener: (context, state) {
         if (state is CompetitionMissing) {
           RecentCompetitionStore.clear();
+          context.read<CompetitionListCubit>()
+            ..forget(widget.competitionId)
+            ..refresh();
           context.go(Routes.home);
         }
       },

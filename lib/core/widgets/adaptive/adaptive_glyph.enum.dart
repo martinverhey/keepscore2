@@ -8,7 +8,6 @@ enum AdaptiveGlyph {
   profile,
   more,
   filter,
-  competitions,
   back,
   chevronRight,
   chevronDown,

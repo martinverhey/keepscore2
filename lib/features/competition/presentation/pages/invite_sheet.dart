@@ -4,7 +4,7 @@ import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/sheet.dart';
 import '../../domain/competition.model.dart';
-import '../widgets/active_competition_card.dart';
+import '../widgets/competition_invite_card.dart';
 
 Future<void> showInviteSheet(
   BuildContext context, {
@@ -25,7 +25,7 @@ class _InviteSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return Sheet(
       title: context.l10n.competitionInviteTitle,
-      content: ActiveCompetitionCard(overview: overview),
+      content: CompetitionInviteCard(overview: overview),
     );
   }
 }

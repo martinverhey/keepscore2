@@ -314,47 +314,23 @@ abstract class AppLocalizations {
   /// **'Competitions'**
   String get competitionsTitle;
 
-  /// No description provided for @competitionsPlaceholder.
-  ///
-  /// In en, this message translates to:
-  /// **'Your competitions will show up here.'**
-  String get competitionsPlaceholder;
-
   /// No description provided for @competitionsCreateShort.
   ///
   /// In en, this message translates to:
   /// **'Create'**
   String get competitionsCreateShort;
 
-  /// No description provided for @competitionsJoinTip.
+  /// No description provided for @competitionSwitch.
   ///
   /// In en, this message translates to:
-  /// **'Press \'Join\' to join an existing competition.'**
-  String get competitionsJoinTip;
+  /// **'Switch competition, now {name}'**
+  String competitionSwitch(String name);
 
-  /// No description provided for @competitionsCreateTip.
+  /// No description provided for @welcomeBody.
   ///
   /// In en, this message translates to:
-  /// **'Create your own competition with the + button.'**
-  String get competitionsCreateTip;
-
-  /// No description provided for @competitionsActive.
-  ///
-  /// In en, this message translates to:
-  /// **'Active'**
-  String get competitionsActive;
-
-  /// No description provided for @competitionsOther.
-  ///
-  /// In en, this message translates to:
-  /// **'Other competitions'**
-  String get competitionsOther;
-
-  /// No description provided for @competitionsAdd.
-  ///
-  /// In en, this message translates to:
-  /// **'Add competition'**
-  String get competitionsAdd;
+  /// **'Join a competition with its code, or start one of your own.'**
+  String get welcomeBody;
 
   /// No description provided for @competitionsCreate.
   ///
@@ -439,6 +415,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =0{No matches yet} =1{1 match} other{{count} matches}}'**
   String competitionMatches(int count);
+
+  /// No description provided for @competitionCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Current'**
+  String get competitionCurrent;
+
+  /// No description provided for @competitionPlayedToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Played today'**
+  String get competitionPlayedToday;
+
+  /// No description provided for @competitionPlayedYesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Played yesterday'**
+  String get competitionPlayedYesterday;
+
+  /// No description provided for @competitionPlayedDaysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'Played {count} days ago'**
+  String competitionPlayedDaysAgo(int count);
+
+  /// No description provided for @competitionPlayedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Last played {date}'**
+  String competitionPlayedOn(String date);
+
+  /// No description provided for @competitionNotPlayed.
+  ///
+  /// In en, this message translates to:
+  /// **'Not played yet'**
+  String get competitionNotPlayed;
 
   /// No description provided for @competitionGuestCannotCreate.
   ///

@@ -9,6 +9,7 @@ import '../../extensions/double.extension.dart';
 import '../../theme/app_tokens.dart';
 import 'adaptive_bar_action.dart';
 import 'adaptive_bottom_bar_host.dart';
+import 'adaptive_colors.dart';
 import 'adaptive_glass.dart';
 import 'adaptive_top_bar.dart';
 import 'app_platform.dart';
@@ -22,6 +23,8 @@ class AdaptiveScaffold extends StatelessWidget {
     this.body,
     this.slivers,
     this.trailing,
+    this.titleCaption,
+    this.onTitleTap,
     this.leading,
     this.floatingAction,
     this.onRefresh,
@@ -30,6 +33,10 @@ class AdaptiveScaffold extends StatelessWidget {
   }) : assert(
          (body == null) != (slivers == null),
          'Pass either body or slivers, never both',
+       ),
+       assert(
+         titleCaption == null || slivers != null,
+         'A title caption pins above slivers only',
        );
 
   final String? title;
@@ -37,6 +44,8 @@ class AdaptiveScaffold extends StatelessWidget {
   final Widget? body;
   final List<Widget>? slivers;
   final Widget? trailing;
+  final Widget? titleCaption;
+  final VoidCallback? onTitleTap;
   final Widget? leading;
   final Widget? floatingAction;
   final Future<void> Function()? onRefresh;
@@ -66,7 +75,10 @@ class AdaptiveScaffold extends StatelessWidget {
     }
     return CupertinoPageScaffold(
       child: _floated(
-        _cupertinoScrollView(_sliverBody(inset), suppressBack),
+        _cupertinoScrollView(
+          _sliverBody(inset, pinsCaption: true),
+          suppressBack,
+        ),
         extraBottom: inset,
       ),
     );
@@ -95,9 +107,11 @@ class AdaptiveScaffold extends StatelessWidget {
             right: 0,
             child: AdaptiveTopBar(
               title: title!,
-              subtitle: subtitle,
               leading: _glassLeading(context, suppressBack),
               trailing: trailing,
+              subtitle: subtitle,
+              caption: titleCaption,
+              onTitleTap: onTitleTap,
             ),
           ),
         ],
@@ -115,7 +129,10 @@ class AdaptiveScaffold extends StatelessWidget {
           child: SizedBox(
             height:
                 MediaQuery.paddingOf(context).top +
-                AdaptiveTopBar.insetFor(hasSubtitle: subtitle != null),
+                AdaptiveTopBar.insetFor(
+                  hasSubtitle: subtitle != null,
+                  hasCaption: titleCaption != null,
+                ),
           ),
         ),
         if (onRefresh != null)
@@ -198,19 +215,34 @@ class AdaptiveScaffold extends StatelessWidget {
         pinned: true,
         centerTitle: true,
         toolbarHeight: kToolbarHeight + AppSpacing.md,
-        title: Text(title, style: _titleStyle),
+        title: _materialTitle(title),
         leading: _leading(gutter),
         leadingWidth: leading == null ? null : _leadingSlotWidth + gutter,
         automaticallyImplyLeading: !suppressBack,
         actions: _actions(gutter),
       ),
       final title => SliverAppBar.large(
-        title: Text(title, style: _titleStyle),
+        title: _materialTitle(title),
         leading: _leading(gutter),
         automaticallyImplyLeading: !suppressBack,
         actions: _actions(gutter),
       ),
     };
+  }
+
+  Widget _materialTitle(String title) {
+    final caption = titleCaption;
+    if (caption == null) return Text(title, style: _titleStyle);
+    return _tappableCaption(
+      Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: _titleStyle),
+          caption,
+        ],
+      ),
+    );
   }
 
   Widget? _leading(double gutter) {
@@ -237,13 +269,19 @@ class AdaptiveScaffold extends StatelessWidget {
     fontFamily: AppTypography.brandFontFamily,
   );
 
-  Widget _sliverBody(double bottomInset) {
-    return SliverSafeArea(top: false, sliver: _bodySliver(bottomInset));
+  Widget _sliverBody(double bottomInset, {bool pinsCaption = false}) {
+    return SliverSafeArea(
+      top: false,
+      sliver: _bodySliver(bottomInset, pinsCaption: pinsCaption),
+    );
   }
 
-  Widget _bodySliver(double bottomInset) {
+  Widget _bodySliver(double bottomInset, {required bool pinsCaption}) {
     if (slivers case final slivers?) {
-      return _sliverWithBottomInset(_constrainedSlivers(slivers), bottomInset);
+      return _sliverWithBottomInset(
+        _constrainedSlivers([if (pinsCaption) ?_pinnedCaption(), ...slivers]),
+        bottomInset,
+      );
     }
     if (hasScrollBody) {
       return _ownScrollSliver(_withBottomInset(body!, bottomInset));
@@ -255,6 +293,43 @@ class AdaptiveScaffold extends StatelessWidget {
           _content(constraints.crossAxisExtent.contentGutter),
           bottomInset,
         ),
+      ),
+    );
+  }
+
+  Widget? _pinnedCaption() {
+    final caption = titleCaption;
+    if (caption == null) return null;
+    return PinnedHeaderSliver(
+      child: Builder(
+        builder: (context) => ColoredBox(
+          color: AdaptiveColors.pageBackground(context),
+          child: _tappableCaption(
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.xs,
+              ),
+              child: Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: caption,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _tappableCaption(Widget child) {
+    final onTap = onTitleTap;
+    if (onTap == null) return child;
+    return Semantics(
+      button: true,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: child,
       ),
     );
   }

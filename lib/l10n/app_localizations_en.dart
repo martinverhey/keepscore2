@@ -122,27 +122,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get competitionsTitle => 'Competitions';
 
   @override
-  String get competitionsPlaceholder => 'Your competitions will show up here.';
-
-  @override
   String get competitionsCreateShort => 'Create';
 
   @override
-  String get competitionsJoinTip =>
-      'Press \'Join\' to join an existing competition.';
+  String competitionSwitch(String name) {
+    return 'Switch competition, now $name';
+  }
 
   @override
-  String get competitionsCreateTip =>
-      'Create your own competition with the + button.';
-
-  @override
-  String get competitionsActive => 'Active';
-
-  @override
-  String get competitionsOther => 'Other competitions';
-
-  @override
-  String get competitionsAdd => 'Add competition';
+  String get welcomeBody =>
+      'Join a competition with its code, or start one of your own.';
 
   @override
   String get competitionsCreate => 'Create competition';
@@ -205,6 +194,28 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get competitionCurrent => 'Current';
+
+  @override
+  String get competitionPlayedToday => 'Played today';
+
+  @override
+  String get competitionPlayedYesterday => 'Played yesterday';
+
+  @override
+  String competitionPlayedDaysAgo(int count) {
+    return 'Played $count days ago';
+  }
+
+  @override
+  String competitionPlayedOn(String date) {
+    return 'Last played $date';
+  }
+
+  @override
+  String get competitionNotPlayed => 'Not played yet';
 
   @override
   String get competitionGuestCannotCreate =>

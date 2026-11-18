@@ -5,47 +5,22 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/tag.dart';
 import '../../domain/competition.model.dart';
-import 'competition_actions.dart';
 import 'join_code_tag.dart';
 import 'join_qr_image.dart';
 
-class ActiveCompetitionCard extends StatelessWidget {
-  const ActiveCompetitionCard({
-    super.key,
-    required this.overview,
-    this.onOpen,
-    this.onEdit,
-    this.onRename,
-    this.onLeave,
-    this.onDelete,
-  });
-
-  final CompetitionOverview overview;
-  final VoidCallback? onOpen;
-  final VoidCallback? onEdit;
-  final VoidCallback? onRename;
-  final VoidCallback? onLeave;
-  final VoidCallback? onDelete;
-
+class CompetitionInviteCard extends StatelessWidget {
   static const double _qrSize = 200;
   static const double _codeWidth = _qrSize + AppSpacing.sm * 2;
   static const BorderRadius _radius = BorderRadius.all(
     Radius.circular(AppRadius.lg),
   );
 
+  const CompetitionInviteCard({super.key, required this.overview});
+
+  final CompetitionOverview overview;
+
   @override
   Widget build(BuildContext context) {
-    final onOpen = this.onOpen;
-    if (onOpen == null) return _card(context);
-
-    return AdaptiveTappable(
-      onTap: onOpen,
-      borderRadius: _radius,
-      child: _card(context),
-    );
-  }
-
-  Widget _card(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
@@ -71,44 +46,18 @@ class ActiveCompetitionCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        _name(),
-        if (onOpen != null) ...[
-          const SizedBox(height: AppSpacing.xs),
-          _eyebrow(context),
-        ],
+        Text(
+          overview.competition.name,
+          style: AppTypography.headlineMedium,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
         const SizedBox(height: AppSpacing.xs),
         Text(
           '${context.l10n.competitionPlayers(overview.playerCount)}'
           ' · ${context.l10n.competitionMatches(overview.matchCount)}',
           style: AppTypography.caption,
         ),
-      ],
-    );
-  }
-
-  Widget _eyebrow(BuildContext context) {
-    return Text(
-      context.l10n.competitionsActive,
-      style: AppTypography.eyebrow.copyWith(
-        letterSpacing: 0.8,
-        color: AdaptiveColors.accent(context),
-      ),
-    );
-  }
-
-  Widget _name() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Text(
-            overview.competition.name,
-            style: AppTypography.headlineMedium,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-        if (_actions().hasActions) _actions(),
       ],
     );
   }
@@ -130,15 +79,6 @@ class ActiveCompetitionCard extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-
-  CompetitionActions _actions() {
-    return CompetitionActions(
-      onEdit: onEdit,
-      onRename: onRename,
-      onLeave: onLeave,
-      onDelete: onDelete,
     );
   }
 }

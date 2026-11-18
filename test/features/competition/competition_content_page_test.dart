@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:keepscore2/core/widgets/adaptive/adaptive_floating_action.dart';
 import 'package:keepscore2/core/widgets/adaptive/app_platform.dart';
 import 'package:keepscore2/features/auth/domain/auth_repository.dart';
 import 'package:keepscore2/features/auth/domain/auth_user.model.dart';
@@ -14,10 +13,13 @@ import 'package:keepscore2/features/competition/domain/competition_repository.da
 import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_list_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/pages/competition_shell.dart';
-import 'package:keepscore2/features/competition/presentation/pages/competitions.page.dart';
+import 'package:keepscore2/features/competition/presentation/pages/competition_switcher_sheet.dart';
+import 'package:keepscore2/features/competition/presentation/widgets/competition_caption.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/competition_scope.dart';
+import 'package:keepscore2/features/competition/presentation/widgets/competition_switcher_row.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/competition_tab.enum.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/competition_tab_bar.dart';
+import 'package:keepscore2/features/leaderboard/domain/leaderboard.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
 import 'package:keepscore2/features/leaderboard/domain/season_window.model.dart';
 import 'package:keepscore2/features/leaderboard/presentation/cubit/leaderboard_cubit.dart';
@@ -54,10 +56,31 @@ class MockProfileRepository extends Mock implements ProfileRepository {}
 
 const _competitionId = 'c1';
 
+final _overview = CompetitionOverview(
+  competition: Competition(
+    id: _competitionId,
+    joinCode: 'HDHS39',
+    name: 'Office Table Tennis',
+    ownerId: 'p-ada',
+    seasonLength: SeasonLength.monthly,
+    timezone: 'Europe/Amsterdam',
+    startingRating: 1000,
+    kFactor: 32,
+    movEnabled: true,
+    movCap: 2.5,
+    allowDraws: true,
+    createdAt: DateTime.utc(2026, 8, 1),
+  ),
+  playerCount: 1,
+  matchCount: 0,
+  myPlayerId: 'p-ada',
+);
+
 Future<GoRouter> _pumpHarness(
   WidgetTester tester, {
   String initialLocation = '/competition/$_competitionId/leaderboard',
   StreamController<AuthUser?>? userChanges,
+  List<Leaderboard> standings = const [],
 }) async {
   SharedPreferences.setMockInitialValues({});
 
@@ -84,28 +107,12 @@ Future<GoRouter> _pumpHarness(
     () => auth.watchUser(),
   ).thenAnswer((_) => userChanges?.stream ?? const Stream.empty());
 
-  when(() => competitions.overview(_competitionId)).thenAnswer(
-    (_) async => CompetitionOverview(
-      competition: Competition(
-        id: _competitionId,
-        joinCode: 'HDHS39',
-        name: 'Office Table Tennis',
-        ownerId: 'p-ada',
-        seasonLength: SeasonLength.monthly,
-        timezone: 'Europe/Amsterdam',
-        startingRating: 1000,
-        kFactor: 32,
-        movEnabled: true,
-        movCap: 2.5,
-        allowDraws: true,
-        createdAt: DateTime.utc(2026, 8, 1),
-      ),
-      playerCount: 1,
-      matchCount: 0,
-      myPlayerId: 'p-ada',
-    ),
-  );
-  when(() => competitions.myCompetitions()).thenAnswer((_) async => []);
+  when(
+    () => competitions.overview(_competitionId),
+  ).thenAnswer((_) async => _overview);
+  when(
+    () => competitions.myCompetitions(),
+  ).thenAnswer((_) async => [_overview]);
   when(
     () => players.currentPlayers(_competitionId),
   ).thenAnswer((_) async => []);
@@ -132,7 +139,7 @@ Future<GoRouter> _pumpHarness(
   when(
     () =>
         leaderboard.leaderboards(competitionId: _competitionId, seasonId: 's1'),
-  ).thenAnswer((_) async => []);
+  ).thenAnswer((_) async => standings);
   when(
     () => leaderboard.watchLeaderboards(
       competitionId: _competitionId,
@@ -229,14 +236,6 @@ Future<GoRouter> _pumpHarness(
                       ),
                     ],
                   ),
-                  StatefulShellBranch(
-                    routes: [
-                      GoRoute(
-                        path: 'competitions',
-                        builder: (_, _) => const CompetitionsPage(),
-                      ),
-                    ],
-                  ),
                 ],
               ),
             ],
@@ -273,30 +272,88 @@ Future<GoRouter> _pumpHarness(
 void main() {
   tearDown(() => AppPlatform.debugOverrideCupertino = null);
 
-  testWidgets('tapping the competition name switches to the competitions tab', (
-    tester,
-  ) async {
-    AppPlatform.debugOverrideCupertino = false;
-    await _pumpHarness(tester);
+  testWidgets(
+    'the competition caption stays in the app bar while the board scrolls',
+    (tester) async {
+      AppPlatform.debugOverrideCupertino = false;
+      await _pumpHarness(
+        tester,
+        standings: [
+          for (var rank = 1; rank <= 30; rank++)
+            Leaderboard(
+              seasonId: 's1',
+              competitionId: _competitionId,
+              playerId: 'player-$rank',
+              displayName: 'Player $rank',
+              isClaimed: false,
+              isOwner: false,
+              rating: 1000.0 - rank,
+              played: 1,
+              wins: 0,
+              losses: 1,
+              draws: 0,
+              rank: rank,
+            ),
+        ],
+      );
 
-    final l10n = AppLocalizations.of(
-      tester.element(find.byType(LeaderboardPage)),
-    );
-    expect(find.text(l10n.profilePageTitle), findsNothing);
+      await tester.drag(find.text('Player 1'), const Offset(0, -1500));
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Office Table Tennis'));
-    await tester.pumpAndSettle();
+      final caption = find.byType(CompetitionCaption).hitTestable();
+      expect(caption, findsOneWidget);
+      expect(tester.getRect(caption).top, greaterThan(0));
 
-    expect(find.byType(CompetitionsPage), findsOneWidget);
-    expect(find.byType(_CompetitionsStub), findsNothing);
-    expect(find.byType(CompetitionTabBar), findsOneWidget);
-    expect(
-      tester.widget<CompetitionTabBar>(find.byType(CompetitionTabBar)).current,
-      CompetitionTab.competitions,
-    );
-    expect(find.text(l10n.profilePageTitle), findsNothing);
-    expect(tester.takeException(), isNull);
-  });
+      await tester.tap(caption);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(CompetitionSwitcherSheet), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'the competition caption opens the switcher and follows to Matches',
+    (tester) async {
+      AppPlatform.debugOverrideCupertino = false;
+      await _pumpHarness(tester);
+
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(LeaderboardPage)),
+      );
+      expect(find.byType(CompetitionCaption), findsWidgets);
+      expect(find.text(l10n.competitionsTitle), findsNothing);
+
+      await tester.tap(find.byType(CompetitionCaption).hitTestable().first);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(CompetitionSwitcherSheet), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(CompetitionSwitcherSheet),
+          matching: find.text('Office Table Tennis'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        tester
+            .widget<CompetitionSwitcherRow>(find.byType(CompetitionSwitcherRow))
+            .isCurrent,
+        isTrue,
+      );
+
+      await tester.tap(find.text('Office Table Tennis').last);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(CompetitionSwitcherSheet), findsNothing);
+      expect(find.byType(LeaderboardPage), findsOneWidget);
+
+      await tester.tap(find.text(l10n.matchesTitle).last);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(CompetitionCaption), findsWidgets);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets('renders one shared tab bar across both tabs', (tester) async {
     AppPlatform.debugOverrideCupertino = false;
@@ -313,32 +370,6 @@ void main() {
     expect(find.byType(MatchesPage), findsOneWidget);
     expect(find.byType(CompetitionTabBar), findsOneWidget);
   });
-
-  testWidgets(
-    'the competitions tab keeps the tab bar and the new match action',
-    (tester) async {
-      AppPlatform.debugOverrideCupertino = false;
-      await _pumpHarness(tester);
-
-      final l10n = AppLocalizations.of(
-        tester.element(find.byType(LeaderboardPage)),
-      );
-      expect(_floatingActionLabel(tester), l10n.matchNew);
-
-      await tester.tap(find.text(l10n.competitionsTitle).last);
-      await tester.pumpAndSettle();
-
-      expect(find.byType(CompetitionsPage), findsOneWidget);
-      expect(find.byType(CompetitionTabBar), findsOneWidget);
-      expect(
-        tester
-            .widget<CompetitionTabBar>(find.byType(CompetitionTabBar))
-            .current,
-        CompetitionTab.competitions,
-      );
-      expect(_floatingActionLabel(tester), l10n.matchNew);
-    },
-  );
 
   testWidgets('swiping across the page moves between the tabs', (tester) async {
     AppPlatform.debugOverrideCupertino = false;
@@ -357,18 +388,14 @@ void main() {
     await tester.fling(find.byType(MatchesPage), const Offset(-200, 0), 800);
     await tester.pumpAndSettle();
 
-    expect(find.byType(CompetitionsPage), findsOneWidget);
-    expect(_currentTab(tester), CompetitionTab.competitions);
-
-    await tester.fling(
-      find.byType(CompetitionsPage),
-      const Offset(200, 0),
-      800,
-    );
-    await tester.pumpAndSettle();
-
     expect(find.byType(MatchesPage), findsOneWidget);
     expect(_currentTab(tester), CompetitionTab.matches);
+
+    await tester.fling(find.byType(MatchesPage), const Offset(200, 0), 800);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(LeaderboardPage), findsOneWidget);
+    expect(_currentTab(tester), CompetitionTab.leaderboard);
     expect(tester.takeException(), isNull);
   });
 
@@ -406,12 +433,6 @@ CompetitionTab _currentTab(WidgetTester tester) {
   return tester
       .widget<CompetitionTabBar>(find.byType(CompetitionTabBar))
       .current;
-}
-
-String _floatingActionLabel(WidgetTester tester) {
-  return tester
-      .widget<AdaptiveFloatingAction>(find.byType(AdaptiveFloatingAction))
-      .semanticLabel;
 }
 
 class _CompetitionsStub extends StatelessWidget {

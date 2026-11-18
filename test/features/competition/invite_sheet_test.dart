@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/presentation/pages/invite_sheet.dart';
-import 'package:keepscore2/features/competition/presentation/widgets/active_competition_card.dart';
+import 'package:keepscore2/features/competition/presentation/widgets/competition_invite_card.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/competition_actions.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/join_code_tag.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/join_qr_image.dart';
@@ -61,7 +61,7 @@ void main() {
       await _openSheet(tester);
 
       expect(tester.takeException(), isNull);
-      expect(find.byType(ActiveCompetitionCard), findsOneWidget);
+      expect(find.byType(CompetitionInviteCard), findsOneWidget);
       expect(find.byType(JoinQrImage), findsOneWidget);
       expect(find.text('Office Table Tennis'), findsOneWidget);
       expect(find.text('HDHS39'), findsOneWidget);

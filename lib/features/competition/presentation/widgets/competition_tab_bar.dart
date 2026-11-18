@@ -30,10 +30,6 @@ class CompetitionTabBar extends StatelessWidget {
           glyph: AdaptiveGlyph.matches,
           label: context.l10n.matchesTitle,
         ),
-        AdaptiveTabBarItem(
-          glyph: AdaptiveGlyph.competitions,
-          label: context.l10n.competitionsTitle,
-        ),
       ],
       selectedIndex: current.index,
       onTap: (index) => _select(context, CompetitionTab.values[index]),

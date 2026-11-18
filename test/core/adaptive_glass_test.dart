@@ -597,6 +597,73 @@ void main() {
       );
     });
 
+    testWidgets('sets a title caption under the title and taps the title', (
+      tester,
+    ) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+      var taps = 0;
+      await pumpGlass(
+        tester,
+        _host(
+          child: AdaptiveScaffold(
+            title: 'Leaderboard',
+            titleCaption: const Text('Office Table Tennis'),
+            onTitleTap: () => taps++,
+            slivers: const [SliverToBoxAdapter(child: Text('first row'))],
+          ),
+        ),
+      );
+
+      final title = tester.getRect(find.text('Leaderboard'));
+      final caption = tester.getRect(find.text('Office Table Tennis'));
+
+      expect(caption.left, moreOrLessEquals(title.left, epsilon: 0.5));
+      expect(caption.top, greaterThan(title.top));
+      expect(
+        tester.getRect(find.text('first row')).top,
+        greaterThanOrEqualTo(caption.bottom),
+      );
+
+      await tester.tap(find.text('Office Table Tennis'));
+      await tester.tap(find.text('Leaderboard'));
+      expect(taps, 2);
+    });
+
+    testWidgets('puts a subtitle under the caption, not over it', (
+      tester,
+    ) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+      await pumpGlass(
+        tester,
+        _host(
+          child: AdaptiveScaffold(
+            title: 'Matches',
+            titleCaption: const Text('Office Table Tennis'),
+            subtitle: const Text('Monday'),
+            slivers: const [SliverToBoxAdapter(child: Text('first row'))],
+          ),
+        ),
+      );
+
+      final caption = tester.getRect(find.text('Office Table Tennis'));
+      final day = tester.getRect(find.text('Monday'));
+
+      expect(
+        day.center.dx,
+        moreOrLessEquals(
+          tester.getSize(find.byType(AdaptiveTopBar)).width / 2,
+          epsilon: 0.5,
+        ),
+      );
+      expect(day.top, greaterThanOrEqualTo(caption.bottom));
+      expect(
+        tester.getRect(find.text('first row')).top,
+        greaterThanOrEqualTo(day.bottom),
+      );
+    });
+
     testWidgets('keeps the title off the glass', (tester) async {
       AppPlatform.debugOverrideCupertino = true;
       AppPlatform.debugOverrideLiquidGlass = true;

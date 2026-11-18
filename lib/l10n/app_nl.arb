@@ -44,13 +44,12 @@
   "authUpgradeBody": "Als gast kun je rondkijken, maar je hebt een account nodig om competities te maken en wedstrijden vast te leggen. Je geschiedenis blijft behouden.",
 
   "competitionsTitle": "Competities",
-  "competitionsPlaceholder": "Je competities verschijnen hier.",
   "competitionsCreateShort": "Maken",
-  "competitionsJoinTip": "Druk op 'Deelnemen' om deel te nemen aan een bestaande competitie.",
-  "competitionsCreateTip": "Maak je eigen competitie met de +-knop.",
-  "competitionsActive": "Actief",
-  "competitionsOther": "Andere competities",
-  "competitionsAdd": "Competitie toevoegen",
+  "competitionSwitch": "Wissel van competitie, nu {name}",
+  "@competitionSwitch": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "welcomeBody": "Doe mee met een competitie via de code, of begin er zelf een.",
   "competitionsCreate": "Competitie maken",
   "competitionsJoin": "Deelnemen aan competitie",
   "competitionsJoinShort": "Deelnemen",
@@ -74,6 +73,18 @@
   "@competitionMatches": {
     "placeholders": { "count": { "type": "int" } }
   },
+  "competitionCurrent": "Huidige",
+  "competitionPlayedToday": "Vandaag gespeeld",
+  "competitionPlayedYesterday": "Gisteren gespeeld",
+  "competitionPlayedDaysAgo": "{count} dagen geleden gespeeld",
+  "@competitionPlayedDaysAgo": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "competitionPlayedOn": "Laatst gespeeld op {date}",
+  "@competitionPlayedOn": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "competitionNotPlayed": "Nog niet gespeeld",
   "competitionGuestCannotCreate": "Als gast kun je deelnemen aan een competitie en rondkijken, maar voor het maken van een competitie heb je een account nodig.",
   "competitionInviteTitle": "Spelers uitnodigen",
   "competitionInviteAction": "Uitnodigen",

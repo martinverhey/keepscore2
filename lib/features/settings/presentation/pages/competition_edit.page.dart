@@ -87,7 +87,7 @@ class _CompetitionEditPageState extends State<CompetitionEditPage> {
     return AdaptiveBarAction(
       glyph: AdaptiveGlyph.back,
       semanticLabel: context.l10n.commonBack,
-      onPressed: () => context.go(Routes.competitions(cubit.competitionId)),
+      onPressed: () => context.go(Routes.leaderboard(cubit.competitionId)),
     );
   }
 

@@ -14,8 +14,10 @@ import 'package:keepscore2/features/competition/presentation/cubit/competition_c
 import 'package:keepscore2/features/competition/presentation/cubit/competition_list_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/join_competition_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/pages/competition_shell.dart';
-import 'package:keepscore2/features/competition/presentation/pages/competitions.page.dart';
+import 'package:keepscore2/features/competition/presentation/pages/welcome.page.dart';
+import 'package:keepscore2/features/competition/presentation/pages/competition_switcher_sheet.dart';
 import 'package:keepscore2/features/competition/presentation/pages/join_competition_sheet.dart';
+import 'package:keepscore2/features/competition/presentation/widgets/competition_caption.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/competition_scope.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
@@ -235,11 +237,16 @@ void main() {
       tester.element(find.byType(LeaderboardPage)),
     );
 
-    await tester.tap(find.text('Office Table Tennis'));
+    await tester.tap(find.byType(CompetitionCaption).hitTestable().first);
     await tester.pumpAndSettle();
-    expect(find.byType(CompetitionsPage), findsOneWidget);
+    expect(find.byType(CompetitionSwitcherSheet), findsOneWidget);
 
-    await tester.tap(find.text(l10n.competitionsJoinShort));
+    await tester.tap(
+      find.descendant(
+        of: find.byType(CompetitionSwitcherSheet),
+        matching: find.text(l10n.competitionsJoinShort),
+      ),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.text(l10n.joinScanEnterCode));
@@ -286,7 +293,7 @@ GoRouter _buildRouter({
       GoRoute(
         path: '/',
         pageBuilder: (context, state) =>
-            adaptivePage(context, child: const CompetitionsPage()),
+            adaptivePage(context, child: const WelcomePage()),
       ),
       ShellRoute(
         pageBuilder: (context, state, child) {
@@ -357,14 +364,6 @@ GoRouter _buildRouter({
                             child: MatchesPage(competitionId: id),
                           );
                         },
-                      ),
-                    ],
-                  ),
-                  StatefulShellBranch(
-                    routes: [
-                      GoRoute(
-                        path: 'competitions',
-                        builder: (_, _) => const CompetitionsPage(),
                       ),
                     ],
                   ),

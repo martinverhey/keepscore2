@@ -1,1 +1,1 @@
-enum SpeechBubbleTail { top, bottom, left }
+enum SpeechBubbleTail { bottom, left }

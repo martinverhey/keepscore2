@@ -12,9 +12,11 @@ import 'package:keepscore2/features/competition/domain/competition_repository.da
 import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_list_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/pages/competition_shell.dart';
-import 'package:keepscore2/features/competition/presentation/pages/competitions.page.dart';
-import 'package:keepscore2/features/competition/presentation/widgets/active_competition_card.dart';
+import 'package:keepscore2/features/competition/presentation/pages/competition_switcher_sheet.dart';
+import 'package:keepscore2/features/competition/presentation/pages/welcome.page.dart';
+import 'package:keepscore2/features/competition/presentation/widgets/competition_caption.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/competition_scope.dart';
+import 'package:keepscore2/features/competition/presentation/widgets/competition_switcher_row.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/competition_tab_bar.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard.model.dart';
 import 'package:keepscore2/features/leaderboard/domain/leaderboard_repository.dart';
@@ -106,10 +108,7 @@ void main() {
     );
     when(() => auth.watchUser()).thenAnswer((_) => const Stream.empty());
 
-    final memberships = [
-      _overview('c1', 'Office Table Tennis'),
-      _overview('c2', 'Padel Ladder'),
-    ];
+    final memberships = [_overview('c1', 'Office Table Tennis')];
     when(
       () => competitions.myCompetitions(),
     ).thenAnswer((_) async => List.of(memberships));
@@ -207,14 +206,13 @@ void main() {
     expect(find.byType(CompetitionTabBar), findsOneWidget);
     expect(await RecentCompetitionStore.get(), 'c1');
 
-    await tester.tap(find.text('Office Table Tennis'));
+    await tester.tap(find.byType(CompetitionCaption).hitTestable().first);
     await tester.pumpAndSettle();
-    expect(find.byType(CompetitionsPage), findsOneWidget);
-    expect(find.byType(CompetitionTabBar), findsOneWidget);
+    expect(find.byType(CompetitionSwitcherSheet), findsOneWidget);
 
     await tester.tap(
       find.descendant(
-        of: find.byType(ActiveCompetitionCard),
+        of: find.byType(CompetitionSwitcherRow),
         matching: find.byTooltip(l10n.commonMoreActions),
       ),
     );
@@ -225,7 +223,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(CompetitionTabBar), findsNothing);
-    expect(find.byType(CompetitionsPage), findsOneWidget);
+    expect(find.byType(CompetitionSwitcherSheet), findsNothing);
+    expect(find.byType(WelcomePage), findsOneWidget);
     expect(router.routerDelegate.currentConfiguration.uri.path, '/');
     expect(competitionCubit.competitionId, isNull);
     expect(await RecentCompetitionStore.get(), isNull);
@@ -246,7 +245,7 @@ GoRouter _buildRouter({
       GoRoute(
         path: '/',
         pageBuilder: (context, state) =>
-            adaptivePage(context, child: const CompetitionsPage()),
+            adaptivePage(context, child: const WelcomePage()),
       ),
       ShellRoute(
         pageBuilder: (context, state, child) {
@@ -317,14 +316,6 @@ GoRouter _buildRouter({
                             child: MatchesPage(competitionId: id),
                           );
                         },
-                      ),
-                    ],
-                  ),
-                  StatefulShellBranch(
-                    routes: [
-                      GoRoute(
-                        path: 'competitions',
-                        builder: (_, _) => const CompetitionsPage(),
                       ),
                     ],
                   ),

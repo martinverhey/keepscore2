@@ -120,16 +120,52 @@ void main() {
     expect(await RecentCompetitionStore.get(), 'c1');
   });
 
-  testWidgets('resolving the recent competition costs one list request', (
-    tester,
-  ) async {
+  test('a stale recent id falls through to the newest competition, '
+      'for one list request', () async {
     when(
       () => competitions.myCompetitions(),
-    ).thenAnswer((_) async => [_overview('c2')]);
+    ).thenAnswer((_) async => [_overview('c2'), _overview('c3')]);
 
-    await pumpApp(tester);
+    final target = await resolveHomeTarget(competitionListCubit);
 
+    expect(target, Routes.competition('c2'));
+    expect(await RecentCompetitionStore.get(), isNull);
     verify(() => competitions.myCompetitions()).called(1);
     verifyNever(() => competitions.overview(any()));
+  });
+
+  test('a recent competition the user is still in wins', () async {
+    when(
+      () => competitions.myCompetitions(),
+    ).thenAnswer((_) async => [_overview('c2'), _overview('c1')]);
+
+    final target = await resolveHomeTarget(competitionListCubit);
+
+    expect(target, Routes.competition('c1'));
+    expect(await RecentCompetitionStore.get(), 'c1');
+  });
+
+  test('without a recent id the newest competition is entered', () async {
+    SharedPreferences.setMockInitialValues({});
+    when(
+      () => competitions.myCompetitions(),
+    ).thenAnswer((_) async => [_overview('c3'), _overview('c2')]);
+
+    final target = await resolveHomeTarget(competitionListCubit);
+
+    expect(target, Routes.competition('c3'));
+  });
+
+  test('an empty list stays home', () async {
+    when(() => competitions.myCompetitions()).thenAnswer((_) async => []);
+
+    expect(await resolveHomeTarget(competitionListCubit), isNull);
+  });
+
+  test('a failed load stays home and keeps the recent id', () async {
+    when(() => competitions.myCompetitions()).thenThrow(const NetworkFailure());
+
+    expect(await resolveHomeTarget(competitionListCubit), isNull);
+    expect(await RecentCompetitionStore.get(), 'c1');
   });
 }

@@ -123,26 +123,16 @@ class AppLocalizationsNl extends AppLocalizations {
   String get competitionsTitle => 'Competities';
 
   @override
-  String get competitionsPlaceholder => 'Je competities verschijnen hier.';
-
-  @override
   String get competitionsCreateShort => 'Maken';
 
   @override
-  String get competitionsJoinTip =>
-      'Druk op \'Deelnemen\' om deel te nemen aan een bestaande competitie.';
+  String competitionSwitch(String name) {
+    return 'Wissel van competitie, nu $name';
+  }
 
   @override
-  String get competitionsCreateTip => 'Maak je eigen competitie met de +-knop.';
-
-  @override
-  String get competitionsActive => 'Actief';
-
-  @override
-  String get competitionsOther => 'Andere competities';
-
-  @override
-  String get competitionsAdd => 'Competitie toevoegen';
+  String get welcomeBody =>
+      'Doe mee met een competitie via de code, of begin er zelf een.';
 
   @override
   String get competitionsCreate => 'Competitie maken';
@@ -205,6 +195,28 @@ class AppLocalizationsNl extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get competitionCurrent => 'Huidige';
+
+  @override
+  String get competitionPlayedToday => 'Vandaag gespeeld';
+
+  @override
+  String get competitionPlayedYesterday => 'Gisteren gespeeld';
+
+  @override
+  String competitionPlayedDaysAgo(int count) {
+    return '$count dagen geleden gespeeld';
+  }
+
+  @override
+  String competitionPlayedOn(String date) {
+    return 'Laatst gespeeld op $date';
+  }
+
+  @override
+  String get competitionNotPlayed => 'Nog niet gespeeld';
 
   @override
   String get competitionGuestCannotCreate =>

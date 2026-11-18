@@ -16,6 +16,7 @@ import '../../../../core/widgets/state_views.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
 import '../../../auth/presentation/widgets/guest_notice.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
+import '../../../competition/presentation/widgets/competition_caption.dart';
 import '../../../player/presentation/cubit/players_cubit.dart';
 import '../../../tournament/domain/tournament_run.model.dart';
 import '../../../tournament/presentation/cubit/tournament_cubit.dart';
@@ -108,6 +109,8 @@ class _MatchesPageState extends State<MatchesPage> {
       child: AdaptiveScaffold(
         title: context.l10n.matchesTitle,
         subtitle: _daySubtitle(),
+        titleCaption: const CompetitionCaption(),
+        onTitleTap: () => openCompetitionSwitcher(context),
         onRefresh: _refresh,
         trailing: _trailing(
           context,
@@ -199,7 +202,7 @@ class _MatchesPageState extends State<MatchesPage> {
     final captionLine =
         _scrollOffset +
         MediaQuery.paddingOf(context).top +
-        AdaptiveTopBar.subtitleTop -
+        AdaptiveTopBar.subtitleTopFor(hasCaption: true) -
         DayHeader.textInset;
 
     DateTime? handedOver;

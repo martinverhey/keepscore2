@@ -35,6 +35,19 @@ class CompetitionListCubit extends Cubit<CompetitionListState> {
 
   bool isMember(String competitionId) => _find(competitionId) != null;
 
+  void forget(String competitionId) {
+    final ready = _ready;
+    if (ready == null || !isMember(competitionId)) return;
+    emit(
+      ready.copyWith(
+        competitions: [
+          for (final overview in ready.competitions)
+            if (overview.id != competitionId) overview,
+        ],
+      ),
+    );
+  }
+
   Future<void> load({bool silent = false}) async {
     final ready = _ready;
     if (!silent) emit(const CompetitionListLoading());
