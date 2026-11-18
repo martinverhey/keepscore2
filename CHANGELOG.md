@@ -3,6 +3,14 @@
 Newest first. Each heading is an annotated `vX.Y.Z` tag; pushing that tag ships
 the build to TestFlight and Play internal testing.
 
+## v0.6.1 — 2026-11-18
+
+### Changed
+- The tab bar and every glass button share one look in light and dark mode
+- Glass buttons grow when pressed
+- Top bar buttons and the back arrow match the native iOS size
+- The add player button matches the new match button
+
 ## v0.6.0 — 2026-11-18
 
 ### Added
