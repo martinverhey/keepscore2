@@ -3,6 +3,17 @@
 Newest first. Each heading is an annotated `vX.Y.Z` tag; pushing that tag ships
 the build to TestFlight and Play internal testing.
 
+## v0.6.0 — 2026-11-18
+
+### Added
+- Switch competitions from the name under the Leaderboard and Matches titles
+- Streaks are badged from five games, for losing streaks as well as winning ones
+
+### Changed
+- The Competitions tab is gone; the switcher replaces it
+- The profile shows one streak card with a single milestone legend
+- The day on the Matches list is centred, in the list and in the top bar
+
 ## v0.5.1 — 2026-09-25
 
 Re-release of v0.5.0, whose builds failed; no user-facing changes.
