@@ -1687,7 +1687,7 @@ change that one function, composing from a package `defaultStyle` rather than bu
 `LiquidGlassTabItemStyle` except its selected colour, which is
 `AdaptiveColors.accent` rather than the system blue; the sheet panel is
 `LiquidGlassSheet.defaultStyle` on `LiquidGlassSheet.defaultShape()` (with
-one exception, its tint — see the sheet paragraph below); and the scroll edges and the switch take no colour or style at all. **The glyphs on
+one exception, its tint — see the sheet paragraph below); and the switch takes no colour or style at all (the top scroll edge takes only `AdaptiveGlass.scrollEdgeTintOf`). **The glyphs on
 the glass actions are the menu's colours**: `AdaptiveGlass.glyphColorOf`
 reads them off the same resolved `LiquidGlassTabItemStyle` the tab bar uses —
 the unselected colour (black on light, white on dark) normally, the selected
@@ -1900,15 +1900,12 @@ the surface *inside* it, so the drag and barrier paths still route through
 `Navigator.maybePop`, and `adaptive_glass_test.dart` asserts a guarded glass
 sheet survives a barrier tap.
 
-**The scroll edge band is part of the host, not of any page.**
-`AdaptiveBottomBarHost._floating` stacks a `LiquidGlassScrollEdge` between the
-page and the bar — content fades into the page colour as it slides under the
-floating capsule, which is what keeps a dense list from showing through it as
-noise. It takes the package's default colour. Its height covers the bar, the home
-indicator and `AppGlass.scrollEdgeFade` of extra ramp above them (currently
-`0` — the band stops at the bar). It is wrapped in
-`IgnorePointer` — it is decoration, and a full-width band that ate taps would
-silently kill the bottom of every list.
+**There is no scroll edge band at the bottom.** `AdaptiveBottomBarHost._floating`
+used to stack a `LiquidGlassScrollEdge` between the page and the bar, fading
+content as it slid under the floating capsule; it was removed on purpose, so
+the list runs straight under the glass tab bar the way it does in native iOS
+26 apps. The top bar keeps its band (see below) — that one sits behind a bare,
+unglassed title and is what keeps it legible.
 
 **The top bar floats too, and the large title is the price.** A
 `LiquidGlassLens` refracts *what is painted behind it*, so anything meant to

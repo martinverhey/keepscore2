@@ -56,7 +56,6 @@ class AdaptiveBottomBarHost extends StatelessWidget {
             child: child,
           ),
         ),
-        _scrollEdge(context),
         Positioned.fill(child: _bar(context, removeBottom: true)),
         if (action case final action?)
           Positioned(
@@ -65,18 +64,6 @@ class AdaptiveBottomBarHost extends StatelessWidget {
             child: _action(action),
           ),
       ],
-    );
-  }
-
-  Widget _scrollEdge(BuildContext context) {
-    return Positioned(
-      left: 0,
-      right: 0,
-      bottom: 0,
-      height: glassBarTop + AppGlass.scrollEdgeFade,
-      child: IgnorePointer(
-        child: LiquidGlassScrollEdge(edge: LiquidGlassEdge.bottom),
-      ),
     );
   }
 

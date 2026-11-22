@@ -388,15 +388,12 @@ void main() {
       );
     });
 
-    testWidgets('dims both scroll edges, on glass only', (tester) async {
+    testWidgets('dims only the top scroll edge, on glass only', (tester) async {
       AppPlatform.debugOverrideCupertino = true;
       AppPlatform.debugOverrideLiquidGlass = true;
       await pumpGlass(tester, _scaffold());
 
-      expect(_scrollEdges(tester), {
-        LiquidGlassEdge.top,
-        LiquidGlassEdge.bottom,
-      });
+      expect(_scrollEdges(tester), {LiquidGlassEdge.top});
 
       AppPlatform.debugOverrideLiquidGlass = false;
       await pumpGlass(tester, _scaffold());
