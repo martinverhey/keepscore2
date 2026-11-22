@@ -3,6 +3,10 @@
 Newest first. Each heading is an annotated `vX.Y.Z` tag; pushing that tag ships
 the build to TestFlight and Play internal testing.
 
+## v0.6.3 — 2026-11-22
+
+Built with the latest Xcode; no user-facing changes.
+
 ## v0.6.2 — 2026-11-19
 
 Re-release of v0.6.1, whose Android build failed; no user-facing changes.
