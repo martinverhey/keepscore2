@@ -135,12 +135,8 @@ void main() {
       expect(find.text('Office Table Tennis'), findsNothing);
       expect(find.text(l10n.leaderboardTitle), findsOneWidget);
       expect(find.text(l10n.matchesTitle), findsOneWidget);
-      expect(
-        find.text(l10n.competitionSettingsSectionCompetition),
-        findsOneWidget,
-      );
       expect(find.text(l10n.historyTitle), findsNothing);
-      expect(find.text(l10n.playersManageTitle), findsOneWidget);
+      expect(find.text(l10n.playersManageTitle), findsNothing);
       expect(find.text(l10n.matchNew), findsOneWidget);
       expect(find.text(l10n.competitionsTitle), findsNothing);
       expect(find.text(l10n.settingsDarkModeTitle), findsOneWidget);
@@ -150,9 +146,6 @@ void main() {
 
       await tester.tap(find.text(l10n.matchesTitle));
       expect(selected, SidebarSection.matches);
-
-      await tester.tap(find.text(l10n.playersManageTitle));
-      expect(selected, SidebarSection.players);
 
       await tester.tap(find.text(l10n.settingsLanguageTitle));
       expect(selected, SidebarSection.language);
@@ -235,10 +228,6 @@ void main() {
 
       expect(find.text(l10n.matchNew), findsNothing);
       expect(find.text(l10n.leaderboardTitle), findsNothing);
-      expect(
-        find.text(l10n.competitionSettingsSectionCompetition),
-        findsNothing,
-      );
       expect(find.text(l10n.competitionsTitle), findsNothing);
       expect(find.text(l10n.settingsLanguageTitle), findsOneWidget);
 
@@ -253,7 +242,7 @@ void main() {
       useWideWebViewport(tester);
 
       final router = GoRouter(
-        initialLocation: '/competition/c1/settings/players',
+        initialLocation: '/competition/c1/settings/edit',
         routes: [
           ShellRoute(
             builder: (context, state, child) =>
@@ -274,10 +263,10 @@ void main() {
                     ),
                   ),
                   GoRoute(
-                    path: 'settings/players',
+                    path: 'settings/edit',
                     builder: (context, state) => const AdaptiveScaffold(
-                      title: 'players',
-                      body: Text('players body'),
+                      title: 'edit',
+                      body: Text('edit body'),
                     ),
                   ),
                 ],
@@ -298,19 +287,15 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('players body'), findsOneWidget);
+      expect(find.text('edit body'), findsOneWidget);
 
-      final l10n = AppLocalizations.of(
-        tester.element(find.text('players body')),
-      );
-
-      expect(find.text(l10n.playersManageTitle), findsOneWidget);
+      final l10n = AppLocalizations.of(tester.element(find.text('edit body')));
 
       await tester.tap(find.text(l10n.leaderboardTitle));
       await tester.pumpAndSettle();
 
       expect(find.text('leaderboard body'), findsOneWidget);
-      expect(find.text('players body'), findsNothing);
+      expect(find.text('edit body'), findsNothing);
       expect(find.text(l10n.leaderboardTitle), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
@@ -322,7 +307,7 @@ void main() {
       useWideWebViewport(tester);
 
       final router = GoRouter(
-        initialLocation: '/competition/c1/settings/players',
+        initialLocation: '/competition/c1/settings/edit',
         routes: [
           ShellRoute(
             builder: (context, state, child) =>
@@ -343,10 +328,10 @@ void main() {
                     ),
                   ),
                   GoRoute(
-                    path: 'settings/players',
+                    path: 'settings/edit',
                     builder: (context, state) => const AdaptiveScaffold(
-                      title: 'players',
-                      body: Text('players body'),
+                      title: 'edit',
+                      body: Text('edit body'),
                     ),
                   ),
                 ],
@@ -367,17 +352,15 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('players body'), findsOneWidget);
+      expect(find.text('edit body'), findsOneWidget);
 
-      final l10n = AppLocalizations.of(
-        tester.element(find.text('players body')),
-      );
+      final l10n = AppLocalizations.of(tester.element(find.text('edit body')));
 
       await tester.tap(find.text(l10n.matchesTitle));
       await tester.pumpAndSettle();
 
       expect(find.text('matches body'), findsOneWidget);
-      expect(find.text('players body'), findsNothing);
+      expect(find.text('edit body'), findsNothing);
       expect(tester.takeException(), isNull);
     },
   );
@@ -396,7 +379,7 @@ void main() {
             GoRoute(
               path: 'pushed',
               builder: (context, state) => Sidebar(
-                current: SidebarSection.players,
+                current: null,
                 onSelectSection: (_) {},
                 child: const AdaptiveScaffold(
                   title: 'History',

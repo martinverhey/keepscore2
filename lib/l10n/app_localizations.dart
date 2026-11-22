@@ -482,12 +482,6 @@ abstract class AppLocalizations {
   /// **'Change name'**
   String get profileChangeName;
 
-  /// No description provided for @competitionSettingsSectionCompetition.
-  ///
-  /// In en, this message translates to:
-  /// **'Competition'**
-  String get competitionSettingsSectionCompetition;
-
   /// No description provided for @competitionSettingsSectionSystem.
   ///
   /// In en, this message translates to:

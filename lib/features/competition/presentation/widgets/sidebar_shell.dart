@@ -24,7 +24,6 @@ class SidebarShell extends StatelessWidget {
 
   SidebarSection? _current(BuildContext context) {
     if (location == Routes.language) return SidebarSection.language;
-    if (location.endsWith('/settings/players')) return SidebarSection.players;
     if (location.endsWith('/settings')) return null;
     if (location.contains('/match/')) return SidebarSection.matches;
     if (location.endsWith('/matches')) return SidebarSection.matches;
@@ -50,7 +49,6 @@ class SidebarShell extends StatelessWidget {
     return switch (section) {
       SidebarSection.leaderboard => Routes.leaderboard(competitionId),
       SidebarSection.matches => Routes.matches(competitionId),
-      SidebarSection.players => Routes.players(competitionId),
       SidebarSection.language => null,
     };
   }

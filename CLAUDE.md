@@ -306,7 +306,7 @@ would cut ~3-10 MB off the APK at the price of a Play-Services download before
 the first scan works.
 `TeamPickerSheet`'s "Manage players" button opens `showManagePlayersSheet`
 (`player/presentation/pages/manage_players_sheet.dart`) on top of the picker
-rather than popping and pushing `Routes.players` — the sheet builds its own
+rather than navigating anywhere — the sheet builds its own
 `PlayersCubit` via `getIt` (a nested sheet route inherits no providers from the
 route underneath it), and `NewMatchSheet._managePlayers` refreshes
 `MatchFormCubit` afterwards and hands the picker back the refreshed player
@@ -314,11 +314,15 @@ list through `TeamPickerSheet.onManagePlayers`, so a player added there
 is selectable without closing anything (the picker does its own
 already-on-the-other-side filtering now, so what it gets back is every active
 player, not one side's selectable subset).
-The leaderboard's Manage button opens that same sheet rather than pushing
-`Routes.players`, so both ways in look alike. The sheet's own
+The leaderboard's Manage button opens that same sheet, and **the sheet is
+the only player-management surface** — there is no Players page, no
+`Routes.players` and no sidebar Players row any more. The sheet's own
 `PlayersCubit` is not the shell's, and needs nothing to keep them in step:
 the `players` realtime channel refreshes the shell's one, and the
-leaderboard's, after every change made in the sheet.
+leaderboard's, after every change made in the sheet. A routed page was
+tried from the picker and dropped: a competition route lives on the
+competition shell's navigator, below the root one every sheet sits on, so
+a router push from inside a sheet opens the page behind it.
 
 **The new match sheet opens on a `1v1` / `Teams` toggle
 (`AdaptiveSegmented<MatchEntryMode>`), and that mode drives the whole form.**
@@ -481,11 +485,11 @@ or moved:
 - **Create competition** — the switcher sheet's Create button and
   `WelcomePage`'s Create button, each rendered only when `session.canWrite`;
   Join is always there.
-- **Add/manage players, owner settings** — `players.page.dart` →
+- **Add/manage players, owner settings** — `manage_players_sheet.dart` →
   `widgets/players.dart`, `isRegistered: session.canWrite`. **Every entry
   point *into* player management is a step stricter than that: owner-only,
   `session.canWrite && competition.isOwnedBySession(session)`** — the
-  Settings row and the sidebar's Players row (`canManageSettings`), the leaderboard's Manage players button
+  leaderboard's Manage players button
   (`LeaderboardList.isOwner`), and the team picker's
   (`TeamPickerSheet.canManagePlayers`). A registered non-owner reaching the
   sheet another way still sees the roster and may rename themselves —
@@ -1482,7 +1486,7 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   otherwise passing back the identical closure or the identical data.
   Getting there needed three things:
   `SidebarSection` (`sidebar_section.enum.dart`) enumerating **every**
-  destination the sidebar can reach — leaderboard, matches, players,
+  destination the sidebar can reach — leaderboard, matches,
   language — not just the
   competition-scoped ones (it is named for the sidebar, not the competition,
   because `language` is not a competition section);
@@ -1495,9 +1499,8 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   splatted into and the `HomeSidebarCompetition` value object that later
   bundled them.
   Whether it shows the per-competition group (New match button,
-  leaderboard/matches, plus — for the owner only — the
-  "Competition" section label over Manage players, which is that group's
-  last row now that History is gone, so a non-owner gets no empty heading)
+  leaderboard/matches — the owner-only "Competition" heading over Manage
+  players went with the Players page, so the group is the same for everyone)
   is simply whether `CompetitionCubit` currently holds one. On `/` (the
   welcome screen, so no competitions at all) the cubit is empty and the
   nav list is empty with it; there is no Competitions row any more — the
@@ -1508,7 +1511,7 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   settings, the theme toggle, language, sign out) replaced the old gear-icon popover entirely, so
   that gear-popover `AdaptiveMenuButton` was deleted (the name now belongs to
   the competition cards' three-dots menu). A page pushed
-  underneath the sidebar (History, Players, Settings, NewMatch — reached via
+  underneath the sidebar (History, Edit — reached via
   `context.push`) would otherwise still get an auto-implied back button from
   `AdaptiveScaffold`'s app bar, since `Navigator.canPop()` is true regardless
   of the sidebar being visually present; the sidebar *is* the way back, so a
@@ -2345,14 +2348,14 @@ Two things had to move for `go` to be safe here:
 - **The `settings/*` routes are declared as siblings, not children of
   `settings`.** `go` builds a page for every route in the matched chain, so
   nesting them under `/competition/:id/settings` would have put `SettingsPage`
-  in the stack underneath Players/History/Edit — and had it call
+  in the stack underneath History/Edit — and had it call
   `setPageTitle` on the way past. The paths are unchanged
-  (`path: 'settings/players'` under `/competition/:id`); only the nesting is.
+  (`path: 'settings/edit'` under `/competition/:id`); only the nesting is.
 - **`PlayersCubit` moved up to the competition `ShellRoute`**, so every
   sub-page shares one instance rather than building its own. `go` keeps that
   `ShellRoute` mounted underneath whatever page it navigates to, so without
   this `PlayersCubit` would still be holding the player list from before you
-  opened the Players page — at the time it had no realtime subscription to
+  opened the (since removed) Players page — at the time it had no realtime subscription to
   save it, unlike `MatchListCubit`/`LeaderboardCubit` (which didn't need the
   same hoist; see "Leaderboard and Matches are routes, not tabs" for why).
   Sharing removes the staleness at the source, and that is still the reason
@@ -2380,7 +2383,7 @@ the bare `/competition/:id` URL redirects to, not a cubit `CompetitionScope`
 resets on entry.
 
 The trigger was the sidebar itself: a route it could highlight and deep-link
-to, matching how Players/History/Edit already worked, rather than a
+to, matching how History/Edit already worked, rather than a
 shared page with an internal tab enum the sidebar had to reach into.
 `LeaderboardCubit`/`MatchListCubit` each moved into their own branch's leaf
 `GoRoute` rather than the shared competition `ShellRoute` `PlayersCubit`
@@ -2503,10 +2506,10 @@ never changes across a tab switch.
   sidebar reads that cubit itself and takes no competition prop at all.
   `CompetitionEditCubit`/`HistoryCubit`/etc. all start out `loading` with their
   own `competition` field `null` even though `CompetitionCubit` already has
-  the answer. Sourcing `canManageSettings` from the page's own cubit instead
+  the answer. Sourcing anything owner-only from the page's own cubit instead
   briefly evaluates to `false` while that cubit's own fetch is in flight, so
-  an owner-only nav row (e.g. "Manage players") visibly disappears and
-  reappears a moment later.
+  an owner-only nav row (the old Manage players one did this) visibly
+  disappears and reappears a moment later.
   **Almost no test exercises this** — `kIsWeb` is always `false`
   under `flutter test`, so `useWideWeb` never trips regardless of the pumped
   viewport size, which is exactly why `AppPlatform.debugOverrideWideWeb`
@@ -3059,16 +3062,6 @@ at all. A new column is a migration; the view that exposes it is not.
 - `.env` (project root) — tooling secrets (`SUPABASE_DB_PASSWORD`). Gitignored,
   never bundled, no template committed.
 
-## Testing
-
-- `EloCalculator` (Dart) mirrors `public.elo_delta` (SQL). **The same fixture
-  values are asserted in both** — `test/features/match/elo_calculator_test.dart`
-  and `supabase/seed.sql`. If you change one, change both.
-- `supabase/seed.sql` asserts that building a season incrementally and replaying
-  it with `recalc_season` produce identical ratings. That invariant is what
-  makes edits and deletes safe.
-- `supabase/tests/rls_check.sql` runs as `authenticated` inside a rolled-back
-  transaction and proves outsiders see nothing and direct writes are refused.
 **Android only ships `assets/.env` because `android/app/build.gradle.kts`
 overrides `androidResources.ignoreAssetsPattern`.** AGP's default pattern
 (`!.svn:!.git:!.ds_store:!*.scc:.*:<dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~`)
@@ -3081,6 +3074,16 @@ September release APK still carried the file); iOS and web have no such
 filter. The override is that default minus `.*` and nothing else. Check with
 `unzip -l build/app/outputs/flutter-apk/app-debug.apk | grep flutter_assets/assets/`.
 
+## Testing
+
+- `EloCalculator` (Dart) mirrors `public.elo_delta` (SQL). **The same fixture
+  values are asserted in both** — `test/features/match/elo_calculator_test.dart`
+  and `supabase/seed.sql`. If you change one, change both.
+- `supabase/seed.sql` asserts that building a season incrementally and replaying
+  it with `recalc_season` produce identical ratings. That invariant is what
+  makes edits and deletes safe.
+- `supabase/tests/rls_check.sql` runs as `authenticated` inside a rolled-back
+  transaction and proves outsiders see nothing and direct writes are refused.
   It caught nothing that the seed did, because the seed runs as `postgres` —
   **server-side assertions do not exercise the client path.** Verify RPCs over
   REST with a real token as well.

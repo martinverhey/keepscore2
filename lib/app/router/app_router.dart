@@ -18,7 +18,6 @@ import '../../features/leaderboard/presentation/pages/leaderboard.page.dart';
 import '../../features/match/presentation/cubit/match_list_cubit.dart';
 import '../../features/match/presentation/pages/matches.page.dart';
 import '../../features/player/presentation/cubit/players_cubit.dart';
-import '../../features/player/presentation/pages/players.page.dart';
 import '../../features/settings/presentation/cubit/competition_edit_cubit.dart';
 import '../../features/settings/presentation/cubit/history_cubit.dart';
 import '../../features/settings/presentation/pages/profile.page.dart';
@@ -41,7 +40,6 @@ abstract final class Routes {
   static String matches(String id) => '/competition/$id/matches';
   static String profile(String id) => '/competition/$id/profile';
   static String competitionEdit(String id) => '/competition/$id/settings/edit';
-  static String players(String id) => '/competition/$id/settings/players';
   static String history(String id) => '/competition/$id/settings/history';
 }
 
@@ -216,11 +214,6 @@ GoRouter createRouter(AuthBloc authBloc) {
                         child: const CompetitionEditPage(),
                       ),
                     ),
-                  ),
-                  GoRoute(
-                    path: 'settings/players',
-                    pageBuilder: (context, state) =>
-                        adaptivePage(context, child: const PlayersPage()),
                   ),
                   GoRoute(
                     path: 'settings/history',

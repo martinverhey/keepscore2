@@ -235,7 +235,6 @@ void main() {
   testWidgets('carries no competition rows', (tester) async {
     final l10n = await _Harness().pump(tester);
 
-    expect(find.text(l10n.competitionSettingsSectionCompetition), findsNothing);
     expect(find.text(l10n.historyTitle), findsNothing);
     expect(find.text(l10n.playersManageTitle), findsNothing);
     expect(tester.takeException(), isNull);

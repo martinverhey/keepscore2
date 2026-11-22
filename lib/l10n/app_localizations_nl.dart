@@ -236,9 +236,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String get profileChangeName => 'Naam wijzigen';
 
   @override
-  String get competitionSettingsSectionCompetition => 'Competitie';
-
-  @override
   String get competitionSettingsSectionSystem => 'Systeem';
 
   @override
