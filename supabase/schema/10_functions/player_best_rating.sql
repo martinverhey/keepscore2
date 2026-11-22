@@ -1,13 +1,11 @@
 -- KeepScore 2 — best rating a player has ever held, all seasons combined.
 --
--- Added for the profile sheet's Overview tab: it used to derive this by
--- fetching every finished season's standing and folding max(rating) over
--- them client-side, just to show one number. player_ratings.rating is
--- already live-updated on every match (not just at season close), so
--- max(rating) across a player's player_ratings rows already covers the
--- current in-progress season too — no need to also look at the live
--- leaderboard fetch the way the client-side fold used to. This lets the
--- Overview tab stop depending on the season-history list entirely.
+-- Read from match_players, not player_ratings: player_ratings.rating is only
+-- each season's *current* total, so a max over it misses every peak reached
+-- mid-season and, in the season you are in, simply returns today's rating.
+-- Every match records the rating going in and coming out, so the max over
+-- both is every value the player actually held — rating_before included, so
+-- a season's starting rating counts even for a player who has only lost.
 
 create or replace function public.player_best_rating(
   p_player_id  uuid
@@ -32,9 +30,9 @@ begin
     raise exception 'You are not in this competition' using errcode = 'P0001';
   end if;
 
-  select max(rating) into v_best
-    from public.player_ratings
-   where player_id = p_player_id;
+  select max(greatest(mp.rating_before, mp.rating_after)) into v_best
+    from public.match_players mp
+   where mp.player_id = p_player_id;
 
   return coalesce(v_best, 0);
 end;
