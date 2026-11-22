@@ -12,6 +12,7 @@ enum AdaptiveGlyph {
   chevronDown,
   check,
   invite,
+  scan,
   rename,
   delete,
   restore,

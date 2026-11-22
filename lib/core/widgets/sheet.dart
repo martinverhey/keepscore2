@@ -11,6 +11,7 @@ class Sheet extends StatelessWidget {
     this.title,
     this.titleColor,
     this.titleTrailing,
+    this.titleTrailingAlignment = CrossAxisAlignment.baseline,
     this.subtitle,
     required this.content,
     this.fillsHeight = false,
@@ -22,6 +23,7 @@ class Sheet extends StatelessWidget {
   final String? title;
   final Color? titleColor;
   final Widget? titleTrailing;
+  final CrossAxisAlignment titleTrailingAlignment;
   final String? subtitle;
   final Widget content;
   final bool fillsHeight;
@@ -118,7 +120,7 @@ class Sheet extends StatelessWidget {
     if (title == null) return null;
     if (titleTrailing case final trailing?) {
       return Row(
-        crossAxisAlignment: CrossAxisAlignment.baseline,
+        crossAxisAlignment: titleTrailingAlignment,
         textBaseline: TextBaseline.alphabetic,
         children: [
           Expanded(child: _title()),
