@@ -35,21 +35,23 @@ class ManagePlayersSheet extends StatelessWidget {
 
     return Sheet(
       title: context.l10n.playersManageTitle,
+      titleTrailing: isOwner ? _addPlayerButton(context) : null,
+      titleTrailingAlignment: CrossAxisAlignment.center,
       content: Players(
         ownerUserId: competition?.ownerId,
         myUserId: session.user?.id,
         isRegistered: session.canWrite,
       ),
-      primaryButton: isOwner ? _addPlayerButton(context) : null,
     );
   }
 
-  AdaptiveButton _addPlayerButton(BuildContext context) {
+  Widget _addPlayerButton(BuildContext context) {
     final state = context.watch<PlayersCubit>().state;
-    return AdaptiveButton(
-      label: context.l10n.playersAddPlayer,
-      busy: state is PlayersReady && state.busy,
-      onPressed: () => addPlaceholderPlayer(context),
+    final busy = state is PlayersReady && state.busy;
+    return AdaptiveBarAction(
+      glyph: AdaptiveGlyph.add,
+      semanticLabel: context.l10n.playersAddPlayer,
+      onPressed: busy ? null : () => addPlaceholderPlayer(context),
     );
   }
 }

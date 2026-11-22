@@ -329,6 +329,11 @@ leaderboard's, after every change made in the sheet. A routed page was
 tried from the picker and dropped: a competition route lives on the
 competition shell's navigator, below the root one every sheet sits on, so
 a router push from inside a sheet opens the page behind it.
+Adding a player is the sheet's `+` title-row action, owner-only, the same
+`AdaptiveBarAction` the competition switcher's header carries (centred via
+`Sheet.titleTrailingAlignment`); it was a filled pinned button, so the sheet
+now has no pinned button at all. An icon has no spinner, so while
+`PlayersReady.busy` the action is disabled instead.
 
 **The new match sheet opens on a `1v1` / `Teams` toggle
 (`AdaptiveSegmented<MatchEntryMode>`), and that mode drives the whole form.**
@@ -2882,7 +2887,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 422 tests at time of writing
+flutter test                    # 424 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 dart run flutter_launcher_icons     # assets/icon/*.png into android/ web/ (not ios/)
