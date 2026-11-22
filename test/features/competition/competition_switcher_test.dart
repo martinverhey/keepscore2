@@ -3,7 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keepscore2/app/app.dart';
 import 'package:keepscore2/app/router/app_router.dart';
-import 'package:keepscore2/core/widgets/adaptive/app_platform.dart';
+import 'package:keepscore2/app/dependency_injection/injector.dart';
+import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 import 'package:keepscore2/features/auth/domain/auth_repository.dart';
 import 'package:keepscore2/features/auth/domain/auth_user.model.dart';
 import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
@@ -12,7 +13,10 @@ import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_list_cubit.dart';
+import 'package:keepscore2/features/competition/presentation/cubit/create_competition_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/pages/competition_switcher_sheet.dart';
+import 'package:keepscore2/features/competition/presentation/pages/create_competition_sheet.dart';
+import 'package:keepscore2/features/competition/presentation/pages/join_scanner_sheet.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/competition_switcher_row.dart';
 import 'package:keepscore2/features/competition/presentation/pages/welcome.page.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/competition_caption.dart';
@@ -194,6 +198,68 @@ void main() {
     expect(find.byType(CompetitionSwitcherSheet), findsNothing);
     expect(locationOf(router), before);
     expect(tester.takeException(), isNull);
+  });
+
+  Finder headerAction(AdaptiveGlyph glyph) => find.descendant(
+    of: find.byType(CompetitionSwitcherSheet),
+    matching: find.byWidgetPredicate(
+      (widget) => widget is AdaptiveBarAction && widget.glyph == glyph,
+    ),
+  );
+
+  Future<void> openSwitcher(WidgetTester tester) async {
+    await pumpPill(tester);
+    await tester.tap(find.byType(CompetitionCaption));
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('the header carries join and create, centred on the title', (
+    tester,
+  ) async {
+    await openSwitcher(tester);
+
+    final sheet = find.byType(CompetitionSwitcherSheet);
+    final l10n = AppLocalizations.of(tester.element(sheet));
+    final title = find.descendant(
+      of: sheet,
+      matching: find.text(l10n.competitionsTitle),
+    );
+    final titleCentre = tester.getCenter(title).dy;
+
+    for (final glyph in [AdaptiveGlyph.scan, AdaptiveGlyph.add]) {
+      expect(headerAction(glyph), findsOneWidget);
+      expect(
+        tester.getCenter(headerAction(glyph)).dy,
+        moreOrLessEquals(titleCentre, epsilon: 0.5),
+      );
+    }
+    expect(find.text(l10n.competitionsCreateShort), findsNothing);
+  });
+
+  testWidgets('the header join action opens the scanner', (tester) async {
+    await openSwitcher(tester);
+
+    await tester.tap(headerAction(AdaptiveGlyph.scan));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(CompetitionSwitcherSheet), findsNothing);
+    expect(find.byType(JoinScannerSheet), findsOneWidget);
+  });
+
+  testWidgets('the header create action opens the create sheet', (
+    tester,
+  ) async {
+    getIt.registerFactory<CreateCompetitionCubit>(
+      () => CreateCompetitionCubit(competitions),
+    );
+    addTearDown(() => getIt.reset(dispose: false));
+    await openSwitcher(tester);
+
+    await tester.tap(headerAction(AdaptiveGlyph.add));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(CompetitionSwitcherSheet), findsNothing);
+    expect(find.byType(CreateCompetitionSheet), findsOneWidget);
   });
 
   group('WelcomePage', () {

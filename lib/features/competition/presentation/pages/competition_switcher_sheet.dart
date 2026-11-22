@@ -56,6 +56,8 @@ class CompetitionSwitcherSheet extends StatelessWidget {
   ) {
     return Sheet(
       title: context.l10n.competitionsTitle,
+      titleTrailing: _headerActions(context, canCreate: session.canWrite),
+      titleTrailingAlignment: CrossAxisAlignment.center,
       content: BlocBuilder<CompetitionListCubit, CompetitionListState>(
         builder: (context, state) => _content(
           context,
@@ -64,7 +66,28 @@ class CompetitionSwitcherSheet extends StatelessWidget {
           myUserId: session.user?.id,
         ),
       ),
-      primaryButton: _entryButtons(context, canCreate: session.canWrite),
+    );
+  }
+
+  Widget _headerActions(BuildContext context, {required bool canCreate}) {
+    return AdaptiveBarActionGroup(
+      actions: [_joinButton(context), if (canCreate) _createButton(context)],
+    );
+  }
+
+  Widget _joinButton(BuildContext context) {
+    return AdaptiveBarAction(
+      glyph: AdaptiveGlyph.scan,
+      semanticLabel: context.l10n.competitionsJoinShort,
+      onPressed: () => _close(context, const CompetitionJoinChoice()),
+    );
+  }
+
+  Widget _createButton(BuildContext context) {
+    return AdaptiveBarAction(
+      glyph: AdaptiveGlyph.add,
+      semanticLabel: context.l10n.competitionsCreateShort,
+      onPressed: () => _close(context, const CompetitionCreateChoice()),
     );
   }
 
@@ -135,33 +158,6 @@ class CompetitionSwitcherSheet extends StatelessWidget {
       onRename: actions.onRename,
       onLeave: actions.onLeave,
       onDelete: actions.onDelete,
-    );
-  }
-
-  Widget _entryButtons(BuildContext context, {required bool canCreate}) {
-    return Row(
-      children: [
-        Expanded(child: _joinButton(context)),
-        if (canCreate) ...[
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(child: _createButton(context)),
-        ],
-      ],
-    );
-  }
-
-  Widget _joinButton(BuildContext context) {
-    return AdaptiveButton(
-      label: context.l10n.competitionsJoinShort,
-      kind: AdaptiveButtonKind.tinted,
-      onPressed: () => _close(context, const CompetitionJoinChoice()),
-    );
-  }
-
-  Widget _createButton(BuildContext context) {
-    return AdaptiveButton(
-      label: context.l10n.competitionsCreateShort,
-      onPressed: () => _close(context, const CompetitionCreateChoice()),
     );
   }
 

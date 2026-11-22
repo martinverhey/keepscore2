@@ -170,11 +170,17 @@ same tag the leaderboard row wears — when it was last played, the three-dots
 `CompetitionActions`). The current one is marked by its accent fill
 and name alone, the way the leaderboard marks your own row: a `Current` tag beside `Owner` crowded the name line and only
 repeated what the styling says. Tapping it just closes the sheet, rather than
-returning a `CompetitionSwitchChoice` for the competition you are already in, then Join /
-Create side by side as the pinned primary button (Create only when
-`session.canWrite`) — Join tinted, Create filled, the same filled accent as
-the manage-players sheet's Add player, which is that sheet's only button: it
-has no Done, and closes by drag or barrier like any other sheet. The caption is `DateTime.lastPlayedLabel`
+returning a `CompetitionSwitchChoice` for the competition you are already in.
+**Join and Create are the title row's actions, not buttons at the bottom**:
+two `AdaptiveBarAction`s, `AdaptiveGlyph.scan` then `AdaptiveGlyph.add`
+(Create only when `session.canWrite`), in one `AdaptiveBarActionGroup` — a
+single glass capsule on iOS, two icon buttons elsewhere. Icons because iOS 26
+sheet corners and Material title rows both take one, and the scanner glyph
+says the camera opens first. `Sheet.titleTrailingAlignment` is `center` for
+them, since the default `baseline` suits only a text trailing like the team
+picker's Manage. They replaced a tinted Join beside a filled Create in the
+pinned button row, so the sheet has no pinned button at all; it
+has no Done either, and closes by drag or barrier like any other sheet. The caption is `DateTime.lastPlayedLabel`
 (`date_time.extension.dart`) off `CompetitionOverview.lastPlayedAt`: today,
 yesterday, `N days ago` inside a week, a date after that, and `Not played
 yet` for a competition with no matches. A row carries no invite button — the
@@ -482,9 +488,9 @@ write-capable surface, gated on `session.canWrite` from `AuthBloc` (passed
 down as `isRegistered`). Keep this list current when a gated surface is added
 or moved:
 
-- **Create competition** — the switcher sheet's Create button and
+- **Create competition** — the switcher sheet's `+` header action and
   `WelcomePage`'s Create button, each rendered only when `session.canWrite`;
-  Join is always there.
+  Join is always there (the switcher's is its scan header action).
 - **Add/manage players, owner settings** — `manage_players_sheet.dart` →
   `widgets/players.dart`, `isRegistered: session.canWrite`. **Every entry
   point *into* player management is a step stricter than that: owner-only,
@@ -2876,7 +2882,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 415 tests at time of writing
+flutter test                    # 422 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 dart run flutter_launcher_icons     # assets/icon/*.png into android/ web/ (not ios/)

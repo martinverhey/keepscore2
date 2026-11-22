@@ -241,7 +241,10 @@ void main() {
     await tester.tap(
       find.descendant(
         of: find.byType(CompetitionSwitcherSheet),
-        matching: find.text(l10n.competitionsJoinShort),
+        matching: find.byWidgetPredicate(
+          (widget) =>
+              widget is AdaptiveBarAction && widget.glyph == AdaptiveGlyph.scan,
+        ),
       ),
     );
     await tester.pumpAndSettle();
