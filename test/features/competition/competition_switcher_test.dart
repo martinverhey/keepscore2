@@ -13,6 +13,7 @@ import 'package:keepscore2/features/competition/domain/competition_repository.da
 import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_list_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/pages/competition_switcher_sheet.dart';
+import 'package:keepscore2/features/competition/presentation/widgets/competition_switcher_row.dart';
 import 'package:keepscore2/features/competition/presentation/pages/welcome.page.dart';
 import 'package:keepscore2/features/competition/presentation/widgets/competition_caption.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
@@ -24,12 +25,16 @@ class MockAuthRepository extends Mock implements AuthRepository {}
 
 class MockCompetitionRepository extends Mock implements CompetitionRepository {}
 
-CompetitionOverview _overview(String id, String name) => CompetitionOverview(
+CompetitionOverview _overview(
+  String id,
+  String name, {
+  String ownerId = 'someone-else',
+}) => CompetitionOverview(
   competition: Competition(
     id: id,
     joinCode: 'HDHS39',
     name: name,
-    ownerId: 'someone-else',
+    ownerId: ownerId,
     seasonLength: SeasonLength.monthly,
     timezone: 'Europe/Amsterdam',
     startingRating: 1000,
@@ -64,7 +69,7 @@ void main() {
     when(() => competitions.myCompetitions()).thenAnswer(
       (_) async => [
         _overview('c1', 'Office Table Tennis'),
-        _overview('c2', 'Padel Ladder'),
+        _overview('c2', 'Padel Ladder', ownerId: 'user-1'),
       ],
     );
     when(
@@ -144,13 +149,50 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(CompetitionSwitcherSheet), findsOneWidget);
     expect(find.text('Not played yet'), findsNWidgets(2));
-    expect(find.text('Current'), findsOneWidget);
 
     await tester.tap(find.text('Padel Ladder'));
     await tester.pumpAndSettle();
 
     expect(find.byType(CompetitionSwitcherSheet), findsNothing);
     expect(locationOf(router), Routes.leaderboard('c2'));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('tags the competitions the viewer owns', (tester) async {
+    await pumpPill(tester);
+
+    await tester.tap(find.byType(CompetitionCaption));
+    await tester.pumpAndSettle();
+
+    final ownedRow = find.ancestor(
+      of: find.text('Padel Ladder'),
+      matching: find.byType(CompetitionSwitcherRow),
+    );
+    expect(
+      find.descendant(of: ownedRow, matching: find.text('Owner')),
+      findsOneWidget,
+    );
+    expect(find.text('Owner'), findsOneWidget);
+  });
+
+  testWidgets('tapping the current competition only closes the sheet', (
+    tester,
+  ) async {
+    final router = await pumpPill(tester);
+    final before = locationOf(router);
+
+    await tester.tap(find.byType(CompetitionCaption));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(
+        of: find.byType(CompetitionSwitcherSheet),
+        matching: find.text('Office Table Tennis'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(CompetitionSwitcherSheet), findsNothing);
+    expect(locationOf(router), before);
     expect(tester.takeException(), isNull);
   });
 

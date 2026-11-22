@@ -196,9 +196,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get competitionCurrent => 'Current';
-
-  @override
   String get competitionPlayedToday => 'Played today';
 
   @override

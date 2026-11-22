@@ -73,7 +73,6 @@
   "@competitionMatches": {
     "placeholders": { "count": { "type": "int" } }
   },
-  "competitionCurrent": "Huidige",
   "competitionPlayedToday": "Vandaag gespeeld",
   "competitionPlayedYesterday": "Gisteren gespeeld",
   "competitionPlayedDaysAgo": "{count} dagen geleden gespeeld",

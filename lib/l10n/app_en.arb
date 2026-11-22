@@ -73,7 +73,6 @@
   "@competitionMatches": {
     "placeholders": { "count": { "type": "int" } }
   },
-  "competitionCurrent": "Current",
   "competitionPlayedToday": "Played today",
   "competitionPlayedYesterday": "Played yesterday",
   "competitionPlayedDaysAgo": "Played {count} days ago",

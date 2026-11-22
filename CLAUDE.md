@@ -156,8 +156,12 @@ that both lines take the tap, and that a subtitle lands under the caption.
 
 **The switcher is a sheet.** `showCompetitionSwitcherSheet`
 (`pages/competition_switcher_sheet.dart`): one `CompetitionSwitcherRow` per
-competition (name, the current one in accent with a `Current` tag behind it,
-when it was last played, the three-dots `CompetitionActions`), then Join /
+competition (name, a gold `Owner` tag behind it on the ones you own — the
+same tag the leaderboard row wears — when it was last played, the three-dots
+`CompetitionActions`). The current one is marked by its accent fill
+and name alone, the way the leaderboard marks your own row: a `Current` tag beside `Owner` crowded the name line and only
+repeated what the styling says. Tapping it just closes the sheet, rather than
+returning a `CompetitionSwitchChoice` for the competition you are already in, then Join /
 Create side by side as the pinned primary button (Create only when
 `session.canWrite`). The caption is `DateTime.lastPlayedLabel`
 (`date_time.extension.dart`) off `CompetitionOverview.lastPlayedAt`: today,

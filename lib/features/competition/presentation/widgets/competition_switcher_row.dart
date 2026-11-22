@@ -45,9 +45,6 @@ class CompetitionSwitcherRow extends StatelessWidget {
             color: isCurrent
                 ? accent.withValues(alpha: AppOpacity.selectedFill)
                 : AppColors.neutralSurface,
-            border: Border.all(
-              color: isCurrent ? accent : AppColors.transparent,
-            ),
           ),
           child: Row(
             children: [
@@ -82,13 +79,6 @@ class CompetitionSwitcherRow extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
         ),
-        if (isCurrent) ...[
-          const SizedBox(width: AppSpacing.xs),
-          Tag(
-            context.l10n.competitionCurrent,
-            color: AdaptiveColors.accent(context),
-          ),
-        ],
         if (isOwner) ...[
           const SizedBox(width: AppSpacing.xs),
           Tag(context.l10n.playersOwner, color: AppColors.gold),

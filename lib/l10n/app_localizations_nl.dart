@@ -197,9 +197,6 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
-  String get competitionCurrent => 'Huidige';
-
-  @override
   String get competitionPlayedToday => 'Vandaag gespeeld';
 
   @override

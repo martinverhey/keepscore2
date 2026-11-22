@@ -416,12 +416,6 @@ abstract class AppLocalizations {
   /// **'{count, plural, =0{No matches yet} =1{1 match} other{{count} matches}}'**
   String competitionMatches(int count);
 
-  /// No description provided for @competitionCurrent.
-  ///
-  /// In en, this message translates to:
-  /// **'Current'**
-  String get competitionCurrent;
-
   /// No description provided for @competitionPlayedToday.
   ///
   /// In en, this message translates to:
