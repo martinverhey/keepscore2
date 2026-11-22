@@ -6,10 +6,11 @@ extension PlayerListActive on List<Player> {
 }
 
 extension PlayerListByName on List<Player> {
-  List<Player> get byName => List<Player>.of(this)..sort(
-    (a, b) =>
-        a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase()),
-  );
+  List<Player> get byName => List<Player>.of(this)
+    ..sort(
+      (a, b) =>
+          a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase()),
+    );
 }
 
 extension PlayerListDisplayName on List<Player> {

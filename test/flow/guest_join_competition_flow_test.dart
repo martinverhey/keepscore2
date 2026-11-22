@@ -39,8 +39,6 @@ import 'package:keepscore2/features/player/domain/player.model.dart';
 import 'package:keepscore2/features/player/domain/player_repository.dart';
 import 'package:keepscore2/features/player/presentation/cubit/players_cubit.dart';
 import 'package:keepscore2/features/profile/domain/profile_repository.dart';
-import 'package:keepscore2/features/tournament/domain/tournament_repository.dart';
-import 'package:keepscore2/features/tournament/presentation/cubit/tournament_cubit.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
@@ -53,8 +51,6 @@ class MockCompetitionRepository extends Mock implements CompetitionRepository {}
 class MockPlayerRepository extends Mock implements PlayerRepository {}
 
 class MockMatchRepository extends Mock implements MatchRepository {}
-
-class MockTournamentRepository extends Mock implements TournamentRepository {}
 
 class MockLeaderboardRepository extends Mock implements LeaderboardRepository {}
 
@@ -77,16 +73,6 @@ void main() {
       final players = MockPlayerRepository();
       final matches = MockMatchRepository();
       final leaderboard = MockLeaderboardRepository();
-      final tournaments = MockTournamentRepository();
-
-      when(() => tournaments.all(any())).thenAnswer((_) async => []);
-      when(() => tournaments.brackets(any())).thenAnswer((_) async => {});
-      when(
-        () => tournaments.watchTournaments(any()),
-      ).thenAnswer((_) => const Stream.empty());
-      when(
-        () => tournaments.watchBracket(any()),
-      ).thenAnswer((_) => const Stream.empty());
 
       final authEvents = StreamController<AuthUser?>.broadcast();
       addTearDown(authEvents.close);
@@ -288,7 +274,6 @@ void main() {
         authRepository: auth,
         playerRepository: players,
         matchRepository: matches,
-        tournamentRepository: tournaments,
         leaderboardRepository: leaderboard,
         gameTypeFilterCubit: gameTypeFilterCubit,
       );
@@ -397,7 +382,6 @@ GoRouter _buildRouter(
   required AuthRepository authRepository,
   required PlayerRepository playerRepository,
   required MatchRepository matchRepository,
-  required TournamentRepository tournamentRepository,
   required LeaderboardRepository leaderboardRepository,
   required GameTypeFilterCubit gameTypeFilterCubit,
 }) {
@@ -474,22 +458,12 @@ GoRouter _buildRouter(
                     routes: [
                       GoRoute(
                         path: 'matches',
-                        builder: (context, state) => MultiBlocProvider(
-                          providers: [
-                            BlocProvider(
-                              create: (_) => MatchListCubit(
-                                matchRepository,
-                                gameTypeFilterCubit,
-                                state.pathParameters['id']!,
-                              ),
-                            ),
-                            BlocProvider(
-                              create: (_) => TournamentCubit(
-                                tournamentRepository,
-                                state.pathParameters['id']!,
-                              )..load(),
-                            ),
-                          ],
+                        builder: (context, state) => BlocProvider(
+                          create: (_) => MatchListCubit(
+                            matchRepository,
+                            gameTypeFilterCubit,
+                            state.pathParameters['id']!,
+                          ),
                           child: MatchesPage(
                             competitionId: state.pathParameters['id']!,
                           ),

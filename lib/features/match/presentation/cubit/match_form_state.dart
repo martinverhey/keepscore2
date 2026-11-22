@@ -63,8 +63,7 @@ class MatchFormReady extends MatchFormState {
 
   bool isPrePicked(String playerId) => prePicked.contains(playerId);
 
-  int get prePickedMatchCount =>
-      prePicked.length * (prePicked.length - 1) ~/ 2;
+  int get prePickedMatchCount => prePicked.length * (prePicked.length - 1) ~/ 2;
 
   bool get canCreatePrePicked => prePicked.length >= 2 && !busy;
 

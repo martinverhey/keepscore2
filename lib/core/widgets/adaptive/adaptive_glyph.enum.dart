@@ -20,7 +20,6 @@ enum AdaptiveGlyph {
   star,
   add,
   medal,
-  trophy,
   fire,
   ice,
   light,

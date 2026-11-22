@@ -1,48 +1,26 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/features/match/domain/match_entry.model.dart';
 import 'package:keepscore2/features/match/presentation/widgets/match_day_group.dart';
-import 'package:keepscore2/features/match/presentation/widgets/match_feed_entry.dart';
-import 'package:keepscore2/features/tournament/domain/bracket.model.dart';
-import 'package:keepscore2/features/tournament/domain/tournament.model.dart';
-import 'package:keepscore2/features/tournament/domain/tournament_run.model.dart';
 
-MatchFeedMatch matchAt(String id, DateTime playedAt) => MatchFeedMatch(
-  MatchEntry(
-    id: id,
-    competitionId: 'c1',
-    seasonId: 's1',
-    playedAt: playedAt,
-    teamAScore: 11,
-    teamBScore: 9,
-    teamARating: 1000,
-    teamBRating: 1000,
-    teamA: const [],
-    teamB: const [],
-  ),
+MatchEntry matchAt(String id, DateTime playedAt) => MatchEntry(
+  id: id,
+  competitionId: 'c1',
+  seasonId: 's1',
+  playedAt: playedAt,
+  teamAScore: 11,
+  teamBScore: 9,
+  teamARating: 1000,
+  teamBRating: 1000,
+  teamA: const [],
+  teamB: const [],
 );
 
-MatchFeedTournament tournamentAt(String id, DateTime completedAt) =>
-    MatchFeedTournament(
-      TournamentRun(
-        tournament: Tournament(
-          id: id,
-          competitionId: 'c1',
-          seasonId: 's1',
-          size: 4,
-          status: TournamentStatus.completed,
-          createdAt: completedAt.subtract(const Duration(days: 1)),
-          completedAt: completedAt,
-        ),
-        bracket: const Bracket([]),
-      ),
-    );
-
 List<String> idsOf(MatchDayGroup group) =>
-    group.entries.map((entry) => entry.id).toList();
+    group.matches.map((match) => match.id).toList();
 
 void main() {
   group('groupByDay', () {
-    test('keeps entries from one calendar day together', () {
+    test('keeps matches from one calendar day together', () {
       final groups = groupByDay([
         matchAt('a', DateTime(2026, 8, 11, 21, 30)),
         matchAt('b', DateTime(2026, 8, 11, 9, 5)),
@@ -104,30 +82,7 @@ void main() {
       ]);
     });
 
-    test('a finished tournament lands between the matches it finished among', () {
-      final groups = groupByDay([
-        matchAt('a', DateTime(2026, 8, 11, 20)),
-        matchAt('b', DateTime(2026, 8, 11, 9)),
-        tournamentAt('t1', DateTime(2026, 8, 11, 15)),
-      ]);
-
-      expect(idsOf(groups.single), ['a', 't1', 'b']);
-    });
-
-    test('a tournament finished on a day of its own gets that day', () {
-      final groups = groupByDay([
-        matchAt('a', DateTime(2026, 8, 11, 20)),
-        tournamentAt('t1', DateTime(2026, 8, 10, 15)),
-      ]);
-
-      expect(groups.map((group) => group.day), [
-        DateTime(2026, 8, 11),
-        DateTime(2026, 8, 10),
-      ]);
-      expect(idsOf(groups.last), ['t1']);
-    });
-
-    test('has nothing to group when there are no entries', () {
+    test('has nothing to group when there are no matches', () {
       expect(groupByDay(const []), isEmpty);
     });
   });

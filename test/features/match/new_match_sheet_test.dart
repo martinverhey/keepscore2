@@ -542,7 +542,10 @@ void main() {
     final blocs = _blocs(myPlayerId: 'p2');
 
     await tester.pumpWidget(
-      _app(blocs: blocs, home: const Material(child: NewMatchSheet())),
+      _app(
+        blocs: blocs,
+        home: const Material(child: NewMatchSheet()),
+      ),
     );
     await tester.pumpAndSettle();
     await _pickPrePickMode(tester);
@@ -565,9 +568,7 @@ void main() {
   ) async {
     final blocs = _blocs();
 
-    await tester.pumpWidget(
-      _app(blocs: blocs, home: _sheetOpener()),
-    );
+    await tester.pumpWidget(_app(blocs: blocs, home: _sheetOpener()));
     await tester.pumpAndSettle();
     await _openSheet(tester);
     await _pickPrePickMode(tester);

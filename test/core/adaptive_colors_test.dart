@@ -44,17 +44,17 @@ void main() {
     for (final cupertino in [false, true]) {
       AppPlatform.debugOverrideCupertino = cupertino;
 
-      expect(
-        await resolvedUnder(tester, Brightness.light),
-        [AppColors.seed, AppColors.teamA, AppColors.teamB],
-        reason: 'useCupertino=$cupertino',
-      );
+      expect(await resolvedUnder(tester, Brightness.light), [
+        AppColors.seed,
+        AppColors.teamA,
+        AppColors.teamB,
+      ], reason: 'useCupertino=$cupertino');
 
-      expect(
-        await resolvedUnder(tester, Brightness.dark),
-        [AppColors.seedOnDark, AppColors.teamAOnDark, AppColors.teamBOnDark],
-        reason: 'useCupertino=$cupertino',
-      );
+      expect(await resolvedUnder(tester, Brightness.dark), [
+        AppColors.seedOnDark,
+        AppColors.teamAOnDark,
+        AppColors.teamBOnDark,
+      ], reason: 'useCupertino=$cupertino');
     }
   });
 

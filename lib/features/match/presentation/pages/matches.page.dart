@@ -18,11 +18,6 @@ import '../../../auth/presentation/widgets/guest_notice.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
 import '../../../competition/presentation/widgets/competition_caption.dart';
 import '../../../player/presentation/cubit/players_cubit.dart';
-import '../../../tournament/domain/tournament_run.model.dart';
-import '../../../tournament/presentation/cubit/tournament_cubit.dart';
-import '../../../tournament/presentation/pages/tournament_bracket_sheet.dart';
-import '../../../tournament/presentation/widgets/tournament_button.dart';
-import '../../../tournament/presentation/widgets/tournament_card.dart';
 import '../../domain/game_type.enum.dart';
 import '../../domain/match_entry.model.dart';
 import '../../domain/planned_match.model.dart';
@@ -33,7 +28,6 @@ import '../widgets/day_header.dart';
 import '../widgets/game_type_filter_button.dart';
 import '../widgets/match_card.dart';
 import '../widgets/match_day_group.dart';
-import '../widgets/match_feed_entry.dart';
 import '../widgets/planned_match_card.dart';
 import '../pages/match_detail_sheet.dart';
 import '../pages/new_match_sheet.dart';
@@ -90,11 +84,6 @@ class _MatchesPageState extends State<MatchesPage> {
     final isRegistered = session.canWrite;
     final myPlayerId = competitionState.myPlayerId;
     final bottomInset = _bottomInset(context);
-    final tournamentState = context.watch<TournamentCubit>().state;
-    final (running, finished) = switch (tournamentState) {
-      TournamentReady ready => (ready.running, ready.finished),
-      _ => (null, const <TournamentRun>[]),
-    };
     final prePicked = _prePicked(context, isRegistered: isRegistered);
 
     setPageTitle(
@@ -112,15 +101,8 @@ class _MatchesPageState extends State<MatchesPage> {
         titleCaption: const CompetitionCaption(),
         onTitleTap: () => openCompetitionSwitcher(context),
         onRefresh: _refresh,
-        trailing: _trailing(
-          context,
-          tournamentState,
-          competitionId: competitionId,
-          isRegistered: isRegistered,
-        ),
+        trailing: _gameTypeFilterButton(context),
         slivers: [
-          if (running case final run?)
-            SliverToBoxAdapter(child: _runningTournament(context, run)),
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(
               AppSpacing.md,
@@ -137,7 +119,6 @@ class _MatchesPageState extends State<MatchesPage> {
                 myPlayerId: myPlayerId,
                 bottomInset: bottomInset,
                 prePicked: prePicked,
-                finished: finished,
               ),
             ),
           ),
@@ -228,48 +209,6 @@ class _MatchesPageState extends State<MatchesPage> {
     );
   }
 
-  Widget _trailing(
-    BuildContext context,
-    TournamentState tournamentState, {
-    required String competitionId,
-    required bool isRegistered,
-  }) {
-    return AdaptiveBarActionGroup(
-      actions: [
-        if (isRegistered || tournamentState is TournamentReady)
-          TournamentButton(
-            competitionId: competitionId,
-            state: tournamentState,
-            isRegistered: isRegistered,
-          ),
-        _gameTypeFilterButton(context),
-      ],
-    );
-  }
-
-  Widget _runningTournament(BuildContext context, TournamentRun run) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.md,
-        AppSpacing.sm,
-        AppSpacing.md,
-        0,
-      ),
-      child: _tournamentCard(context, run),
-    );
-  }
-
-  Widget _tournamentCard(BuildContext context, TournamentRun run) {
-    return TournamentCard(
-      run: run,
-      onOpen: () => showTournamentBracketSheet(
-        context,
-        cubit: context.read<TournamentCubit>(),
-        tournamentId: run.id,
-      ),
-    );
-  }
-
   Widget _gameTypeFilterButton(BuildContext context) {
     return BlocBuilder<MatchListCubit, MatchListState>(
       builder: (context, state) => GameTypeFilterButton(
@@ -288,7 +227,6 @@ class _MatchesPageState extends State<MatchesPage> {
     required String? myPlayerId,
     required double bottomInset,
     required List<_PrePickedMatch> prePicked,
-    required List<TournamentRun> finished,
   }) {
     final cubit = context.read<MatchListCubit>();
 
@@ -310,7 +248,6 @@ class _MatchesPageState extends State<MatchesPage> {
         myPlayerId: myPlayerId,
         bottomInset: bottomInset,
         prePicked: prePicked,
-        finished: finished,
       ),
     };
   }
@@ -324,7 +261,6 @@ class _MatchesPageState extends State<MatchesPage> {
     required String? myPlayerId,
     required double bottomInset,
     required List<_PrePickedMatch> prePicked,
-    required List<TournamentRun> finished,
   }) {
     return SliverMainAxisGroup(
       slivers: [
@@ -347,7 +283,6 @@ class _MatchesPageState extends State<MatchesPage> {
           myPlayerId: myPlayerId,
           bottomInset: bottomInset,
           hasPrePicked: prePicked.isNotEmpty,
-          finished: finished,
         ),
         if (state.hasMore)
           SliverToBoxAdapter(child: _loadMoreButton(context, state, cubit)),
@@ -422,16 +357,10 @@ class _MatchesPageState extends State<MatchesPage> {
     required String? myPlayerId,
     required double bottomInset,
     required bool hasPrePicked,
-    required List<TournamentRun> finished,
   }) {
     if (state.busy) return _loader();
 
-    final entries = [
-      for (final match in state.matches) MatchFeedMatch(match),
-      for (final run in finished) MatchFeedTournament(run),
-    ];
-
-    if (entries.isEmpty) {
+    if (state.matches.isEmpty) {
       _rememberDays(const []);
       if (hasPrePicked) {
         return const SliverToBoxAdapter(child: SizedBox.shrink());
@@ -446,7 +375,7 @@ class _MatchesPageState extends State<MatchesPage> {
       );
     }
 
-    final groups = groupByDay(entries);
+    final groups = groupByDay(state.matches);
     _rememberDays([for (final group in groups) group.day]);
 
     return SliverMainAxisGroup(
@@ -473,19 +402,13 @@ class _MatchesPageState extends State<MatchesPage> {
         ..._dayHeaderSlivers(context, group.day),
         SliverList.list(
           children: [
-            for (final entry in group.entries)
-              switch (entry) {
-                MatchFeedMatch(:final match) => _matchCard(
-                  context,
-                  match,
-                  competitionId: competitionId,
-                  myPlayerId: myPlayerId,
-                ),
-                MatchFeedTournament(:final run) => _finishedTournament(
-                  context,
-                  run,
-                ),
-              },
+            for (final match in group.matches)
+              _matchCard(
+                context,
+                match,
+                competitionId: competitionId,
+                myPlayerId: myPlayerId,
+              ),
           ],
         ),
       ],
@@ -527,13 +450,6 @@ class _MatchesPageState extends State<MatchesPage> {
         matchId: match.id,
         myPlayerId: myPlayerId,
       ),
-    );
-  }
-
-  Widget _finishedTournament(BuildContext context, TournamentRun run) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: _tournamentCard(context, run),
     );
   }
 

@@ -15,7 +15,6 @@ import '../../../../core/widgets/sheet.dart';
 import '../../../../core/widgets/stacked_streak_badge.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../../core/widgets/streak_badge.dart';
-import '../../../../core/widgets/trophy_chip.dart';
 import '../../../../core/widgets/swipe_navigator.dart';
 import '../../../../core/widgets/today_delta_badge.dart';
 import '../../../competition/domain/competition.model.dart';
@@ -185,13 +184,9 @@ class _ProfileSheetState extends State<ProfileSheet> {
   }
 
   List<Widget> _awardChips(ProfileOverviewReady state) {
-    final trophies = state.leaderboard?.trophies ?? 0;
     final tally = state.medals;
 
-    return [
-      if (trophies > 0) TrophyChip(count: trophies),
-      if (tally != null) ..._medalChips(tally),
-    ];
+    return [if (tally != null) ..._medalChips(tally)];
   }
 
   List<Widget> _medalChips(Medals medals) {
@@ -541,8 +536,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        for (final games in const [5, 10, 25, 50])
-          _streakMilestoneItem(games),
+        for (final games in const [5, 10, 25, 50]) _streakMilestoneItem(games),
       ],
     );
   }

@@ -9,11 +9,7 @@ import 'adaptive/adaptive.dart';
 class StreakBadge extends StatelessWidget {
   static const _overlappedGlyphWidth = 0.85;
 
-  const StreakBadge({
-    super.key,
-    required this.type,
-    required this.count,
-  });
+  const StreakBadge({super.key, required this.type, required this.count});
 
   final StreakType type;
   final int count;

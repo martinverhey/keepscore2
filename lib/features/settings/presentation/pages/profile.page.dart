@@ -28,7 +28,10 @@ class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     setPageTitle(context, context.l10n.profilePageTitle);
-    return AdaptiveScaffold(title: context.l10n.profilePageTitle, body: _profile(context));
+    return AdaptiveScaffold(
+      title: context.l10n.profilePageTitle,
+      body: _profile(context),
+    );
   }
 
   Widget _profile(BuildContext context) {
@@ -54,7 +57,8 @@ class ProfilePage extends StatelessWidget {
             AdaptiveButton(
               label: context.l10n.authSignOut,
               kind: AdaptiveButtonKind.plain,
-              onPressed: () => context.read<AuthBloc>().add(const AuthSignOutRequested()),
+              onPressed: () =>
+                  context.read<AuthBloc>().add(const AuthSignOutRequested()),
             ),
           ],
         ),
@@ -63,7 +67,9 @@ class ProfilePage extends StatelessWidget {
   }
 
   Widget _identity(BuildContext context) {
-    final myPlayerId = context.select<CompetitionCubit, String?>((cubit) => cubit.state.myPlayerId);
+    final myPlayerId = context.select<CompetitionCubit, String?>(
+      (cubit) => cubit.state.myPlayerId,
+    );
 
     return BlocBuilder<PlayersCubit, PlayersState>(
       builder: (context, state) => switch (state) {
@@ -77,13 +83,22 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _nameBlock(BuildContext context, PlayersReady state, String playerId, String name) {
+  Widget _nameBlock(
+    BuildContext context,
+    PlayersReady state,
+    String playerId,
+    String name,
+  ) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         InitialsCircle(displayName: name, size: _avatarSize),
         const SizedBox(height: AppSpacing.md),
-        Text(name, textAlign: TextAlign.center, style: AppTypography.headlineMedium),
+        Text(
+          name,
+          textAlign: TextAlign.center,
+          style: AppTypography.headlineMedium,
+        ),
         const SizedBox(height: AppSpacing.sm),
         AdaptiveButton(
           label: context.l10n.profileChangeName,
@@ -98,7 +113,11 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  Future<void> _changeName(BuildContext context, String playerId, String currentName) async {
+  Future<void> _changeName(
+    BuildContext context,
+    String playerId,
+    String currentName,
+  ) async {
     final cubit = context.read<PlayersCubit>();
 
     final name = await showPlayerNameSheet(

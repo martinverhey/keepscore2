@@ -11,7 +11,6 @@ import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/medal_chip.dart';
 import '../../../../core/widgets/sparkline.dart';
 import '../../../../core/widgets/streak_badge.dart';
-import '../../../../core/widgets/trophy_chip.dart';
 import '../../../competition/domain/competition.model.dart';
 import '../../../leaderboard/domain/leaderboard.model.dart';
 import '../../../leaderboard/domain/medals.model.dart';
@@ -169,11 +168,9 @@ class ProfileSection extends StatelessWidget {
   }
 
   List<Widget> _awardChips() {
-    final trophies = leaderboard?.trophies ?? 0;
     final tally = medals;
 
     return [
-      if (trophies > 0) TrophyChip(count: trophies),
       if (tally != null) ...[
         if (tally.gold > 0) MedalChip(color: AppColors.gold, count: tally.gold),
         if (tally.silver > 0)

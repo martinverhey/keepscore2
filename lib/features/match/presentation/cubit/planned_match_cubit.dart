@@ -65,10 +65,7 @@ List<PlannedMatch> _roundRobin(List<String> playerIds) {
   return [
     for (var first = 0; first < playerIds.length; first++)
       for (var second = first + 1; second < playerIds.length; second++)
-        PlannedMatch(
-          playerAId: playerIds[first],
-          playerBId: playerIds[second],
-        ),
+        PlannedMatch(playerAId: playerIds[first], playerBId: playerIds[second]),
   ];
 }
 

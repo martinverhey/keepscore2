@@ -24,7 +24,6 @@ class Leaderboard extends Equatable {
     this.streakType = StreakType.none,
     this.streakCount = 0,
     this.todayDelta = 0,
-    this.trophies = 0,
     this.medal,
   });
 
@@ -44,7 +43,6 @@ class Leaderboard extends Equatable {
     streakType: StreakType.fromWire(map['streak_type'] as String? ?? 'none'),
     streakCount: (map['streak_count'] as num?)?.toInt() ?? 0,
     todayDelta: _toDouble(map['today_delta']),
-    trophies: (map['trophies'] as num?)?.toInt() ?? 0,
   );
 
   factory Leaderboard.fromSeasonLeaderboard(SeasonLeaderboard leaderboard) =>
@@ -101,7 +99,6 @@ class Leaderboard extends Equatable {
   final StreakType streakType;
   final int streakCount;
   final double todayDelta;
-  final int trophies;
   final Medal? medal;
 
   double get winRate => played == 0 ? 0 : wins / played;
@@ -123,7 +120,6 @@ class Leaderboard extends Equatable {
     streakType,
     streakCount,
     todayDelta,
-    trophies,
     medal,
   ];
 }
