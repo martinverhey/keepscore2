@@ -63,7 +63,7 @@ class Sidebar extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _brand(context, competition?.name),
+          _brand(context),
           const SizedBox(height: AppSpacing.lg),
           if (competition != null && isRegistered) ...[
             AdaptiveButton(
@@ -99,39 +99,18 @@ class Sidebar extends StatelessWidget {
     );
   }
 
-  Widget _brand(BuildContext context, String? competitionName) {
+  Widget _brand(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.sm,
         vertical: AppSpacing.xs,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            context.l10n.appTitle,
-            style: AppTypography.bodyMedium.copyWith(
-              fontFamily: AppTypography.brandFontFamily,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          ?_brandCompetitionName(competitionName),
-        ],
-      ),
-    );
-  }
-
-  Widget? _brandCompetitionName(String? competitionName) {
-    if (competitionName == null) return null;
-
-    return Padding(
-      padding: const EdgeInsets.only(top: 2),
       child: Text(
-        competitionName,
-        style: AppTypography.captionSmall.copyWith(fontWeight: FontWeight.w600),
-        overflow: TextOverflow.ellipsis,
-        maxLines: 1,
+        context.l10n.appTitle,
+        style: AppTypography.bodyMedium.copyWith(
+          fontFamily: AppTypography.brandFontFamily,
+          fontWeight: FontWeight.w800,
+        ),
       ),
     );
   }

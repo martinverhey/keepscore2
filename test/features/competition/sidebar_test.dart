@@ -132,7 +132,7 @@ void main() {
         tester.element(find.text('body content')),
       );
 
-      expect(find.text('Office Table Tennis'), findsOneWidget);
+      expect(find.text('Office Table Tennis'), findsNothing);
       expect(find.text(l10n.leaderboardTitle), findsOneWidget);
       expect(find.text(l10n.matchesTitle), findsOneWidget);
       expect(
@@ -515,5 +515,46 @@ void main() {
     }
 
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('wide web starts the title on the content column\'s text edge', (
+    tester,
+  ) async {
+    useWideWebViewport(tester);
+    AppPlatform.debugOverrideCupertino = false;
+    addTearDown(() => AppPlatform.debugOverrideCupertino = null);
+
+    await tester.pumpWidget(
+      wrap(
+        Sidebar(
+          current: SidebarSection.leaderboard,
+          onSelectSection: (_) {},
+          child: const AdaptiveScaffold(
+            title: 'Page title',
+            body: Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                child: Text('body content'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    const paneStart = 232.0;
+    const paneWidth = 1440.0 - paneStart;
+    const columnStart = paneStart + (paneWidth - kContentMaxWidth) / 2;
+
+    expect(
+      tester.getRect(find.text('Page title')).left,
+      columnStart + AppSpacing.md,
+    );
+    expect(
+      tester.getRect(find.text('body content')).left,
+      columnStart + AppSpacing.md,
+    );
   });
 }

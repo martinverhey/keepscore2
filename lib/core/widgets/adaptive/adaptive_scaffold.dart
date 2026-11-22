@@ -215,7 +215,8 @@ class AdaptiveScaffold extends StatelessWidget {
       null => _bareBar(gutter),
       final title when AppPlatform.useWideWeb(context) => SliverAppBar(
         pinned: true,
-        centerTitle: true,
+        centerTitle: false,
+        titleSpacing: leading == null ? gutter + AppSpacing.md : null,
         toolbarHeight: kToolbarHeight + AppSpacing.md,
         title: _materialTitle(title),
         leading: _leading(gutter),

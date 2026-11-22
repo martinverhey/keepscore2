@@ -129,6 +129,15 @@ subtitle slot of its own** — Flutter 3.47's `AppBar`/`SliverAppBar` and
   the same tap. `SliverAppBar.large` mounts that title twice, expanded and
   collapsed, so a test finds two `CompetitionCaption`s and taps
   `.hitTestable().first`. The collapsed toolbar's 64px holds both lines.
+  **On wide web the title is start-aligned on the content column's text
+  edge**, not centred: `centerTitle: false` plus `titleSpacing: gutter +
+  AppSpacing.md`, so it lines up with the cards the way the actions line up
+  with the column's right edge (a page with its own `leading` keeps the
+  default spacing, since `leadingWidth` already absorbed the gutter). Centred,
+  the start-aligned caption hung off the title's left edge and the block
+  lined up with nothing. The sidebar's brand block carries the app name only
+  — it used to repeat the competition name the caption already shows.
+  `sidebar_test.dart` pins the title's left edge.
 - **Cupertino without glass** (iOS under Increase Contrast, macOS): the
   nav bar's large title cannot take a second line and still collapse, so the
   caption falls back to a tappable `PinnedHeaderSliver` row on the page
