@@ -419,14 +419,13 @@ refreshes the list when either sheet closes — realtime does it.
   rename an *unclaimed* player and their own row, and may deactivate or
   restore anyone; renaming a row somebody has claimed is that person's alone,
   even for the owner. `Players._canRename`/`_canRemove` are the UI half —
-  `PlayerRow` renders one icon button per action it is allowed, so a claimed
-  player's row simply carries no rename button for the owner while still
-  carrying the remove one. The row splits them the way the competition cards
-  do: a compact rename directly behind the name (and behind its
-  Owner/Unclaimed tags, which qualify the name), remove or restore at the
-  row's end. `_nameRow` is `MainAxisSize.min` for that — inside `_identity`'s
-  `Flexible` it shrink-wraps, so the rename button hugs a short name while a
-  long one still ellipsises against it.
+  `PlayerRow` puts every action it is allowed (Rename, then Remove or Add
+  back) in one three-dots `AdaptiveMenuButton` at the row's end, the same
+  menu `CompetitionSwitcherRow` carries, so a claimed player's menu simply
+  has no Rename for the owner while still offering Remove, and a row with
+  no allowed action renders no button. The viewer's own row wears the
+  switcher's current-row look: accent `AppOpacity.selectedFill` behind an
+  accent name.
   Enforced by the `players_guard_rename` trigger
   (`schema/30_triggers/players_guard_rename.sql`), **not** by
   RLS: `players_update_owner_or_self` still admits the owner's UPDATE, since

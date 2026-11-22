@@ -29,40 +29,43 @@ class PlayerRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.sm,
-        ),
-        decoration: BoxDecoration(
-          borderRadius: AppRadius.card,
-          color: AppColors.neutralSurface,
-        ),
-        child: Row(
-          children: [
-            Expanded(child: _identity(context)),
-            if (_showsRestore)
-              _restoreButton(context)
-            else if (canRemove)
-              _removeButton(context),
-          ],
+      child: Semantics(
+        selected: isMe,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.md,
+            AppSpacing.sm,
+            AppSpacing.xs,
+            AppSpacing.sm,
+          ),
+          decoration: BoxDecoration(
+            borderRadius: AppRadius.card,
+            color: _fill(context),
+          ),
+          child: Row(
+            children: [
+              Expanded(child: _nameRow(context)),
+              if (_menuItems(context) case final items when items.isNotEmpty)
+                AdaptiveMenuButton(
+                  semanticLabel: context.l10n.commonMoreActions,
+                  items: items,
+                ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _identity(BuildContext context) {
-    return Row(
-      children: [
-        Flexible(child: _nameRow(context)),
-        if (canRename) _renameButton(context),
-      ],
-    );
+  Color _fill(BuildContext context) {
+    if (!isMe) return AppColors.neutralSurface;
+    return AdaptiveColors.accent(
+      context,
+    ).withValues(alpha: AppOpacity.selectedFill);
   }
 
   Widget _nameRow(BuildContext context) {
     return Row(
-      mainAxisSize: MainAxisSize.min,
       children: [
         Flexible(
           child: Text(
@@ -89,32 +92,30 @@ class PlayerRow extends StatelessWidget {
     return null;
   }
 
-  Widget _renameButton(BuildContext context) {
-    return AdaptiveIconButton(
-      glyph: AdaptiveGlyph.rename,
-      semanticLabel: context.l10n.playersRename,
-      compact: true,
-      onPressed: () => _rename(context),
-    );
-  }
-
   bool get _showsRestore => !player.isActive && (canRename || canRemove);
 
-  Widget _restoreButton(BuildContext context) {
-    return AdaptiveIconButton(
-      glyph: AdaptiveGlyph.restore,
-      semanticLabel: context.l10n.playersRestore,
-      onPressed: () => _restore(context),
-    );
-  }
-
-  Widget _removeButton(BuildContext context) {
-    return AdaptiveIconButton(
-      glyph: AdaptiveGlyph.delete,
-      semanticLabel: context.l10n.playersRemove,
-      destructive: true,
-      onPressed: () => _remove(context),
-    );
+  List<AdaptiveMenuItem> _menuItems(BuildContext context) {
+    return [
+      if (canRename)
+        AdaptiveMenuItem(
+          label: context.l10n.playersRename,
+          glyph: AdaptiveGlyph.rename,
+          onSelected: () => _rename(context),
+        ),
+      if (_showsRestore)
+        AdaptiveMenuItem(
+          label: context.l10n.playersRestore,
+          glyph: AdaptiveGlyph.restore,
+          onSelected: () => _restore(context),
+        )
+      else if (canRemove)
+        AdaptiveMenuItem(
+          label: context.l10n.playersRemove,
+          glyph: AdaptiveGlyph.delete,
+          destructive: true,
+          onSelected: () => _remove(context),
+        ),
+    ];
   }
 
   Future<void> _restore(BuildContext context) async {

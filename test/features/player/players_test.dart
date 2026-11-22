@@ -74,26 +74,45 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Finder rowAction(String displayName, String tooltip) {
+  Future<List<String>> rowActions(WidgetTester tester, String name) async {
     final row = find.ancestor(
-      of: find.text(displayName),
+      of: find.text(name),
       matching: find.byType(PlayerRow),
     );
-    return find.descendant(of: row, matching: find.byTooltip(tooltip));
+    final more = find.descendant(
+      of: row,
+      matching: find.byTooltip('More actions'),
+    );
+    if (more.evaluate().isEmpty) return const [];
+
+    await tester.tap(more);
+    await tester.pumpAndSettle();
+    final labels = [
+      for (final label in const [
+        'Rename',
+        'Add back',
+        'Remove from player list',
+      ])
+        if (find.text(label).evaluate().isNotEmpty) label,
+    ];
+    await tester.tapAt(Offset.zero);
+    await tester.pumpAndSettle();
+    return labels;
   }
 
   testWidgets('the owner may rename a placeholder', (tester) async {
     await pumpPlayers(tester, myUserId: 'owner-1');
 
-    expect(rowAction('Tester1', 'Rename'), findsOneWidget);
-    expect(rowAction('Tester1', 'Remove from player list'), findsOneWidget);
+    expect(await rowActions(tester, 'Tester1'), [
+      'Rename',
+      'Remove from player list',
+    ]);
   });
 
   testWidgets('the owner may rename their own player', (tester) async {
     await pumpPlayers(tester, myUserId: 'owner-1');
 
-    expect(rowAction('Henkie', 'Rename'), findsOneWidget);
-    expect(rowAction('Henkie', 'Remove from player list'), findsNothing);
+    expect(await rowActions(tester, 'Henkie'), ['Rename']);
   });
 
   testWidgets('the owner may remove but not rename a claimed player', (
@@ -101,8 +120,7 @@ void main() {
   ) async {
     await pumpPlayers(tester, myUserId: 'owner-1');
 
-    expect(rowAction('Tester10', 'Rename'), findsNothing);
-    expect(rowAction('Tester10', 'Remove from player list'), findsOneWidget);
+    expect(await rowActions(tester, 'Tester10'), ['Remove from player list']);
   });
 
   testWidgets('a member reaches their own player and nobody else', (
@@ -110,8 +128,24 @@ void main() {
   ) async {
     await pumpPlayers(tester, myUserId: 'guest-2');
 
-    expect(rowAction('Tester10', 'Rename'), findsOneWidget);
-    expect(find.byTooltip('Rename'), findsOneWidget);
-    expect(find.byTooltip('Remove from player list'), findsNothing);
+    expect(await rowActions(tester, 'Tester10'), ['Rename']);
+    expect(find.byTooltip('More actions'), findsOneWidget);
+  });
+
+  testWidgets('marks the viewer\'s own row with the selected fill', (
+    tester,
+  ) async {
+    await pumpPlayers(tester, myUserId: 'guest-2');
+
+    Color? fillOf(String name) {
+      final container = tester.widget<Container>(
+        find
+            .ancestor(of: find.text(name), matching: find.byType(Container))
+            .first,
+      );
+      return (container.decoration! as BoxDecoration).color;
+    }
+
+    expect(fillOf('Tester10'), isNot(fillOf('Tester1')));
   });
 }
