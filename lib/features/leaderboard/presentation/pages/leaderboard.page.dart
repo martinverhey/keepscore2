@@ -1,8 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../../app/router/app_router.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/extensions/competition.extension.dart';
 import '../../../../core/extensions/player_list.extension.dart';
@@ -16,6 +14,7 @@ import '../../../competition/presentation/widgets/profile_button.dart';
 import '../../../competition/presentation/widgets/competition_caption.dart';
 import '../../../competition/presentation/pages/invite_sheet.dart';
 import '../../../player/presentation/cubit/players_cubit.dart';
+import '../../../player/presentation/pages/manage_players_sheet.dart';
 import '../../../profile/presentation/widgets/profile_section.dart';
 import '../../domain/leaderboard.model.dart';
 import '../cubit/leaderboard_cubit.dart';
@@ -193,7 +192,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
           myPlayerId: myPlayerId,
           isOwner: isOwner,
           onManagePlayers: () =>
-              context.push<Object?>(Routes.players(competitionId)),
+              showManagePlayersSheet(context, competitionId: competitionId),
         ),
       ],
     );

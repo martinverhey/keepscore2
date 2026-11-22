@@ -288,12 +288,7 @@ void main() {
         ],
       );
 
-      await tester.tap(
-        find.descendant(
-          of: find.byType(ManagePlayersSheet),
-          matching: find.text('Done'),
-        ),
-      );
+      Navigator.of(tester.element(find.byType(ManagePlayersSheet))).pop();
       await tester.pumpAndSettle();
 
       expect(find.byType(ManagePlayersSheet), findsNothing);

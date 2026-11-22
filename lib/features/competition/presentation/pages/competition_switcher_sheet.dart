@@ -161,7 +161,6 @@ class CompetitionSwitcherSheet extends StatelessWidget {
   Widget _createButton(BuildContext context) {
     return AdaptiveButton(
       label: context.l10n.competitionsCreateShort,
-      kind: AdaptiveButtonKind.tinted,
       onPressed: () => _close(context, const CompetitionCreateChoice()),
     );
   }

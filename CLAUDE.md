@@ -172,7 +172,9 @@ and name alone, the way the leaderboard marks your own row: a `Current` tag besi
 repeated what the styling says. Tapping it just closes the sheet, rather than
 returning a `CompetitionSwitchChoice` for the competition you are already in, then Join /
 Create side by side as the pinned primary button (Create only when
-`session.canWrite`). The caption is `DateTime.lastPlayedLabel`
+`session.canWrite`) — Join tinted, Create filled, the same filled accent as
+the manage-players sheet's Add player, which is that sheet's only button: it
+has no Done, and closes by drag or barrier like any other sheet. The caption is `DateTime.lastPlayedLabel`
 (`date_time.extension.dart`) off `CompetitionOverview.lastPlayedAt`: today,
 yesterday, `N days ago` inside a week, a date after that, and `Not played
 yet` for a competition with no matches. A row carries no invite button — the
@@ -312,6 +314,11 @@ list through `TeamPickerSheet.onManagePlayers`, so a player added there
 is selectable without closing anything (the picker does its own
 already-on-the-other-side filtering now, so what it gets back is every active
 player, not one side's selectable subset).
+The leaderboard's Manage button opens that same sheet rather than pushing
+`Routes.players`, so both ways in look alike. The sheet's own
+`PlayersCubit` is not the shell's, and needs nothing to keep them in step:
+the `players` realtime channel refreshes the shell's one, and the
+leaderboard's, after every change made in the sheet.
 
 **The new match sheet opens on a `1v1` / `Teams` toggle
 (`AdaptiveSegmented<MatchEntryMode>`), and that mode drives the whole form.**

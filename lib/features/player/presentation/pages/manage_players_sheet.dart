@@ -41,11 +41,6 @@ class ManagePlayersSheet extends StatelessWidget {
         isRegistered: session.canWrite,
       ),
       primaryButton: isOwner ? _addPlayerButton(context) : null,
-      secondaryButton: AdaptiveButton(
-        label: context.l10n.commonDone,
-        kind: AdaptiveButtonKind.plain,
-        onPressed: () => Navigator.of(context).pop(),
-      ),
     );
   }
 
