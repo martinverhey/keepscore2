@@ -26,6 +26,15 @@ class AdaptiveGlass extends StatelessWidget {
   static const Color _lightControlFill = Color(0x8CFFFFFF);
   static const double _controlHoldScale = 0.12;
   static const double _controlTapScale = 0.08;
+  static const LiquidGlassLight _lightSheetRim = LiquidGlassLight.specular(
+    color: Color(0xB3FFFFFF),
+    intensity: 0.25,
+  );
+  static const LiquidGlassLight _darkSheetRim = LiquidGlassLight.specular(
+    color: Color(0x52FFFFFF),
+    intensity: 0.1,
+    spread: 0.35,
+  );
 
   static const LiquidGlassTouch controlTouch = LiquidGlassTouch.flexing(
     LiquidGlassFlex(holdScale: _controlHoldScale, tapScale: _controlTapScale),
@@ -69,6 +78,12 @@ class AdaptiveGlass extends StatelessWidget {
     );
   }
 
+  static LiquidGlassLight sheetRimOf(BuildContext context) {
+    return brightnessOf(context) == Brightness.dark
+        ? _darkSheetRim
+        : _lightSheetRim;
+  }
+
   static LiquidGlassTabItemStyle tabItemStyleOf(BuildContext context) {
     return LiquidGlassTabItemStyle(
       selectedColor: AdaptiveColors.accent(context),
@@ -89,6 +104,7 @@ class AdaptiveGlass extends StatelessWidget {
     return LiquidGlassLens(
       style: LiquidGlassSheet.defaultStyle.copyWith(
         shape: LiquidGlassSheet.defaultShape(),
+        specular: sheetRimOf(context),
         color: tint,
       ),
       child: child,

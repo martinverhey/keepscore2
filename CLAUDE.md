@@ -1882,9 +1882,16 @@ the reference 114.
 `AdaptiveGlass` — `LiquidGlassSheet.defaultStyle` with its colour replaced by
 `AdaptiveColors.glassSheetTint`, the modal surface at
 `AppOpacity.glassSheetFill`, where the package's default is white at 0.14. It
-is the one glass customization left, and it is deliberate: a sheet is a
+is deliberate: a sheet is a
 reading surface, and at the package's tint the leaderboard behind it shows
-through the text. The refraction and the edge still read as glass. Only the
+through the text. The refraction and the edge still read as glass.
+**The sheet's rim is softened too** (`AdaptiveGlass.sheetRimOf`): a white
+`LiquidGlassLight.specular` at intensity 0.25 on light and 0.1 on dark (dark
+also wraps less, spread 0.35), because the package's full-strength rim
+reads as a hard white outline round the sheet. This restores the on-device
+tuning of `8d21024`/`b0a5c7e`, mapped from 4.x's `lightColor`/
+`lightIntensity`/`OpticalBorder.ambientIntensity` onto 5.x's specular
+`color`/`intensity`/`spread` — a translation, not a measured match. Only the
 Cupertino branch changes — the Material sheet and the wide-web dialog are
 unreachable on iOS. The
 `ScrollDismissibleSheet` /
