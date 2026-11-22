@@ -14,10 +14,12 @@ abstract final class AppTheme {
       );
 
   static ThemeData material(Brightness brightness) {
-    final scheme = ColorScheme.fromSeed(
-      seedColor: AppColors.seed,
-      brightness: brightness,
-      dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
+    final scheme = _withNeutralSurfaces(
+      ColorScheme.fromSeed(
+        seedColor: AppColors.seed,
+        brightness: brightness,
+        dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
+      ),
     );
     final modalSurface = brightness == Brightness.dark
         ? AppColors.modalSurfaceOnDark
@@ -60,6 +62,30 @@ abstract final class AppTheme {
       listTileTheme: const ListTileThemeData(
         contentPadding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
       ),
+    );
+  }
+
+  static ColorScheme _withNeutralSurfaces(ColorScheme scheme) {
+    final grey = ColorScheme.fromSeed(
+      seedColor: AppColors.seed,
+      brightness: scheme.brightness,
+      dynamicSchemeVariant: DynamicSchemeVariant.monochrome,
+    );
+    return scheme.copyWith(
+      surface: grey.surface,
+      surfaceDim: grey.surfaceDim,
+      surfaceBright: grey.surfaceBright,
+      surfaceContainerLowest: grey.surfaceContainerLowest,
+      surfaceContainerLow: grey.surfaceContainerLow,
+      surfaceContainer: grey.surfaceContainer,
+      surfaceContainerHigh: grey.surfaceContainerHigh,
+      surfaceContainerHighest: grey.surfaceContainerHighest,
+      onSurface: grey.onSurface,
+      onSurfaceVariant: grey.onSurfaceVariant,
+      outline: grey.outline,
+      outlineVariant: grey.outlineVariant,
+      inverseSurface: grey.inverseSurface,
+      onInverseSurface: grey.onInverseSurface,
     );
   }
 

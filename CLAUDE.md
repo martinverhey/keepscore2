@@ -2691,7 +2691,15 @@ Kept here because the code cannot express them and they cost real debugging:
 
 - **`AppTheme` uses `DynamicSchemeVariant.fidelity`** so the generated primary
   stays on the seed colour. The default variant pulls the saturated orange most
-  of the way to brown.
+  of the way to brown. **Its surfaces are then swapped for grey ones**
+  (`AppTheme._withNeutralSurfaces`, copied off a `monochrome` scheme): every
+  M3 variant derives its neutrals from the seed's hue, and `fidelity`'s carry
+  enough of it that the page, the Material `NavigationBar` and the cards all
+  read orange-tinted on Android. Switching the variant to `neutral` instead
+  was tried and dropped, since it desaturates primary as well. Only the
+  surface ladder, `onSurface`/`onSurfaceVariant`, the outlines and the inverse
+  surface are replaced; the containers (the nav bar's selected pill,
+  `secondaryContainer`) stay accent-derived.
 - **Widget tests that pump the same tree twice under a different theme must key
   the probe per brightness.** Without it the second pump reuses the element tree
   and reports the *previous* theme's colours — a green test asserting nothing.
