@@ -24,6 +24,8 @@ export 'package:liquid_glass_easy/liquid_glass_easy.dart'
 class AdaptiveGlass extends StatelessWidget {
   static const Color _darkControlFill = Color(0x8C383838);
   static const Color _lightControlFill = Color(0x8CFFFFFF);
+  static const Color _darkScrollEdgeTint = Color(0x8A000000);
+  static const Color _lightScrollEdgeTint = Color(0x8AFFFFFF);
   static const double _controlHoldScale = 0.12;
   static const double _controlTapScale = 0.08;
   static const LiquidGlassLight _lightSheetRim = LiquidGlassLight.specular(
@@ -82,6 +84,12 @@ class AdaptiveGlass extends StatelessWidget {
     return brightnessOf(context) == Brightness.dark
         ? _darkSheetRim
         : _lightSheetRim;
+  }
+
+  static Color scrollEdgeTintOf(BuildContext context) {
+    return brightnessOf(context) == Brightness.dark
+        ? _darkScrollEdgeTint
+        : _lightScrollEdgeTint;
   }
 
   static LiquidGlassTabItemStyle tabItemStyleOf(BuildContext context) {

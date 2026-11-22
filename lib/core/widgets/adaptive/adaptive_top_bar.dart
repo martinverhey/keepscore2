@@ -83,7 +83,10 @@ class AdaptiveTopBar extends StatelessWidget {
 
   Widget _scrollEdge(BuildContext context) {
     return IgnorePointer(
-      child: LiquidGlassScrollEdge(edge: LiquidGlassEdge.top),
+      child: LiquidGlassScrollEdge(
+        edge: LiquidGlassEdge.top,
+        color: AdaptiveGlass.scrollEdgeTintOf(context),
+      ),
     );
   }
 

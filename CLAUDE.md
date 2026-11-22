@@ -1937,7 +1937,10 @@ top-edge `LiquidGlassScrollEdge` band, which is what keeps that unglassed text
 legible as content passes beneath it (the same `Positioned.fill` +
 `IgnorePointer` shape `AdaptiveBottomBarHost._floating` uses at the bottom).
 The band is the only thing standing between the title and the list; do not
-remove it while the title is bare.
+remove it while the title is bare. Its tint is `AdaptiveGlass.scrollEdgeTintOf`
+— the package's black at its own 0x8A peak on dark, white at the same peak on
+light — because the package's default is black on both, which read as a dark
+smudge across the top of a light page.
 
 **The bar carries a `subtitle`, and on Matches that subtitle is the day you
 are looking at.** `AdaptiveScaffold.subtitle` is a `Widget?` threaded to
