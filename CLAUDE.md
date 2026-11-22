@@ -3053,6 +3053,18 @@ at all. A new column is a migration; the view that exposes it is not.
   makes edits and deletes safe.
 - `supabase/tests/rls_check.sql` runs as `authenticated` inside a rolled-back
   transaction and proves outsiders see nothing and direct writes are refused.
+**Android only ships `assets/.env` because `android/app/build.gradle.kts`
+overrides `androidResources.ignoreAssetsPattern`.** AGP's default pattern
+(`!.svn:!.git:!.ds_store:!*.scc:.*:<dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~`)
+contains `.*`, which drops every dotfile in `mergeDebugAssets`/
+`mergeReleaseAssets` — the file is still in Flutter's own
+`intermediates/flutter/*/flutter_assets`, just not in the APK, and the app
+dies at launch in `Env.load` with `FileNotFoundError: Environment file
+"assets/.env" not found`. It surfaced with the AGP 9.3.1 upgrade (a
+September release APK still carried the file); iOS and web have no such
+filter. The override is that default minus `.*` and nothing else. Check with
+`unzip -l build/app/outputs/flutter-apk/app-debug.apk | grep flutter_assets/assets/`.
+
   It caught nothing that the seed did, because the seed runs as `postgres` —
   **server-side assertions do not exercise the client path.** Verify RPCs over
   REST with a real token as well.

@@ -24,6 +24,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    androidResources {
+        ignoreAssetsPattern = "!.svn:!.git:!.ds_store:!*.scc:<dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"
+    }
+
     defaultConfig {
         applicationId = "nl.martini.keepscore2"
         // You can update the following values to match your application needs.
