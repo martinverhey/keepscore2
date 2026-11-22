@@ -88,6 +88,7 @@ abstract final class AppGlass {
   static const double topBarHeight = 60;
   static const double topBarSubtitleHeight = 20;
   static const double topBarSubtitleRise = 16;
+  static const double topBarCaptionActionDrop = 8;
   static const double scrollEdgeFade = 0;
 }
 

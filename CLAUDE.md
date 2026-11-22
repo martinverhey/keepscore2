@@ -1974,6 +1974,16 @@ the title's centre line. `topBarHeight` used to *be* `barActionSize`, which
 made the slot unnecessary; shrinking the actions without shortening the bar
 split them, and `adaptive_glass_test.dart`'s "centres an action smaller than
 the title row on it" is what holds the pair together now.
+**With a competition caption under the title, the actions drop
+`AppGlass.topBarCaptionActionDrop` (8pt) below the title row's centre**, so
+the capsule sits centred on the two-line text block rather than on the title
+alone. The value was tuned on device, not derived: centred on the title it
+read clearly high, and halfway to the caption band's centre (12pt) read
+about as far too low. It is applied in `actionDropFor(hasCaption:)` as a
+`Transform.translate`, so the slot keeps its `topBarHeight` and the bar's
+height does not change. A subtitle (Matches' day) does not count, since it
+is centred across the whole bar below the actions. "drops an action towards
+the caption under the title" pins it.
 Room for the title was measured, not guessed: Permanent Marker's own metrics
 (`asc 1136`, `desc -325`, `gap 31` over a 1024 em) put the 28px brand title's
 line box at **40.8px**, so the 60px row tolerates about 1.47× Dynamic Type and

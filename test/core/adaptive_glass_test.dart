@@ -593,6 +593,43 @@ void main() {
       );
     });
 
+    testWidgets('drops an action towards the caption under the title', (
+      tester,
+    ) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+      await pumpGlass(
+        tester,
+        _host(
+          child: AdaptiveScaffold(
+            title: 'Leaderboard',
+            titleCaption: const Text('Office Table Tennis'),
+            trailing: AdaptiveBarAction(
+              glyph: AdaptiveGlyph.settings,
+              semanticLabel: 'Settings',
+              onPressed: () {},
+            ),
+            slivers: const [SliverToBoxAdapter(child: Text('first row'))],
+          ),
+        ),
+      );
+
+      final action = tester.getRect(find.byType(LiquidGlassTabBarAction));
+      final barTop =
+          tester.getRect(find.byType(AdaptiveTopBar)).top +
+          tester.view.padding.top / tester.view.devicePixelRatio;
+      final titleCentre = barTop + AppGlass.topBarHeight / 2;
+
+      expect(
+        action.center.dy,
+        moreOrLessEquals(
+          titleCentre + AppGlass.topBarCaptionActionDrop,
+          epsilon: 0.5,
+        ),
+      );
+      await tester.tap(find.byType(LiquidGlassTabBarAction));
+    });
+
     testWidgets('sets a title caption under the title and taps the title', (
       tester,
     ) async {

@@ -27,6 +27,9 @@ class AdaptiveTopBar extends StatelessWidget {
   static double subtitleTopFor({required bool hasCaption}) =>
       subtitleTop + (hasCaption ? AppGlass.topBarSubtitleHeight : 0);
 
+  static double actionDropFor({required bool hasCaption}) =>
+      hasCaption ? AppGlass.topBarCaptionActionDrop : 0;
+
   static double insetFor({bool hasSubtitle = false, bool hasCaption = false}) =>
       barHeightFor(hasSubtitle: hasSubtitle, hasCaption: hasCaption) +
       AppGlass.barMargin;
@@ -98,9 +101,12 @@ class AdaptiveTopBar extends StatelessWidget {
 
   Widget? _actionSlot(Widget? action) {
     if (action == null) return null;
-    return SizedBox(
-      height: AppGlass.topBarHeight,
-      child: Center(child: action),
+    return Transform.translate(
+      offset: Offset(0, actionDropFor(hasCaption: caption != null)),
+      child: SizedBox(
+        height: AppGlass.topBarHeight,
+        child: Center(child: action),
+      ),
     );
   }
 
