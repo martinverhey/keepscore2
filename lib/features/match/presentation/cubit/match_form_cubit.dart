@@ -31,10 +31,7 @@ class MatchFormCubit extends Cubit<MatchFormState> {
     _ => null,
   };
 
-  Future<void> load({
-    Iterable<String> teamA = const [],
-    Iterable<String> teamB = const [],
-  }) async {
+  Future<void> load() async {
     emit(const MatchFormLoading());
     try {
       final overviewFuture = _competitions.overview(competitionId);
@@ -65,10 +62,6 @@ class MatchFormCubit extends Cubit<MatchFormState> {
           ratings: {
             for (final leaderboard in leaderboards)
               leaderboard.playerId: leaderboard.rating,
-          },
-          assignments: {
-            for (final playerId in teamA) playerId: MatchTeam.a,
-            for (final playerId in teamB) playerId: MatchTeam.b,
           },
         ),
       );
@@ -128,14 +121,6 @@ class MatchFormCubit extends Cubit<MatchFormState> {
         clearSubmitFailure: true,
       ),
     );
-  }
-
-  void togglePrePick(String playerId) {
-    final ready = _ready;
-    if (ready == null) return;
-    final prePicked = Set<String>.from(ready.prePicked);
-    if (!prePicked.remove(playerId)) prePicked.add(playerId);
-    emit(ready.copyWith(prePicked: prePicked, clearSubmitFailure: true));
   }
 
   void setMode(MatchEntryMode mode) {

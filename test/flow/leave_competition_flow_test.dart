@@ -27,7 +27,6 @@ import 'package:keepscore2/features/match/domain/game_type.enum.dart';
 import 'package:keepscore2/features/match/domain/match_repository.dart';
 import 'package:keepscore2/features/match/presentation/cubit/game_type_filter_cubit.dart';
 import 'package:keepscore2/features/match/presentation/cubit/match_list_cubit.dart';
-import 'package:keepscore2/features/match/presentation/cubit/planned_match_cubit.dart';
 import 'package:keepscore2/features/match/presentation/pages/matches.page.dart';
 import 'package:keepscore2/features/player/domain/player.model.dart';
 import 'package:keepscore2/features/player/domain/player_repository.dart';
@@ -166,8 +165,6 @@ void main() {
 
     final authBloc = AuthBloc(auth);
     final gameTypeFilterCubit = GameTypeFilterCubit();
-    final plannedMatchCubit = PlannedMatchCubit();
-    addTearDown(plannedMatchCubit.close);
     final competitionCubit = CompetitionCubit(competitions, authBloc);
     addTearDown(authBloc.close);
     addTearDown(gameTypeFilterCubit.close);
@@ -185,7 +182,6 @@ void main() {
         providers: [
           BlocProvider<AuthBloc>.value(value: authBloc),
           BlocProvider<GameTypeFilterCubit>.value(value: gameTypeFilterCubit),
-          BlocProvider<PlannedMatchCubit>.value(value: plannedMatchCubit),
           BlocProvider<ThemeCubit>(create: (_) => ThemeCubit()),
           BlocProvider<CompetitionCubit>.value(value: competitionCubit),
           BlocProvider(

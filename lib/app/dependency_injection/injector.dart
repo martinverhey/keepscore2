@@ -20,7 +20,6 @@ import '../../features/match/presentation/cubit/game_type_filter_cubit.dart';
 import '../../features/match/presentation/cubit/match_detail_cubit.dart';
 import '../../features/match/presentation/cubit/match_form_cubit.dart';
 import '../../features/match/presentation/cubit/match_list_cubit.dart';
-import '../../features/match/presentation/cubit/planned_match_cubit.dart';
 import '../../features/player/data/supabase_player_repository.dart';
 import '../../features/player/domain/player_repository.dart';
 import '../../features/player/presentation/cubit/players_cubit.dart';
@@ -86,7 +85,6 @@ Future<void> configureDependencies() async {
       () => SupabaseMatchRepository(getIt<SupabaseClient>()),
     )
     ..registerLazySingleton<GameTypeFilterCubit>(() => GameTypeFilterCubit())
-    ..registerLazySingleton<PlannedMatchCubit>(() => PlannedMatchCubit())
     ..registerFactoryParam<LeaderboardCubit, String, void>(
       (competitionId, _) => LeaderboardCubit(
         getIt<LeaderboardRepository>(),

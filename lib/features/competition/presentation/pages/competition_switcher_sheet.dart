@@ -105,6 +105,7 @@ class CompetitionSwitcherSheet extends StatelessWidget {
             child: CompetitionSwitcherRow(
               overview: overview,
               isCurrent: overview.id == currentId,
+              isOwner: overview.competition.isOwnedBy(myUserId),
               onTap: () =>
                   _close(context, CompetitionSwitchChoice(overview.id)),
               actions: _actions(context, overview, myUserId: myUserId),

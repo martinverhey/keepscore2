@@ -13,12 +13,14 @@ class CompetitionSwitcherRow extends StatelessWidget {
     super.key,
     required this.overview,
     required this.isCurrent,
+    required this.isOwner,
     required this.onTap,
     this.actions,
   });
 
   final CompetitionOverview overview;
   final bool isCurrent;
+  final bool isOwner;
   final VoidCallback onTap;
   final CompetitionActions? actions;
 
@@ -86,6 +88,10 @@ class CompetitionSwitcherRow extends StatelessWidget {
             context.l10n.competitionCurrent,
             color: AdaptiveColors.accent(context),
           ),
+        ],
+        if (isOwner) ...[
+          const SizedBox(width: AppSpacing.xs),
+          Tag(context.l10n.playersOwner, color: AppColors.gold),
         ],
       ],
     );
