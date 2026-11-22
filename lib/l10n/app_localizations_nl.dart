@@ -613,7 +613,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get playersAddSubtitle =>
-      'Maak zoveel spelers aan als je wilt. Je kunt ze gebruiken om wedstrijden vast te leggen. Of ze dienen als plaatshouder voor spelers die later meedoen. Een andere speler kan een speler claimen nadat die zich bij je competitie heeft aangesloten.';
+      'Maak zoveel spelers aan als je wilt. Je kunt ze gebruiken om wedstrijden vast te leggen. Of ze dienen als placeholder voor spelers die later meedoen. Een speler kan een ongeclaimde speler claimen nadat die zich bij je competitie heeft aangesloten.';
 
   @override
   String get playersNameTooShort => 'Vul een naam van minstens 2 tekens in.';
