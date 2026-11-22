@@ -547,6 +547,53 @@ void main() {
     expect(_sheetOption('2v2'), findsNothing);
   });
 
+  testWidgets('one game type played this season leaves nothing to filter', (
+    tester,
+  ) async {
+    AppPlatform.debugOverrideCupertino = false;
+    await _pumpMatchesPage(tester, played: const {GameType.oneVOne});
+
+    expect(find.byType(GameTypeFilterButton), findsNothing);
+  });
+
+  testWidgets('no game type played this season leaves nothing to filter', (
+    tester,
+  ) async {
+    AppPlatform.debugOverrideCupertino = false;
+    await _pumpMatchesPage(tester, played: const {}, feed: const []);
+
+    expect(find.byType(GameTypeFilterButton), findsNothing);
+  });
+
+  testWidgets('two game types played this season bring the filter in', (
+    tester,
+  ) async {
+    AppPlatform.debugOverrideCupertino = false;
+    await _pumpMatchesPage(
+      tester,
+      played: const {GameType.oneVOne, GameType.twoVTwo},
+    );
+
+    expect(find.byType(GameTypeFilterButton), findsOneWidget);
+  });
+
+  testWidgets('a filter already on keeps the button, so it can be cleared', (
+    tester,
+  ) async {
+    AppPlatform.debugOverrideCupertino = false;
+    final filter = await _pumpMatchesPage(
+      tester,
+      played: const {GameType.oneVOne},
+    );
+
+    expect(find.byType(GameTypeFilterButton), findsNothing);
+
+    await filter.select(GameType.fourVFour);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(GameTypeFilterButton), findsOneWidget);
+  });
+
   testWidgets('a filtered list is headed by the game type it is filtered to', (
     tester,
   ) async {

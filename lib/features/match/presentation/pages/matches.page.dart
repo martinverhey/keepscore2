@@ -101,7 +101,9 @@ class _MatchesPageState extends State<MatchesPage> {
         titleCaption: const CompetitionCaption(),
         onTitleTap: () => openCompetitionSwitcher(context),
         onRefresh: _refresh,
-        trailing: _gameTypeFilterButton(context),
+        trailing: _showsGameTypeFilter(context)
+            ? _gameTypeFilterButton(context)
+            : null,
         slivers: [
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(
@@ -207,6 +209,14 @@ class _MatchesPageState extends State<MatchesPage> {
               ),
       ),
     );
+  }
+
+  bool _showsGameTypeFilter(BuildContext context) {
+    final hasFilter = context.watch<GameTypeFilterCubit>().state != null;
+    final playedCount = context.select(
+      (MatchListCubit cubit) => cubit.state.seasonGameTypes.length,
+    );
+    return hasFilter || playedCount > 1;
   }
 
   Widget _gameTypeFilterButton(BuildContext context) {

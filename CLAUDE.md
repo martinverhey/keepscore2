@@ -2830,6 +2830,12 @@ Kept here because the code cannot express them and they cost real debugging:
   currently selected type even when nobody has played it this season —
   otherwise a filter remembered from last season would be invisible in the
   sheet that is the only way to clear it.
+  **The button itself is shown only when there is a choice to make**:
+  `MatchesPage._showsGameTypeFilter` is more than one game type played this
+  season, *or* a filter already on — the second half for the same reason,
+  since a remembered filter with the button hidden could never be cleared.
+  With none or one type played the trailing slot is `null` rather than an
+  empty box, so the bar lays out as if it had no actions at all.
 - **`ProfileSheet`'s tab switcher goes in `Sheet`'s `header` slot, not at the
   top of `content`.** `Sheet` pins `header` above its `SingleChildScrollView`
   and scrolls `content`, so a segmented control placed first in `content`
@@ -2922,7 +2928,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 429 tests at time of writing
+flutter test                    # 433 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 dart run flutter_launcher_icons     # assets/icon/*.png into android/ web/ (not ios/)
