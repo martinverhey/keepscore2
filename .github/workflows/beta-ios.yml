@@ -8,7 +8,7 @@ on:
 
 jobs:
   ios:
-    runs-on: macos-27
+    runs-on: xcode-27
     defaults:
       run:
         working-directory: ios
