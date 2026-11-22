@@ -9,6 +9,9 @@ import 'app_platform.dart';
 export 'adaptive_button_kind.enum.dart';
 
 class AdaptiveButton extends StatelessWidget {
+  static const _expandedSize = Size.fromHeight(52);
+  static const _compactSize = Size(64, 40);
+
   const AdaptiveButton({
     super.key,
     required this.label,
@@ -65,7 +68,7 @@ class AdaptiveButton extends StatelessWidget {
   Widget _materialButton(BuildContext context, bool enabled) {
     final scheme = Theme.of(context).colorScheme;
     final callback = enabled ? onPressed : null;
-    final size = expand ? const Size.fromHeight(52) : null;
+    final size = expand ? _expandedSize : _compactSize;
 
     return switch (kind) {
       AdaptiveButtonKind.filled => FilledButton(
