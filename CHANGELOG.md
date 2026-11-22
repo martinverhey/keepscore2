@@ -3,6 +3,32 @@
 Newest first. Each heading is an annotated `vX.Y.Z` tag; pushing that tag ships
 the build to TestFlight and Play internal testing.
 
+## v0.7.0 — 2026-11-23
+
+### Added
+- Manage players from the leaderboard
+- Competitions you own are tagged in the switcher
+
+### Changed
+- Join and create sit in the competition switcher's header
+- Add player sits in the manage players sheet's header
+- Player actions are in a three-dots menu
+- The Matches filter only shows when there is more than one game type
+- Material surfaces are grey instead of orange-tinted
+- The glass sheet's rim is softer
+- Knockout tournaments are gone
+- Pre-picking matches is gone
+- The Players page is gone; the manage players sheet replaces it
+
+### Fixed
+- Android release builds failed to start
+- Best rating on the profile could be wrong
+- Glass bar buttons sat too high beside the competition name
+- The top scroll edge looked dark in light mode
+- Lists faded out under the glass tab bar
+- Buttons stretched too wide on Android
+- The page title on wide web didn't line up with the content
+
 ## v0.6.3 — 2026-11-22
 
 Built with the latest Xcode; no user-facing changes.
