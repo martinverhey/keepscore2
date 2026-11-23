@@ -3,6 +3,21 @@
 Newest first. Each heading is an annotated `vX.Y.Z` tag; pushing that tag ships
 the build to TestFlight and Play internal testing.
 
+## v0.7.1 — 2026-11-24
+
+### Added
+- A guest is asked to confirm before signing out
+- Backing out of join or create brings the competition switcher back
+
+### Changed
+- Sheets follow one design: no Cancel or Back buttons, close by tapping outside
+- Confirm dialogs use short verbs with side-by-side buttons, right-aligned on Android
+- Clearer English and Dutch wording on actions and confirm titles
+
+### Fixed
+- VoiceOver couldn't dismiss sheets on iOS
+- The delete match dialog repeated its own question
+
 ## v0.7.0 — 2026-11-23
 
 ### Added
