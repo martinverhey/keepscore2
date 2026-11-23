@@ -99,7 +99,7 @@ class PlayerRow extends StatelessWidget {
       if (canRename)
         AdaptiveMenuItem(
           label: context.l10n.playersRename,
-          glyph: AdaptiveGlyph.rename,
+          glyph: AdaptiveGlyph.edit,
           onSelected: () => _rename(context),
         ),
       if (_showsRestore)

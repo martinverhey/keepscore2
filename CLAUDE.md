@@ -378,7 +378,7 @@ player's rating going in, Team A left / Team B right, divided off from the two
 team averages) and a "Win chance" card (`EloCalculator.winChance`, the expected
 score the delta is already computed from, formatted with
 `NumberFormat.percentPattern`), and lets the creator or the owner change the
-score or delete the match from two title-row glyphs (`rename`, `delete`) in one
+score or delete the match from two title-row glyphs (`edit`, `delete`) in one
 `AdaptiveBarActionGroup` — neither commits the sheet, so neither is a bottom
 button (`DESIGN.md`). An icon has no spinner, so both are disabled while
 `MatchDetailReady.busy`. Nothing

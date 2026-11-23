@@ -13,7 +13,7 @@ enum AdaptiveGlyph {
   check,
   invite,
   scan,
-  rename,
+  edit,
   delete,
   restore,
   leave,

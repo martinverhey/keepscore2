@@ -39,7 +39,7 @@ class CompetitionActions extends StatelessWidget {
       if (onRename case final onRename?)
         AdaptiveMenuItem(
           label: context.l10n.competitionRename,
-          glyph: AdaptiveGlyph.rename,
+          glyph: AdaptiveGlyph.edit,
           onSelected: onRename,
         ),
       if (onLeave case final onLeave?)

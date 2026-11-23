@@ -190,7 +190,7 @@ class MatchDetailSheet extends StatelessWidget {
 
   Widget _editScoreAction(BuildContext context, MatchDetailReady state) {
     return AdaptiveBarAction(
-      glyph: AdaptiveGlyph.rename,
+      glyph: AdaptiveGlyph.edit,
       semanticLabel: context.l10n.matchEditScore,
       onPressed: state.busy ? null : () => _editScore(context, state.match),
     );
