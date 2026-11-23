@@ -236,7 +236,9 @@ void main() {
     expect(find.text(l10n.competitionsCreateShort), findsNothing);
   });
 
-  testWidgets('the header join action opens the scanner', (tester) async {
+  testWidgets('the header join action swaps the sheet for the scanner', (
+    tester,
+  ) async {
     await openSwitcher(tester);
 
     await tester.tap(headerAction(AdaptiveGlyph.scan));
@@ -246,7 +248,19 @@ void main() {
     expect(find.byType(JoinScannerSheet), findsOneWidget);
   });
 
-  testWidgets('the header create action opens the create sheet', (
+  testWidgets('dismissing the scanner reopens the sheet', (tester) async {
+    await openSwitcher(tester);
+
+    await tester.tap(headerAction(AdaptiveGlyph.scan));
+    await tester.pumpAndSettle();
+    await tester.tapAt(const Offset(10, 10));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(JoinScannerSheet), findsNothing);
+    expect(find.byType(CompetitionSwitcherSheet), findsOneWidget);
+  });
+
+  testWidgets('the header create action swaps the sheet for the create one', (
     tester,
   ) async {
     getIt.registerFactory<CreateCompetitionCubit>(

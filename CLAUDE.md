@@ -207,10 +207,18 @@ for and closes itself on. `competitionActionsFor`
 (`pages/competition_flows.dart`) is the one place the four owner/member
 callbacks are built — it captures `GoRouter.of(context)` eagerly so Edit
 still navigates after the sheet that built it has popped.
-`startJoinCompetition` / `startCreateCompetition` in the same file are the
-scanner → join-sheet loop and the create sheet, followed by a list refresh
-and a `go` into the new competition; `WelcomePage` and the switcher both
-call them.
+**Join and Create replace the switcher, and backing out of them brings it
+back.** The header actions pop `CompetitionJoinChoice` /
+`CompetitionCreateChoice`; `runCompetitionSwitcherChoice` then runs
+`joinCompetition` / `createCompetition` (same file), which show the scanner,
+join and create sheets and return the new competition's id (or null),
+refreshing `CompetitionListCubit` on success. It returns whether the choice
+was carried out, and `openCompetitionSwitcher` (`competition_caption.dart`)
+loops on that: a dismissed join or create reopens the switcher, a joined or
+created competition is `go`ne into. Stacking them *over* the open switcher
+was built first and dropped in favour of this — one sheet on screen at a
+time. `startJoinCompetition` / `startCreateCompetition` are the same two plus
+the `go`, for `WelcomePage`, which has no sheet to return to.
 
 **`/` is a redirect, not a page, whenever there is anything to enter.**
 `resolveHomeTarget` (`app_router.dart`) runs for every visit to `/`, not just
@@ -235,8 +243,8 @@ sheets, not routes — there is no `match/*` route, no `Routes.match`, no
 deep-linkable, and each builds its own cubit inside the `showAdaptiveSheet`
 builder rather than in a `GoRoute`. `showJoinCompetitionSheet` and
 `showCreateCompetitionSheet` each return the competition's id (or null), and
-`startJoinCompetition`/`startCreateCompetition` are what refresh
-`CompetitionListCubit` and go to the competition — neither sheet navigates. `CreateCompetitionSheet`
+`joinCompetition`/`createCompetition` are what refresh
+`CompetitionListCubit`, and the caller goes to the competition — neither sheet navigates. `CreateCompetitionSheet`
 (`competition/presentation/pages/create_competition_sheet.dart`) replaced
 `CreateCompetitionPage` and the `/create` route outright: same
 `CreateCompetitionCubit`, same name field and season-length segmented control,
@@ -246,7 +254,7 @@ competition", which is what retired the `competitionCreateSubmit` key) and
 no Cancel — like every sheet, it closes by tapping outside it (`DESIGN.md`). `showNewMatchSheet` builds the teams and submits.
 
 **Join opens the camera first, and the code field is the way out of it.**
-`startJoinCompetition` shows `showJoinScannerSheet`
+`joinCompetition` shows `showJoinScannerSheet`
 (`competition/presentation/pages/join_scanner_sheet.dart`) and only then
 `showJoinCompetitionSheet`, so the six-character code is the fallback rather
 than the front door — the QR `InviteSheet` shows encodes nothing
@@ -743,8 +751,8 @@ holds a list. A failure is not cached — `CompetitionListFailed` is not
 `Ready`, so the next `ensureLoaded()` retries.
 
 Because the list is now cached, **every write to it has to say so**. `rename`/
-`leave`/`delete` already refreshed through `_mutate`; `startJoinCompetition`/
-`startCreateCompetition` call `CompetitionListCubit.refresh()` themselves when
+`leave`/`delete` already refreshed through `_mutate`; `joinCompetition`/
+`createCompetition` call `CompetitionListCubit.refresh()` themselves when
 the join or create sheet comes back with an id — otherwise the new
 competition would be missing from the switcher. (It already was, before the cache: nothing but pull-to-refresh ever
 refetched it.)
@@ -2448,8 +2456,8 @@ else in the suite:
   (leaderboard → `push('/')` → `go('/competition/c2')`) and asserts both
   cubits and the player list actually followed.
 - **Entering a competition is always `go`, never `push`** — from the
-  switcher, after joining (`startJoinCompetition`) and after creating
-  (`startCreateCompetition`) alike. `push` keeps
+  switcher, after joining and after creating alike (all three through
+  `competition_flows.dart`, joining and creating via its `_enterNew`). `push` keeps
   the existing stack and mounts the *whole* new match chain on top of it, so
   a second competition route mounts the competition `ShellRoute`'s
   `navigatorKey`, both `StatefulShellBranch.navigatorKey`s and
@@ -2892,7 +2900,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 423 tests at time of writing
+flutter test                    # 424 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 dart run flutter_launcher_icons     # assets/icon/*.png into android/ web/ (not ios/)

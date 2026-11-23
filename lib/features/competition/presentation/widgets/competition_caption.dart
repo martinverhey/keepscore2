@@ -48,7 +48,10 @@ class CompetitionCaption extends StatelessWidget {
 }
 
 Future<void> openCompetitionSwitcher(BuildContext context) async {
-  final choice = await showCompetitionSwitcherSheet(context);
-  if (choice == null || !context.mounted) return;
-  await runCompetitionSwitcherChoice(context, choice);
+  while (true) {
+    final choice = await showCompetitionSwitcherSheet(context);
+    if (choice == null || !context.mounted) return;
+    final carriedOut = await runCompetitionSwitcherChoice(context, choice);
+    if (carriedOut || !context.mounted) return;
+  }
 }

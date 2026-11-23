@@ -16,45 +16,61 @@ import 'create_competition_sheet.dart';
 import 'join_competition_sheet.dart';
 import 'join_scanner_sheet.dart';
 
-Future<void> runCompetitionSwitcherChoice(
+Future<bool> runCompetitionSwitcherChoice(
   BuildContext context,
   CompetitionSwitcherChoice choice,
 ) async {
   switch (choice) {
     case CompetitionSwitchChoice(:final competitionId):
       final currentId = context.read<CompetitionCubit>().competitionId;
-      if (competitionId == currentId) return;
-      context.go(Routes.competition(competitionId));
+      if (competitionId != currentId) {
+        context.go(Routes.competition(competitionId));
+      }
+      return true;
     case CompetitionJoinChoice():
-      await startJoinCompetition(context);
+      return _enterNew(context, joinCompetition);
     case CompetitionCreateChoice():
-      await startCreateCompetition(context);
+      return _enterNew(context, createCompetition);
     case CompetitionActionChoice(:final action):
       action();
+      return true;
   }
 }
 
-Future<void> startCreateCompetition(BuildContext context) async {
-  final competitionId = await showCreateCompetitionSheet(context);
-  if (competitionId == null || !context.mounted) return;
-  _enterCompetition(context, competitionId);
+Future<bool> _enterNew(
+  BuildContext context,
+  Future<String?> Function(BuildContext) start,
+) async {
+  final competitionId = await start(context);
+  if (competitionId == null || !context.mounted) return false;
+  context.go(Routes.competition(competitionId));
+  return true;
 }
 
-Future<void> startJoinCompetition(BuildContext context) async {
+Future<void> startCreateCompetition(BuildContext context) =>
+    _enterNew(context, createCompetition);
+
+Future<void> startJoinCompetition(BuildContext context) =>
+    _enterNew(context, joinCompetition);
+
+Future<String?> createCompetition(BuildContext context) async {
+  final competitions = context.read<CompetitionListCubit>();
+  final competitionId = await showCreateCompetitionSheet(context);
+  if (competitionId != null) competitions.refresh();
+  return competitionId;
+}
+
+Future<String?> joinCompetition(BuildContext context) async {
+  final competitions = context.read<CompetitionListCubit>();
   final scan = await showJoinScannerSheet(context);
-  if (scan == null || !context.mounted) return;
+  if (scan == null || !context.mounted) return null;
 
   final competitionId = await showJoinCompetitionSheet(
     context,
     code: scan.code,
   );
-  if (competitionId == null || !context.mounted) return;
-  _enterCompetition(context, competitionId);
-}
-
-void _enterCompetition(BuildContext context, String competitionId) {
-  context.read<CompetitionListCubit>().refresh();
-  context.go(Routes.competition(competitionId));
+  if (competitionId != null) competitions.refresh();
+  return competitionId;
 }
 
 CompetitionActions competitionActionsFor(
