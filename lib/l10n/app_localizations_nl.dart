@@ -117,13 +117,13 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get authUpgradeBody =>
-      'Als gast kun je rondkijken, maar je hebt een account nodig om competities te maken en wedstrijden vast te leggen. Je geschiedenis blijft behouden.';
+      'Als gast kun je rondkijken, maar je hebt een account nodig om competities aan te maken en wedstrijden vast te leggen. Je geschiedenis blijft behouden.';
 
   @override
   String get competitionsTitle => 'Competities';
 
   @override
-  String get competitionsCreateShort => 'Maken';
+  String get competitionsCreateShort => 'Aanmaken';
 
   @override
   String competitionSwitch(String name) {
@@ -135,7 +135,7 @@ class AppLocalizationsNl extends AppLocalizations {
       'Doe mee met een competitie via de code, of begin er zelf een.';
 
   @override
-  String get competitionsCreate => 'Competitie maken';
+  String get competitionsCreate => 'Competitie aanmaken';
 
   @override
   String get competitionsJoin => 'Deelnemen aan competitie';
@@ -217,7 +217,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get competitionGuestCannotCreate =>
-      'Als gast kun je deelnemen aan een competitie en rondkijken, maar voor het maken van een competitie heb je een account nodig.';
+      'Als gast kun je deelnemen aan een competitie en rondkijken, maar voor het aanmaken van een competitie heb je een account nodig.';
 
   @override
   String get competitionInviteTitle => 'Spelers uitnodigen';
@@ -610,7 +610,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get playersAddSubtitle =>
-      'Maak zoveel spelers aan als je wilt. Je kunt ze gebruiken om wedstrijden vast te leggen. Of ze dienen als placeholder voor spelers die later meedoen. Een speler kan een ongeclaimde speler claimen nadat die zich bij je competitie heeft aangesloten.';
+      'Voeg zoveel spelers toe als je wilt. Je kunt ze gebruiken om wedstrijden vast te leggen. Of ze dienen als placeholder voor spelers die later meedoen. Een speler kan een ongeclaimde speler claimen nadat die zich bij je competitie heeft aangesloten.';
 
   @override
   String get playersNameTooShort => 'Vul een naam van minstens 2 tekens in.';

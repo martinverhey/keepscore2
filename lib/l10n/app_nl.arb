@@ -41,16 +41,16 @@
   "authSignOut": "Uitloggen",
   "authGuestBadge": "Gast",
   "authUpgradeTitle": "Maak een account",
-  "authUpgradeBody": "Als gast kun je rondkijken, maar je hebt een account nodig om competities te maken en wedstrijden vast te leggen. Je geschiedenis blijft behouden.",
+  "authUpgradeBody": "Als gast kun je rondkijken, maar je hebt een account nodig om competities aan te maken en wedstrijden vast te leggen. Je geschiedenis blijft behouden.",
 
   "competitionsTitle": "Competities",
-  "competitionsCreateShort": "Maken",
+  "competitionsCreateShort": "Aanmaken",
   "competitionSwitch": "Wissel van competitie, nu {name}",
   "@competitionSwitch": {
     "placeholders": { "name": { "type": "String" } }
   },
   "welcomeBody": "Doe mee met een competitie via de code, of begin er zelf een.",
-  "competitionsCreate": "Competitie maken",
+  "competitionsCreate": "Competitie aanmaken",
   "competitionsJoin": "Deelnemen aan competitie",
   "competitionsJoinShort": "Deelnemen",
   "competitionNameLabel": "Naam van de competitie",
@@ -84,7 +84,7 @@
     "placeholders": { "date": { "type": "String" } }
   },
   "competitionNotPlayed": "Nog niet gespeeld",
-  "competitionGuestCannotCreate": "Als gast kun je deelnemen aan een competitie en rondkijken, maar voor het maken van een competitie heb je een account nodig.",
+  "competitionGuestCannotCreate": "Als gast kun je deelnemen aan een competitie en rondkijken, maar voor het aanmaken van een competitie heb je een account nodig.",
   "competitionInviteTitle": "Spelers uitnodigen",
   "competitionInviteAction": "Uitnodigen",
   "competitionNotFound": "Deze competitie bestaat niet meer, of je zit er niet meer in.",
@@ -244,7 +244,7 @@
   "playersOwner": "Beheerder",
   "playersUnclaimed": "Niet geclaimd",
   "playersAddTitle": "Speler toevoegen",
-  "playersAddSubtitle": "Maak zoveel spelers aan als je wilt. Je kunt ze gebruiken om wedstrijden vast te leggen. Of ze dienen als placeholder voor spelers die later meedoen. Een speler kan een ongeclaimde speler claimen nadat die zich bij je competitie heeft aangesloten.",
+  "playersAddSubtitle": "Voeg zoveel spelers toe als je wilt. Je kunt ze gebruiken om wedstrijden vast te leggen. Of ze dienen als placeholder voor spelers die later meedoen. Een speler kan een ongeclaimde speler claimen nadat die zich bij je competitie heeft aangesloten.",
   "playersNameTooShort": "Vul een naam van minstens 2 tekens in.",
   "playersRenameTitle": "Speler hernoemen",
   "playersRename": "Hernoemen",
