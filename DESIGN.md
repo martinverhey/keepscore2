@@ -42,6 +42,8 @@ the code is shaped the way it is; this file is the spec the code is held to.
 - **A sheet with no commit action but one way out of a dead end** (the
   scanner's "Enter code manually") keeps that way out as its bottom
   `primaryButton`: it has to be visible and labelled when the camera fails.
+- **The team picker's Manage** stays a plain text button in the title row
+  rather than an icon.
 
 ### Accessibility
 

@@ -8,6 +8,9 @@ log 1v1–NvM matches, get an Elo leaderboard per season.
 of the checked-in repo. If it's missing on your machine, this file (`CLAUDE.md`)
 is the up-to-date source of truth regardless.
 
+**UI guidelines:** `DESIGN.md` is the spec every screen is held to (bottom
+sheets first). Check a new or changed surface against it.
+
 ## Status
 
 | Step | State |
