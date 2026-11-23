@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/error/failure.dart';
 import 'package:keepscore2/features/auth/domain/auth_repository.dart';
 import 'package:keepscore2/features/auth/domain/auth_user.model.dart';
-import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
+import 'package:keepscore2/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_list_cubit.dart';
@@ -40,7 +40,7 @@ CompetitionListReady _ready(CompetitionListCubit cubit) =>
 void main() {
   late MockCompetitionRepository repository;
   late MockAuthRepository auth;
-  late AuthBloc authBloc;
+  late AuthCubit authCubit;
   late StreamController<AuthUser?> authEvents;
 
   setUp(() {
@@ -51,12 +51,12 @@ void main() {
       const AuthUser(id: 'user-1', displayName: 'Ada', isGuest: false),
     );
     when(() => auth.watchUser()).thenAnswer((_) => authEvents.stream);
-    authBloc = AuthBloc(auth);
+    authCubit = AuthCubit(auth);
   });
 
   tearDown(() async {
     await authEvents.close();
-    await authBloc.close();
+    await authCubit.close();
   });
 
   blocTest<CompetitionListCubit, CompetitionListState>(
@@ -64,7 +64,7 @@ void main() {
     setUp: () => when(
       () => repository.myCompetitions(),
     ).thenAnswer((_) async => [_overview('c1', 'Office Table Tennis')]),
-    build: () => CompetitionListCubit(repository, authBloc),
+    build: () => CompetitionListCubit(repository, authCubit),
     act: (cubit) => cubit.load(),
     verify: (cubit) {
       expect(_ready(cubit).competitions, hasLength(1));
@@ -76,7 +76,7 @@ void main() {
     'an empty result is a ready state, not a failure',
     setUp: () =>
         when(() => repository.myCompetitions()).thenAnswer((_) async => []),
-    build: () => CompetitionListCubit(repository, authBloc),
+    build: () => CompetitionListCubit(repository, authCubit),
     act: (cubit) => cubit.load(),
     verify: (cubit) => expect(_ready(cubit).isEmpty, isTrue),
   );
@@ -86,7 +86,7 @@ void main() {
     setUp: () => when(
       () => repository.myCompetitions(),
     ).thenThrow(const NetworkFailure()),
-    build: () => CompetitionListCubit(repository, authBloc),
+    build: () => CompetitionListCubit(repository, authCubit),
     act: (cubit) => cubit.load(),
     verify: (cubit) {
       expect(
@@ -105,7 +105,7 @@ void main() {
         throw const NetworkFailure();
       });
     },
-    build: () => CompetitionListCubit(repository, authBloc),
+    build: () => CompetitionListCubit(repository, authCubit),
     act: (cubit) async {
       await cubit.load();
       await cubit.refresh();
@@ -121,7 +121,7 @@ void main() {
     setUp: () => when(
       () => repository.myCompetitions(),
     ).thenAnswer((_) async => [_overview('c1', 'Office Table Tennis')]),
-    build: () => CompetitionListCubit(repository, authBloc),
+    build: () => CompetitionListCubit(repository, authCubit),
     act: (cubit) async {
       await cubit.load();
       await cubit.refresh();
@@ -158,7 +158,7 @@ void main() {
         (_) async => _overview('c1', 'Table Tennis League').competition,
       );
     },
-    build: () => CompetitionListCubit(repository, authBloc),
+    build: () => CompetitionListCubit(repository, authCubit),
     act: (cubit) async {
       await cubit.load();
       final ok = await cubit.rename('c1', 'Table Tennis League');
@@ -184,7 +184,7 @@ void main() {
       });
       when(() => repository.leave('c1')).thenAnswer((_) async {});
     },
-    build: () => CompetitionListCubit(repository, authBloc),
+    build: () => CompetitionListCubit(repository, authCubit),
     act: (cubit) async {
       await cubit.load();
       final ok = await cubit.leave('c1');
@@ -203,7 +203,7 @@ void main() {
       });
       when(() => repository.delete('c1')).thenAnswer((_) async {});
     },
-    build: () => CompetitionListCubit(repository, authBloc),
+    build: () => CompetitionListCubit(repository, authCubit),
     act: (cubit) async {
       await cubit.load();
       final ok = await cubit.delete('c1');
@@ -220,7 +220,7 @@ void main() {
       ).thenAnswer((_) async => [_overview('c1', 'Office Table Tennis')]);
       when(() => repository.delete('c1')).thenThrow(const PermissionFailure());
     },
-    build: () => CompetitionListCubit(repository, authBloc),
+    build: () => CompetitionListCubit(repository, authCubit),
     act: (cubit) async {
       await cubit.load();
       final ok = await cubit.delete('c1');
@@ -238,7 +238,7 @@ void main() {
     setUp: () => when(
       () => repository.myCompetitions(),
     ).thenAnswer((_) async => [_overview('c1', 'Office Table Tennis')]),
-    build: () => CompetitionListCubit(repository, authBloc),
+    build: () => CompetitionListCubit(repository, authCubit),
     act: (cubit) async {
       await cubit.ensureLoaded();
       await cubit.ensureLoaded();
@@ -260,7 +260,7 @@ void main() {
         return pending.future;
       });
     },
-    build: () => CompetitionListCubit(repository, authBloc),
+    build: () => CompetitionListCubit(repository, authCubit),
     act: (cubit) => Future.wait([cubit.ensureLoaded(), cubit.ensureLoaded()]),
     verify: (cubit) {
       expect(_ready(cubit).competitions, hasLength(1));
@@ -277,7 +277,7 @@ void main() {
         return [_overview('c1', 'Office Table Tennis')];
       });
     },
-    build: () => CompetitionListCubit(repository, authBloc),
+    build: () => CompetitionListCubit(repository, authCubit),
     act: (cubit) async {
       await cubit.ensureLoaded();
       expect(cubit.state, isA<CompetitionListFailed>());
@@ -294,7 +294,7 @@ void main() {
     setUp: () => when(
       () => repository.myCompetitions(),
     ).thenAnswer((_) async => [_overview('c1', 'Office Table Tennis')]),
-    build: () => CompetitionListCubit(repository, authBloc),
+    build: () => CompetitionListCubit(repository, authCubit),
     act: (cubit) => cubit.ensureLoaded(),
     verify: (cubit) {
       expect(cubit.isMember('c1'), isTrue);
@@ -307,11 +307,11 @@ void main() {
     setUp: () => when(
       () => repository.myCompetitions(),
     ).thenAnswer((_) async => [_overview('c1', 'Office Table Tennis')]),
-    build: () => CompetitionListCubit(repository, authBloc),
+    build: () => CompetitionListCubit(repository, authCubit),
     act: (cubit) async {
       await cubit.ensureLoaded();
       authEvents.add(null);
-      await authBloc.stream.firstWhere((session) => !session.isAuthenticated);
+      await authCubit.stream.firstWhere((session) => !session.isAuthenticated);
       expect(cubit.state, isA<CompetitionListLoading>());
       await cubit.ensureLoaded();
     },

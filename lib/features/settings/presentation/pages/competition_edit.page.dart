@@ -14,7 +14,7 @@ import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/section_label.dart';
 import '../../../../core/widgets/settings_switch_row.dart';
 import '../../../../core/widgets/state_views.dart';
-import '../../../auth/presentation/cubit/auth_bloc.dart';
+import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../competition/domain/competition.model.dart';
 import '../cubit/competition_edit_cubit.dart';
 
@@ -71,7 +71,7 @@ class _CompetitionEditPageState extends State<CompetitionEditPage> {
 
   Widget _sidebar(BuildContext context, CompetitionEditState state) {
     final cubit = context.read<CompetitionEditCubit>();
-    final session = context.watch<AuthBloc>().state;
+    final session = context.watch<AuthCubit>().state;
     setPageTitle(context, context.l10n.competitionEdit);
 
     return AdaptiveScaffold(

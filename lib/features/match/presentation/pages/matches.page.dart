@@ -12,7 +12,7 @@ import '../../../../core/widgets/list_header.dart';
 import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/speech_bubble.dart';
 import '../../../../core/widgets/state_views.dart';
-import '../../../auth/presentation/cubit/auth_bloc.dart';
+import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/widgets/guest_notice.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
 import '../../../competition/presentation/widgets/competition_caption.dart';
@@ -69,7 +69,7 @@ class _MatchesPageState extends State<MatchesPage> {
     final competitionState = competitionCubit.state;
     final competition = competitionState.competition;
     final competitionId = widget.competitionId;
-    final session = context.watch<AuthBloc>().state;
+    final session = context.watch<AuthCubit>().state;
     final isRegistered = session.canWrite;
     final myPlayerId = competitionState.myPlayerId;
     final bottomInset = _bottomInset(context);

@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/app/app.dart';
 import 'package:keepscore2/features/auth/domain/auth_repository.dart';
 import 'package:keepscore2/features/auth/domain/auth_user.model.dart';
-import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
+import 'package:keepscore2/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:keepscore2/features/settings/domain/language_preference.enum.dart';
 import 'package:keepscore2/features/settings/presentation/cubit/language_cubit.dart';
 import 'package:keepscore2/features/settings/presentation/pages/language.page.dart';
@@ -23,15 +23,15 @@ void main() {
       const AuthUser(id: 'user-1', displayName: 'Ada', isGuest: false),
     );
     when(() => auth.watchUser()).thenAnswer((_) => const Stream.empty());
-    final authBloc = AuthBloc(auth);
+    final authCubit = AuthCubit(auth);
     addTearDown(cubit.close);
-    addTearDown(authBloc.close);
+    addTearDown(authCubit.close);
 
     await tester.pumpWidget(
       MultiBlocProvider(
         providers: [
           BlocProvider.value(value: cubit),
-          BlocProvider.value(value: authBloc),
+          BlocProvider.value(value: authCubit),
         ],
         child: MaterialApp(
           localizationsDelegates: KeepScoreApp.localizationsDelegates,

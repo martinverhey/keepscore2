@@ -4,7 +4,7 @@ import 'package:keepscore2/app/app.dart';
 import 'package:keepscore2/core/config/app_version.dart';
 import 'package:keepscore2/features/auth/domain/auth_repository.dart';
 import 'package:keepscore2/features/auth/domain/auth_user.model.dart';
-import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
+import 'package:keepscore2/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
@@ -81,18 +81,18 @@ class _Harness {
   final players = MockPlayerRepository();
 
   Future<AppLocalizations> pump(WidgetTester tester) async {
-    final authBloc = AuthBloc(auth);
-    final competitionCubit = CompetitionCubit(competitions, authBloc)
+    final authCubit = AuthCubit(auth);
+    final competitionCubit = CompetitionCubit(competitions, authCubit)
       ..select('c1');
     final playersCubit = PlayersCubit(players, 'c1')..load();
     addTearDown(playersCubit.close);
     addTearDown(competitionCubit.close);
-    addTearDown(authBloc.close);
+    addTearDown(authCubit.close);
 
     await tester.pumpWidget(
       MultiBlocProvider(
         providers: [
-          BlocProvider.value(value: authBloc),
+          BlocProvider.value(value: authCubit),
           BlocProvider.value(value: competitionCubit),
           BlocProvider.value(value: playersCubit),
           BlocProvider<ThemeCubit>(create: (_) => ThemeCubit()),

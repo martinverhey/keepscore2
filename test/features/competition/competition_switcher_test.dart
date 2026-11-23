@@ -7,7 +7,7 @@ import 'package:keepscore2/app/dependency_injection/injector.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 import 'package:keepscore2/features/auth/domain/auth_repository.dart';
 import 'package:keepscore2/features/auth/domain/auth_user.model.dart';
-import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
+import 'package:keepscore2/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:keepscore2/features/auth/presentation/widgets/guest_notice.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
@@ -55,7 +55,7 @@ CompetitionOverview _overview(
 
 void main() {
   late MockCompetitionRepository competitions;
-  late AuthBloc authBloc;
+  late AuthCubit authCubit;
   late CompetitionCubit competitionCubit;
   late CompetitionListCubit competitionListCubit;
 
@@ -80,16 +80,16 @@ void main() {
       () => competitions.overview('c1'),
     ).thenAnswer((_) async => _overview('c1', 'Office Table Tennis'));
 
-    authBloc = AuthBloc(auth);
-    competitionCubit = CompetitionCubit(competitions, authBloc);
-    competitionListCubit = CompetitionListCubit(competitions, authBloc);
+    authCubit = AuthCubit(auth);
+    competitionCubit = CompetitionCubit(competitions, authCubit);
+    competitionListCubit = CompetitionListCubit(competitions, authCubit);
   });
 
   tearDown(() async {
     AppPlatform.debugOverrideCupertino = null;
     await competitionListCubit.close();
     await competitionCubit.close();
-    await authBloc.close();
+    await authCubit.close();
   });
 
   Future<GoRouter> pumpPill(WidgetTester tester) async {
@@ -126,7 +126,7 @@ void main() {
     await tester.pumpWidget(
       MultiBlocProvider(
         providers: [
-          BlocProvider<AuthBloc>.value(value: authBloc),
+          BlocProvider<AuthCubit>.value(value: authCubit),
           BlocProvider<CompetitionCubit>.value(value: competitionCubit),
           BlocProvider<CompetitionListCubit>.value(value: competitionListCubit),
         ],
@@ -292,7 +292,7 @@ void main() {
       await tester.pumpWidget(
         MultiBlocProvider(
           providers: [
-            BlocProvider<AuthBloc>.value(value: authBloc),
+            BlocProvider<AuthCubit>.value(value: authCubit),
             BlocProvider<CompetitionCubit>.value(value: competitionCubit),
             BlocProvider<CompetitionListCubit>.value(
               value: competitionListCubit,

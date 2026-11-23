@@ -7,7 +7,7 @@ import '../../../../core/extensions/player_list.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/page_title.dart';
-import '../../../auth/presentation/cubit/auth_bloc.dart';
+import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../competition/domain/competition.model.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
 import '../../../competition/presentation/widgets/profile_button.dart';
@@ -50,7 +50,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
     final competitionState = competitionCubit.state;
     final competition = competitionState.competition;
     final competitionId = widget.competitionId;
-    final session = context.watch<AuthBloc>().state;
+    final session = context.watch<AuthCubit>().state;
     final playersState = context.watch<PlayersCubit>().state;
     final myPlayerId = competitionState.myPlayerId;
     final myDisplayName = playersState is PlayersReady

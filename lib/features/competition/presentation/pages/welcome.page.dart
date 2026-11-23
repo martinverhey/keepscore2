@@ -9,7 +9,7 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/state_views.dart';
-import '../../../auth/presentation/cubit/auth_bloc.dart';
+import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/pages/sign_out_flow.dart';
 import '../../../auth/presentation/widgets/guest_notice.dart';
 import '../cubit/competition_list_cubit.dart';
@@ -31,7 +31,7 @@ class _WelcomePageState extends State<WelcomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final session = context.watch<AuthBloc>().state;
+    final session = context.watch<AuthCubit>().state;
     setPageTitle(context, context.l10n.appTitle);
 
     return AdaptiveScaffold(

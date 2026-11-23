@@ -6,7 +6,7 @@ import 'package:keepscore2/core/theme/app_tokens.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 import 'package:keepscore2/features/auth/domain/auth_repository.dart';
 import 'package:keepscore2/features/auth/domain/auth_user.model.dart';
-import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
+import 'package:keepscore2/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
@@ -47,7 +47,7 @@ void main() {
   final binding = TestWidgetsFlutterBinding.ensureInitialized();
 
   late MockAuthRepository auth;
-  late AuthBloc authBloc;
+  late AuthCubit authCubit;
   late MockCompetitionRepository competitions;
 
   setUp(() {
@@ -60,8 +60,8 @@ void main() {
     );
     when(() => auth.watchUser()).thenAnswer((_) => const Stream.empty());
     when(() => auth.signOut()).thenAnswer((_) async {});
-    authBloc = AuthBloc(auth);
-    addTearDown(authBloc.close);
+    authCubit = AuthCubit(auth);
+    addTearDown(authCubit.close);
 
     competitions = MockCompetitionRepository();
     when(
@@ -83,7 +83,7 @@ void main() {
   }
 
   CompetitionCubit competitionCubit({required bool selected}) {
-    final cubit = CompetitionCubit(competitions, authBloc);
+    final cubit = CompetitionCubit(competitions, authCubit);
     addTearDown(cubit.close);
     if (selected) cubit.select('c1');
     return cubit;
@@ -93,7 +93,7 @@ void main() {
       MultiBlocProvider(
         providers: [
           BlocProvider<ThemeCubit>(create: (_) => ThemeCubit()),
-          BlocProvider<AuthBloc>.value(value: authBloc),
+          BlocProvider<AuthCubit>.value(value: authCubit),
           BlocProvider<CompetitionCubit>.value(
             value: competitionCubit(selected: selected),
           ),
@@ -423,7 +423,7 @@ void main() {
       MultiBlocProvider(
         providers: [
           BlocProvider<ThemeCubit>.value(value: themeCubit),
-          BlocProvider<AuthBloc>.value(value: authBloc),
+          BlocProvider<AuthCubit>.value(value: authCubit),
           BlocProvider<CompetitionCubit>.value(
             value: competitionCubit(selected: true),
           ),

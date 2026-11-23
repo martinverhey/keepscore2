@@ -5,7 +5,7 @@ import 'package:keepscore2/app/app.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 import 'package:keepscore2/features/auth/domain/auth_repository.dart';
 import 'package:keepscore2/features/auth/domain/auth_user.model.dart';
-import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
+import 'package:keepscore2/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
@@ -152,9 +152,9 @@ void main() {
       when(() => leaderboard.medals(id)).thenAnswer((_) async => []);
     }
 
-    final authBloc = AuthBloc(auth);
+    final authCubit = AuthCubit(auth);
     final gameTypeFilterCubit = GameTypeFilterCubit();
-    addTearDown(authBloc.close);
+    addTearDown(authCubit.close);
     addTearDown(gameTypeFilterCubit.close);
 
     final router = GoRouter(
@@ -248,10 +248,12 @@ void main() {
     await tester.pumpWidget(
       MultiBlocProvider(
         providers: [
-          BlocProvider<AuthBloc>.value(value: authBloc),
+          BlocProvider<AuthCubit>.value(value: authCubit),
           BlocProvider<GameTypeFilterCubit>.value(value: gameTypeFilterCubit),
           BlocProvider<ThemeCubit>(create: (_) => ThemeCubit()),
-          BlocProvider(create: (_) => CompetitionCubit(competitions, authBloc)),
+          BlocProvider(
+            create: (_) => CompetitionCubit(competitions, authCubit),
+          ),
         ],
         child: MaterialApp.router(
           routerConfig: router,

@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/data/recent_competition_store.dart';
 import '../../core/widgets/adaptive/adaptive.dart';
-import '../../features/auth/presentation/cubit/auth_bloc.dart';
+import '../../features/auth/presentation/cubit/auth_cubit.dart';
 import '../../features/auth/presentation/cubit/sign_in_cubit.dart';
 import '../../features/auth/presentation/pages/sign_in.page.dart';
 import '../../features/auth/presentation/pages/upgrade_account.page.dart';
@@ -58,7 +58,7 @@ Future<String?> resolveHomeTarget(CompetitionListCubit competitions) async {
   return Routes.competition(state.competitions.first.id);
 }
 
-GoRouter createRouter(AuthBloc authBloc) {
+GoRouter createRouter(AuthCubit authCubit) {
   Future<String?>? pendingHomeTarget;
 
   Future<String?> resolveHomeTargetOnce() {
@@ -71,12 +71,12 @@ GoRouter createRouter(AuthBloc authBloc) {
 
   return GoRouter(
     initialLocation: Routes.home,
-    refreshListenable: GoRouterRefreshStream(authBloc.stream),
+    refreshListenable: GoRouterRefreshStream(authCubit.stream),
     redirect: (context, state) async {
-      final session = authBloc.state;
+      final session = authCubit.state;
       final location = state.matchedLocation;
 
-      if (session.status == AuthStatus.unknown) {
+      if (session is AuthUnknown) {
         return location == Routes.splash ? null : Routes.splash;
       }
 

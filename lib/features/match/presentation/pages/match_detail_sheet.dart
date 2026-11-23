@@ -12,7 +12,7 @@ import '../../../../core/widgets/failure_text.dart';
 import '../../../../core/widgets/sheet.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../../core/widgets/titled_card.dart';
-import '../../../auth/presentation/cubit/auth_bloc.dart';
+import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../domain/elo_calculator.dart';
 import '../../domain/match_entry.model.dart';
 import '../cubit/match_detail_cubit.dart';
@@ -44,7 +44,7 @@ class MatchDetailSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final session = context.watch<AuthBloc>().state;
+    final session = context.watch<AuthCubit>().state;
 
     return BlocBuilder<MatchDetailCubit, MatchDetailState>(
       builder: (context, state) {

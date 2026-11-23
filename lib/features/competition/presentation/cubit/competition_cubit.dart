@@ -3,20 +3,20 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 
 import '../../../../core/error/failure.dart';
-import '../../../auth/presentation/cubit/auth_bloc.dart';
+import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../domain/competition_repository.dart';
 import 'competition_state.dart';
 
 export 'competition_state.dart';
 
 class CompetitionCubit extends Cubit<CompetitionState> {
-  CompetitionCubit(this._repository, this._authBloc)
+  CompetitionCubit(this._repository, this._authCubit)
     : super(const CompetitionLoading()) {
-    _authSubscription = _authBloc.stream.listen(_onSession);
+    _authSubscription = _authCubit.stream.listen(_onSession);
   }
 
   final CompetitionRepository _repository;
-  final AuthBloc _authBloc;
+  final AuthCubit _authCubit;
 
   late final StreamSubscription<AuthSessionState> _authSubscription;
 

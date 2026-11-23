@@ -8,7 +8,7 @@ import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/failure_text.dart';
 import '../../../../core/widgets/sheet.dart';
 import '../../../../core/widgets/state_views.dart';
-import '../../../auth/presentation/cubit/auth_bloc.dart';
+import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../domain/competition.model.dart';
 import '../cubit/competition_cubit.dart';
 import '../cubit/competition_list_cubit.dart';
@@ -37,7 +37,7 @@ class CompetitionSwitcherSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final session = context.watch<AuthBloc>().state;
+    final session = context.watch<AuthCubit>().state;
     final currentId = context.select<CompetitionCubit, String?>(
       (cubit) => cubit.state.competition?.id,
     );

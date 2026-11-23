@@ -6,7 +6,7 @@ import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/extensions/competition.extension.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/sheet.dart';
-import '../../../auth/presentation/cubit/auth_bloc.dart';
+import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
 import '../cubit/players_cubit.dart';
 import '../widgets/players.dart';
@@ -29,7 +29,7 @@ class ManagePlayersSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final session = context.watch<AuthBloc>().state;
+    final session = context.watch<AuthCubit>().state;
     final competition = context.watch<CompetitionCubit>().state.competition;
     final isOwner = session.canWrite && competition.isOwnedBySession(session);
 

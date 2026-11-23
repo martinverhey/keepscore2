@@ -4,7 +4,7 @@ import 'package:keepscore2/app/app.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 import 'package:keepscore2/features/auth/domain/auth_repository.dart';
 import 'package:keepscore2/features/auth/domain/auth_user.model.dart';
-import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
+import 'package:keepscore2/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
@@ -69,20 +69,20 @@ void main() {
       () => players.currentPlayers('c1'),
     ).thenAnswer((_) async => const [_player]);
 
-    final authBloc = AuthBloc(auth);
-    final competitionCubit = CompetitionCubit(competitions, authBloc);
+    final authCubit = AuthCubit(auth);
+    final competitionCubit = CompetitionCubit(competitions, authCubit);
     final playersCubit = PlayersCubit(players, 'c1')..load();
     addTearDown(() async {
       await playersCubit.close();
       await competitionCubit.close();
-      await authBloc.close();
+      await authCubit.close();
     });
     await competitionCubit.select('c1');
 
     await tester.pumpWidget(
       MultiBlocProvider(
         providers: [
-          BlocProvider<AuthBloc>.value(value: authBloc),
+          BlocProvider<AuthCubit>.value(value: authCubit),
           BlocProvider<CompetitionCubit>.value(value: competitionCubit),
           BlocProvider<PlayersCubit>.value(value: playersCubit),
         ],

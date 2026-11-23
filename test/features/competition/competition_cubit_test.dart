@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/error/failure.dart';
 import 'package:keepscore2/features/auth/domain/auth_repository.dart';
 import 'package:keepscore2/features/auth/domain/auth_user.model.dart';
-import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
+import 'package:keepscore2/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
@@ -40,7 +40,7 @@ CompetitionOverview _overview({
 
 void main() {
   late MockCompetitionRepository repository;
-  late AuthBloc authBloc;
+  late AuthCubit authCubit;
   late StreamController<AuthUser?> users;
 
   setUp(() {
@@ -52,13 +52,13 @@ void main() {
       const AuthUser(id: 'user-1', displayName: 'Ada', isGuest: false),
     );
     when(() => auth.watchUser()).thenAnswer((_) => users.stream);
-    authBloc = AuthBloc(auth);
+    authCubit = AuthCubit(auth);
     addTearDown(users.close);
-    addTearDown(authBloc.close);
+    addTearDown(authCubit.close);
   });
 
   CompetitionCubit build() {
-    final cubit = CompetitionCubit(repository, authBloc);
+    final cubit = CompetitionCubit(repository, authCubit);
     addTearDown(cubit.close);
     return cubit;
   }
@@ -68,7 +68,7 @@ void main() {
     setUp: () => when(
       () => repository.overview('c1'),
     ).thenAnswer((_) async => _overview()),
-    build: () => CompetitionCubit(repository, authBloc),
+    build: () => CompetitionCubit(repository, authCubit),
     act: (cubit) => cubit.select('c1'),
     verify: (cubit) {
       expect(cubit.state.competition?.name, 'Office Table Tennis');
@@ -81,7 +81,7 @@ void main() {
     'way as one that never existed',
     setUp: () =>
         when(() => repository.overview('c1')).thenAnswer((_) async => null),
-    build: () => CompetitionCubit(repository, authBloc),
+    build: () => CompetitionCubit(repository, authCubit),
     act: (cubit) => cubit.select('c1'),
     verify: (cubit) => expect(cubit.state, isA<CompetitionMissing>()),
   );
@@ -91,7 +91,7 @@ void main() {
     setUp: () => when(
       () => repository.overview('c1'),
     ).thenAnswer((_) async => _overview()),
-    build: () => CompetitionCubit(repository, authBloc),
+    build: () => CompetitionCubit(repository, authCubit),
     act: (cubit) async {
       await cubit.select('c1');
       when(() => repository.overview('c1')).thenThrow(const NetworkFailure());
@@ -174,7 +174,7 @@ void main() {
     expect(cubit.state, isA<CompetitionReady>());
 
     users.add(null);
-    await authBloc.stream.firstWhere((session) => !session.isAuthenticated);
+    await authCubit.stream.firstWhere((session) => !session.isAuthenticated);
     await Future<void>.delayed(Duration.zero);
 
     expect(cubit.competitionId, isNull);

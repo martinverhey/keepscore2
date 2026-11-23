@@ -1,4 +1,4 @@
-import '../../features/auth/presentation/cubit/auth_bloc.dart';
+import '../../features/auth/presentation/cubit/auth_cubit.dart';
 import '../../features/competition/domain/competition.model.dart';
 
 extension CompetitionOwnership on Competition? {

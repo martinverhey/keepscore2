@@ -10,7 +10,7 @@ import '../core/extensions/language_preference.extension.dart';
 import '../core/extensions/theme_preference.extension.dart';
 import '../core/theme/app_theme.dart';
 import '../core/widgets/adaptive/app_platform.dart';
-import '../features/auth/presentation/cubit/auth_bloc.dart';
+import '../features/auth/presentation/cubit/auth_cubit.dart';
 import '../features/competition/presentation/cubit/competition_cubit.dart';
 import '../features/competition/presentation/cubit/competition_list_cubit.dart';
 import '../features/match/presentation/cubit/game_type_filter_cubit.dart';
@@ -36,7 +36,7 @@ class KeepScoreApp extends StatefulWidget {
 }
 
 class _KeepScoreAppState extends State<KeepScoreApp> {
-  late final AuthBloc _authBloc = getIt<AuthBloc>();
+  late final AuthCubit _authCubit = getIt<AuthCubit>();
   late final ThemeCubit _themeCubit = getIt<ThemeCubit>();
   late final LanguageCubit _languageCubit = getIt<LanguageCubit>();
   late final GameTypeFilterCubit _gameTypeFilterCubit =
@@ -44,13 +44,13 @@ class _KeepScoreAppState extends State<KeepScoreApp> {
   late final CompetitionCubit _competitionCubit = getIt<CompetitionCubit>();
   late final CompetitionListCubit _competitionListCubit =
       getIt<CompetitionListCubit>();
-  late final GoRouter _router = createRouter(_authBloc);
+  late final GoRouter _router = createRouter(_authCubit);
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<AuthBloc>.value(value: _authBloc),
+        BlocProvider<AuthCubit>.value(value: _authCubit),
         BlocProvider<ThemeCubit>.value(value: _themeCubit),
         BlocProvider<LanguageCubit>.value(value: _languageCubit),
         BlocProvider<GameTypeFilterCubit>.value(value: _gameTypeFilterCubit),

@@ -3,7 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/auth/data/supabase_auth_repository.dart';
 import '../../features/auth/domain/auth_repository.dart';
-import '../../features/auth/presentation/cubit/auth_bloc.dart';
+import '../../features/auth/presentation/cubit/auth_cubit.dart';
 import '../../features/auth/presentation/cubit/sign_in_cubit.dart';
 import '../../features/competition/data/supabase_competition_repository.dart';
 import '../../features/competition/domain/competition_repository.dart';
@@ -41,7 +41,7 @@ Future<void> configureDependencies() async {
     ..registerLazySingleton<AuthRepository>(
       () => SupabaseAuthRepository(getIt<SupabaseClient>()),
     )
-    ..registerLazySingleton<AuthBloc>(() => AuthBloc(getIt<AuthRepository>()))
+    ..registerLazySingleton<AuthCubit>(() => AuthCubit(getIt<AuthRepository>()))
     ..registerFactoryParam<SignInCubit, SignInMode, void>(
       (mode, _) => SignInCubit(getIt<AuthRepository>(), mode: mode),
     )
@@ -51,7 +51,7 @@ Future<void> configureDependencies() async {
     ..registerLazySingleton<CompetitionListCubit>(
       () => CompetitionListCubit(
         getIt<CompetitionRepository>(),
-        getIt<AuthBloc>(),
+        getIt<AuthCubit>(),
       ),
     )
     ..registerFactory<CreateCompetitionCubit>(
@@ -64,7 +64,8 @@ Future<void> configureDependencies() async {
       () => SupabasePlayerRepository(getIt<SupabaseClient>()),
     )
     ..registerLazySingleton<CompetitionCubit>(
-      () => CompetitionCubit(getIt<CompetitionRepository>(), getIt<AuthBloc>()),
+      () =>
+          CompetitionCubit(getIt<CompetitionRepository>(), getIt<AuthCubit>()),
     )
     ..registerFactoryParam<CompetitionEditCubit, String, void>(
       (competitionId, _) =>

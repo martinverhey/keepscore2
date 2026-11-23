@@ -9,7 +9,7 @@ import 'package:keepscore2/core/error/failure.dart';
 import 'package:keepscore2/core/widgets/adaptive/app_platform.dart';
 import 'package:keepscore2/features/auth/domain/auth_repository.dart';
 import 'package:keepscore2/features/auth/domain/auth_user.model.dart';
-import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
+import 'package:keepscore2/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
@@ -45,7 +45,7 @@ CompetitionOverview _overview(String id) => CompetitionOverview(
 void main() {
   late MockCompetitionRepository competitions;
   late MockAuthRepository auth;
-  late AuthBloc authBloc;
+  late AuthCubit authCubit;
   late CompetitionListCubit competitionListCubit;
   late CompetitionCubit competitionCubit;
 
@@ -61,9 +61,9 @@ void main() {
     );
     when(() => auth.watchUser()).thenAnswer((_) => const Stream.empty());
 
-    authBloc = AuthBloc(auth);
-    competitionListCubit = CompetitionListCubit(competitions, authBloc);
-    competitionCubit = CompetitionCubit(competitions, authBloc);
+    authCubit = AuthCubit(auth);
+    competitionListCubit = CompetitionListCubit(competitions, authCubit);
+    competitionCubit = CompetitionCubit(competitions, authCubit);
 
     getIt.registerSingleton<CompetitionListCubit>(competitionListCubit);
   });
@@ -73,15 +73,15 @@ void main() {
     await getIt.reset(dispose: false);
     await competitionListCubit.close();
     await competitionCubit.close();
-    await authBloc.close();
+    await authCubit.close();
   });
 
   Future<GoRouter> pumpApp(WidgetTester tester) async {
-    final router = createRouter(authBloc);
+    final router = createRouter(authCubit);
     await tester.pumpWidget(
       MultiBlocProvider(
         providers: [
-          BlocProvider<AuthBloc>.value(value: authBloc),
+          BlocProvider<AuthCubit>.value(value: authCubit),
           BlocProvider<CompetitionCubit>.value(value: competitionCubit),
           BlocProvider<CompetitionListCubit>.value(value: competitionListCubit),
         ],

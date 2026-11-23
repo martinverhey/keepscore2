@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
-import '../../../auth/presentation/cubit/auth_bloc.dart';
+import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/pages/sign_out_flow.dart';
 import '../../../match/presentation/pages/new_match_sheet.dart';
 import '../../../settings/domain/theme_preference.enum.dart';
@@ -40,7 +40,7 @@ class Sidebar extends StatelessWidget {
   }
 
   Widget _content(BuildContext context) {
-    final session = context.watch<AuthBloc>().state;
+    final session = context.watch<AuthCubit>().state;
     final competition = context.watch<CompetitionCubit>().state.competition;
     final isRegistered = session.canWrite;
 

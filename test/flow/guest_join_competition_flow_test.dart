@@ -10,7 +10,7 @@ import 'package:keepscore2/core/widgets/adaptive/adaptive_tab_bar.dart';
 import 'package:keepscore2/core/widgets/adaptive/app_platform.dart';
 import 'package:keepscore2/features/auth/domain/auth_repository.dart';
 import 'package:keepscore2/features/auth/domain/auth_user.model.dart';
-import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
+import 'package:keepscore2/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:keepscore2/features/auth/presentation/cubit/sign_in_cubit.dart';
 import 'package:keepscore2/features/auth/presentation/pages/sign_in.page.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
@@ -258,8 +258,8 @@ void main() {
         () => leaderboard.medals(_competitionId),
       ).thenAnswer((_) async => const []);
 
-      final authBloc = AuthBloc(auth);
-      addTearDown(authBloc.close);
+      final authCubit = AuthCubit(auth);
+      addTearDown(authCubit.close);
 
       getIt.registerFactory<JoinCompetitionCubit>(
         () => JoinCompetitionCubit(competitions),
@@ -267,7 +267,7 @@ void main() {
       addTearDown(() => getIt.reset(dispose: false));
 
       final router = _buildRouter(
-        authBloc,
+        authCubit,
         authRepository: auth,
         playerRepository: players,
         matchRepository: matches,
@@ -278,13 +278,13 @@ void main() {
       await tester.pumpWidget(
         MultiBlocProvider(
           providers: [
-            BlocProvider<AuthBloc>.value(value: authBloc),
+            BlocProvider<AuthCubit>.value(value: authCubit),
             BlocProvider<GameTypeFilterCubit>.value(value: gameTypeFilterCubit),
             BlocProvider(
-              create: (_) => CompetitionCubit(competitions, authBloc),
+              create: (_) => CompetitionCubit(competitions, authCubit),
             ),
             BlocProvider(
-              create: (_) => CompetitionListCubit(competitions, authBloc),
+              create: (_) => CompetitionListCubit(competitions, authCubit),
             ),
           ],
           child: MaterialApp.router(
@@ -374,7 +374,7 @@ Future<void> _expectMatchesTabIsPopulated(
 }
 
 GoRouter _buildRouter(
-  AuthBloc authBloc, {
+  AuthCubit authCubit, {
   required AuthRepository authRepository,
   required PlayerRepository playerRepository,
   required MatchRepository matchRepository,
@@ -383,10 +383,10 @@ GoRouter _buildRouter(
 }) {
   return GoRouter(
     initialLocation: '/sign-in',
-    refreshListenable: GoRouterRefreshStream(authBloc.stream),
+    refreshListenable: GoRouterRefreshStream(authCubit.stream),
     redirect: (context, state) {
       final location = state.matchedLocation;
-      if (!authBloc.state.isAuthenticated) {
+      if (!authCubit.state.isAuthenticated) {
         return location == '/sign-in' ? null : '/sign-in';
       }
       if (location == '/sign-in') return '/home';

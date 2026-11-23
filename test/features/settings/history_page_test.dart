@@ -4,7 +4,7 @@ import 'package:keepscore2/app/app.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 import 'package:keepscore2/features/auth/domain/auth_repository.dart';
 import 'package:keepscore2/features/auth/domain/auth_user.model.dart';
-import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
+import 'package:keepscore2/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
@@ -133,20 +133,20 @@ void main() {
         ],
       );
 
-      final authBloc = AuthBloc(auth);
-      final competitionDetailCubit = CompetitionCubit(competitions, authBloc)
+      final authCubit = AuthCubit(auth);
+      final competitionDetailCubit = CompetitionCubit(competitions, authCubit)
         ..select('c1');
       final historyCubit = HistoryCubit(leaderboard, 'c1');
       addTearDown(competitionDetailCubit.close);
       addTearDown(historyCubit.close);
-      addTearDown(authBloc.close);
+      addTearDown(authCubit.close);
 
       await tester.pumpWidget(
         MultiBlocProvider(
           providers: [
             BlocProvider.value(value: competitionDetailCubit),
             BlocProvider.value(value: historyCubit),
-            BlocProvider.value(value: authBloc),
+            BlocProvider.value(value: authCubit),
           ],
           child: MaterialApp(
             localizationsDelegates: KeepScoreApp.localizationsDelegates,

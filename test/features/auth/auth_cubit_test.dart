@@ -4,7 +4,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/features/auth/domain/auth_repository.dart';
 import 'package:keepscore2/features/auth/domain/auth_user.model.dart';
-import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
+import 'package:keepscore2/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}
@@ -33,29 +33,29 @@ void main() {
   tearDown(() => users.close());
 
   test('starts unknown so the router can hold on the splash', () {
-    expect(AuthBloc(repository).state.status, AuthStatus.unknown);
+    expect(AuthCubit(repository).state, isA<AuthUnknown>());
   });
 
-  blocTest<AuthBloc, AuthSessionState>(
+  blocTest<AuthCubit, AuthSessionState>(
     'settles on unauthenticated when there is no stored session',
-    build: () => AuthBloc(repository),
-    expect: () => [const AuthSessionState.unauthenticated()],
+    build: () => AuthCubit(repository),
+    expect: () => [const AuthUnauthenticated()],
   );
 
-  blocTest<AuthBloc, AuthSessionState>(
+  blocTest<AuthCubit, AuthSessionState>(
     'seeds from a restored session without waiting for the stream',
     setUp: () => when(() => repository.currentUser).thenReturn(_registered),
-    build: () => AuthBloc(repository),
-    expect: () => [const AuthSessionState.authenticated(_registered)],
+    build: () => AuthCubit(repository),
+    expect: () => [const AuthAuthenticated(_registered)],
     verify: (bloc) {
       expect(bloc.state.canWrite, isTrue);
       expect(bloc.state.isGuest, isFalse);
     },
   );
 
-  blocTest<AuthBloc, AuthSessionState>(
+  blocTest<AuthCubit, AuthSessionState>(
     'follows the repository stream through sign-in and sign-out',
-    build: () => AuthBloc(repository),
+    build: () => AuthCubit(repository),
     act: (bloc) async {
       await Future<void>.delayed(Duration.zero);
       users.add(_registered);
@@ -63,22 +63,22 @@ void main() {
       users.add(null);
     },
     expect: () => [
-      const AuthSessionState.unauthenticated(),
-      const AuthSessionState.authenticated(_registered),
-      const AuthSessionState.unauthenticated(),
+      const AuthUnauthenticated(),
+      const AuthAuthenticated(_registered),
+      const AuthUnauthenticated(),
     ],
   );
 
-  blocTest<AuthBloc, AuthSessionState>(
+  blocTest<AuthCubit, AuthSessionState>(
     'a guest is authenticated but may not write',
-    build: () => AuthBloc(repository),
+    build: () => AuthCubit(repository),
     act: (bloc) async {
       await Future<void>.delayed(Duration.zero);
       users.add(_guest);
     },
     expect: () => [
-      const AuthSessionState.unauthenticated(),
-      const AuthSessionState.authenticated(_guest),
+      const AuthUnauthenticated(),
+      const AuthAuthenticated(_guest),
     ],
     verify: (bloc) {
       expect(bloc.state.isAuthenticated, isTrue);
@@ -87,15 +87,15 @@ void main() {
     },
   );
 
-  blocTest<AuthBloc, AuthSessionState>(
+  blocTest<AuthCubit, AuthSessionState>(
     'sign-out delegates to the repository and waits for the stream',
     setUp: () => when(() => repository.currentUser).thenReturn(_registered),
-    build: () => AuthBloc(repository),
+    build: () => AuthCubit(repository),
     act: (bloc) async {
       await Future<void>.delayed(Duration.zero);
-      bloc.add(const AuthSignOutRequested());
+      await bloc.signOut();
     },
-    expect: () => [const AuthSessionState.authenticated(_registered)],
+    expect: () => [const AuthAuthenticated(_registered)],
     verify: (_) => verify(() => repository.signOut()).called(1),
   );
 }

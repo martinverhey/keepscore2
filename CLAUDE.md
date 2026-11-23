@@ -48,10 +48,10 @@ with both the switch's own `onChanged` and the whole row's `onTap` calling
 callback down, which is why `Sidebar` reads `ThemeCubit` from context itself
 rather than taking an `onToggleTheme` prop (every one of its call sites would
 have passed the identical closure — the same reasoning that later moved
-`AuthBloc` and every navigation callback inside it too, see the sidebar
+`AuthCubit` and every navigation callback inside it too, see the sidebar
 section below). The cost of that is that **every widget test mounting a
 `Sidebar`, or a page composed with one, now needs a `ThemeCubit` and an
-`AuthBloc` in scope** — in the app both come from `KeepScoreApp`'s root
+`AuthCubit` in scope** — in the app both come from `KeepScoreApp`'s root
 `MultiBlocProvider`, but `sidebar_test.dart`, `profile_page_test.dart` and
 `competition_content_page_test.dart` each provide their own (the test file kept
 its old name across the rename below — it now pumps a `StatefulShellRoute` and
@@ -62,7 +62,7 @@ with `SignInMode.upgrade`, which routes the two email steps to
 `upgradeGuestWithEmail` / `verifyUpgradeCode` (Supabase `updateUser` + an
 `emailChange` OTP) instead of a fresh sign-in. Every place that refuses a guest
 renders `GuestNotice`, which carries the refusal *and* the way out; the page pops
-itself when `AuthBloc` reports the user is no longer anonymous.
+itself when `AuthCubit` reports the user is no longer anonymous.
 
 `/competition/:id` redirects to `/competition/:id/leaderboard` — Leaderboard and Matches
 are each a real route, not a tab switch inside one page: a
@@ -492,7 +492,7 @@ refreshes the list when either sheet closes — realtime does it.
 ### Guest-gated features
 
 Enforced in Postgres (source of truth) and mirrored in the UI at every
-write-capable surface, gated on `session.canWrite` from `AuthBloc` (passed
+write-capable surface, gated on `session.canWrite` from `AuthCubit` (passed
 down as `isRegistered`). Keep this list current when a gated surface is added
 or moved:
 
@@ -563,7 +563,7 @@ concern.
 ### The current competition is app-wide
 
 `CompetitionCubit` is a `registerLazySingleton`, provided in `KeepScoreApp`'s
-root `MultiBlocProvider` next to `AuthBloc`/`ThemeCubit`/`LanguageCubit`/
+root `MultiBlocProvider` next to `AuthCubit`/`ThemeCubit`/`LanguageCubit`/
 `GameTypeFilterCubit`. It is the single answer to "which competition is the
 user in", available to every page and to the sidebar whether or not the
 current route is competition-scoped. Before this it was a
@@ -595,7 +595,7 @@ discipline, and these three rules are what replace it — all four covered in
 - Every `await` in `load()` is followed by a `competitionId != _competitionId`
   guard, so a slow response for a competition the user has already navigated
   away from is dropped rather than emitted.
-- The cubit subscribes to `AuthBloc` in its constructor and clears itself
+- The cubit subscribes to `AuthCubit` in its constructor and clears itself
   when the session stops being authenticated. Without that, signing out and
   back in as someone else leaves the previous user's competition in the
   sidebar — the router's recent-competition redirect catches the *routing*
@@ -757,7 +757,7 @@ the join or create sheet comes back with an id — otherwise the new
 competition would be missing from the switcher. (It already was, before the cache: nothing but pull-to-refresh ever
 refetched it.)
 
-The cubit subscribes to `AuthBloc` and resets to `CompetitionListLoading` when
+The cubit subscribes to `AuthCubit` and resets to `CompetitionListLoading` when
 the session stops being authenticated, for the same reason `CompetitionCubit`
 does — otherwise signing out and back in as someone else serves the previous
 user's competitions from cache.
@@ -955,8 +955,12 @@ code; don't relitigate them.
     `<name>_cubit.dart` (e.g. `players_cubit.dart` / `players_state.dart`).
     The state file holds the state class, its companion status enum(s), and
     any private helper used only by the state (e.g. a `copyWith`-adjacent
-    formatter). This applies to Cubits. `AuthBloc` is a `Bloc` (state *and*
-    events tightly coupled, one small file) and stays as-is.
+    formatter). There are no
+    `Bloc`s: `AuthCubit` was the last one, converted because none of its
+    events needed a transformer and one existed only to forward a stream
+    callback into `emit`. It still starts on `AuthUnknown` and resolves on a
+    microtask (`scheduleMicrotask(_restoreSession)`), as the Bloc did, so the
+    router holds on the splash for that first frame.
   - **Every cubit state is a `sealed` hierarchy of subclasses, not one flat
     `status`-enum-plus-nullable-fields class** — "one class per file" is
     about not scattering a type across the codebase, not about how many
@@ -1505,7 +1509,7 @@ the treatment below. Mirrors `debugOverrideCupertino` with
   **It takes `current`, `onSelectSection` and `child` — nothing else**, and
   renders exactly once, from a `ShellRoute` above every page that has one
   (see "The sidebar is a shell, not a per-page wrapper" below); no page
-  composes it. It reads `AuthBloc`, `ThemeCubit` and `CompetitionCubit` off
+  composes it. It reads `AuthCubit`, `ThemeCubit` and `CompetitionCubit` off
   the context itself and owns its own sign-out, because every call site was
   otherwise passing back the identical closure or the identical data.
   Getting there needed three things:

@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
-import '../cubit/auth_bloc.dart';
+import '../cubit/auth_cubit.dart';
 import '../cubit/sign_in_cubit.dart';
 import '../widgets/auth_form_parts.dart';
 
@@ -14,7 +14,7 @@ class UpgradeAccountPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AuthBloc, AuthSessionState>(
+    return BlocListener<AuthCubit, AuthSessionState>(
       listenWhen: (previous, current) =>
           previous.isGuest && !current.isGuest && current.isAuthenticated,
       listener: (context, state) {

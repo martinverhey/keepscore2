@@ -3,12 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
-import '../cubit/auth_bloc.dart';
+import '../cubit/auth_cubit.dart';
 
 Future<void> signOut(BuildContext context) async {
-  final bloc = context.read<AuthBloc>();
-  if (bloc.state.isGuest && !await _confirmGuestSignOut(context)) return;
-  bloc.add(const AuthSignOutRequested());
+  final auth = context.read<AuthCubit>();
+  if (auth.state.isGuest && !await _confirmGuestSignOut(context)) return;
+  await auth.signOut();
 }
 
 Future<bool> _confirmGuestSignOut(BuildContext context) {

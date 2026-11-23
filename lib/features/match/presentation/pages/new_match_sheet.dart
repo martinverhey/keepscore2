@@ -14,7 +14,7 @@ import '../../../../core/widgets/failure_text.dart';
 import '../../../../core/widgets/sheet.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../../core/widgets/swipe_navigator.dart';
-import '../../../auth/presentation/cubit/auth_bloc.dart';
+import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
 import '../../../player/domain/player.model.dart';
 import '../../../player/presentation/pages/manage_players_sheet.dart';
@@ -341,7 +341,7 @@ class _NewMatchSheetState extends State<NewMatchSheet> {
     String? myPlayerId,
   ) async {
     final cubit = context.read<MatchFormCubit>();
-    final session = context.read<AuthBloc>().state;
+    final session = context.read<AuthCubit>().state;
     final competition = context.read<CompetitionCubit>().state.competition;
 
     final picked = await showAdaptiveSheet<TeamPickerResult>(

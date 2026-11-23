@@ -8,7 +8,7 @@ import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/extensions/competition_tab.extension.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/swipe_navigator.dart';
-import '../../../auth/presentation/cubit/auth_bloc.dart';
+import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../match/presentation/pages/new_match_sheet.dart';
 import '../../../player/presentation/cubit/players_cubit.dart';
 import '../cubit/competition_cubit.dart';
@@ -106,5 +106,5 @@ class _CompetitionShellState extends State<CompetitionShell> {
       CompetitionTab.values[widget.navigationShell.currentIndex];
 
   bool _canWrite(BuildContext context) =>
-      context.watch<AuthBloc>().state.canWrite;
+      context.watch<AuthCubit>().state.canWrite;
 }

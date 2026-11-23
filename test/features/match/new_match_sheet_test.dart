@@ -7,7 +7,7 @@ import 'package:keepscore2/core/widgets/selectable_row.dart';
 import 'package:keepscore2/core/widgets/swipe_navigator.dart';
 import 'package:keepscore2/features/auth/domain/auth_repository.dart';
 import 'package:keepscore2/features/auth/domain/auth_user.model.dart';
-import 'package:keepscore2/features/auth/presentation/cubit/auth_bloc.dart';
+import 'package:keepscore2/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:keepscore2/features/competition/domain/competition.model.dart';
 import 'package:keepscore2/features/competition/domain/competition_repository.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/competition_cubit.dart';
@@ -56,7 +56,7 @@ Player _player(String id, String name) =>
     Player(id: id, competitionId: 'c1', displayName: name, isActive: true);
 
 typedef _Blocs = ({
-  AuthBloc auth,
+  AuthCubit auth,
   CompetitionCubit competition,
   MatchFormCubit form,
   PlayerRepository players,
@@ -113,15 +113,15 @@ _Blocs _blocs({String? myPlayerId}) {
 
   final form = MatchFormCubit(matches, competitions, players, leaderboard, 'c1')
     ..load();
-  final authBloc = AuthBloc(auth);
-  final competitionCubit = CompetitionCubit(competitions, authBloc)
+  final authCubit = AuthCubit(auth);
+  final competitionCubit = CompetitionCubit(competitions, authCubit)
     ..select('c1');
   addTearDown(form.close);
-  addTearDown(authBloc.close);
+  addTearDown(authCubit.close);
   addTearDown(competitionCubit.close);
 
   return (
-    auth: authBloc,
+    auth: authCubit,
     competition: competitionCubit,
     form: form,
     players: players,
