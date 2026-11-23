@@ -64,22 +64,51 @@ sheet, so it has to be announced and dismissible on every platform —
 - **The body only describes the consequence.** What is lost, what stays, what
   happens next — never the question again, and no question mark. "Ratings for
   the season will be recalculated.", not "Delete this match? Ratings…".
-- **The confirm button repeats the title's verb** — Delete, Leave, Remove,
-  Discard — never OK or Yes.
+- **The confirm button is the title's verb alone** — Delete, Leave, Remove,
+  Discard, Sign out — never OK or Yes, and never the verb plus its object:
+  the title already names what is acted on, so `Leave competition` under
+  `Leave {name}?` says it twice and wraps in Material's button row.
 - **The cancel button is Cancel**, unless backing out keeps work in progress,
   in which case it says so (`Keep editing`).
+- **The two answers sit side by side, equal width, Cancel first.** On
+  Material both are text buttons — neither answer is the primary one, so
+  neither gets a filled style. On iOS they are the
+  system alert's own two actions.
 - **A destructive action is marked destructive**, so it renders in the
-  platform's destructive style.
+  platform's destructive style: error-coloured text on Material, red on iOS. On iOS the safe answer is then the bold
+  default — Cancel, not the destructive action.
+- **A step is hard to undo when the user cannot get back to where they
+  were**, not only when data is deleted. Signing out of a guest account is
+  one: a guest cannot sign back in, so it asks first. A registered user
+  signs out without a dialog.
 
 ### How
 
 - Open it with `showAdaptiveConfirm`, which returns `true` only on confirm.
-- `title` is a `…ConfirmTitle`/`…Title` key ending in `?`; `message` is a
-  `…ConfirmBody` key; `confirmLabel` is the action's own label;
+- `title` is a `…ConfirmTitle` key ending in `?`; `message` is the matching
+  `…ConfirmBody` key; `confirmLabel` is a bare verb (`commonDelete`,
+  `commonLeave`, `commonRemove`, or the feature's own verb such as
+  `matchDiscard`), never the longer menu-item label that opened the dialog;
   `cancelLabel` is `commonCancel` unless the rule above says otherwise.
-- Pass `destructive: true` for anything that deletes, removes or discards.
+- Pass `destructive: true` for anything that deletes, removes, discards or
+  cannot be got back. That also makes Cancel the default action on iOS.
+- The Material buttons are `TextButton`s in a `Row` of two
+  `Expanded`s, with the padding narrowed to `AppSpacing.sm` so a two-word
+  Dutch label (`Verder invullen`) fits on one line at half a dialog's
+  width.
+- A confirmation that guards one action from several entry points lives in
+  one flow function that every entry point calls — `signOut(context)` in
+  `auth/presentation/pages/sign_out_flow.dart` decides whether to ask, so the
+  profile page, the welcome page and the sidebar cannot drift apart.
 
 ### Exceptions
 
 - **A dialog carries a Cancel button, unlike a sheet.** A confirmation is a
   choice between two answers, and both have to be visible.
+- **Tapping outside counts as Cancel on Material and does nothing on iOS.**
+  That is each platform's own alert behaviour (`showDialog` vs
+  `showCupertinoDialog` defaults), and neither can confirm by accident.
+- **On wide web a sheet renders as a centred dialog**, because
+  `showAdaptiveSheet` swaps the bottom sheet for one there. It is still a
+  sheet and follows the sheet rules — no Cancel, one commit button — not
+  these.
