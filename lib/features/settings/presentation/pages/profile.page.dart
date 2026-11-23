@@ -12,7 +12,7 @@ import '../../../../core/widgets/failure_text.dart';
 import '../../../../core/widgets/nav_row.dart';
 import '../../../../core/widgets/page_title.dart';
 import '../../../../core/widgets/section_label.dart';
-import '../../../auth/presentation/cubit/auth_bloc.dart';
+import '../../../auth/presentation/pages/sign_out_flow.dart';
 import '../../../competition/presentation/cubit/competition_cubit.dart';
 import '../../../player/presentation/cubit/players_cubit.dart';
 import '../../../player/presentation/pages/player_name_sheet.dart';
@@ -57,8 +57,7 @@ class ProfilePage extends StatelessWidget {
             AdaptiveButton(
               label: context.l10n.authSignOut,
               kind: AdaptiveButtonKind.plain,
-              onPressed: () =>
-                  context.read<AuthBloc>().add(const AuthSignOutRequested()),
+              onPressed: () => signOut(context),
             ),
           ],
         ),

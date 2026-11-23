@@ -61,10 +61,10 @@ CompetitionOverview _overview() => CompetitionOverview(
 );
 
 class _Harness {
-  _Harness() {
-    when(() => auth.currentUser).thenReturn(
-      const AuthUser(id: 'user-1', displayName: 'Ada', isGuest: false),
-    );
+  _Harness({bool isGuest = false}) {
+    when(
+      () => auth.currentUser,
+    ).thenReturn(AuthUser(id: 'user-1', displayName: 'Ada', isGuest: isGuest));
     when(() => auth.watchUser()).thenAnswer((_) => const Stream.empty());
     when(() => auth.signOut()).thenAnswer((_) async {});
     when(
@@ -227,10 +227,46 @@ void main() {
       await tester.tap(signOutButton);
       await tester.pumpAndSettle();
 
+      expect(find.text(l10n.authSignOutGuestConfirmTitle), findsNothing);
       verify(() => harness.auth.signOut()).called(1);
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('a guest is asked before signing out, and can back out', (
+    tester,
+  ) async {
+    final harness = _Harness(isGuest: true);
+    final l10n = await harness.pump(tester);
+
+    await _tapSignOut(tester, l10n);
+
+    expect(find.text(l10n.authSignOutGuestConfirmTitle), findsOneWidget);
+    expect(find.text(l10n.authSignOutGuestConfirmBody), findsOneWidget);
+    verifyNever(() => harness.auth.signOut());
+
+    await tester.tap(find.text(l10n.commonCancel));
+    await tester.pumpAndSettle();
+
+    expect(find.text(l10n.authSignOutGuestConfirmTitle), findsNothing);
+    verifyNever(() => harness.auth.signOut());
+  });
+
+  testWidgets('a guest who confirms is signed out', (tester) async {
+    final harness = _Harness(isGuest: true);
+    final l10n = await harness.pump(tester);
+
+    await _tapSignOut(tester, l10n);
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.text(l10n.authSignOut),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    verify(() => harness.auth.signOut()).called(1);
+  });
 
   testWidgets('carries no competition rows', (tester) async {
     final l10n = await _Harness().pump(tester);
@@ -239,4 +275,12 @@ void main() {
     expect(find.text(l10n.playersManageTitle), findsNothing);
     expect(tester.takeException(), isNull);
   });
+}
+
+Future<void> _tapSignOut(WidgetTester tester, AppLocalizations l10n) async {
+  final signOutButton = find.text(l10n.authSignOut);
+  await tester.ensureVisible(signOutButton);
+  await tester.pumpAndSettle();
+  await tester.tap(signOutButton);
+  await tester.pumpAndSettle();
 }

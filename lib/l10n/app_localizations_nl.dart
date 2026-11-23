@@ -116,6 +116,13 @@ class AppLocalizationsNl extends AppLocalizations {
   String get authSignOut => 'Uitloggen';
 
   @override
+  String get authSignOutGuestConfirmTitle => 'Uitloggen uit dit gastaccount?';
+
+  @override
+  String get authSignOutGuestConfirmBody =>
+      'Op een gastaccount kun je niet opnieuw inloggen, dus je raakt de competities kwijt waar je ermee aan meedoet.';
+
+  @override
   String get authGuestBadge => 'Gast';
 
   @override

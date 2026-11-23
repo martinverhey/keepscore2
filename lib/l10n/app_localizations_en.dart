@@ -115,6 +115,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authSignOut => 'Sign out';
 
   @override
+  String get authSignOutGuestConfirmTitle => 'Sign out of this guest account?';
+
+  @override
+  String get authSignOutGuestConfirmBody =>
+      'A guest account can\'t be signed back into, so you\'ll lose the competitions you joined with it.';
+
+  @override
   String get authGuestBadge => 'Guest';
 
   @override

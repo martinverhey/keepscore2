@@ -5,6 +5,7 @@ import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../auth/presentation/cubit/auth_bloc.dart';
+import '../../../auth/presentation/pages/sign_out_flow.dart';
 import '../../../match/presentation/pages/new_match_sheet.dart';
 import '../../../settings/domain/theme_preference.enum.dart';
 import '../../../settings/presentation/cubit/theme_cubit.dart';
@@ -82,8 +83,7 @@ class Sidebar extends StatelessWidget {
           _actionItem(
             context,
             label: context.l10n.authSignOut,
-            onTap: () =>
-                context.read<AuthBloc>().add(const AuthSignOutRequested()),
+            onTap: () => signOut(context),
           ),
         ],
       ),

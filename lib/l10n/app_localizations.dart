@@ -302,6 +302,18 @@ abstract class AppLocalizations {
   /// **'Sign out'**
   String get authSignOut;
 
+  /// No description provided for @authSignOutGuestConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out of this guest account?'**
+  String get authSignOutGuestConfirmTitle;
+
+  /// No description provided for @authSignOutGuestConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'A guest account can\'t be signed back into, so you\'ll lose the competitions you joined with it.'**
+  String get authSignOutGuestConfirmBody;
+
   /// No description provided for @authGuestBadge.
   ///
   /// In en, this message translates to:

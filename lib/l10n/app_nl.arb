@@ -41,6 +41,8 @@
   },
   "authVerify": "Bevestigen",
   "authSignOut": "Uitloggen",
+  "authSignOutGuestConfirmTitle": "Uitloggen uit dit gastaccount?",
+  "authSignOutGuestConfirmBody": "Op een gastaccount kun je niet opnieuw inloggen, dus je raakt de competities kwijt waar je ermee aan meedoet.",
   "authGuestBadge": "Gast",
   "authUpgradeTitle": "Maak een account",
   "authUpgradeBody": "Als gast kun je rondkijken, maar je hebt een account nodig om competities aan te maken en wedstrijden vast te leggen. Je geschiedenis blijft behouden.",
