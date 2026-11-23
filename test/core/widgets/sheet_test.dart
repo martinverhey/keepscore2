@@ -1,3 +1,5 @@
+import 'dart:ui' show SemanticsAction;
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/theme/app_tokens.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
@@ -310,6 +312,26 @@ void main() {
         tester.getRect(find.text('content top')).top,
         tester.getRect(find.byType(SingleChildScrollView)).top,
       );
+    });
+  });
+
+  group('Sheet barrier', () {
+    testWidgets('a screen reader can dismiss the cupertino presentation', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideWideWeb = false;
+      await _openSheet(tester);
+
+      final barrier = tester.getSemantics(find.bySemanticsLabel('Dismiss'));
+      expect(barrier.getSemanticsData().hasAction(SemanticsAction.tap), isTrue);
+      expect(
+        barrier.getSemanticsData().hasAction(SemanticsAction.dismiss),
+        isTrue,
+      );
+
+      semantics.dispose();
     });
   });
 

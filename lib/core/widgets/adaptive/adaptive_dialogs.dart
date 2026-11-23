@@ -73,10 +73,19 @@ Future<T?> showAdaptiveSheet<T>(
   bool confirmsDismissal = false,
 }) {
   if (AppPlatform.useCupertino) {
-    return showCupertinoModalPopup<T>(
-      context: context,
-      builder: (sheetContext) => ScrollDismissibleSheet(
-        child: _cupertinoSurface(sheetContext, builder),
+    return Navigator.of(context, rootNavigator: true).push(
+      CupertinoModalPopupRoute<T>(
+        barrierLabel: CupertinoLocalizations.of(
+          context,
+        ).modalBarrierDismissLabel,
+        barrierColor: CupertinoDynamicColor.resolve(
+          kCupertinoModalBarrierColor,
+          context,
+        ),
+        semanticsDismissible: true,
+        builder: (sheetContext) => ScrollDismissibleSheet(
+          child: _cupertinoSurface(sheetContext, builder),
+        ),
       ),
     );
   }

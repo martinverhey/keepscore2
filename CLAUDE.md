@@ -905,6 +905,16 @@ code; don't relitigate them.
     content would let it run into them. For an action-sheet shape (a variable-length column of
     choices plus Cancel), the choice column is `content` and only Cancel is
     `secondaryButton`.
+    **`showAdaptiveSheet`'s Cupertino branch pushes a `CupertinoModalPopupRoute`
+    itself rather than calling `showCupertinoModalPopup`**, because that
+    helper defaults `semanticsDismissible` to `false` and hard-codes the
+    barrier label to English "Dismiss": the barrier was invisible to
+    VoiceOver, so with the Cancel buttons gone a screen-reader user had no
+    way out of a sheet. It passes `semanticsDismissible: true` and the
+    localized `CupertinoLocalizations.modalBarrierDismissLabel`; the Material
+    sheet and the wide-web dialog were already announced and dismissible.
+    `sheet_test.dart`'s "a screen reader can dismiss the cupertino
+    presentation" pins it.
     **`fillsHeight: true` pins the sheet at that 85% cap instead of
     shrink-wrapping it** — the same `maxHeight` becomes the `minHeight` and
     the scroll view's `Flexible` turns `tight`, so the content column keeps
