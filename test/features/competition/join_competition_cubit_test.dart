@@ -217,20 +217,5 @@ void main() {
         expect(_confirm(cubit).failure, isA<ValidationFailure>());
       },
     );
-
-    blocTest<JoinCompetitionCubit, JoinCompetitionState>(
-      'going back clears the pending claim',
-      build: () => JoinCompetitionCubit(repository),
-      act: (cubit) async {
-        cubit.codeChanged('hdhs39');
-        await cubit.lookUp();
-        cubit.claimSelected('p-joost');
-        cubit.back();
-      },
-      verify: (cubit) {
-        expect(cubit.state, isA<JoinCode>());
-        expect((cubit.state as JoinCode).code, 'hdhs39');
-      },
-    );
   });
 }

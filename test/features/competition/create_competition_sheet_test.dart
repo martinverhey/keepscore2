@@ -138,7 +138,7 @@ void main() {
     expect(find.byType(CreateCompetitionSheet), findsOneWidget);
   });
 
-  testWidgets('cancelling closes the sheet without creating anything', (
+  testWidgets('tapping outside closes the sheet without creating anything', (
     tester,
   ) async {
     String? closedWith = 'unset';
@@ -148,11 +148,7 @@ void main() {
       onClosed: (competitionId) => closedWith = competitionId,
     );
 
-    final l10n = AppLocalizations.of(
-      tester.element(find.byType(CreateCompetitionSheet)),
-    );
-
-    await tester.tap(find.text(l10n.commonCancel));
+    await tester.tapAt(const Offset(10, 10));
     await tester.pumpAndSettle();
 
     expect(find.byType(CreateCompetitionSheet), findsNothing);

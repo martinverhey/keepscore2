@@ -37,11 +37,6 @@ class SeasonSheet extends StatelessWidget {
             ),
         ],
       ),
-      secondaryButton: AdaptiveButton(
-        label: context.l10n.commonCancel,
-        kind: AdaptiveButtonKind.plain,
-        onPressed: () => Navigator.of(context).pop(),
-      ),
     );
   }
 }

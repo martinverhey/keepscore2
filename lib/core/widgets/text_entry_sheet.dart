@@ -1,7 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
-import '../../core/extensions/build_context.extension.dart';
 import 'adaptive/adaptive.dart';
 import 'sheet.dart';
 
@@ -85,11 +84,6 @@ class _TextEntrySheetState extends State<_TextEntrySheet> {
       primaryButton: AdaptiveButton(
         label: widget.submitLabel,
         onPressed: _isValid ? _submit : null,
-      ),
-      secondaryButton: AdaptiveButton(
-        label: context.l10n.commonCancel,
-        kind: AdaptiveButtonKind.plain,
-        onPressed: () => Navigator.of(context).pop(),
       ),
     );
   }

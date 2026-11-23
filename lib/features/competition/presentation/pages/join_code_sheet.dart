@@ -39,11 +39,6 @@ class _JoinCodeSheetState extends State<JoinCodeSheet> {
         busy: widget.state.busy,
         onPressed: widget.state.canLookUp ? cubit.lookUp : null,
       ),
-      secondaryButton: AdaptiveButton(
-        label: context.l10n.commonCancel,
-        kind: AdaptiveButtonKind.plain,
-        onPressed: () => Navigator.of(context).pop(),
-      ),
     );
   }
 

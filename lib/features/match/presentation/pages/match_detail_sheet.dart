@@ -58,12 +58,10 @@ class MatchDetailSheet extends StatelessWidget {
             _ => null,
           },
           content: _content(context, state),
-          primaryButton: manageable == null
+          titleTrailing: manageable == null
               ? null
-              : _editScoreButton(context, manageable),
-          secondaryButton: manageable == null
-              ? null
-              : _deleteButton(context, manageable),
+              : _manageActions(context, manageable),
+          titleTrailingAlignment: CrossAxisAlignment.center,
         );
       },
     );
@@ -181,22 +179,27 @@ class MatchDetailSheet extends StatelessWidget {
     );
   }
 
-  AdaptiveButton _editScoreButton(
-    BuildContext context,
-    MatchDetailReady state,
-  ) {
-    return AdaptiveButton(
-      label: context.l10n.matchEditScore,
-      kind: AdaptiveButtonKind.tinted,
-      busy: state.busy,
-      onPressed: () => _editScore(context, state.match),
+  Widget _manageActions(BuildContext context, MatchDetailReady state) {
+    return AdaptiveBarActionGroup(
+      actions: [
+        _editScoreAction(context, state),
+        _deleteAction(context, state),
+      ],
     );
   }
 
-  AdaptiveButton _deleteButton(BuildContext context, MatchDetailReady state) {
-    return AdaptiveButton(
-      label: context.l10n.matchDelete,
-      kind: AdaptiveButtonKind.destructive,
+  Widget _editScoreAction(BuildContext context, MatchDetailReady state) {
+    return AdaptiveBarAction(
+      glyph: AdaptiveGlyph.rename,
+      semanticLabel: context.l10n.matchEditScore,
+      onPressed: state.busy ? null : () => _editScore(context, state.match),
+    );
+  }
+
+  Widget _deleteAction(BuildContext context, MatchDetailReady state) {
+    return AdaptiveBarAction(
+      glyph: AdaptiveGlyph.delete,
+      semanticLabel: context.l10n.matchDelete,
       onPressed: state.busy ? null : () => _delete(context),
     );
   }

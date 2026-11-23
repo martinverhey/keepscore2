@@ -7,7 +7,6 @@ import 'package:keepscore2/features/competition/domain/competition_repository.da
 import 'package:keepscore2/features/competition/domain/join_preview.model.dart';
 import 'package:keepscore2/features/competition/presentation/cubit/join_competition_cubit.dart';
 import 'package:keepscore2/features/competition/presentation/pages/join_competition_sheet.dart';
-import 'package:keepscore2/features/competition/presentation/widgets/join_result.dart';
 import 'package:keepscore2/features/player/domain/player.model.dart';
 import 'package:keepscore2/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
@@ -79,13 +78,7 @@ void main() {
 
     expect(find.text('Office Table Tennis'), findsOneWidget);
     expect(find.text('Chris'), findsOneWidget);
-
-    await tester.tap(find.text(l10n.commonBack));
-    await tester.pumpAndSettle();
-
-    expect(find.text(l10n.joinTitle), findsOneWidget);
-    expect(find.byType(JoinCompetitionSheet), findsOneWidget);
-    expect(find.widgetWithText(TextField, _joinCode), findsOneWidget);
+    expect(find.text(l10n.commonBack), findsNothing);
   });
 
   testWidgets('claiming a player joins and hands the competition id back', (
@@ -138,21 +131,6 @@ void main() {
     expect(find.byType(TextField), findsNothing);
   });
 
-  testWidgets('going back from a scanned code closes the sheet', (
-    tester,
-  ) async {
-    await _pumpHarness(tester, code: _joinCode);
-
-    final l10n = AppLocalizations.of(
-      tester.element(find.byType(JoinCompetitionSheet)),
-    );
-    await tester.tap(find.text(l10n.commonBack));
-    await tester.pumpAndSettle();
-
-    expect(find.byType(JoinCompetitionSheet), findsNothing);
-    expect(find.text('back'), findsOneWidget);
-  });
-
   testWidgets('a scanned code that cannot be looked up shows the failure', (
     tester,
   ) async {
@@ -166,13 +144,10 @@ void main() {
     expect(find.byType(TextField), findsNothing);
   });
 
-  testWidgets('cancelling hands nothing back', (tester) async {
+  testWidgets('tapping outside the sheet hands nothing back', (tester) async {
     await _pumpHarness(tester);
 
-    final l10n = AppLocalizations.of(
-      tester.element(find.byType(JoinCompetitionSheet)),
-    );
-    await tester.tap(find.text(l10n.commonCancel));
+    await tester.tapAt(const Offset(10, 10));
     await tester.pumpAndSettle();
 
     expect(find.byType(JoinCompetitionSheet), findsNothing);
@@ -190,13 +165,12 @@ class _OpenerStub extends StatefulWidget {
 }
 
 class _OpenerStubState extends State<_OpenerStub> {
-  JoinResult? _result;
+  String? _result;
   bool _closed = false;
 
   String get _label => switch (_result) {
     null => 'dismissed',
-    JoinResult(competitionId: final competitionId?) => 'joined $competitionId',
-    _ => 'back',
+    final competitionId => 'joined $competitionId',
   };
 
   @override

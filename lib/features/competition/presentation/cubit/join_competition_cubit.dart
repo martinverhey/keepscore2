@@ -37,12 +37,6 @@ class JoinCompetitionCubit extends Cubit<JoinCompetitionState> {
     }
   }
 
-  void back() {
-    final confirm = _confirm;
-    if (confirm == null) return;
-    emit(JoinCode(code: confirm.code));
-  }
-
   Future<void> lookUpCode(String code) {
     codeChanged(code);
     return lookUp();

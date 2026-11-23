@@ -9,17 +9,11 @@ import '../../../../core/widgets/selectable_row.dart';
 import '../../../../core/widgets/sheet.dart';
 import '../../../player/presentation/pages/player_name_sheet.dart';
 import '../cubit/join_competition_cubit.dart';
-import '../widgets/join_result.dart';
 
 class JoinConfirmSheet extends StatelessWidget {
-  const JoinConfirmSheet({
-    super.key,
-    required this.state,
-    required this.isScanned,
-  });
+  const JoinConfirmSheet({super.key, required this.state});
 
   final JoinConfirm state;
-  final bool isScanned;
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +28,6 @@ class JoinConfirmSheet extends StatelessWidget {
       ].join(' · '),
       content: _content(context),
       primaryButton: _primaryButton(context),
-      secondaryButton: _backButton(context),
     );
   }
 
@@ -79,9 +72,7 @@ class JoinConfirmSheet extends StatelessWidget {
     if (state.preview.alreadyMember) {
       return AdaptiveButton(
         label: context.l10n.joinViewCompetition,
-        onPressed: () => Navigator.of(
-          context,
-        ).pop(JoinResult.joined(state.preview.competitionId)),
+        onPressed: () => Navigator.of(context).pop(state.preview.competitionId),
       );
     }
 
@@ -91,16 +82,6 @@ class JoinConfirmSheet extends StatelessWidget {
           : context.l10n.joinConfirm,
       busy: state.busy,
       onPressed: state.canJoin ? () => _join(context) : null,
-    );
-  }
-
-  Widget _backButton(BuildContext context) {
-    return AdaptiveButton(
-      label: context.l10n.commonBack,
-      kind: AdaptiveButtonKind.plain,
-      onPressed: isScanned
-          ? () => Navigator.of(context).pop(const JoinResult.back())
-          : context.read<JoinCompetitionCubit>().back,
     );
   }
 

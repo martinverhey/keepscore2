@@ -64,13 +64,10 @@ void main() {
     expect(find.text('scanned null'), findsOneWidget);
   });
 
-  testWidgets('cancelling hands nothing back', (tester) async {
+  testWidgets('tapping outside the sheet hands nothing back', (tester) async {
     await _pumpHarness(tester);
 
-    final l10n = AppLocalizations.of(
-      tester.element(find.byType(JoinScannerSheet)),
-    );
-    await tester.tap(find.text(l10n.commonCancel));
+    await tester.tapAt(const Offset(10, 10));
     await tester.pumpAndSettle();
 
     expect(find.byType(JoinScannerSheet), findsNothing);

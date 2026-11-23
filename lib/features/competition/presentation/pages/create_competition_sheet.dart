@@ -61,11 +61,6 @@ class _CreateCompetitionSheetState extends State<CreateCompetitionSheet> {
         busy: state.busy,
         onPressed: state.canSubmit ? cubit.submit : null,
       ),
-      secondaryButton: AdaptiveButton(
-        label: context.l10n.commonCancel,
-        kind: AdaptiveButtonKind.plain,
-        onPressed: () => _close(context, null),
-      ),
     );
   }
 
@@ -117,7 +112,7 @@ class _CreateCompetitionSheetState extends State<CreateCompetitionSheet> {
     );
   }
 
-  void _close(BuildContext context, String? competitionId) {
+  void _close(BuildContext context, String competitionId) {
     Navigator.of(context).pop(competitionId);
   }
 }

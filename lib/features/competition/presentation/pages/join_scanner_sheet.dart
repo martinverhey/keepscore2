@@ -38,11 +38,6 @@ class _JoinScannerSheetState extends State<JoinScannerSheet> {
         kind: AdaptiveButtonKind.tinted,
         onPressed: () => _close(const JoinScanResult.manualEntry()),
       ),
-      secondaryButton: AdaptiveButton(
-        label: context.l10n.commonCancel,
-        kind: AdaptiveButtonKind.plain,
-        onPressed: () => _close(null),
-      ),
     );
   }
 

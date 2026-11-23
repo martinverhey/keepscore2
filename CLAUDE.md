@@ -243,7 +243,7 @@ builder rather than in a `GoRoute`. `showJoinCompetitionSheet` and
 with the submit button in `Sheet.primaryButton` (labelled
 `competitionsCreateShort` — the sheet's own title already says "Create
 competition", which is what retired the `competitionCreateSubmit` key) and
-Cancel beside it. `showNewMatchSheet` builds the teams and submits.
+no Cancel — like every sheet, it closes by tapping outside it (`DESIGN.md`). `showNewMatchSheet` builds the teams and submits.
 
 **Join opens the camera first, and the code field is the way out of it.**
 `startJoinCompetition` shows `showJoinScannerSheet`
@@ -253,7 +253,7 @@ than the front door — the QR `InviteSheet` shows encodes nothing
 but that code (`JoinQrImage(code: code)`), which is what makes scanning and
 typing the same flow. The scanner pops a `JoinScanResult`: `scanned(code)`
 from the camera, `manualEntry()` (a null `code`) from the "Enter code
-manually" button, and `null` from Cancel or a dismissal — that third case is
+manually" button, and `null` from a dismissal — that third case is
 the only reason the result is a type rather than a `String?`, since the page
 must tell "the user backed out" from "the user wants to type it". A
 non-null code is handed to `showJoinCompetitionSheet(code:)`, which calls
@@ -264,30 +264,19 @@ single `showAdaptiveSheet`; `JoinCompetitionSheet`
 (`join_competition_sheet.dart`) is the stateless `BlocConsumer` inside it that
 maps `JoinCompetitionState` onto `JoinCodeSheet` (`join_code_sheet.dart`),
 `JoinLookUpSheet` (`join_look_up_sheet.dart`) or `JoinConfirmSheet`
-(`join_confirm_sheet.dart`), and each of those pops the route itself with a
-`JoinResult`. The steps are *widgets in one route*, not routes of their own —
-`JoinCompetitionCubit.back()` moves confirm → code without any navigation, so
-splitting them into pushed sheets would put a second, parallel back path next
-to it. Only `JoinCodeSheet` is stateful, since the
-`TextEditingController` is the code step's alone; it seeds from
-`JoinCode.code` in a `late final`, which is load-bearing now that
-`back()` from the confirm step builds a *fresh* `JoinCodeSheet` rather than
-returning to a `State` that still held the text.
+(`join_confirm_sheet.dart`); the confirm step pops the route itself with the
+joined competition's id, and `showJoinCompetitionSheet` returns that
+`String?`. Only `JoinCodeSheet` is stateful, since the
+`TextEditingController` is the code step's alone.
 
-**A scanned code never shows the code field, and `Back` goes back to the
-camera.** With `code != null` the sheet is confirm-shaped throughout
-(`isScanned`): the `JoinCode` phase renders `JoinLookUpSheet` — a spinner, or
-the lookup's failure — rather than `JoinCodeSheet`, and `Back` pops the sheet
-with `JoinResult.back()` instead of calling `JoinCompetitionCubit.back()`.
-`_scanAndJoin` (`competition_flows.dart`) loops on that: scanner → sheet → `back()` →
-a *fresh* scanner sheet. It has to be fresh rather than a sheet stacked on
-the live one, because `DetectionSpeed.noDuplicates` would refuse to re-read
-the QR still in frame; a new `QrScannerView` is a new controller with no
-memory of it. Hence `showJoinCompetitionSheet` returns a `JoinResult` rather
-than a `String?` — the same reasoning as `JoinScanResult` above, since
-`null` (Cancel, or a drag/barrier dismissal) has to end the flow where
-`back()` restarts it. In manual-entry mode `isScanned` is false, nothing ever
-returns `back()`, and the code step's Cancel closes as it always did.
+**There is no Back in the join flow, by design** (`DESIGN.md`: no
+navigation buttons in a sheet). Closing the sheet ends the flow; to retry, the
+user starts Join again. A `JoinResult.back()` that re-opened a fresh scanner,
+and `JoinCompetitionCubit.back()` (confirm → code), were removed with it.
+**A scanned code never shows the code field**: with `code != null` the sheet
+is confirm-shaped throughout (`isScanned`) — the `JoinCode` phase renders
+`JoinLookUpSheet`, a spinner or the lookup's failure, rather than
+`JoinCodeSheet`.
 `String.isJoinCode` (`core/extensions/string.extension.dart`) is the one
 definition of "six characters once normalized", shared by `JoinCode.codeIsValid`
 and the scanner — a QR carrying anything else (a URL, someone's WiFi) is
@@ -313,7 +302,7 @@ declares `CAMERA`, and its minSdk 23 is under Flutter's default 24). The
 bundled ML Kit model is left bundled — `dev.steenbakker.mobile_scanner.useUnbundled=true`
 would cut ~3-10 MB off the APK at the price of a Play-Services download before
 the first scan works.
-`TeamPickerSheet`'s "Manage players" button opens `showManagePlayersSheet`
+`TeamPickerSheet`'s "Manage" text button in the title row opens `showManagePlayersSheet`
 (`player/presentation/pages/manage_players_sheet.dart`) on top of the picker
 rather than navigating anywhere — the sheet builds its own
 `PlayersCubit` via `getIt` (a nested sheet route inherits no providers from the
@@ -389,7 +378,10 @@ player's rating going in, Team A left / Team B right, divided off from the two
 team averages) and a "Win chance" card (`EloCalculator.winChance`, the expected
 score the delta is already computed from, formatted with
 `NumberFormat.percentPattern`), and lets the creator or the owner change the
-score or delete the match from the sheet's primary/secondary buttons. Nothing
+score or delete the match from two title-row glyphs (`rename`, `delete`) in one
+`AdaptiveBarActionGroup` — neither commits the sheet, so neither is a bottom
+button (`DESIGN.md`). An icon has no spinner, so both are disabled while
+`MatchDetailReady.busy`. Nothing
 refreshes the list when either sheet closes — realtime does it.
 
 ## Product decisions (already settled — do not relitigate)
@@ -902,9 +894,9 @@ code; don't relitigate them.
     holding a fixed band open under a pinned header. Nothing else in `Sheet`
     may become scroll-view padding on that reasoning: the buttons' gaps
     separate two pinned things, and a gap that scrolled out from under the
-    content would let it run into them. For an action-sheet shape (a variable-length column of
-    choices plus Cancel), the choice column is `content` and only Cancel is
-    `secondaryButton`.
+    content would let it run into them. A pick list (season, game type) is a
+    column of choices in `content` and nothing else — no Cancel; see
+    `DESIGN.md` for which buttons a sheet may carry at all.
     **`showAdaptiveSheet`'s Cupertino branch pushes a `CupertinoModalPopupRoute`
     itself rather than calling `showCupertinoModalPopup`**, because that
     helper defaults `semanticsDismissible` to `false` and hard-codes the
@@ -2900,7 +2892,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 424 tests at time of writing
+flutter test                    # 423 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 dart run flutter_launcher_icons     # assets/icon/*.png into android/ web/ (not ios/)

@@ -74,11 +74,6 @@ class _MatchScoreSheetState extends State<MatchScoreSheet> {
             ? () => Navigator.of(context).pop((_a!, _b!))
             : null,
       ),
-      secondaryButton: AdaptiveButton(
-        label: context.l10n.commonCancel,
-        kind: AdaptiveButtonKind.plain,
-        onPressed: () => Navigator.of(context).pop(),
-      ),
     );
   }
 

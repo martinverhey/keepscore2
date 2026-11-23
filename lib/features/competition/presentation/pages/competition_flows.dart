@@ -41,7 +41,13 @@ Future<void> startCreateCompetition(BuildContext context) async {
 }
 
 Future<void> startJoinCompetition(BuildContext context) async {
-  final competitionId = await _scanAndJoin(context);
+  final scan = await showJoinScannerSheet(context);
+  if (scan == null || !context.mounted) return;
+
+  final competitionId = await showJoinCompetitionSheet(
+    context,
+    code: scan.code,
+  );
   if (competitionId == null || !context.mounted) return;
   _enterCompetition(context, competitionId);
 }
@@ -49,17 +55,6 @@ Future<void> startJoinCompetition(BuildContext context) async {
 void _enterCompetition(BuildContext context, String competitionId) {
   context.read<CompetitionListCubit>().refresh();
   context.go(Routes.competition(competitionId));
-}
-
-Future<String?> _scanAndJoin(BuildContext context) async {
-  while (true) {
-    final scan = await showJoinScannerSheet(context);
-    if (scan == null || !context.mounted) return null;
-
-    final result = await showJoinCompetitionSheet(context, code: scan.code);
-    if (result == null || !context.mounted) return null;
-    if (result.competitionId case final competitionId?) return competitionId;
-  }
 }
 
 CompetitionActions competitionActionsFor(

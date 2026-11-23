@@ -7,13 +7,9 @@ import '../cubit/join_competition_cubit.dart';
 import 'join_code_sheet.dart';
 import 'join_confirm_sheet.dart';
 import 'join_look_up_sheet.dart';
-import '../widgets/join_result.dart';
 
-Future<JoinResult?> showJoinCompetitionSheet(
-  BuildContext context, {
-  String? code,
-}) {
-  return showAdaptiveSheet<JoinResult>(
+Future<String?> showJoinCompetitionSheet(BuildContext context, {String? code}) {
+  return showAdaptiveSheet<String>(
     context,
     builder: (_) => BlocProvider(
       create: (_) {
@@ -38,14 +34,11 @@ class JoinCompetitionSheet extends StatelessWidget {
           current is JoinConfirm && current.joined != null,
       listener: (context, state) => Navigator.of(
         context,
-      ).pop(JoinResult.joined((state as JoinConfirm).preview.competitionId)),
+      ).pop((state as JoinConfirm).preview.competitionId),
       builder: (context, state) => switch (state) {
         JoinCode code when isScanned => JoinLookUpSheet(state: code),
         JoinCode code => JoinCodeSheet(state: code),
-        JoinConfirm confirm => JoinConfirmSheet(
-          state: confirm,
-          isScanned: isScanned,
-        ),
+        JoinConfirm confirm => JoinConfirmSheet(state: confirm),
       },
     );
   }
