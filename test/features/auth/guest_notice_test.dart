@@ -42,7 +42,7 @@ void main() {
     expect(find.text('Guests may not create matches'), findsOneWidget);
     expect(find.text('Guest'), findsOneWidget);
 
-    await tester.tap(find.text('Create an account'));
+    await tester.tap(find.text('Create account'));
     await tester.pumpAndSettle();
 
     expect(find.text('upgrade'), findsOneWidget);

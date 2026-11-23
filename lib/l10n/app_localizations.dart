@@ -299,7 +299,7 @@ abstract class AppLocalizations {
   /// No description provided for @authUpgradeTitle.
   ///
   /// In en, this message translates to:
-  /// **'Create an account'**
+  /// **'Create account'**
   String get authUpgradeTitle;
 
   /// No description provided for @authUpgradeBody.
@@ -671,7 +671,7 @@ abstract class AppLocalizations {
   /// No description provided for @joinTitle.
   ///
   /// In en, this message translates to:
-  /// **'Join a competition'**
+  /// **'Join competition'**
   String get joinTitle;
 
   /// No description provided for @joinSubtitle.
@@ -1109,7 +1109,7 @@ abstract class AppLocalizations {
   /// No description provided for @playersAddPlayer.
   ///
   /// In en, this message translates to:
-  /// **'Add a player'**
+  /// **'Add player'**
   String get playersAddPlayer;
 
   /// No description provided for @playersDisplayNameLabel.
@@ -1145,13 +1145,13 @@ abstract class AppLocalizations {
   /// No description provided for @playersAddTitle.
   ///
   /// In en, this message translates to:
-  /// **'Add a player'**
+  /// **'Add player'**
   String get playersAddTitle;
 
   /// No description provided for @playersAddSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Create as many players as you want. You can use them to create matches. Or they can be used as placeholders for players who might join later. Another player can claim a player after joining your competition.'**
+  /// **'Create as many players as you want. You can use them to create matches. Or they can be used as placeholders for players who might join later. A player can claim an unclaimed player after joining your competition.'**
   String get playersAddSubtitle;
 
   /// No description provided for @playersNameTooShort.

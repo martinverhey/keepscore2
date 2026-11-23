@@ -112,7 +112,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authGuestBadge => 'Guest';
 
   @override
-  String get authUpgradeTitle => 'Create an account';
+  String get authUpgradeTitle => 'Create account';
 
   @override
   String get authUpgradeBody =>
@@ -342,7 +342,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'The camera isn\'t available. Enter the code manually instead.';
 
   @override
-  String get joinTitle => 'Join a competition';
+  String get joinTitle => 'Join competition';
 
   @override
   String get joinSubtitle =>
@@ -585,7 +585,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playersTitle => 'Manage Players';
 
   @override
-  String get playersAddPlayer => 'Add a player';
+  String get playersAddPlayer => 'Add player';
 
   @override
   String get playersDisplayNameLabel => 'Name';
@@ -603,11 +603,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playersUnclaimed => 'Unclaimed';
 
   @override
-  String get playersAddTitle => 'Add a player';
+  String get playersAddTitle => 'Add player';
 
   @override
   String get playersAddSubtitle =>
-      'Create as many players as you want. You can use them to create matches. Or they can be used as placeholders for players who might join later. Another player can claim a player after joining your competition.';
+      'Create as many players as you want. You can use them to create matches. Or they can be used as placeholders for players who might join later. A player can claim an unclaimed player after joining your competition.';
 
   @override
   String get playersNameTooShort => 'Enter a name of at least 2 characters.';
