@@ -118,13 +118,13 @@
   "competitionEdit": "Edit",
   "competitionRename": "Rename",
   "competitionLeave": "Leave competition",
-  "competitionLeaveConfirmTitle": "Leave {name}?",
+  "competitionLeaveConfirmTitle": "Leave competition '{name}'?",
   "@competitionLeaveConfirmTitle": {
     "placeholders": { "name": { "type": "String" } }
   },
   "competitionLeaveConfirmBody": "Your matches and ratings stay on record, but you'll need the code to rejoin.",
   "competitionDelete": "Delete competition",
-  "competitionDeleteConfirmTitle": "Delete {name}?",
+  "competitionDeleteConfirmTitle": "Delete competition '{name}'?",
   "@competitionDeleteConfirmTitle": {
     "placeholders": { "name": { "type": "String" } }
   },
@@ -253,7 +253,7 @@
   "playersRenameTitle": "Rename player",
   "playersRename": "Rename",
   "playersRemove": "Remove from player list",
-  "playersRemoveConfirmTitle": "Remove {name}?",
+  "playersRemoveConfirmTitle": "Remove player '{name}'?",
   "@playersRemoveConfirmTitle": {
     "placeholders": { "name": { "type": "String" } }
   },

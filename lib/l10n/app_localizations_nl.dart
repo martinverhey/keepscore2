@@ -322,7 +322,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String competitionLeaveConfirmTitle(String name) {
-    return '$name verlaten?';
+    return 'Competitie \'$name\' verlaten?';
   }
 
   @override
@@ -334,7 +334,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String competitionDeleteConfirmTitle(String name) {
-    return '$name verwijderen?';
+    return 'Competitie \'$name\' verwijderen?';
   }
 
   @override
@@ -639,7 +639,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String playersRemoveConfirmTitle(String name) {
-    return '$name uit de lijst halen?';
+    return 'Speler \'$name\' uit de lijst halen?';
   }
 
   @override

@@ -59,8 +59,11 @@ sheet, so it has to be announced and dismissible on every platform —
   undo** — delete, leave, remove, discard unsaved input. Anything else is a
   sheet.
 - **The title asks the question.** It names the action and what it acts on,
-  by name where there is one, and ends in a question mark: `Delete {name}?`,
-  `Leave {name}?`, `Discard this match?`.
+  and ends in a question mark. Where the thing has a name, the title gives
+  its kind followed by the name in single quotes, so a bare name never stands
+  alone: `Delete competition '{name}'?` / `Competitie '{name}' verwijderen?`,
+  `Remove player '{name}'?` / `Speler '{name}' uit de lijst halen?`. Where it
+  has none, a demonstrative does the job: `Discard this match?`.
 - **The body only describes the consequence.** What is lost, what stays, what
   happens next — never the question again, and no question mark. "Ratings for
   the season will be recalculated.", not "Delete this match? Ratings…".

@@ -641,7 +641,7 @@ abstract class AppLocalizations {
   /// No description provided for @competitionLeaveConfirmTitle.
   ///
   /// In en, this message translates to:
-  /// **'Leave {name}?'**
+  /// **'Leave competition \'{name}\'?'**
   String competitionLeaveConfirmTitle(String name);
 
   /// No description provided for @competitionLeaveConfirmBody.
@@ -659,7 +659,7 @@ abstract class AppLocalizations {
   /// No description provided for @competitionDeleteConfirmTitle.
   ///
   /// In en, this message translates to:
-  /// **'Delete {name}?'**
+  /// **'Delete competition \'{name}\'?'**
   String competitionDeleteConfirmTitle(String name);
 
   /// No description provided for @competitionDeleteConfirmBody.
@@ -1205,7 +1205,7 @@ abstract class AppLocalizations {
   /// No description provided for @playersRemoveConfirmTitle.
   ///
   /// In en, this message translates to:
-  /// **'Remove {name}?'**
+  /// **'Remove player \'{name}\'?'**
   String playersRemoveConfirmTitle(String name);
 
   /// No description provided for @playersRemoveConfirmBody.

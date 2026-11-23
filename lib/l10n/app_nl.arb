@@ -118,13 +118,13 @@
   "competitionEdit": "Bewerken",
   "competitionRename": "Hernoemen",
   "competitionLeave": "Competitie verlaten",
-  "competitionLeaveConfirmTitle": "{name} verlaten?",
+  "competitionLeaveConfirmTitle": "Competitie '{name}' verlaten?",
   "@competitionLeaveConfirmTitle": {
     "placeholders": { "name": { "type": "String" } }
   },
   "competitionLeaveConfirmBody": "Je wedstrijden en ratings blijven bewaard, maar je hebt de code weer nodig om opnieuw mee te doen.",
   "competitionDelete": "Competitie verwijderen",
-  "competitionDeleteConfirmTitle": "{name} verwijderen?",
+  "competitionDeleteConfirmTitle": "Competitie '{name}' verwijderen?",
   "@competitionDeleteConfirmTitle": {
     "placeholders": { "name": { "type": "String" } }
   },
@@ -253,7 +253,7 @@
   "playersRenameTitle": "Speler hernoemen",
   "playersRename": "Hernoemen",
   "playersRemove": "Uit de lijst halen",
-  "playersRemoveConfirmTitle": "{name} uit de lijst halen?",
+  "playersRemoveConfirmTitle": "Speler '{name}' uit de lijst halen?",
   "@playersRemoveConfirmTitle": {
     "placeholders": { "name": { "type": "String" } }
   },

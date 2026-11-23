@@ -321,7 +321,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String competitionLeaveConfirmTitle(String name) {
-    return 'Leave $name?';
+    return 'Leave competition \'$name\'?';
   }
 
   @override
@@ -333,7 +333,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String competitionDeleteConfirmTitle(String name) {
-    return 'Delete $name?';
+    return 'Delete competition \'$name\'?';
   }
 
   @override
@@ -636,7 +636,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String playersRemoveConfirmTitle(String name) {
-    return 'Remove $name?';
+    return 'Remove player \'$name\'?';
   }
 
   @override
