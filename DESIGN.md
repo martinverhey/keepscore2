@@ -73,8 +73,9 @@ sheet, so it has to be announced and dismissible on every platform —
   `Leave {name}?` says it twice and wraps in Material's button row.
 - **The cancel button is Cancel**, unless backing out keeps work in progress,
   in which case it says so (`Keep editing`).
-- **The two answers sit side by side, equal width, Cancel first.** On
-  Material both are text buttons — neither answer is the primary one, so
+- **The two answers sit side by side, Cancel first.** On
+  Material both are text buttons, right-aligned at the dialog's end the way
+  Material alerts are — neither answer is the primary one, so
   neither gets a filled style. On iOS they are the
   system alert's own two actions.
 - **A destructive action is marked destructive**, so it renders in the
@@ -95,10 +96,9 @@ sheet, so it has to be announced and dismissible on every platform —
   `cancelLabel` is `commonCancel` unless the rule above says otherwise.
 - Pass `destructive: true` for anything that deletes, removes, discards or
   cannot be got back. That also makes Cancel the default action on iOS.
-- The Material buttons are `TextButton`s in a `Row` of two
-  `Expanded`s, with the padding narrowed to `AppSpacing.sm` so a two-word
-  Dutch label (`Verder invullen`) fits on one line at half a dialog's
-  width.
+- The Material buttons are two plain `TextButton`s in `AlertDialog.actions`,
+  which lays them out end-aligned and stacks them only if they cannot fit
+  on one line.
 - A confirmation that guards one action from several entry points lives in
   one flow function that every entry point calls — `signOut(context)` in
   `auth/presentation/pages/sign_out_flow.dart` decides whether to ask, so the

@@ -175,7 +175,7 @@ void main() {
       return result;
     }
 
-    testWidgets('puts both Material answers side by side as text buttons', (
+    testWidgets('right-aligns both Material answers as text buttons', (
       tester,
     ) async {
       await openConfirm(tester);
@@ -188,9 +188,20 @@ void main() {
 
       final cancelRect = tester.getRect(cancel);
       final confirmRect = tester.getRect(confirm);
+      final dialogRect = tester.getRect(
+        find
+            .descendant(
+              of: find.byType(AlertDialog),
+              matching: find.byType(Material),
+            )
+            .first,
+      );
       expect(cancelRect.top, confirmRect.top);
-      expect(cancelRect.width, confirmRect.width);
       expect(cancelRect.right, lessThan(confirmRect.left));
+      final startGap = cancelRect.left - dialogRect.left;
+      final endGap = dialogRect.right - confirmRect.right;
+      expect(endGap, lessThan(32));
+      expect(startGap, greaterThan(endGap * 4));
     });
 
     testWidgets('only the confirm button answers true', (tester) async {

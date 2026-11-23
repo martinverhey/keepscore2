@@ -44,55 +44,38 @@ Future<bool> showAdaptiveConfirm(
           builder: (dialogContext) => AlertDialog(
             title: Text(title),
             content: Text(message),
-            actions: [
-              _materialConfirmActions(
-                dialogContext,
-                confirmLabel: confirmLabel,
-                cancelLabel: cancelLabel,
-                destructive: destructive,
-              ),
-            ],
+            actions: _materialConfirmActions(
+              dialogContext,
+              confirmLabel: confirmLabel,
+              cancelLabel: cancelLabel,
+              destructive: destructive,
+            ),
           ),
         );
   return future.then((value) => value ?? false);
 }
 
-Widget _materialConfirmActions(
+List<Widget> _materialConfirmActions(
   BuildContext context, {
   required String confirmLabel,
   required String cancelLabel,
   required bool destructive,
 }) {
-  return Row(
-    children: [
-      Expanded(
-        child: TextButton(
-          style: _materialConfirmButtonStyle(),
-          onPressed: () => Navigator.of(context).pop(false),
-          child: Text(cancelLabel),
-        ),
+  return [
+    TextButton(
+      onPressed: () => Navigator.of(context).pop(false),
+      child: Text(cancelLabel),
+    ),
+    TextButton(
+      style: TextButton.styleFrom(
+        foregroundColor: destructive
+            ? Theme.of(context).colorScheme.error
+            : null,
       ),
-      const SizedBox(width: AppSpacing.sm),
-      Expanded(
-        child: TextButton(
-          style: _materialConfirmButtonStyle(
-            foregroundColor: destructive
-                ? Theme.of(context).colorScheme.error
-                : null,
-          ),
-          onPressed: () => Navigator.of(context).pop(true),
-          child: Text(confirmLabel),
-        ),
-      ),
-    ],
-  );
-}
-
-ButtonStyle _materialConfirmButtonStyle({Color? foregroundColor}) {
-  return TextButton.styleFrom(
-    foregroundColor: foregroundColor,
-    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-  );
+      onPressed: () => Navigator.of(context).pop(true),
+      child: Text(confirmLabel),
+    ),
+  ];
 }
 
 Future<T?> showAdaptiveSheet<T>(
