@@ -120,8 +120,8 @@ class _NewMatchSheetState extends State<NewMatchSheet> {
     final navigator = Navigator.of(context);
     final discard = await showAdaptiveConfirm(
       context,
-      title: context.l10n.matchDiscardTitle,
-      message: context.l10n.matchDiscardConfirm,
+      title: context.l10n.matchDiscardConfirmTitle,
+      message: context.l10n.matchDiscardConfirmBody,
       confirmLabel: context.l10n.matchDiscard,
       cancelLabel: context.l10n.matchKeepEditing,
       destructive: true,

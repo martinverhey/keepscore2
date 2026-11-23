@@ -114,7 +114,7 @@ Future<void> _leave(BuildContext context, CompetitionOverview overview) async {
     context,
     title: context.l10n.competitionLeaveConfirmTitle(overview.competition.name),
     message: context.l10n.competitionLeaveConfirmBody,
-    confirmLabel: context.l10n.competitionLeave,
+    confirmLabel: context.l10n.commonLeave,
     cancelLabel: context.l10n.commonCancel,
     destructive: true,
   );
@@ -133,7 +133,7 @@ Future<void> _delete(BuildContext context, CompetitionOverview overview) async {
       overview.competition.name,
     ),
     message: context.l10n.competitionDeleteConfirmBody,
-    confirmLabel: context.l10n.competitionDelete,
+    confirmLabel: context.l10n.commonDelete,
     cancelLabel: context.l10n.commonCancel,
     destructive: true,
   );

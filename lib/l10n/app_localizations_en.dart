@@ -24,6 +24,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonDelete => 'Delete';
 
   @override
+  String get commonLeave => 'Leave';
+
+  @override
+  String get commonRemove => 'Remove';
+
+  @override
   String get commonLoading => 'Loading…';
 
   @override
@@ -486,7 +492,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get matchSubmit => 'Save match';
 
   @override
-  String get matchDeleteConfirm =>
+  String get matchDeleteConfirmBody =>
       'Ratings for the season will be recalculated.';
 
   @override
@@ -530,10 +536,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get matchNeedsPlayers => 'Add players and start creating matches.';
 
   @override
-  String get matchDiscardTitle => 'Discard this match?';
+  String get matchDiscardConfirmTitle => 'Discard this match?';
 
   @override
-  String get matchDiscardConfirm =>
+  String get matchDiscardConfirmBody =>
       'The players and score you entered will be lost.';
 
   @override
@@ -552,7 +558,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get matchDelete => 'Delete match';
 
   @override
-  String get matchDeleteTitle => 'Delete this match?';
+  String get matchDeleteConfirmTitle => 'Delete this match?';
 
   @override
   String get matchEditScore => 'Edit score';

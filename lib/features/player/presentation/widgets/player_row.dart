@@ -143,7 +143,7 @@ class PlayerRow extends StatelessWidget {
       context,
       title: context.l10n.playersRemoveConfirmTitle(player.displayName),
       message: context.l10n.playersRemoveConfirmBody,
-      confirmLabel: context.l10n.playersRemove,
+      confirmLabel: context.l10n.commonRemove,
       cancelLabel: context.l10n.commonCancel,
       destructive: true,
     );

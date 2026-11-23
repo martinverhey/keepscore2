@@ -24,6 +24,12 @@ class AppLocalizationsNl extends AppLocalizations {
   String get commonDelete => 'Verwijderen';
 
   @override
+  String get commonLeave => 'Verlaten';
+
+  @override
+  String get commonRemove => 'Weghalen';
+
+  @override
   String get commonLoading => 'Laden…';
 
   @override
@@ -488,7 +494,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get matchSubmit => 'Wedstrijd opslaan';
 
   @override
-  String get matchDeleteConfirm =>
+  String get matchDeleteConfirmBody =>
       'De ratings van het seizoen worden opnieuw berekend.';
 
   @override
@@ -533,10 +539,10 @@ class AppLocalizationsNl extends AppLocalizations {
   String get matchNeedsPlayers => 'Voeg spelers toe en maak wedstrijden aan.';
 
   @override
-  String get matchDiscardTitle => 'Wedstrijd weggooien?';
+  String get matchDiscardConfirmTitle => 'Wedstrijd weggooien?';
 
   @override
-  String get matchDiscardConfirm =>
+  String get matchDiscardConfirmBody =>
       'De ingevulde spelers en score gaan verloren.';
 
   @override
@@ -555,7 +561,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get matchDelete => 'Wedstrijd verwijderen';
 
   @override
-  String get matchDeleteTitle => 'Deze wedstrijd verwijderen?';
+  String get matchDeleteConfirmTitle => 'Deze wedstrijd verwijderen?';
 
   @override
   String get matchEditScore => 'Score aanpassen';

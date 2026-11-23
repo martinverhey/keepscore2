@@ -128,6 +128,18 @@ abstract class AppLocalizations {
   /// **'Delete'**
   String get commonDelete;
 
+  /// No description provided for @commonLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave'**
+  String get commonLeave;
+
+  /// No description provided for @commonRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get commonRemove;
+
   /// No description provided for @commonLoading.
   ///
   /// In en, this message translates to:
@@ -920,11 +932,11 @@ abstract class AppLocalizations {
   /// **'Save match'**
   String get matchSubmit;
 
-  /// No description provided for @matchDeleteConfirm.
+  /// No description provided for @matchDeleteConfirmBody.
   ///
   /// In en, this message translates to:
   /// **'Ratings for the season will be recalculated.'**
-  String get matchDeleteConfirm;
+  String get matchDeleteConfirmBody;
 
   /// No description provided for @matchPickTeamsTitle.
   ///
@@ -1004,17 +1016,17 @@ abstract class AppLocalizations {
   /// **'Add players and start creating matches.'**
   String get matchNeedsPlayers;
 
-  /// No description provided for @matchDiscardTitle.
+  /// No description provided for @matchDiscardConfirmTitle.
   ///
   /// In en, this message translates to:
   /// **'Discard this match?'**
-  String get matchDiscardTitle;
+  String get matchDiscardConfirmTitle;
 
-  /// No description provided for @matchDiscardConfirm.
+  /// No description provided for @matchDiscardConfirmBody.
   ///
   /// In en, this message translates to:
   /// **'The players and score you entered will be lost.'**
-  String get matchDiscardConfirm;
+  String get matchDiscardConfirmBody;
 
   /// No description provided for @matchDiscard.
   ///
@@ -1046,11 +1058,11 @@ abstract class AppLocalizations {
   /// **'Delete match'**
   String get matchDelete;
 
-  /// No description provided for @matchDeleteTitle.
+  /// No description provided for @matchDeleteConfirmTitle.
   ///
   /// In en, this message translates to:
   /// **'Delete this match?'**
-  String get matchDeleteTitle;
+  String get matchDeleteConfirmTitle;
 
   /// No description provided for @matchEditScore.
   ///

@@ -221,8 +221,8 @@ class MatchDetailSheet extends StatelessWidget {
 
     final confirmed = await showAdaptiveConfirm(
       context,
-      title: context.l10n.matchDeleteTitle,
-      message: context.l10n.matchDeleteConfirm,
+      title: context.l10n.matchDeleteConfirmTitle,
+      message: context.l10n.matchDeleteConfirmBody,
       confirmLabel: context.l10n.commonDelete,
       cancelLabel: context.l10n.commonCancel,
       destructive: true,

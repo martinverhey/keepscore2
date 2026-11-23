@@ -216,7 +216,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text(l10n.competitionLeave));
     await tester.pumpAndSettle();
-    await tester.tap(find.text(l10n.competitionLeave));
+    await tester.tap(find.text(l10n.commonLeave));
     await tester.pumpAndSettle();
 
     expect(find.byType(CompetitionTabBar), findsNothing);

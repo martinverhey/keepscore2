@@ -147,4 +147,59 @@ void main() {
       expect(tester.getSize(find.byType(FittedBox)), const Size(44, 29));
     });
   });
+
+  group('showAdaptiveConfirm', () {
+    Future<Future<bool>> openConfirm(WidgetTester tester) async {
+      AppPlatform.debugOverrideCupertino = false;
+      late Future<bool> result;
+      await pumpAdaptive(
+        tester,
+        Builder(
+          builder: (context) => Center(
+            child: TextButton(
+              onPressed: () => result = showAdaptiveConfirm(
+                context,
+                title: 'Delete Office?',
+                message: 'This cannot be undone.',
+                confirmLabel: 'Delete',
+                cancelLabel: 'Cancel',
+                destructive: true,
+              ),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+      return result;
+    }
+
+    testWidgets('puts both Material answers side by side as text buttons', (
+      tester,
+    ) async {
+      await openConfirm(tester);
+
+      final cancel = find.widgetWithText(TextButton, 'Cancel');
+      final confirm = find.widgetWithText(TextButton, 'Delete');
+      expect(cancel, findsOneWidget);
+      expect(confirm, findsOneWidget);
+      expect(find.byType(FilledButton), findsNothing);
+
+      final cancelRect = tester.getRect(cancel);
+      final confirmRect = tester.getRect(confirm);
+      expect(cancelRect.top, confirmRect.top);
+      expect(cancelRect.width, confirmRect.width);
+      expect(cancelRect.right, lessThan(confirmRect.left));
+    });
+
+    testWidgets('only the confirm button answers true', (tester) async {
+      final result = await openConfirm(tester);
+
+      await tester.tap(find.text('Delete'));
+      await tester.pumpAndSettle();
+
+      expect(await result, isTrue);
+    });
+  });
 }
