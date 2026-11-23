@@ -202,7 +202,7 @@
   "matchTeamB": "Team 2",
   "matchScore": "Score",
   "matchSubmit": "Save match",
-  "matchDeleteConfirm": "Delete this match? Ratings for the season will be recalculated.",
+  "matchDeleteConfirm": "Ratings for the season will be recalculated.",
   "matchPickTeamsTitle": "Players",
   "matchTapToSelectPlayers": "Tap to add players",
   "matchTapToSelectPlayer": "Tap to pick a player",

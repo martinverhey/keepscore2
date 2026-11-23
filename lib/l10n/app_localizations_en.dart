@@ -487,7 +487,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get matchDeleteConfirm =>
-      'Delete this match? Ratings for the season will be recalculated.';
+      'Ratings for the season will be recalculated.';
 
   @override
   String get matchPickTeamsTitle => 'Players';

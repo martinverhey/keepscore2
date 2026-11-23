@@ -489,7 +489,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get matchDeleteConfirm =>
-      'Deze wedstrijd verwijderen? De ratings van het seizoen worden opnieuw berekend.';
+      'De ratings van het seizoen worden opnieuw berekend.';
 
   @override
   String get matchPickTeamsTitle => 'Spelers';

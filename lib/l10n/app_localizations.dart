@@ -923,7 +923,7 @@ abstract class AppLocalizations {
   /// No description provided for @matchDeleteConfirm.
   ///
   /// In en, this message translates to:
-  /// **'Delete this match? Ratings for the season will be recalculated.'**
+  /// **'Ratings for the season will be recalculated.'**
   String get matchDeleteConfirm;
 
   /// No description provided for @matchPickTeamsTitle.
