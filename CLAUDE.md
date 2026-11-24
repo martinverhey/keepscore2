@@ -3058,6 +3058,16 @@ at all. A new column is a migration; the view that exposes it is not.
   `20261124140000_shutout_bonus.sql` is the worked example. The same goes for
   adding a parameter to a function: that is a new overload, so the migration
   drops the old signature.
+  **A column the owner edits also needs adding to `90_grants.sql`'s
+  `grant update (...) on public.competitions`**, and that grant applied to
+  live: `authenticated` holds column-level UPDATE only, so the app's settings
+  write — which sends every setting at once — fails outright with
+  `permission denied for table competitions` the moment one column is missing.
+  `shutout_bonus`/`shutout_multiplier` shipped without it and broke saving on
+  the edit page and renaming from the switcher until `e57593c`. Nothing in
+  `flutter test` sees it, since the repository is mocked; check it by running
+  the update as the owner (`set local role authenticated` plus
+  `request.jwt.claims`) inside a rolled-back transaction.
 - **Re-applying a `create or replace function` drops its grants.** Every file
   in `10_functions/` therefore ends with its own `revoke`/`grant execute`
   pair, so the footgun is structurally gone rather than something to remember
@@ -3108,6 +3118,28 @@ at all. A new column is a migration; the view that exposes it is not.
   `--apply-schema`, then `pg_dump --schema-only` and diff against a dump of
   the live project. That is what verified the squash, and it is the only way
   to see a privilege or ordering mistake before it lands.
+
+### Pending migrations — committed, deliberately not applied to live
+
+Bring these up whenever a version is bumped or shipped, or the database is
+touched. Remove an entry once it is applied.
+
+- **`20261124160000_drop_allow_draws.sql`** (drops `competition_overview`,
+  then `competitions.allow_draws`). The schema half of "always allow draws"
+  is already live — the draw checks are gone from `create_match`/
+  `update_match_score` and the column is out of the update grant — but the
+  column itself must stay until no build that reads it is in use: up to
+  v0.7.1, `Competition.fromMap` does `map['allow_draws'] as bool`, which
+  throws on every competition load once the column is gone. Once a release
+  without it has shipped and the old builds are retired (confirm with the
+  user), run:
+  1. `./scripts/backup-db.sh`
+  2. `./scripts/db.sh -f supabase/migrations/20261124160000_drop_allow_draws.sql`
+  3. `./scripts/db.sh --apply-schema` (recreates `competition_overview`)
+  4. `insert into supabase_migrations.schema_migrations (version, name)
+     values ('20261124160000', 'drop_allow_draws');`
+  5. `./scripts/db.sh -f supabase/tests/players_check.sql` and
+     `supabase/tests/rls_check.sql`
 
 ### SQL gotchas (Postgres / Supabase functions)
 
