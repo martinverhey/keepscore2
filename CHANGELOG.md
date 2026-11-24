@@ -3,6 +3,21 @@
 Newest first. Each heading is an annotated `vX.Y.Z` tag; pushing that tag ships
 the build to TestFlight and Play internal testing.
 
+## v0.7.2 — 2026-11-24
+
+### Added
+- Set base points, margin of victory and the shutout bonus when creating a competition
+- Configurable shutout multiplier
+
+### Changed
+- Wins are scored in whole points, with a bonus for the margin of victory
+- Editing a competition opens in a sheet
+- Draws are always allowed
+
+### Fixed
+- Sheets cut off their content at the bottom
+- Owners couldn't save the shutout settings
+
 ## v0.7.1 — 2026-11-24
 
 ### Added
