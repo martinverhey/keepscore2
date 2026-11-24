@@ -28,7 +28,8 @@ revoke all on public.seasons        from anon, authenticated;
 grant select on public.competitions   to authenticated;
 grant delete on public.competitions   to authenticated;
 grant update (name, season_length, timezone, starting_rating, k_factor,
-              mov_enabled, mov_cap, allow_draws) on public.competitions to authenticated;
+              mov_enabled, mov_cap, shutout_bonus, shutout_multiplier,
+              allow_draws) on public.competitions to authenticated;
 
 grant select on public.players        to authenticated;
 grant update (display_name, is_active) on public.players to authenticated;
