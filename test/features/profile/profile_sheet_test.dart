@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keepscore2/core/theme/app_tokens.dart';
 import 'package:keepscore2/app/app.dart';
 import 'package:keepscore2/app/dependency_injection/injector.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
@@ -1068,7 +1069,7 @@ void main() {
     final body = tester.getRect(find.byType(SwipeNavigator));
     final viewport = tester.getRect(find.byType(SingleChildScrollView));
     final emptyLine = tester.getRect(find.text(l10n.profileHistoryEmpty));
-    expect(body.bottom, viewport.bottom);
+    expect(body.bottom, viewport.bottom - AppSpacing.lg);
     expect(emptyLine.bottom, lessThan(body.bottom - 50));
 
     await tester.flingFrom(

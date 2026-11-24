@@ -125,7 +125,11 @@ Future<T?> showAdaptiveSheet<T>(
           color: AdaptiveColors.modalSurface(sheetContext),
           borderRadius: AppRadius.sheet,
         ),
-        child: SafeArea(top: false, child: builder(sheetContext)),
+        child: SafeArea(
+          top: false,
+          bottom: false,
+          child: builder(sheetContext),
+        ),
       ),
     ),
   );
@@ -148,5 +152,5 @@ Widget _cupertinoSurface(BuildContext context, WidgetBuilder builder) {
 }
 
 Widget _cupertinoContent(BuildContext context, WidgetBuilder builder) {
-  return SafeArea(top: false, child: builder(context));
+  return SafeArea(top: false, bottom: false, child: builder(context));
 }

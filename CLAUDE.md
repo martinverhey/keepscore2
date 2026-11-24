@@ -906,13 +906,40 @@ code; don't relitigate them.
   - **New modal sheets build on `core/widgets/sheet.dart`'s `Sheet`**, not ad
     hoc `Column`s: title/subtitle/avatar pinned at top, `content` scrolls in
     between (capped at 85% of screen height), primary/secondary buttons
-    pinned at bottom. **The `AppSpacing.lg` under the header is the scroll
-    view's own `padding`, not a `SizedBox` between the two**, so every sheet
-    gets it for free at rest and it scrolls away with the content instead of
-    holding a fixed band open under a pinned header. Nothing else in `Sheet`
-    may become scroll-view padding on that reasoning: the buttons' gaps
-    separate two pinned things, and a gap that scrolled out from under the
-    content would let it run into them. A pick list (season, game type) is a
+    pinned at bottom. **The `AppSpacing.lg` under the header is split:
+    `_pinnedHeaderGap` (`md`) is a fixed `SizedBox`, and `_scrollingHeaderGap`
+    (the remaining `sm`) is the scroll view's own top `padding`.** So at
+    rest the content sits `lg` below the header. Once it scrolls, it is
+    clipped `md` below the title and its trailing actions instead of right
+    against them. Before the split, all of the gap scrolled away, which left
+    the content running flush under the header's 44pt actions.
+    **On iOS glass the header is not pinned above the scroll view but
+    floats over it, the way the page's top bar does**: `_scrollUnderHeader`
+    is a `CustomScrollView` whose first sliver is a `PinnedHeaderSliver`
+    (header plus `_pinnedHeaderGap`, laid over a `LiquidGlassScrollEdge`).
+    Its `layoutExtent` clamps to 0 as it scrolls, so the content passes
+    under the title and fades out instead of being clipped at a line. The
+    band is tinted `AdaptiveColors.glassSheetTint`, the sheet's own opaque
+    surface, so it is invisible at rest. It is clipped to `AppRadius.sheet`
+    and spans the full sheet width, which is why `Sheet`'s horizontal
+    `lg` is applied to each piece (`_inset`, the content padding) rather
+    than to the whole frame. Every other platform keeps the pinned header,
+    and so does a sheet passing its own `header` (only `ProfileSheet`): its
+    segmented tab control is meant to sit on a solid surface, and a floating
+    one read wrong on device.
+    "Sheet header on glass" in `sheet_test.dart` pins both paths.
+    **Without pinned buttons, the bottom inset (`lg` plus the bottom safe
+    area) is scroll-view padding too, and `showAdaptiveSheet`'s `SafeArea`
+    is `bottom: false` so that `Sheet` can read the safe area itself.**
+    When that inset sat outside the scroll view, the viewport ended ~58pt
+    above the sheet's edge on a Face ID phone, and tall content (the Manage
+    players sheet) was visibly cut off at an invisible line. With pinned
+    buttons, the inset stays outside the scroll view, under the buttons: their
+    gaps separate two pinned things, and a gap that scrolled out from under
+    the content would let it run into them. The 85% cap is measured
+    without the safe area and the safe area is added on top, so a sheet is
+    the same height as before. `sheet_test.dart`'s "Sheet bottom inset" group
+    pins both cases. A pick list (season, game type) is a
     column of choices in `content` and nothing else — no Cancel; see
     `DESIGN.md` for which buttons a sheet may carry at all.
     **`showAdaptiveSheet`'s Cupertino branch pushes a `CupertinoModalPopupRoute`

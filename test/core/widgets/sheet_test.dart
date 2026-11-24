@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:keepscore2/core/theme/app_tokens.dart';
 import 'package:keepscore2/core/widgets/adaptive/adaptive.dart';
 import 'package:keepscore2/core/widgets/sheet.dart';
+import 'package:cupertino_ui/cupertino_ui.dart'
+    show CupertinoApp, CupertinoButton;
 import 'package:material_ui/material_ui.dart';
 
 Future<void> _openSheet(WidgetTester tester) async {
@@ -116,10 +118,46 @@ Future<void> _openSheetAboveABar(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+Future<void> _openTallSheet(
+  WidgetTester tester, {
+  Widget? primaryButton,
+}) async {
+  tester.view.padding = const FakeViewPadding(bottom: _bottomSafeArea * 3);
+  tester.view.devicePixelRatio = 3;
+  addTearDown(tester.view.reset);
+  await tester.pumpWidget(
+    MaterialApp(
+      home: Scaffold(
+        body: Builder(
+          builder: (context) => ElevatedButton(
+            onPressed: () => showAdaptiveSheet<void>(
+              context,
+              builder: (_) => Sheet(
+                title: 'Sheet',
+                primaryButton: primaryButton,
+                content: const Column(
+                  children: [SizedBox(height: 2000), Text('content bottom')],
+                ),
+              ),
+            ),
+            child: const Text('open'),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  await tester.tap(find.text('open'));
+  await tester.pumpAndSettle();
+}
+
+const _bottomSafeArea = 34.0;
+
 void main() {
   tearDown(() {
     AppPlatform.debugOverrideCupertino = null;
     AppPlatform.debugOverrideWideWeb = null;
+    AppPlatform.debugOverrideLiquidGlass = null;
   });
 
   group('Sheet drag-to-dismiss', () {
@@ -291,7 +329,12 @@ void main() {
 
       expect(
         tester.getRect(content).top - tester.getRect(scrollView).top,
-        AppSpacing.lg,
+        AppSpacing.lg - AppSpacing.md,
+      );
+      expect(
+        tester.getRect(scrollView).top -
+            tester.getRect(find.text('Sheet')).bottom,
+        AppSpacing.md,
       );
 
       await tester.drag(scrollView, const Offset(0, -200));
@@ -312,6 +355,121 @@ void main() {
         tester.getRect(find.text('content top')).top,
         tester.getRect(find.byType(SingleChildScrollView)).top,
       );
+    });
+  });
+
+  group('Sheet bottom inset', () {
+    testWidgets('lets the content scroll to the sheet edge and rest clear of '
+        'the safe area', (tester) async {
+      AppPlatform.debugOverrideCupertino = false;
+      AppPlatform.debugOverrideWideWeb = false;
+      await _openTallSheet(tester);
+      final screenBottom = tester.view.physicalSize.height / 3;
+
+      expect(
+        tester.getRect(find.byType(SingleChildScrollView)).bottom,
+        screenBottom,
+      );
+
+      await tester.drag(
+        find.byType(SingleChildScrollView),
+        const Offset(0, -3000),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        tester.getRect(find.text('content bottom')).bottom,
+        screenBottom - AppSpacing.lg - _bottomSafeArea,
+      );
+    });
+
+    testWidgets('stays outside the scroll view above a pinned button', (
+      tester,
+    ) async {
+      AppPlatform.debugOverrideCupertino = false;
+      AppPlatform.debugOverrideWideWeb = false;
+      await _openTallSheet(
+        tester,
+        primaryButton: const SizedBox(height: 48, key: Key('button')),
+      );
+      final screenBottom = tester.view.physicalSize.height / 3;
+
+      expect(
+        tester.getRect(find.byKey(const Key('button'))).bottom,
+        screenBottom - AppSpacing.lg - _bottomSafeArea,
+      );
+      expect(
+        tester.getRect(find.byType(SingleChildScrollView)).bottom,
+        tester.getRect(find.byKey(const Key('button'))).top - AppSpacing.lg,
+      );
+    });
+  });
+
+  group('Sheet header on glass', () {
+    testWidgets('sits the same gap above the content at rest', (tester) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+      await _openMeasuredSheet(tester, title: 'Sheet');
+
+      expect(
+        tester.getRect(find.text('content top')).top -
+            tester.getRect(find.text('Sheet')).bottom,
+        AppSpacing.lg,
+      );
+    });
+
+    testWidgets('lets the content scroll under it behind a scroll edge', (
+      tester,
+    ) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+      await _openMeasuredSheet(tester, title: 'Sheet');
+      final title = tester.getRect(find.text('Sheet'));
+
+      await tester.drag(find.byType(CustomScrollView), const Offset(0, -100));
+      await tester.pumpAndSettle();
+
+      expect(tester.getRect(find.text('Sheet')), title);
+      expect(
+        tester.getRect(find.text('content top')).top,
+        lessThan(title.bottom),
+      );
+      expect(find.byType(LiquidGlassScrollEdge), findsOneWidget);
+    });
+
+    testWidgets('keeps a custom header pinned on glass', (tester) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = true;
+      await tester.pumpWidget(
+        CupertinoApp(
+          home: Builder(
+            builder: (context) => CupertinoButton(
+              onPressed: () => showAdaptiveSheet<void>(
+                context,
+                builder: (_) => const Sheet(
+                  header: Text('tabs'),
+                  content: SizedBox(height: 2000),
+                ),
+              ),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(LiquidGlassScrollEdge), findsNothing);
+      expect(find.byType(SingleChildScrollView), findsOneWidget);
+    });
+
+    testWidgets('keeps the pinned header off glass', (tester) async {
+      AppPlatform.debugOverrideCupertino = true;
+      AppPlatform.debugOverrideLiquidGlass = false;
+      await _openMeasuredSheet(tester, title: 'Sheet');
+
+      expect(find.byType(LiquidGlassScrollEdge), findsNothing);
+      expect(find.byType(SingleChildScrollView), findsOneWidget);
     });
   });
 
