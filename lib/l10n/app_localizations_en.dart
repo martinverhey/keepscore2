@@ -262,9 +262,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get competitionEditSave => 'Save changes';
 
   @override
-  String get competitionEditSaved => 'Changes saved.';
-
-  @override
   String get competitionEditOwnerOnly =>
       'Only the owner can change these settings.';
 

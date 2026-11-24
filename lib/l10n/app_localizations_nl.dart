@@ -263,9 +263,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String get competitionEditSave => 'Wijzigingen opslaan';
 
   @override
-  String get competitionEditSaved => 'Wijzigingen opgeslagen.';
-
-  @override
   String get competitionEditOwnerOnly =>
       'Alleen de beheerder kan deze instellingen wijzigen.';
 

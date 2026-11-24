@@ -62,13 +62,13 @@ class CompetitionEditCubit extends Cubit<CompetitionEditState> {
   void _edit(CompetitionEditReady Function(CompetitionEditReady) apply) {
     final ready = _ready;
     if (ready == null) return;
-    emit(apply(ready).copyWith(saved: false, clearFailure: true));
+    emit(apply(ready).copyWith(clearFailure: true));
   }
 
   Future<void> submit() async {
     final ready = _ready;
     if (ready == null || !ready.canSubmit) return;
-    emit(ready.copyWith(busy: true, saved: false, clearFailure: true));
+    emit(ready.copyWith(busy: true, clearFailure: true));
     try {
       final competition = await _repository.updateSettings(
         competitionId: competitionId,
@@ -82,7 +82,7 @@ class CompetitionEditCubit extends Cubit<CompetitionEditState> {
         allowDraws: ready.allowDraws,
       );
       if (isClosed) return;
-      emit(CompetitionEditReady.of(competition).copyWith(saved: true));
+      emit(CompetitionEditSaved(competition));
     } on Failure catch (failure) {
       if (isClosed) return;
       final latest = _ready;

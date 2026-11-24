@@ -100,7 +100,6 @@
   "historyTitle": "History",
   "historyEmpty": "Finished seasons will show up here.",
   "competitionEditSave": "Save changes",
-  "competitionEditSaved": "Changes saved.",
   "competitionEditOwnerOnly": "Only the owner can change these settings.",
   "competitionSeasonLengthWarning": "Seasons already played keep their results. This only changes how future seasons are cut.",
   "competitionKFactorLabel": "Base points",

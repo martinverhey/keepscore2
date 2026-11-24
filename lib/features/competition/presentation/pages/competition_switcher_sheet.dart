@@ -9,10 +9,8 @@ import '../../../../core/widgets/failure_text.dart';
 import '../../../../core/widgets/sheet.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
-import '../../domain/competition.model.dart';
 import '../cubit/competition_cubit.dart';
 import '../cubit/competition_list_cubit.dart';
-import '../widgets/competition_actions.dart';
 import '../widgets/competition_switcher_choice.dart';
 import '../widgets/competition_switcher_row.dart';
 import 'competition_flows.dart';
@@ -132,32 +130,15 @@ class CompetitionSwitcherSheet extends StatelessWidget {
               onTap: overview.id == currentId
                   ? Navigator.of(context).pop
                   : () => _close(context, CompetitionSwitchChoice(overview.id)),
-              actions: _actions(context, overview, myUserId: myUserId),
+              actions: competitionActionsFor(
+                context,
+                overview,
+                myUserId: myUserId,
+              ),
             ),
           ),
         if (state.actionFailure case final failure?) FailureText(failure),
       ],
-    );
-  }
-
-  CompetitionActions _actions(
-    BuildContext context,
-    CompetitionOverview overview, {
-    required String? myUserId,
-  }) {
-    final actions = competitionActionsFor(
-      context,
-      overview,
-      myUserId: myUserId,
-    );
-    return CompetitionActions(
-      onEdit: switch (actions.onEdit) {
-        final onEdit? => () => _close(context, CompetitionActionChoice(onEdit)),
-        null => null,
-      },
-      onRename: actions.onRename,
-      onLeave: actions.onLeave,
-      onDelete: actions.onDelete,
     );
   }
 

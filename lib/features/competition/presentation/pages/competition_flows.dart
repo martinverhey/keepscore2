@@ -7,6 +7,7 @@ import '../../../../core/data/recent_competition_store.dart';
 import '../../../../core/extensions/build_context.extension.dart';
 import '../../../../core/widgets/adaptive/adaptive.dart';
 import '../../../../core/widgets/text_entry_sheet.dart';
+import '../../../settings/presentation/pages/competition_edit_sheet.dart';
 import '../../domain/competition.model.dart';
 import '../cubit/competition_cubit.dart';
 import '../cubit/competition_list_cubit.dart';
@@ -31,9 +32,6 @@ Future<bool> runCompetitionSwitcherChoice(
       return _enterNew(context, joinCompetition);
     case CompetitionCreateChoice():
       return _enterNew(context, createCompetition);
-    case CompetitionActionChoice(:final action):
-      action();
-      return true;
   }
 }
 
@@ -79,16 +77,26 @@ CompetitionActions competitionActionsFor(
   required String? myUserId,
 }) {
   final isOwner = overview.competition.isOwnedBy(myUserId);
-  final router = GoRouter.of(context);
 
   return CompetitionActions(
-    onEdit: isOwner
-        ? () => router.go(Routes.competitionEdit(overview.id))
-        : null,
+    onEdit: isOwner ? () => _edit(context, overview) : null,
     onRename: isOwner ? () => _rename(context, overview) : null,
     onLeave: isOwner ? null : () => _leave(context, overview),
     onDelete: isOwner ? () => _delete(context, overview) : null,
   );
+}
+
+Future<void> _edit(BuildContext context, CompetitionOverview overview) async {
+  final competitions = context.read<CompetitionListCubit>();
+  final current = context.read<CompetitionCubit>();
+  final saved = await showCompetitionEditSheet(
+    context,
+    competitionId: overview.id,
+  );
+  if (!saved) return;
+
+  competitions.refresh();
+  if (current.competitionId == overview.id) current.refresh();
 }
 
 Future<void> _rename(BuildContext context, CompetitionOverview overview) async {

@@ -536,12 +536,6 @@ abstract class AppLocalizations {
   /// **'Save changes'**
   String get competitionEditSave;
 
-  /// No description provided for @competitionEditSaved.
-  ///
-  /// In en, this message translates to:
-  /// **'Changes saved.'**
-  String get competitionEditSaved;
-
   /// No description provided for @competitionEditOwnerOnly.
   ///
   /// In en, this message translates to:

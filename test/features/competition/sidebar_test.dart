@@ -242,7 +242,7 @@ void main() {
       useWideWebViewport(tester);
 
       final router = GoRouter(
-        initialLocation: '/competition/c1/settings/edit',
+        initialLocation: '/competition/c1/settings/history',
         routes: [
           ShellRoute(
             builder: (context, state, child) =>
@@ -263,7 +263,7 @@ void main() {
                     ),
                   ),
                   GoRoute(
-                    path: 'settings/edit',
+                    path: 'settings/history',
                     builder: (context, state) => const AdaptiveScaffold(
                       title: 'edit',
                       body: Text('edit body'),
@@ -307,7 +307,7 @@ void main() {
       useWideWebViewport(tester);
 
       final router = GoRouter(
-        initialLocation: '/competition/c1/settings/edit',
+        initialLocation: '/competition/c1/settings/history',
         routes: [
           ShellRoute(
             builder: (context, state, child) =>
@@ -328,7 +328,7 @@ void main() {
                     ),
                   ),
                   GoRoute(
-                    path: 'settings/edit',
+                    path: 'settings/history',
                     builder: (context, state) => const AdaptiveScaffold(
                       title: 'edit',
                       body: Text('edit body'),

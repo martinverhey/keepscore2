@@ -194,19 +194,18 @@ so was the old `CompetitionsPage`, kept for a while as a fallback for `/`.
 
 **The sheet does not navigate; it returns a `CompetitionSwitcherChoice`** —
 `CompetitionSwitchChoice(id)`, `CompetitionJoinChoice`,
-`CompetitionCreateChoice` or `CompetitionActionChoice(callback)` (Edit) — and
+or `CompetitionCreateChoice` — and
 the leaderboard runs it with `runCompetitionSwitcherChoice` from its own, page-level
 context once the sheet has closed. That is load-bearing: the sheet lives on
 the root navigator, attached to `SidebarShell`'s page, which a `go` to
-another competition (or to the Edit page) does not replace — so a sheet that
-navigated itself would stay open on top of where it sent you. Rename, Leave,
-Delete and Invite run in place with the sheet's own context, so a refused
+another competition does not replace — so a sheet that
+navigated itself would stay open on top of where it sent you. Edit, Rename,
+Leave, Delete and Invite run in place with the sheet's own context, so a refused
 action shows its `FailureText` in the sheet. Leaving or deleting the
 competition you are in emits `CompetitionMissing`, which the sheet listens
 for and closes itself on. `competitionActionsFor`
 (`pages/competition_flows.dart`) is the one place the four owner/member
-callbacks are built — it captures `GoRouter.of(context)` eagerly so Edit
-still navigates after the sheet that built it has popped.
+callbacks are built.
 **Join and Create replace the switcher, and backing out of them brings it
 back.** The header actions pop `CompetitionJoinChoice` /
 `CompetitionCreateChoice`; `runCompetitionSwitcherChoice` then runs
@@ -253,7 +252,7 @@ default to it too), plus base points (`k_factor`), margin of victory, maximum bo
 the shutout multiplier (a switch plus its factor) collapsed behind an
 `Advanced` `DisclosureRow` (`core/widgets/disclosure_row.dart`), seeded from
 `EloSettings()`'s defaults and validated by the same `EloSettings.kFactorIsValid`/
-`movCapIsValid` the Edit page uses (allow draws stays Edit-only),
+`movCapIsValid` the Edit sheet uses (allow draws stays Edit-only),
 with the submit button in `Sheet.primaryButton` (labelled
 `competitionsCreateShort` — the sheet's own title already says "Create
 competition", which is what retired the `competitionCreateSubmit` key) and
@@ -548,7 +547,7 @@ or moved:
   System section (theme, language), the app version and sign out.
 - **Edit a competition** — the owner-only Edit item in a switcher row's
   actions menu (`competitionActionsFor`) is the only entry
-  point to the edit page (`CompetitionEditPage`).
+  point to the edit sheet (`showCompetitionEditSheet`).
 
 ## Architecture
 
@@ -567,7 +566,7 @@ lib/
 domain it presents": alongside its own theme-preference domain, it also holds
 the presentation for the competition-admin screens — `ProfilePage` (theme,
 language and sign out; no competition rows),
-`CompetitionEditPage`/`CompetitionEditCubit`, `HistoryPage`/
+`CompetitionEditSheet`/`CompetitionEditCubit`, `HistoryPage`/
 `HistoryCubit` — even though those read `CompetitionRepository`/
 `LeaderboardRepository`, which stay put in `competition`/`leaderboard`. They
 moved here because they're conceptually "settings" screens, not because they
@@ -704,17 +703,20 @@ its callback is. Ownership decides which: an owner gets Edit/Rename/Delete,
 anyone else Leave alone (`competitionActionsFor`), and a set whose callbacks
 are all null renders no button at all (`hasActions`). It sits at the end of
 each `CompetitionSwitcherRow`.
-**Edit is `go(Routes.competitionEdit(id))`, never `push`**: the target can be a
-competition other than the one whose shell you are in, which is the
-black-screen case in "Entering a competition is always `go`". A `go` there
-leaves the edit page with nothing to pop to, so `CompetitionEditPage`
-renders its own back action — `go(Routes.leaderboard(id))` — whenever
-`ModalRoute.canPop` is false and the sidebar is not suppressing back buttons.
-The page itself is titled `competitionEdit` ("Edit" / "Bewerken") to match
-the menu item that opens it, and **that menu item is the only way in**: the
-Settings page's Configuration row, the sidebar's, `SidebarSection.configuration`
-and the `configurationTitle` key were all removed with it, so on wide web
-nothing in the sidebar is highlighted while the page is open.
+**Edit is a sheet, `showCompetitionEditSheet`
+(`settings/presentation/pages/competition_edit_sheet.dart`), stacked over the
+switcher like Rename** — there is no edit route, no `Routes.competitionEdit`
+and no `CompetitionEditPage` any more. It carries the create sheet's fields
+in the create sheet's layout — name, season length, then the rating settings
+behind the same `Advanced` `DisclosureRow` — plus allow draws, which only
+Edit offers, and the season-length warning in place of create's explainer.
+`CompetitionEditCubit.submit` ends on a terminal `CompetitionEditSaved`
+(the "single form with a terminal succeeded case" shape), which the sheet
+listens for and pops `true` on; a refused save stays `CompetitionEditReady`
+with its `failure`, and the sheet stays open showing `FailureText`. On a
+save, `competitionActionsFor`'s `_edit` refreshes `CompetitionListCubit` and,
+for the competition you are in, `CompetitionCubit`.
+`competition_edit_sheet_test.dart` pins both outcomes.
 `AdaptiveMenuButton` (`core/widgets/adaptive/adaptive_menu_button.dart`) is a
 `PopupMenuButton` of icon-plus-label rows on Material and wide web, and a
 `CupertinoActionSheet` with a Cancel button on Cupertino; destructive items
@@ -2420,9 +2422,9 @@ Two things had to move for `go` to be safe here:
 - **The `settings/*` routes are declared as siblings, not children of
   `settings`.** `go` builds a page for every route in the matched chain, so
   nesting them under `/competition/:id/settings` would have put `SettingsPage`
-  in the stack underneath History/Edit — and had it call
+  in the stack underneath History — and had it call
   `setPageTitle` on the way past. The paths are unchanged
-  (`path: 'settings/edit'` under `/competition/:id`); only the nesting is.
+  (`path: 'settings/history'` under `/competition/:id`); only the nesting is.
 - **`PlayersCubit` moved up to the competition `ShellRoute`**, so every
   sub-page shares one instance rather than building its own. `go` keeps that
   `ShellRoute` mounted underneath whatever page it navigates to, so without
@@ -2434,7 +2436,7 @@ Two things had to move for `go` to be safe here:
   there is no refresh-on-return machinery for it. It does watch `players`
   now (see "Three tables are watched" above), but that covers somebody
   *else's* write, not a stale instance of your own. The one thing outside that shared
-  instance is the competition itself (a rename on the Edit page), so
+  instance is the competition itself (a rename from the switcher), so
   `SidebarShell._select` calls `CompetitionCubit.refresh()` on every hop.
 
 Native and narrow web are untouched by all of this: `Sidebar` still returns

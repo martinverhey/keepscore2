@@ -112,7 +112,7 @@ void main() {
   );
 
   blocTest<CompetitionEditCubit, CompetitionEditState>(
-    'saving sends the parsed values and re-seeds from the saved row',
+    'saving sends the parsed values and ends on the saved row',
     setUp: () {
       stubLoad();
       when(
@@ -168,41 +168,12 @@ void main() {
         ),
       ).called(1);
 
-      expect(_ready(cubit).saved, isTrue);
-      expect(_ready(cubit).busy, isFalse);
-      expect(_ready(cubit).name, 'Table Tennis');
-      expect(_ready(cubit).movCap, '2');
-      expect(_ready(cubit).shutoutBonus, isFalse);
-      expect(_ready(cubit).shutoutMultiplier, '3');
+      final saved = cubit.state as CompetitionEditSaved;
+      expect(saved.competition.name, 'Table Tennis');
+      expect(saved.competition.movCap, 2);
+      expect(saved.competition.shutoutBonus, isFalse);
+      expect(saved.competition.shutoutMultiplier, 3);
     },
-  );
-
-  blocTest<CompetitionEditCubit, CompetitionEditState>(
-    'editing after a save retracts the confirmation',
-    setUp: () {
-      stubLoad();
-      when(
-        () => repository.updateSettings(
-          competitionId: any(named: 'competitionId'),
-          name: any(named: 'name'),
-          seasonLength: any(named: 'seasonLength'),
-          kFactor: any(named: 'kFactor'),
-          movEnabled: any(named: 'movEnabled'),
-          movCap: any(named: 'movCap'),
-          shutoutBonus: any(named: 'shutoutBonus'),
-          shutoutMultiplier: any(named: 'shutoutMultiplier'),
-          allowDraws: any(named: 'allowDraws'),
-        ),
-      ).thenAnswer((_) async => _competition());
-    },
-    build: () => CompetitionEditCubit(repository, 'c1'),
-    act: (cubit) async {
-      await cubit.load();
-      await cubit.submit();
-      expect(_ready(cubit).saved, isTrue);
-      cubit.kFactorChanged('40');
-    },
-    verify: (cubit) => expect(_ready(cubit).saved, isFalse),
   );
 
   blocTest<CompetitionEditCubit, CompetitionEditState>(
@@ -231,7 +202,6 @@ void main() {
     },
     verify: (cubit) {
       expect(_ready(cubit).failure, isA<PermissionFailure>());
-      expect(_ready(cubit).saved, isFalse);
       expect(_ready(cubit).busy, isFalse);
       expect(_ready(cubit).kFactor, '40');
     },

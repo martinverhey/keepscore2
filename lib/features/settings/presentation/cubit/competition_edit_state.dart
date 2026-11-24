@@ -33,6 +33,15 @@ class CompetitionEditFailed extends CompetitionEditState {
   List<Object?> get props => [failure];
 }
 
+class CompetitionEditSaved extends CompetitionEditState {
+  const CompetitionEditSaved(this.competition);
+
+  final Competition competition;
+
+  @override
+  List<Object?> get props => [competition];
+}
+
 class CompetitionEditReady extends CompetitionEditState {
   const CompetitionEditReady({
     required this.competition,
@@ -45,7 +54,6 @@ class CompetitionEditReady extends CompetitionEditState {
     required this.shutoutMultiplier,
     required this.allowDraws,
     this.busy = false,
-    this.saved = false,
     this.failure,
   });
 
@@ -72,7 +80,6 @@ class CompetitionEditReady extends CompetitionEditState {
   final String shutoutMultiplier;
   final bool allowDraws;
   final bool busy;
-  final bool saved;
   final Failure? failure;
 
   bool get nameIsValid => name.trim().length >= 2;
@@ -108,7 +115,6 @@ class CompetitionEditReady extends CompetitionEditState {
     String? shutoutMultiplier,
     bool? allowDraws,
     bool? busy,
-    bool? saved,
     Failure? failure,
     bool clearFailure = false,
   }) {
@@ -123,7 +129,6 @@ class CompetitionEditReady extends CompetitionEditState {
       shutoutMultiplier: shutoutMultiplier ?? this.shutoutMultiplier,
       allowDraws: allowDraws ?? this.allowDraws,
       busy: busy ?? this.busy,
-      saved: saved ?? this.saved,
       failure: clearFailure ? null : (failure ?? this.failure),
     );
   }
@@ -140,7 +145,6 @@ class CompetitionEditReady extends CompetitionEditState {
     shutoutMultiplier,
     allowDraws,
     busy,
-    saved,
     failure,
   ];
 }
