@@ -114,8 +114,6 @@
   "competitionShutoutMultiplierLabel": "Vermenigvuldiger",
   "competitionShutoutMultiplierInvalid": "Kies een getal van 1 tot en met 10.",
   "competitionAdvancedLabel": "Geavanceerd",
-  "competitionAllowDrawsLabel": "Gelijkspel toestaan",
-  "competitionAllowDrawsHelp": "Maakt het mogelijk een wedstrijd met gelijke score op te slaan.",
 
   "competitionRenameTitle": "Competitie hernoemen",
   "competitionEdit": "Bewerken",
@@ -220,7 +218,6 @@
   "matchScoreTitle": "Eindstand",
   "matchNeedsBothTeams": "Zet minstens één speler aan elke kant.",
   "matchScoreMissing": "Vul beide scores in.",
-  "matchDrawNotAllowed": "Deze competitie staat geen gelijkspel toe.",
   "matchGuestCannotCreate": "Als gast kun je rondkijken, maar voor het aanmaken van wedstrijden heb je een account nodig.",
   "matchNeedsPlayers": "Voeg spelers toe en maak wedstrijden aan.",
   "matchDiscardConfirmTitle": "Wedstrijd weggooien?",

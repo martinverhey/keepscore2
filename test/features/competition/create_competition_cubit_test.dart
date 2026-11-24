@@ -20,7 +20,6 @@ final _created = Competition(
   movEnabled: true,
   movCap: 2.5,
   shutoutBonus: true,
-  allowDraws: true,
   createdAt: DateTime.utc(2026, 8, 9),
 );
 

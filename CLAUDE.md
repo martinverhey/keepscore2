@@ -252,7 +252,7 @@ default to it too), plus base points (`k_factor`), margin of victory, maximum bo
 the shutout multiplier (a switch plus its factor) collapsed behind an
 `Advanced` `DisclosureRow` (`core/widgets/disclosure_row.dart`), seeded from
 `EloSettings()`'s defaults and validated by the same `EloSettings.kFactorIsValid`/
-`movCapIsValid` the Edit sheet uses (allow draws stays Edit-only),
+`movCapIsValid` the Edit sheet uses,
 with the submit button in `Sheet.primaryButton` (labelled
 `competitionsCreateShort` — the sheet's own title already says "Create
 competition", which is what retired the `competitionCreateSubmit` key) and
@@ -417,7 +417,9 @@ refreshes the list when either sheet closes — realtime does it.
   `RatingDelta`/`TodayDeltaBadge` print no decimals.
 - **Seasons hard-reset** everyone to `starting_rating` (1000). Calendar-aligned
   monthly / quarterly / yearly in the competition's timezone.
-- **Draws allowed**, scored 0.5.
+- **Draws are always allowed**, scored 0.5. There is no per-competition
+  switch: `allow_draws` was dropped in `20261124160000_drop_allow_draws.sql`,
+  along with the draw checks in `create_match`/`update_match_score`.
 - **No match confirmation** — a submitted result counts immediately.
 - **A streak is badged in both directions**: fire for a win streak, ice for a
   loss streak (`AdaptiveGlyph.fire`/`ice`), on the leaderboard row, in
@@ -708,8 +710,8 @@ each `CompetitionSwitcherRow`.
 switcher like Rename** — there is no edit route, no `Routes.competitionEdit`
 and no `CompetitionEditPage` any more. It carries the create sheet's fields
 in the create sheet's layout — name, season length, then the rating settings
-behind the same `Advanced` `DisclosureRow` — plus allow draws, which only
-Edit offers, and the season-length warning in place of create's explainer.
+behind the same `Advanced` `DisclosureRow` — with the season-length warning
+in place of create's explainer.
 `CompetitionEditCubit.submit` ends on a terminal `CompetitionEditSaved`
 (the "single form with a terminal succeeded case" shape), which the sheet
 listens for and pops `true` on; a refused save stays `CompetitionEditReady`
@@ -984,7 +986,7 @@ code; don't relitigate them.
     layer, and the sync code disappeared entirely once it moved local — a
     plain `BlocBuilder` was enough again. A business-rule check that
     genuinely needs the live text (`MatchFormReady.canSubmit`/
-    `scoresAreValid`/`drawIsRefused`) takes the parsed value as a
+    `scoresAreValid`) takes the parsed value as a
     `{required int? scoreAValue, ...}` parameter instead of reading a field
     off state, with the page computing it from its own controller
     (`_scoreAValue`/`_scoreBValue` getters, `int.tryParse` on the
@@ -1073,7 +1075,7 @@ code; don't relitigate them.
       class's `created` field sitting nullable next to `name`/`busy` the
       whole time.
 
-    `canSubmit`/`scoresAreValid`/`isDraw`/`drawIsRefused`-style checks that
+    `canSubmit`/`scoresAreValid`-style checks that
     need the live value of a `TextEditingController` live as methods taking
     that value as a parameter, not getters, on whichever `Ready`/step
     subclass they belong to — see the `TextEditingController` bullet above.

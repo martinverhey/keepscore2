@@ -21,7 +21,7 @@ class MockPlayerRepository extends Mock implements PlayerRepository {}
 
 class MockLeaderboardRepository extends Mock implements LeaderboardRepository {}
 
-Competition _competition({bool allowDraws = true}) => Competition(
+Competition _competition() => Competition(
   id: 'c1',
   joinCode: 'HDHS39',
   name: 'Office Table Tennis',
@@ -32,7 +32,6 @@ Competition _competition({bool allowDraws = true}) => Competition(
   kFactor: 32,
   movEnabled: false,
   movCap: 2.5,
-  allowDraws: allowDraws,
   createdAt: DateTime(2026),
 );
 
@@ -280,8 +279,8 @@ void main() {
   );
 
   blocTest<MatchFormCubit, MatchFormState>(
-    'a draw cannot be submitted when the competition refuses draws',
-    setUp: () => stubLoad(competition: _competition(allowDraws: false)),
+    'a draw can always be submitted',
+    setUp: () => stubLoad(),
     build: build,
     act: (cubit) async {
       await cubit.load();
@@ -289,11 +288,7 @@ void main() {
       cubit.assign('p2', MatchTeam.b);
     },
     verify: (cubit) {
-      expect(
-        _ready(cubit).drawIsRefused(scoreAValue: 7, scoreBValue: 7),
-        isTrue,
-      );
-      expect(_ready(cubit).canSubmit(scoreAValue: 7, scoreBValue: 7), isFalse);
+      expect(_ready(cubit).canSubmit(scoreAValue: 7, scoreBValue: 7), isTrue);
     },
   );
 

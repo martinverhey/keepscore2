@@ -27,7 +27,6 @@ abstract interface class CompetitionRepository {
     required double movCap,
     required bool shutoutBonus,
     required double shutoutMultiplier,
-    required bool allowDraws,
   });
 
   Future<JoinPreview> preview(String joinCode);

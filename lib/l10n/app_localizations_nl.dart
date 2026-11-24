@@ -311,13 +311,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String get competitionAdvancedLabel => 'Geavanceerd';
 
   @override
-  String get competitionAllowDrawsLabel => 'Gelijkspel toestaan';
-
-  @override
-  String get competitionAllowDrawsHelp =>
-      'Maakt het mogelijk een wedstrijd met gelijke score op te slaan.';
-
-  @override
   String get competitionRenameTitle => 'Competitie hernoemen';
 
   @override
@@ -542,10 +535,6 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get matchScoreMissing => 'Vul beide scores in.';
-
-  @override
-  String get matchDrawNotAllowed =>
-      'Deze competitie staat geen gelijkspel toe.';
 
   @override
   String get matchGuestCannotCreate =>

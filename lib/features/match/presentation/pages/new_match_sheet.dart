@@ -325,12 +325,6 @@ class _NewMatchSheetState extends State<NewMatchSheet> {
     )) {
       return context.l10n.matchScoreMissing;
     }
-    if (state.drawIsRefused(
-      scoreAValue: _scoreAValue,
-      scoreBValue: _scoreBValue,
-    )) {
-      return context.l10n.matchDrawNotAllowed;
-    }
     return null;
   }
 

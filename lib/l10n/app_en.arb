@@ -114,8 +114,6 @@
   "competitionShutoutMultiplierLabel": "Multiplier",
   "competitionShutoutMultiplierInvalid": "Pick a number from 1 to 10.",
   "competitionAdvancedLabel": "Advanced",
-  "competitionAllowDrawsLabel": "Allow draws",
-  "competitionAllowDrawsHelp": "Lets a match be saved with equal scores.",
 
   "competitionRenameTitle": "Rename competition",
   "competitionEdit": "Edit",
@@ -220,7 +218,6 @@
   "matchScoreTitle": "Final score",
   "matchNeedsBothTeams": "Put at least one player on each side.",
   "matchScoreMissing": "Enter both scores.",
-  "matchDrawNotAllowed": "This competition doesn't allow draws.",
   "matchGuestCannotCreate": "Guests can look around, but creating a match needs an account.",
   "matchNeedsPlayers": "Add players and start creating matches.",
   "matchDiscardConfirmTitle": "Discard this match?",

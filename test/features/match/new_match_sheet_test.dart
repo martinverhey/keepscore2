@@ -48,7 +48,6 @@ Competition _competition() => Competition(
   kFactor: 32,
   movEnabled: false,
   movCap: 2.5,
-  allowDraws: true,
   createdAt: DateTime(2026),
 );
 

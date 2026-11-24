@@ -21,7 +21,7 @@ select set_config('request.jwt.claim.sub',
 \echo ''
 \echo '── competition ──────────────────────────────────────────────'
 select c.name, c.join_code, c.season_length, c.timezone,
-       c.starting_rating, c.k_factor, c.mov_enabled, c.mov_cap, c.allow_draws,
+       c.starting_rating, c.k_factor, c.mov_enabled, c.mov_cap,
        pr.display_name as owner
   from public.competitions c
   left join public.profiles pr on pr.id = c.owner_id

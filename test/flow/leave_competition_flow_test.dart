@@ -62,7 +62,6 @@ CompetitionOverview _overview(String id, String name) => CompetitionOverview(
     kFactor: 32,
     movEnabled: true,
     movCap: 2.5,
-    allowDraws: true,
     createdAt: DateTime.utc(2026, 8, 1),
   ),
   playerCount: 1,

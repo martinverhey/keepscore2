@@ -32,7 +32,6 @@ final _competition = Competition(
   movEnabled: true,
   movCap: 10,
   shutoutBonus: true,
-  allowDraws: true,
   createdAt: DateTime.utc(2026, 8, 9),
 );
 
@@ -104,7 +103,6 @@ When<Future<Competition>> _stubSave(MockCompetitionRepository repository) =>
         movCap: any(named: 'movCap'),
         shutoutBonus: any(named: 'shutoutBonus'),
         shutoutMultiplier: any(named: 'shutoutMultiplier'),
-        allowDraws: any(named: 'allowDraws'),
       ),
     );
 

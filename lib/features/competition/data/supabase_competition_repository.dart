@@ -105,7 +105,6 @@ class SupabaseCompetitionRepository implements CompetitionRepository {
     required double movCap,
     required bool shutoutBonus,
     required double shutoutMultiplier,
-    required bool allowDraws,
   }) => guard(() async {
     final row = await _client
         .from('competitions')
@@ -117,7 +116,6 @@ class SupabaseCompetitionRepository implements CompetitionRepository {
           'mov_cap': movCap,
           'shutout_bonus': shutoutBonus,
           'shutout_multiplier': shutoutMultiplier,
-          'allow_draws': allowDraws,
         })
         .eq('id', competitionId)
         .select()

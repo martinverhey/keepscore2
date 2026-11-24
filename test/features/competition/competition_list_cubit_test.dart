@@ -28,7 +28,6 @@ CompetitionOverview _overview(String id, String name) => CompetitionOverview(
     movEnabled: true,
     movCap: 2.5,
     shutoutBonus: true,
-    allowDraws: true,
     createdAt: DateTime.utc(2026, 8, 9),
   ),
   playerCount: 5,
@@ -155,7 +154,6 @@ void main() {
           movCap: 2.5,
           shutoutBonus: true,
           shutoutMultiplier: 2,
-          allowDraws: true,
         ),
       ).thenAnswer(
         (_) async => _overview('c1', 'Table Tennis League').competition,

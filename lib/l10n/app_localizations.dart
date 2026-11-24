@@ -620,18 +620,6 @@ abstract class AppLocalizations {
   /// **'Advanced'**
   String get competitionAdvancedLabel;
 
-  /// No description provided for @competitionAllowDrawsLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Allow draws'**
-  String get competitionAllowDrawsLabel;
-
-  /// No description provided for @competitionAllowDrawsHelp.
-  ///
-  /// In en, this message translates to:
-  /// **'Lets a match be saved with equal scores.'**
-  String get competitionAllowDrawsHelp;
-
   /// No description provided for @competitionRenameTitle.
   ///
   /// In en, this message translates to:
@@ -1027,12 +1015,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enter both scores.'**
   String get matchScoreMissing;
-
-  /// No description provided for @matchDrawNotAllowed.
-  ///
-  /// In en, this message translates to:
-  /// **'This competition doesn\'t allow draws.'**
-  String get matchDrawNotAllowed;
 
   /// No description provided for @matchGuestCannotCreate.
   ///

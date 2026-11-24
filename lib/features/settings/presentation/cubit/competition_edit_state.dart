@@ -52,7 +52,6 @@ class CompetitionEditReady extends CompetitionEditState {
     required this.movCap,
     required this.shutoutBonus,
     required this.shutoutMultiplier,
-    required this.allowDraws,
     this.busy = false,
     this.failure,
   });
@@ -67,7 +66,6 @@ class CompetitionEditReady extends CompetitionEditState {
         movCap: competition.movCap.inputLabel,
         shutoutBonus: competition.shutoutBonus,
         shutoutMultiplier: competition.shutoutMultiplier.inputLabel,
-        allowDraws: competition.allowDraws,
       );
 
   final Competition competition;
@@ -78,7 +76,6 @@ class CompetitionEditReady extends CompetitionEditState {
   final String movCap;
   final bool shutoutBonus;
   final String shutoutMultiplier;
-  final bool allowDraws;
   final bool busy;
   final Failure? failure;
 
@@ -113,7 +110,6 @@ class CompetitionEditReady extends CompetitionEditState {
     String? movCap,
     bool? shutoutBonus,
     String? shutoutMultiplier,
-    bool? allowDraws,
     bool? busy,
     Failure? failure,
     bool clearFailure = false,
@@ -127,7 +123,6 @@ class CompetitionEditReady extends CompetitionEditState {
       movCap: movCap ?? this.movCap,
       shutoutBonus: shutoutBonus ?? this.shutoutBonus,
       shutoutMultiplier: shutoutMultiplier ?? this.shutoutMultiplier,
-      allowDraws: allowDraws ?? this.allowDraws,
       busy: busy ?? this.busy,
       failure: clearFailure ? null : (failure ?? this.failure),
     );
@@ -143,7 +138,6 @@ class CompetitionEditReady extends CompetitionEditState {
     movCap,
     shutoutBonus,
     shutoutMultiplier,
-    allowDraws,
     busy,
     failure,
   ];

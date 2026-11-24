@@ -179,8 +179,7 @@ begin
            season_length = 'quarterly',
            k_factor      = 24,
            mov_enabled   = false,
-           mov_cap       = 1.80,
-           allow_draws   = false
+           mov_cap       = 1.80
      where id = v_comp.id returning 1
   ) select count(*) into v_n from updated;
   assert v_n = 1, 'the owner should be able to save every settings column';

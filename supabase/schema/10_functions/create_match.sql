@@ -18,7 +18,6 @@ security definer
 set search_path = ''
 as $$
 declare
-  v_comp       public.competitions;
   v_season_id  uuid;
   v_match_id   uuid;
   v_all        uuid[];
@@ -30,9 +29,6 @@ begin
     raise exception 'You are not in this competition' using errcode = 'P0001';
   end if;
 
-  select * into strict v_comp
-    from public.competitions where id = p_competition_id;
-
   if coalesce(array_length(p_team_a, 1), 0) = 0
      or coalesce(array_length(p_team_b, 1), 0) = 0 then
     raise exception 'Both teams need at least one player' using errcode = 'P0001';
@@ -40,10 +36,6 @@ begin
 
   if p_score_a < 0 or p_score_b < 0 then
     raise exception 'Scores cannot be negative' using errcode = 'P0001';
-  end if;
-
-  if p_score_a = p_score_b and not v_comp.allow_draws then
-    raise exception 'This competition does not allow draws' using errcode = 'P0001';
   end if;
 
   v_all := p_team_a || p_team_b;

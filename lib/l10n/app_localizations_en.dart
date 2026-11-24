@@ -309,13 +309,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get competitionAdvancedLabel => 'Advanced';
 
   @override
-  String get competitionAllowDrawsLabel => 'Allow draws';
-
-  @override
-  String get competitionAllowDrawsHelp =>
-      'Lets a match be saved with equal scores.';
-
-  @override
   String get competitionRenameTitle => 'Rename competition';
 
   @override
@@ -539,9 +532,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get matchScoreMissing => 'Enter both scores.';
-
-  @override
-  String get matchDrawNotAllowed => 'This competition doesn\'t allow draws.';
 
   @override
   String get matchGuestCannotCreate =>

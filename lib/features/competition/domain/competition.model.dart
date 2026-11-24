@@ -19,7 +19,6 @@ class Competition extends Equatable {
     required this.movCap,
     this.shutoutBonus = true,
     this.shutoutMultiplier = 2,
-    required this.allowDraws,
     required this.createdAt,
   });
 
@@ -38,7 +37,6 @@ class Competition extends Equatable {
     shutoutMultiplier: map['shutout_multiplier'] == null
         ? 2
         : _toDouble(map['shutout_multiplier']),
-    allowDraws: map['allow_draws'] as bool,
     createdAt: DateTime.parse(map['created_at'] as String),
   );
 
@@ -54,7 +52,6 @@ class Competition extends Equatable {
   final double movCap;
   final bool shutoutBonus;
   final double shutoutMultiplier;
-  final bool allowDraws;
   final DateTime createdAt;
 
   bool isOwnedBy(String? userId) => userId != null && userId == ownerId;
@@ -73,7 +70,6 @@ class Competition extends Equatable {
     movCap,
     shutoutBonus,
     shutoutMultiplier,
-    allowDraws,
     createdAt,
   ];
 }

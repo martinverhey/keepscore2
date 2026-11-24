@@ -16,7 +16,6 @@ set search_path = ''
 as $$
 declare
   v_match          public.matches;
-  v_comp           public.competitions;
   v_new_season     uuid;
   v_new_played_at  timestamptz;
   v_boundary       timestamptz;
@@ -33,14 +32,8 @@ begin
       using errcode = 'P0001';
   end if;
 
-  select * into strict v_comp
-    from public.competitions where id = v_match.competition_id;
-
   if p_score_a < 0 or p_score_b < 0 then
     raise exception 'Scores cannot be negative' using errcode = 'P0001';
-  end if;
-  if p_score_a = p_score_b and not v_comp.allow_draws then
-    raise exception 'This competition does not allow draws' using errcode = 'P0001';
   end if;
 
   v_new_played_at := coalesce(p_played_at, v_match.played_at);

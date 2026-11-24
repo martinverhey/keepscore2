@@ -56,7 +56,6 @@ CompetitionOverview _overview() => CompetitionOverview(
     kFactor: 32,
     movEnabled: true,
     movCap: 2.5,
-    allowDraws: true,
     createdAt: DateTime(2026),
   ),
   playerCount: 2,

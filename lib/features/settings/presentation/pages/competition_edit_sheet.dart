@@ -257,14 +257,6 @@ class _CompetitionEditSheetState extends State<CompetitionEditSheet> {
               : context.l10n.competitionShutoutMultiplierInvalid,
           onChanged: cubit.shutoutMultiplierChanged,
         ),
-        const SizedBox(height: AppSpacing.lg),
-
-        SettingsSwitchRow(
-          label: context.l10n.competitionAllowDrawsLabel,
-          help: context.l10n.competitionAllowDrawsHelp,
-          value: state.allowDraws,
-          onChanged: state.busy ? null : cubit.allowDrawsChanged,
-        ),
       ],
     );
   }

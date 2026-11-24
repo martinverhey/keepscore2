@@ -88,18 +88,9 @@ class MatchFormReady extends MatchFormState {
       scoreAValue >= 0 &&
       scoreBValue >= 0;
 
-  bool isDraw({required int? scoreAValue, required int? scoreBValue}) =>
-      scoresAreValid(scoreAValue: scoreAValue, scoreBValue: scoreBValue) &&
-      scoreAValue == scoreBValue;
-
-  bool drawIsRefused({required int? scoreAValue, required int? scoreBValue}) =>
-      isDraw(scoreAValue: scoreAValue, scoreBValue: scoreBValue) &&
-      !competition.allowDraws;
-
   bool canSubmit({required int? scoreAValue, required int? scoreBValue}) =>
       teamsAreValid &&
       scoresAreValid(scoreAValue: scoreAValue, scoreBValue: scoreBValue) &&
-      !drawIsRefused(scoreAValue: scoreAValue, scoreBValue: scoreBValue) &&
       !busy;
 
   MatchFormReady copyWith({

@@ -16,7 +16,6 @@ Competition _competition({
   double movCap = 2.5,
   bool shutoutBonus = true,
   double shutoutMultiplier = 2,
-  bool allowDraws = true,
 }) => Competition(
   id: 'c1',
   joinCode: 'HDHS39',
@@ -30,7 +29,6 @@ Competition _competition({
   movCap: movCap,
   shutoutBonus: shutoutBonus,
   shutoutMultiplier: shutoutMultiplier,
-  allowDraws: allowDraws,
   createdAt: DateTime.utc(2026, 8, 9),
 );
 
@@ -125,7 +123,6 @@ void main() {
           movCap: any(named: 'movCap'),
           shutoutBonus: any(named: 'shutoutBonus'),
           shutoutMultiplier: any(named: 'shutoutMultiplier'),
-          allowDraws: any(named: 'allowDraws'),
         ),
       ).thenAnswer(
         (_) async => _competition(
@@ -136,7 +133,6 @@ void main() {
           movCap: 2,
           shutoutBonus: false,
           shutoutMultiplier: 3,
-          allowDraws: false,
         ),
       );
     },
@@ -150,7 +146,6 @@ void main() {
       cubit.movCapChanged('2,0');
       cubit.shutoutBonusChanged(false);
       cubit.shutoutMultiplierChanged('3');
-      cubit.allowDrawsChanged(false);
       await cubit.submit();
     },
     verify: (cubit) {
@@ -164,7 +159,6 @@ void main() {
           movCap: 2.0,
           shutoutBonus: false,
           shutoutMultiplier: 3.0,
-          allowDraws: false,
         ),
       ).called(1);
 
@@ -190,7 +184,6 @@ void main() {
           movCap: any(named: 'movCap'),
           shutoutBonus: any(named: 'shutoutBonus'),
           shutoutMultiplier: any(named: 'shutoutMultiplier'),
-          allowDraws: any(named: 'allowDraws'),
         ),
       ).thenThrow(const PermissionFailure());
     },
