@@ -84,7 +84,7 @@ void main() {
       expect(_ready(cubit).canSubmit, isFalse);
       cubit.kFactorChanged('40');
       expect(_ready(cubit).canSubmit, isTrue);
-      cubit.movCapChanged('9');
+      cubit.movCapChanged('60');
       expect(_ready(cubit).canSubmit, isFalse);
       cubit.movCapChanged('');
       expect(_ready(cubit).canSubmit, isFalse);
@@ -159,7 +159,7 @@ void main() {
       expect(_ready(cubit).saved, isTrue);
       expect(_ready(cubit).busy, isFalse);
       expect(_ready(cubit).name, 'Table Tennis');
-      expect(_ready(cubit).movCap, '2.0');
+      expect(_ready(cubit).movCap, '2');
     },
   );
 

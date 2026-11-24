@@ -1,8 +1,8 @@
 class EloSettings {
   const EloSettings({
-    this.kFactor = 32,
+    this.kFactor = 60,
     this.movEnabled = true,
-    this.movCap = 2.5,
+    this.movCap = 10,
     this.startingRating = 1000,
   });
 

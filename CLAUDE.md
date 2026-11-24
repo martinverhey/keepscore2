@@ -396,9 +396,19 @@ refreshes the list when either sheet closes — realtime does it.
 
 - **Two teams per match**, arbitrary sizes each side.
 - **Team rating = mean of members**; every member takes the same delta. Zero-sum.
-- **Margin of victory is ON**, with an autocorrelation damper and a cap.
-  `k_factor` / `mov_enabled` / `mov_cap` are per-competition columns so it can
-  be tuned or disabled without a migration.
+- **A win is worth `(k_factor + extra) × (1 − winner's win chance)`, in whole
+  points, never less than 1.** `extra` is the margin of victory: one point
+  per point of difference up to `mov_cap` (10), doubled when the loser scored
+  0, and 0 with `mov_enabled` off. `k_factor` is 60. A draw is
+  `k_factor × (0.5 − win chance)`, rounded the same way (half away from zero,
+  Postgres `round` and Dart `.round()` alike), with no minimum. `mov_cap` is a
+  number of *points* (1–50), not the 1.0–5.0 multiplier it was until
+  `20261124120000_whole_point_ratings.sql`, which converted every competition
+  and replayed every season. The old log-curve multiplier and its
+  autocorrelation damper are gone on purpose. `k_factor` / `mov_enabled` /
+  `mov_cap` are per-competition columns so it can be tuned or disabled
+  without a migration. Ratings therefore stay whole numbers, and
+  `RatingDelta`/`TodayDeltaBadge` print no decimals.
 - **Seasons hard-reset** everyone to `starting_rating` (1000). Calendar-aligned
   monthly / quarterly / yearly in the competition's timezone.
 - **Draws allowed**, scored 0.5.
@@ -2904,7 +2914,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 428 tests at time of writing
+flutter test                    # 429 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 dart run flutter_launcher_icons     # assets/icon/*.png into android/ web/ (not ios/)

@@ -11,7 +11,7 @@ class TodayDeltaBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final amount = delta.abs().toStringAsFixed(1);
+    final amount = delta.abs().round().toString();
 
     return Semantics(
       label: delta > 0

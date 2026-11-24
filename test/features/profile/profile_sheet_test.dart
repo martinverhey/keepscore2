@@ -494,7 +494,7 @@ void main() {
       losses: 1,
       draws: 1,
       rank: 1,
-      todayDelta: 12.5,
+      todayDelta: 12,
     );
 
     when(() => leaderboardRepository.currentSeason('c1')).thenAnswer(
@@ -538,9 +538,9 @@ void main() {
     final l10n = AppLocalizations.of(tester.element(find.byType(ProfileSheet)));
 
     expect(find.text('1050'), findsNWidgets(2));
-    expect(find.text('12.5'), findsOneWidget);
+    expect(find.text('12'), findsOneWidget);
     expect(
-      find.bySemanticsLabel(l10n.leaderboardTodayGain('12.5')),
+      find.bySemanticsLabel(l10n.leaderboardTodayGain('12')),
       findsOneWidget,
     );
     expect(find.text(l10n.profileTabVersus), findsNothing);

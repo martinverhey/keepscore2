@@ -15,44 +15,57 @@
 
 do $$
 declare
-  v_k        constant integer := 32;
-  v_cap      constant numeric := 2.5;
-  v_delta    numeric;
+  v_k        constant integer := 60;
+  v_cap      constant numeric := 10;
 begin
-  -- Even players, one-point win: multiplier is exactly 1, so this is plain Elo.
-  assert public.elo_delta(1000, 1000, 10, 9, v_k, true, v_cap) = 16.00,
-    'even 1-point win should be +16';
+  -- Even players, one-point win: half of (K + 1), rounded half away from zero.
+  assert public.elo_delta(1000, 1000, 10, 9, v_k, true, v_cap) = 31,
+    'even 1-point win should be +31';
 
-  assert public.elo_delta(1000, 1000, 9, 10, v_k, true, v_cap) = -16.00,
-    'even 1-point loss should be -16';
+  assert public.elo_delta(1000, 1000, 9, 10, v_k, true, v_cap) = -31,
+    'even 1-point loss should be -31';
 
   -- A draw ignores the margin entirely and, between equals, moves nothing.
-  assert public.elo_delta(1000, 1000, 5, 5, v_k, true, v_cap) = 0.00,
+  assert public.elo_delta(1000, 1000, 5, 5, v_k, true, v_cap) = 0,
     'even draw should be 0';
 
-  -- ln(11)/ln(2) ≈ 3.46, above the cap, so the blowout clamps at 2.5 * K/2.
-  assert public.elo_delta(1000, 1000, 10, 0, v_k, true, v_cap) = 40.00,
-    'even blowout should clamp to +40';
+  -- The extra points stop at the cap: (60 + 10) / 2.
+  assert public.elo_delta(1000, 1000, 11, 1, v_k, true, v_cap) = 35,
+    '11-1 should cap the extra at 10';
+  assert public.elo_delta(1000, 1000, 21, 1, v_k, true, v_cap) = 35,
+    '21-1 should cap the extra at 10';
+
+  -- A shutout doubles the extra: (60 + 20) / 2.
+  assert public.elo_delta(1000, 1000, 10, 0, v_k, true, v_cap) = 40,
+    'even shutout should be +40';
+  assert public.elo_delta(1000, 1000, 0, 10, v_k, true, v_cap) = -40,
+    'even shutout loss should be -40';
 
   -- With MOV off, margin stops mattering.
-  assert public.elo_delta(1000, 1000, 10, 0, v_k, false, v_cap) = 16.00,
+  assert public.elo_delta(1000, 1000, 10, 0, v_k, false, v_cap) = 30,
+    'MOV disabled should ignore the margin';
+  assert public.elo_delta(1000, 1000, 10, 9, v_k, false, v_cap) = 30,
     'MOV disabled should ignore the margin';
 
-  -- The favourite winning by 2 gains less than an even player would, both
-  -- because expected score is higher and because the damper trims the
-  -- multiplier.
-  v_delta := public.elo_delta(1200, 1000, 11, 9, v_k, true, v_cap);
-  assert abs(v_delta - 11.17) < 0.02,
-    format('favourite winning by 2 should be ≈ +11.17, got %s', v_delta);
+  -- The favourite gains the pot times the loser's chance, the underdog far more.
+  assert public.elo_delta(1200, 1000, 11, 9, v_k, true, v_cap) = 15,
+    'favourite winning by 2 should be +15';
+  assert public.elo_delta(1000, 1200, 11, 9, v_k, true, v_cap) = 47,
+    'underdog winning by 2 should be +47';
 
-  -- The underdog winning the same match gains far more.
-  v_delta := public.elo_delta(1000, 1200, 11, 9, v_k, true, v_cap);
-  assert v_delta > 30, format('underdog win should be large, got %s', v_delta);
+  -- A win is always worth at least one point.
+  assert public.elo_delta(2000, 1000, 11, 9, v_k, true, v_cap) = 1,
+    'a heavy favourite should still gain 1';
+  assert public.elo_delta(1000, 2000, 9, 11, v_k, true, v_cap) = -1,
+    'a heavy favourite losing side should still be -1';
 
   -- Zero-sum in every direction: what one side gains, the other loses.
   assert public.elo_delta(1350, 990, 21, 13, v_k, true, v_cap)
        = -public.elo_delta(990, 1350, 13, 21, v_k, true, v_cap),
     'elo_delta must be antisymmetric';
+  assert public.elo_delta(1100, 1000, 5, 5, v_k, true, v_cap)
+       = -public.elo_delta(1000, 1100, 5, 5, v_k, true, v_cap),
+    'elo_delta must be antisymmetric for draws';
 
   raise notice 'elo_delta fixtures OK';
 end;

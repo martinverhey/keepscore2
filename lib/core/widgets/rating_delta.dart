@@ -15,7 +15,7 @@ class RatingDelta extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final rounded = (value * 10).round() / 10;
+    final rounded = value.round();
     final color = _deltaColor(rounded);
 
     return Row(
@@ -26,7 +26,7 @@ class RatingDelta extends StatelessWidget {
           const SizedBox(width: 2),
         ],
         Text(
-          rounded.abs().toStringAsFixed(1),
+          rounded.abs().toString(),
           style: AppTypography.bodySmall.copyWith(
             color: color,
             fontSize: fontSize,
@@ -39,7 +39,7 @@ class RatingDelta extends StatelessWidget {
   }
 }
 
-Color _deltaColor(double value) {
+Color _deltaColor(int value) {
   if (value > 0) return AppColors.positive;
   if (value < 0) return AppColors.negative;
   return AppColors.neutral;

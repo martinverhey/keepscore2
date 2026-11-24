@@ -5,6 +5,9 @@ import 'elo_settings.model.dart';
 export 'elo_settings.model.dart';
 
 abstract final class EloCalculator {
+  static const int _minimumWin = 1;
+  static const int _shutoutBonusFactor = 2;
+
   static double teamRating(Iterable<double> ratings) {
     final values = ratings.toList(growable: false);
     if (values.isEmpty) {
@@ -25,28 +28,25 @@ abstract final class EloCalculator {
   }) {
     final expectedA = winChance(ratingA: ratingA, ratingB: ratingB);
 
-    final actualA = scoreA > scoreB
-        ? 1.0
-        : scoreA < scoreB
-        ? 0.0
-        : 0.5;
-
-    final margin = (scoreA - scoreB).abs();
-    var mov = 1.0;
-
-    if (settings.movEnabled && margin > 0) {
-      final winnerEdge = math.max(
-        0.0,
-        actualA == 1.0 ? ratingA - ratingB : ratingB - ratingA,
-      );
-      mov =
-          (math.log(margin + 1) / math.ln2) *
-          (2.2 / (0.001 * winnerEdge + 2.2));
-      mov = math.min(settings.movCap, math.max(1.0, mov));
+    if (scoreA == scoreB) {
+      return (settings.kFactor * (0.5 - expectedA)).round().toDouble();
     }
 
-    return _round2(settings.kFactor * mov * (actualA - expectedA));
+    final aWon = scoreA > scoreB;
+    final winnerExpected = aWon ? expectedA : 1.0 - expectedA;
+    final pot = settings.kFactor + _extraPoints(scoreA, scoreB, settings);
+    final points = math.max(
+      _minimumWin,
+      (pot * (1.0 - winnerExpected)).round(),
+    );
+
+    return (aWon ? points : -points).toDouble();
   }
 
-  static double _round2(double value) => (value * 100).round() / 100;
+  static double _extraPoints(int scoreA, int scoreB, EloSettings settings) {
+    if (!settings.movEnabled) return 0;
+    final margin = math.min((scoreA - scoreB).abs().toDouble(), settings.movCap);
+    final isShutout = math.min(scoreA, scoreB) == 0;
+    return isShutout ? margin * _shutoutBonusFactor : margin;
+  }
 }

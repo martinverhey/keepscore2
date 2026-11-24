@@ -278,7 +278,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get competitionKFactorHelp =>
-      'How far a single match can move a rating. Higher means bigger swings.';
+      'The points at stake in a match, before any margin bonus. The winner gets the share the loser was expected to win.';
 
   @override
   String get competitionKFactorInvalid => 'Pick a K-factor between 1 and 200.';
@@ -288,17 +288,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get competitionMovHelp =>
-      'Bigger wins move ratings further. Turn this off to score every win the same.';
+      'Each point of difference adds an extra point to the stake, doubled when the loser scores nothing. Turn this off to score every win the same.';
 
   @override
-  String get competitionMovCapLabel => 'Maximum multiplier';
+  String get competitionMovCapLabel => 'Maximum extra points';
 
   @override
   String get competitionMovCapHelp =>
-      'The most a blowout can multiply the rating change by.';
+      'The most extra points a big margin can add, before a shutout doubles them.';
 
   @override
-  String get competitionMovCapInvalid => 'Pick a cap between 1.0 and 5.0.';
+  String get competitionMovCapInvalid => 'Pick a maximum between 1 and 50.';
 
   @override
   String get competitionAllowDrawsLabel => 'Allow draws';

@@ -563,7 +563,7 @@ abstract class AppLocalizations {
   /// No description provided for @competitionKFactorHelp.
   ///
   /// In en, this message translates to:
-  /// **'How far a single match can move a rating. Higher means bigger swings.'**
+  /// **'The points at stake in a match, before any margin bonus. The winner gets the share the loser was expected to win.'**
   String get competitionKFactorHelp;
 
   /// No description provided for @competitionKFactorInvalid.
@@ -581,25 +581,25 @@ abstract class AppLocalizations {
   /// No description provided for @competitionMovHelp.
   ///
   /// In en, this message translates to:
-  /// **'Bigger wins move ratings further. Turn this off to score every win the same.'**
+  /// **'Each point of difference adds an extra point to the stake, doubled when the loser scores nothing. Turn this off to score every win the same.'**
   String get competitionMovHelp;
 
   /// No description provided for @competitionMovCapLabel.
   ///
   /// In en, this message translates to:
-  /// **'Maximum multiplier'**
+  /// **'Maximum extra points'**
   String get competitionMovCapLabel;
 
   /// No description provided for @competitionMovCapHelp.
   ///
   /// In en, this message translates to:
-  /// **'The most a blowout can multiply the rating change by.'**
+  /// **'The most extra points a big margin can add, before a shutout doubles them.'**
   String get competitionMovCapHelp;
 
   /// No description provided for @competitionMovCapInvalid.
   ///
   /// In en, this message translates to:
-  /// **'Pick a cap between 1.0 and 5.0.'**
+  /// **'Pick a maximum between 1 and 50.'**
   String get competitionMovCapInvalid;
 
   /// No description provided for @competitionAllowDrawsLabel.

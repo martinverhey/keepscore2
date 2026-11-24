@@ -15,53 +15,58 @@ void main() {
       );
 
   group('elo_delta parity fixtures', () {
-    test('even players, one-point win is plain Elo', () {
-      expect(d(1000, 1000, 10, 9), 16.00);
-      expect(d(1000, 1000, 9, 10), -16.00);
+    test('even players, one-point win is half the pot plus one', () {
+      expect(d(1000, 1000, 10, 9), 31);
+      expect(d(1000, 1000, 9, 10), -31);
     });
 
     test('a draw between equals moves nothing', () {
-      expect(d(1000, 1000, 5, 5), 0.00);
+      expect(d(1000, 1000, 5, 5), 0);
     });
 
-    test('a blowout clamps at the cap', () {
-      expect(d(1000, 1000, 10, 0), 40.00);
+    test('the extra points stop at the cap', () {
+      expect(d(1000, 1000, 11, 1), 35);
+      expect(d(1000, 1000, 21, 1), 35);
+    });
+
+    test('a shutout doubles the extra points', () {
+      expect(d(1000, 1000, 10, 0), 40);
+      expect(d(1000, 1000, 0, 10), -40);
     });
 
     test('margin is ignored when MOV is disabled', () {
-      expect(d(1000, 1000, 10, 0, noMov), 16.00);
-      expect(d(1000, 1000, 10, 9, noMov), 16.00);
+      expect(d(1000, 1000, 10, 0, noMov), 30);
+      expect(d(1000, 1000, 10, 9, noMov), 30);
     });
 
-    test('the favourite gains less than an even player would', () {
-      expect(d(1200, 1000, 11, 9), closeTo(11.17, 0.02));
-      expect(d(1200, 1000, 11, 9), lessThan(d(1000, 1000, 11, 9)));
+    test('the favourite gains the pot times the loser\'s chance', () {
+      expect(d(1200, 1000, 11, 9), 15);
     });
 
     test('the underdog gains far more', () {
-      expect(d(1000, 1200, 11, 9), greaterThan(30));
+      expect(d(1000, 1200, 11, 9), 47);
+    });
+
+    test('a win is always worth at least one point', () {
+      expect(d(2000, 1000, 11, 9), 1);
+      expect(d(1000, 2000, 9, 11), -1);
     });
 
     test('is antisymmetric, so ratings stay zero-sum', () {
       expect(d(1350, 990, 21, 13), -d(990, 1350, 13, 21));
       expect(d(1000, 1000, 7, 3), -d(1000, 1000, 3, 7));
-    });
-  });
-
-  group('MOV damper', () {
-    test('a bigger margin is worth more, up to the cap', () {
-      final byOne = d(1000, 1000, 10, 9);
-      final byThree = d(1000, 1000, 10, 7);
-      final byTen = d(1000, 1000, 10, 0);
-      expect(byThree, greaterThan(byOne));
-      expect(byTen, greaterThan(byThree));
-      expect(byTen, 32 * settings.movCap * 0.5);
+      expect(d(1100, 1000, 5, 5), -d(1000, 1100, 5, 5));
     });
 
-    test('a dominant winner is damped relative to an even one', () {
-      final even = d(1000, 1000, 21, 11);
-      final dominant = d(1600, 1000, 21, 11);
-      expect(dominant, lessThan(even));
+    test('always returns whole points', () {
+      for (final (a, b, sa, sb) in [
+        (1013.0, 987.0, 11, 7),
+        (1240.0, 1180.0, 3, 11),
+        (990.0, 1060.0, 6, 6),
+      ]) {
+        final delta = d(a, b, sa, sb);
+        expect(delta, delta.roundToDouble());
+      }
     });
   });
 

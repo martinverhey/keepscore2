@@ -279,7 +279,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get competitionKFactorHelp =>
-      'Hoeveel één wedstrijd een rating kan verschuiven. Hoger betekent grotere sprongen.';
+      'De punten die er in een wedstrijd op het spel staan, zonder bonus voor scoreverschil. De winnaar krijgt het deel dat de verliezer naar verwachting zou winnen.';
 
   @override
   String get competitionKFactorInvalid => 'Kies een K-factor tussen 1 en 200.';
@@ -289,17 +289,17 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get competitionMovHelp =>
-      'Grotere overwinningen verschuiven ratings verder. Zet dit uit om elke winst even zwaar te laten tellen.';
+      'Elk punt verschil legt een extra punt in de pot, dubbel als de verliezer niets scoort. Zet dit uit om elke winst even zwaar te laten tellen.';
 
   @override
-  String get competitionMovCapLabel => 'Maximale vermenigvuldiging';
+  String get competitionMovCapLabel => 'Maximaal extra punten';
 
   @override
   String get competitionMovCapHelp =>
-      'Het maximum waarmee een monsterzege de ratingwijziging vergroot.';
+      'Het maximum aan extra punten dat een groot scoreverschil oplevert, vóór de verdubbeling bij een nul.';
 
   @override
-  String get competitionMovCapInvalid => 'Kies een maximum tussen 1,0 en 5,0.';
+  String get competitionMovCapInvalid => 'Kies een maximum tussen 1 en 50.';
 
   @override
   String get competitionAllowDrawsLabel => 'Gelijkspel toestaan';

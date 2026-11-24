@@ -77,7 +77,7 @@ class CompetitionEditReady extends CompetitionEditState {
       double.tryParse(movCap.trim().replaceAll(',', '.'));
 
   bool get movCapIsValid =>
-      movCapValue != null && movCapValue! >= 1 && movCapValue! <= 5;
+      movCapValue != null && movCapValue! >= 1 && movCapValue! <= 50;
 
   bool get canSubmit => nameIsValid && kFactorIsValid && movCapIsValid && !busy;
 
@@ -124,4 +124,4 @@ class CompetitionEditReady extends CompetitionEditState {
 }
 
 String _formatCap(double value) =>
-    value == value.roundToDouble() ? value.toStringAsFixed(1) : '$value';
+    value == value.roundToDouble() ? value.round().toString() : '$value';
