@@ -50,6 +50,12 @@ class CompetitionEditCubit extends Cubit<CompetitionEditState> {
   void movCapChanged(String value) =>
       _edit((ready) => ready.copyWith(movCap: value));
 
+  void shutoutBonusChanged(bool value) =>
+      _edit((ready) => ready.copyWith(shutoutBonus: value));
+
+  void shutoutMultiplierChanged(String value) =>
+      _edit((ready) => ready.copyWith(shutoutMultiplier: value));
+
   void allowDrawsChanged(bool value) =>
       _edit((ready) => ready.copyWith(allowDraws: value));
 
@@ -71,6 +77,8 @@ class CompetitionEditCubit extends Cubit<CompetitionEditState> {
         kFactor: ready.kFactorValue!,
         movEnabled: ready.movEnabled,
         movCap: ready.movCapValue!,
+        shutoutBonus: ready.shutoutBonus,
+        shutoutMultiplier: ready.shutoutMultiplierValue!,
         allowDraws: ready.allowDraws,
       );
       if (isClosed) return;

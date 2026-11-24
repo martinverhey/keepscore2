@@ -6,7 +6,6 @@ export 'elo_settings.model.dart';
 
 abstract final class EloCalculator {
   static const int _minimumWin = 1;
-  static const int _shutoutBonusFactor = 2;
 
   static double teamRating(Iterable<double> ratings) {
     final values = ratings.toList(growable: false);
@@ -45,8 +44,11 @@ abstract final class EloCalculator {
 
   static double _extraPoints(int scoreA, int scoreB, EloSettings settings) {
     if (!settings.movEnabled) return 0;
-    final margin = math.min((scoreA - scoreB).abs().toDouble(), settings.movCap);
-    final isShutout = math.min(scoreA, scoreB) == 0;
-    return isShutout ? margin * _shutoutBonusFactor : margin;
+    final margin = math.min(
+      (scoreA - scoreB).abs().toDouble(),
+      settings.movCap,
+    );
+    final multiplies = settings.shutoutBonus && math.min(scoreA, scoreB) == 0;
+    return multiplies ? margin * settings.shutoutMultiplier : margin;
   }
 }

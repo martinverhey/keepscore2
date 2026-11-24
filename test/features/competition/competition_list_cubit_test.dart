@@ -27,6 +27,7 @@ CompetitionOverview _overview(String id, String name) => CompetitionOverview(
     kFactor: 32,
     movEnabled: true,
     movCap: 2.5,
+    shutoutBonus: true,
     allowDraws: true,
     createdAt: DateTime.utc(2026, 8, 9),
   ),
@@ -152,6 +153,8 @@ void main() {
           kFactor: 32,
           movEnabled: true,
           movCap: 2.5,
+          shutoutBonus: true,
+          shutoutMultiplier: 2,
           allowDraws: true,
         ),
       ).thenAnswer(

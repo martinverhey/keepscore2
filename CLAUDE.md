@@ -248,6 +248,12 @@ builder rather than in a `GoRoute`. `showJoinCompetitionSheet` and
 (`competition/presentation/pages/create_competition_sheet.dart`) replaced
 `CreateCompetitionPage` and the `/create` route outright: same
 `CreateCompetitionCubit`, same name field and season-length segmented control,
+defaulting to quarterly (the `season_length` column and `create_competition`
+default to it too), plus base points (`k_factor`), margin of victory, maximum bonus points and
+the shutout multiplier (a switch plus its factor) collapsed behind an
+`Advanced` `DisclosureRow` (`core/widgets/disclosure_row.dart`), seeded from
+`EloSettings()`'s defaults and validated by the same `EloSettings.kFactorIsValid`/
+`movCapIsValid` the Edit page uses (allow draws stays Edit-only),
 with the submit button in `Sheet.primaryButton` (labelled
 `competitionsCreateShort` — the sheet's own title already says "Create
 competition", which is what retired the `competitionCreateSubmit` key) and
@@ -398,16 +404,17 @@ refreshes the list when either sheet closes — realtime does it.
 - **Team rating = mean of members**; every member takes the same delta. Zero-sum.
 - **A win is worth `(k_factor + extra) × (1 − winner's win chance)`, in whole
   points, never less than 1.** `extra` is the margin of victory: one point
-  per point of difference up to `mov_cap` (10), doubled when the loser scored
-  0, and 0 with `mov_enabled` off. `k_factor` is 60. A draw is
+  per point of difference up to `mov_cap` (10), multiplied by
+  `shutout_multiplier` (2, between 1 and 10) when the loser scored 0 and
+  `shutout_bonus` is on (the default), and 0 with `mov_enabled` off. `k_factor` is 60. A draw is
   `k_factor × (0.5 − win chance)`, rounded the same way (half away from zero,
   Postgres `round` and Dart `.round()` alike), with no minimum. `mov_cap` is a
   number of *points* (1–50), not the 1.0–5.0 multiplier it was until
   `20261124120000_whole_point_ratings.sql`, which converted every competition
   and replayed every season. The old log-curve multiplier and its
   autocorrelation damper are gone on purpose. `k_factor` / `mov_enabled` /
-  `mov_cap` are per-competition columns so it can be tuned or disabled
-  without a migration. Ratings therefore stay whole numbers, and
+  `mov_cap` / `shutout_bonus` / `shutout_multiplier` are per-competition columns so it can be tuned
+  or disabled without a migration. Ratings therefore stay whole numbers, and
   `RatingDelta`/`TodayDeltaBadge` print no decimals.
 - **Seasons hard-reset** everyone to `starting_rating` (1000). Calendar-aligned
   monthly / quarterly / yearly in the competition's timezone.
@@ -2941,7 +2948,7 @@ Kept here because the code cannot express them and they cost real debugging:
 
 ```bash
 flutter analyze                 # must stay clean
-flutter test                    # 429 tests at time of writing
+flutter test                    # 441 tests at time of writing
 flutter gen-l10n                # after editing any .arb
 
 dart run flutter_launcher_icons     # assets/icon/*.png into android/ web/ (not ios/)
@@ -3039,6 +3046,14 @@ at all. A new column is a migration; the view that exposes it is not.
   `check_function_bodies = off`, so a body may name anything that exists by the
   time it actually runs. Adding a view that builds on another means giving it
   a higher prefix.
+- **A new `competitions` column means dropping `competition_overview` first.**
+  The view selects `c.*`, which is expanded once at creation, so the new
+  column would land in the middle of its column list — and `create or replace
+  view` refuses that. The migration drops the view and `--apply-schema`
+  recreates it (Supabase's default privileges restore its ACL);
+  `20261124140000_shutout_bonus.sql` is the worked example. The same goes for
+  adding a parameter to a function: that is a new overload, so the migration
+  drops the old signature.
 - **Re-applying a `create or replace function` drops its grants.** Every file
   in `10_functions/` therefore ends with its own `revoke`/`grant execute`
   pair, so the footgun is structurally gone rather than something to remember

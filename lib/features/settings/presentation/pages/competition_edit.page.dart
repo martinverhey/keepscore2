@@ -29,6 +29,7 @@ class _CompetitionEditPageState extends State<CompetitionEditPage> {
   final _nameController = TextEditingController();
   final _kFactorController = TextEditingController();
   final _movCapController = TextEditingController();
+  final _shutoutMultiplierController = TextEditingController();
 
   @override
   void initState() {
@@ -41,6 +42,7 @@ class _CompetitionEditPageState extends State<CompetitionEditPage> {
     _nameController.dispose();
     _kFactorController.dispose();
     _movCapController.dispose();
+    _shutoutMultiplierController.dispose();
     super.dispose();
   }
 
@@ -53,6 +55,9 @@ class _CompetitionEditPageState extends State<CompetitionEditPage> {
     }
     if (_movCapController.text != state.movCap) {
       _movCapController.text = state.movCap;
+    }
+    if (_shutoutMultiplierController.text != state.shutoutMultiplier) {
+      _shutoutMultiplierController.text = state.shutoutMultiplier;
     }
   }
 
@@ -177,7 +182,7 @@ class _CompetitionEditPageState extends State<CompetitionEditPage> {
           AdaptiveTextField(
             label: context.l10n.competitionMovCapLabel,
             controller: _movCapController,
-            enabled: !state.busy,
+            enabled: !state.busy && state.movEnabled,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
@@ -188,8 +193,33 @@ class _CompetitionEditPageState extends State<CompetitionEditPage> {
                 : context.l10n.competitionMovCapInvalid,
             onChanged: cubit.movCapChanged,
           ),
-          const SizedBox(height: AppSpacing.xs),
-          HelpText(context.l10n.competitionMovCapHelp),
+          const SizedBox(height: AppSpacing.lg),
+
+          SettingsSwitchRow(
+            label: context.l10n.competitionShutoutBonusLabel,
+            help: context.l10n.competitionShutoutBonusHelp,
+            value: state.shutoutBonus,
+            onChanged: state.busy || !state.movEnabled
+                ? null
+                : cubit.shutoutBonusChanged,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          AdaptiveTextField(
+            label: context.l10n.competitionShutoutMultiplierLabel,
+            controller: _shutoutMultiplierController,
+            enabled: !state.busy && state.movEnabled && state.shutoutBonus,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+            ],
+            maxLength: 4,
+            errorText:
+                state.shutoutMultiplier.isEmpty ||
+                    state.shutoutMultiplierIsValid
+                ? null
+                : context.l10n.competitionShutoutMultiplierInvalid,
+            onChanged: cubit.shutoutMultiplierChanged,
+          ),
           const SizedBox(height: AppSpacing.lg),
 
           SettingsSwitchRow(

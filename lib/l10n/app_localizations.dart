@@ -419,13 +419,13 @@ abstract class AppLocalizations {
   /// No description provided for @competitionNameTooShort.
   ///
   /// In en, this message translates to:
-  /// **'Give the competition a name of at least 2 characters.'**
+  /// **'Use at least 2 characters.'**
   String get competitionNameTooShort;
 
   /// No description provided for @competitionSeasonExplainer.
   ///
   /// In en, this message translates to:
-  /// **'At the start of every season all ratings reset to {rating}.'**
+  /// **'Each season, everyone starts again at {rating}.'**
   String competitionSeasonExplainer(int rating);
 
   /// No description provided for @competitionPlayers.
@@ -557,19 +557,19 @@ abstract class AppLocalizations {
   /// No description provided for @competitionKFactorLabel.
   ///
   /// In en, this message translates to:
-  /// **'K-factor'**
+  /// **'Base points'**
   String get competitionKFactorLabel;
 
   /// No description provided for @competitionKFactorHelp.
   ///
   /// In en, this message translates to:
-  /// **'The points at stake in a match, before any margin bonus. The winner gets the share the loser was expected to win.'**
+  /// **'Points at stake per match, before bonus points. Higher means bigger swings.'**
   String get competitionKFactorHelp;
 
   /// No description provided for @competitionKFactorInvalid.
   ///
   /// In en, this message translates to:
-  /// **'Pick a K-factor between 1 and 200.'**
+  /// **'Pick a number from 1 to 200.'**
   String get competitionKFactorInvalid;
 
   /// No description provided for @competitionMovLabel.
@@ -581,26 +581,50 @@ abstract class AppLocalizations {
   /// No description provided for @competitionMovHelp.
   ///
   /// In en, this message translates to:
-  /// **'Each point of difference adds an extra point to the stake, doubled when the loser scores nothing. Turn this off to score every win the same.'**
+  /// **'Winning by more earns bonus points.'**
   String get competitionMovHelp;
 
   /// No description provided for @competitionMovCapLabel.
   ///
   /// In en, this message translates to:
-  /// **'Maximum extra points'**
+  /// **'Maximum bonus points'**
   String get competitionMovCapLabel;
-
-  /// No description provided for @competitionMovCapHelp.
-  ///
-  /// In en, this message translates to:
-  /// **'The most extra points a big margin can add, before a shutout doubles them.'**
-  String get competitionMovCapHelp;
 
   /// No description provided for @competitionMovCapInvalid.
   ///
   /// In en, this message translates to:
-  /// **'Pick a maximum between 1 and 50.'**
+  /// **'Pick a number from 1 to 50.'**
   String get competitionMovCapInvalid;
+
+  /// No description provided for @competitionShutoutBonusLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Shutout multiplier'**
+  String get competitionShutoutBonusLabel;
+
+  /// No description provided for @competitionShutoutBonusHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Multiplies the bonus points when the loser scores 0.'**
+  String get competitionShutoutBonusHelp;
+
+  /// No description provided for @competitionShutoutMultiplierLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Multiplier'**
+  String get competitionShutoutMultiplierLabel;
+
+  /// No description provided for @competitionShutoutMultiplierInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a number from 1 to 10.'**
+  String get competitionShutoutMultiplierInvalid;
+
+  /// No description provided for @competitionAdvancedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get competitionAdvancedLabel;
 
   /// No description provided for @competitionAllowDrawsLabel.
   ///

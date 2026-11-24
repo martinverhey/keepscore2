@@ -34,6 +34,17 @@ void main() {
       expect(d(1000, 1000, 0, 10), -40);
     });
 
+    test('a shutout is an ordinary margin with the bonus off', () {
+      expect(d(1000, 1000, 10, 0, const EloSettings(shutoutBonus: false)), 35);
+    });
+
+    test('the shutout multiplier scales the extra points', () {
+      expect(
+        d(1000, 1000, 10, 0, const EloSettings(shutoutMultiplier: 1.5)),
+        38,
+      );
+    });
+
     test('margin is ignored when MOV is disabled', () {
       expect(d(1000, 1000, 10, 0, noMov), 30);
       expect(d(1000, 1000, 10, 9, noMov), 30);

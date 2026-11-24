@@ -7,7 +7,9 @@ create or replace function public.elo_delta(
   p_score_b     integer,
   p_k           integer,
   p_mov_enabled boolean,
-  p_mov_cap     numeric
+  p_mov_cap     numeric,
+  p_shutout_bonus boolean default true,
+  p_shutout_multiplier numeric default 2
 )
 returns numeric
 language plpgsql
@@ -27,11 +29,12 @@ begin
   end if;
 
   -- Margin of victory adds bonus points to the pot: one per point of
-  -- difference up to mov_cap, doubled when the loser scored nothing.
+  -- difference up to mov_cap, multiplied by shutout_multiplier when the loser
+  -- scored nothing and shutout_bonus is on.
   if p_mov_enabled then
     v_extra := least(abs(p_score_a - p_score_b), p_mov_cap);
-    if least(p_score_a, p_score_b) = 0 then
-      v_extra := v_extra * 2;
+    if p_shutout_bonus and least(p_score_a, p_score_b) = 0 then
+      v_extra := v_extra * p_shutout_multiplier;
     end if;
   end if;
 
@@ -49,5 +52,5 @@ $$;
 
 comment on function public.elo_delta is
   'Rating change for team A, in whole points. Zero-sum: team B moves by the negation. Mirrored in Dart by EloCalculator, and the two are tested against the same fixtures.';
-revoke all on function public.elo_delta(p_rating_a numeric, p_rating_b numeric, p_score_a integer, p_score_b integer, p_k integer, p_mov_enabled boolean, p_mov_cap numeric) from public, anon, authenticated;
-grant execute on function public.elo_delta(p_rating_a numeric, p_rating_b numeric, p_score_a integer, p_score_b integer, p_k integer, p_mov_enabled boolean, p_mov_cap numeric) to anon, authenticated;
+revoke all on function public.elo_delta(p_rating_a numeric, p_rating_b numeric, p_score_a integer, p_score_b integer, p_k integer, p_mov_enabled boolean, p_mov_cap numeric, p_shutout_bonus boolean, p_shutout_multiplier numeric) from public, anon, authenticated;
+grant execute on function public.elo_delta(p_rating_a numeric, p_rating_b numeric, p_score_a integer, p_score_b integer, p_k integer, p_mov_enabled boolean, p_mov_cap numeric, p_shutout_bonus boolean, p_shutout_multiplier numeric) to anon, authenticated;

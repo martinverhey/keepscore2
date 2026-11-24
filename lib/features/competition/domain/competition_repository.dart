@@ -10,6 +10,11 @@ abstract interface class CompetitionRepository {
   Future<Competition> create({
     required String name,
     required SeasonLength seasonLength,
+    required int kFactor,
+    required bool movEnabled,
+    required double movCap,
+    required bool shutoutBonus,
+    required double shutoutMultiplier,
     String? displayName,
   });
 
@@ -20,6 +25,8 @@ abstract interface class CompetitionRepository {
     required int kFactor,
     required bool movEnabled,
     required double movCap,
+    required bool shutoutBonus,
+    required double shutoutMultiplier,
     required bool allowDraws,
   });
 

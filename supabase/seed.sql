@@ -41,6 +41,14 @@ begin
   assert public.elo_delta(1000, 1000, 0, 10, v_k, true, v_cap) = -40,
     'even shutout loss should be -40';
 
+  -- With the shutout bonus off, a shutout is an ordinary 10-point margin.
+  assert public.elo_delta(1000, 1000, 10, 0, v_k, true, v_cap, false) = 35,
+    'shutout bonus disabled should not double the extra';
+
+  -- The shutout multiplier scales the extra: (60 + 10 × 1.5) / 2.
+  assert public.elo_delta(1000, 1000, 10, 0, v_k, true, v_cap, true, 1.5) = 38,
+    'a 1.5 shutout multiplier should give +38';
+
   -- With MOV off, margin stops mattering.
   assert public.elo_delta(1000, 1000, 10, 0, v_k, false, v_cap) = 30,
     'MOV disabled should ignore the margin';

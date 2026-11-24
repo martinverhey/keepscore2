@@ -23,6 +23,7 @@ final _created = Competition(
   kFactor: 32,
   movEnabled: true,
   movCap: 2.5,
+  shutoutBonus: true,
   allowDraws: true,
   createdAt: DateTime.utc(2026, 8, 9),
 );
@@ -74,6 +75,11 @@ void main() {
       () => repository.create(
         name: any(named: 'name'),
         seasonLength: any(named: 'seasonLength'),
+        kFactor: any(named: 'kFactor'),
+        movEnabled: any(named: 'movEnabled'),
+        movCap: any(named: 'movCap'),
+        shutoutBonus: any(named: 'shutoutBonus'),
+        shutoutMultiplier: any(named: 'shutoutMultiplier'),
         displayName: any(named: 'displayName'),
       ),
     ).thenAnswer((_) async => _created);
@@ -106,10 +112,54 @@ void main() {
       () => repository.create(
         name: 'Office Table Tennis',
         seasonLength: SeasonLength.quarterly,
+        kFactor: 60,
+        movEnabled: true,
+        movCap: 10,
+        shutoutBonus: true,
+        shutoutMultiplier: 2,
       ),
     ).called(1);
     expect(find.byType(CreateCompetitionSheet), findsNothing);
     expect(closedWith, 'comp-1');
+  });
+
+  testWidgets('the rating settings sit behind Advanced and are submitted', (
+    tester,
+  ) async {
+    await _openSheet(tester, repository);
+
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(CreateCompetitionSheet)),
+    );
+
+    expect(find.text(l10n.competitionKFactorLabel), findsNothing);
+    expect(find.byType(TextField), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField), 'Office Table Tennis');
+    await tester.tap(find.text(l10n.competitionAdvancedLabel));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(TextField), findsNWidgets(4));
+    expect(find.text('60'), findsOneWidget);
+    expect(find.text('10'), findsOneWidget);
+    expect(find.text(l10n.competitionShutoutBonusLabel), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField).at(1), '40');
+    await tester.pump();
+    await tester.tap(find.text(l10n.competitionsCreateShort));
+    await tester.pumpAndSettle();
+
+    verify(
+      () => repository.create(
+        name: 'Office Table Tennis',
+        seasonLength: SeasonLength.quarterly,
+        kFactor: 40,
+        movEnabled: true,
+        movCap: 10,
+        shutoutBonus: true,
+        shutoutMultiplier: 2,
+      ),
+    ).called(1);
   });
 
   testWidgets('a name shorter than two characters cannot be submitted', (
@@ -133,6 +183,11 @@ void main() {
       () => repository.create(
         name: any(named: 'name'),
         seasonLength: any(named: 'seasonLength'),
+        kFactor: any(named: 'kFactor'),
+        movEnabled: any(named: 'movEnabled'),
+        movCap: any(named: 'movCap'),
+        shutoutBonus: any(named: 'shutoutBonus'),
+        shutoutMultiplier: any(named: 'shutoutMultiplier'),
       ),
     );
     expect(find.byType(CreateCompetitionSheet), findsOneWidget);
@@ -157,6 +212,11 @@ void main() {
       () => repository.create(
         name: any(named: 'name'),
         seasonLength: any(named: 'seasonLength'),
+        kFactor: any(named: 'kFactor'),
+        movEnabled: any(named: 'movEnabled'),
+        movCap: any(named: 'movCap'),
+        shutoutBonus: any(named: 'shutoutBonus'),
+        shutoutMultiplier: any(named: 'shutoutMultiplier'),
       ),
     );
   });

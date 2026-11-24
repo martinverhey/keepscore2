@@ -19,8 +19,16 @@ final _created = Competition(
   kFactor: 32,
   movEnabled: true,
   movCap: 2.5,
+  shutoutBonus: true,
   allowDraws: true,
   createdAt: DateTime.utc(2026, 8, 9),
+);
+
+CreateCompetitionEditing _editing(String name) => CreateCompetitionEditing(
+  name: name,
+  kFactor: '60',
+  movCap: '10',
+  shutoutMultiplier: '2',
 );
 
 void main() {
@@ -33,20 +41,25 @@ void main() {
       () => repository.create(
         name: any(named: 'name'),
         seasonLength: any(named: 'seasonLength'),
+        kFactor: any(named: 'kFactor'),
+        movEnabled: any(named: 'movEnabled'),
+        movCap: any(named: 'movCap'),
+        shutoutBonus: any(named: 'shutoutBonus'),
+        shutoutMultiplier: any(named: 'shutoutMultiplier'),
         displayName: any(named: 'displayName'),
       ),
     ).thenAnswer((_) async => _created);
   });
 
   test('a name needs at least two characters', () {
-    expect(const CreateCompetitionEditing(name: '').nameIsValid, isFalse);
-    expect(const CreateCompetitionEditing(name: 'A').nameIsValid, isFalse);
-    expect(const CreateCompetitionEditing(name: '  A  ').nameIsValid, isFalse);
-    expect(const CreateCompetitionEditing(name: 'Pool').nameIsValid, isTrue);
+    expect(_editing('').nameIsValid, isFalse);
+    expect(_editing('A').nameIsValid, isFalse);
+    expect(_editing('  A  ').nameIsValid, isFalse);
+    expect(_editing('Pool').nameIsValid, isTrue);
   });
 
-  test('defaults to monthly seasons', () {
-    expect(const CreateCompetitionEditing().seasonLength, SeasonLength.monthly);
+  test('defaults to quarterly seasons', () {
+    expect(_editing('').seasonLength, SeasonLength.quarterly);
   });
 
   blocTest<CreateCompetitionCubit, CreateCompetitionState>(
@@ -62,11 +75,66 @@ void main() {
         () => repository.create(
           name: 'Office Table Tennis',
           seasonLength: SeasonLength.quarterly,
+          kFactor: 60,
+          movEnabled: true,
+          movCap: 10,
+          shutoutBonus: true,
+          shutoutMultiplier: 2,
         ),
       ).called(1);
       expect(cubit.state, CreateCompetitionCreated(_created));
     },
   );
+
+  test('starts on the default rating settings', () {
+    final state = CreateCompetitionCubit(repository).state;
+    expect(state, isA<CreateCompetitionEditing>());
+    state as CreateCompetitionEditing;
+    expect(state.kFactor, '60');
+    expect(state.movEnabled, isTrue);
+    expect(state.movCap, '10');
+    expect(state.shutoutBonus, isTrue);
+    expect(state.shutoutMultiplier, '2');
+    expect(state.seasonLength, SeasonLength.quarterly);
+  });
+
+  blocTest<CreateCompetitionCubit, CreateCompetitionState>(
+    'submits the advanced rating settings',
+    build: () => CreateCompetitionCubit(repository),
+    act: (cubit) async {
+      cubit.nameChanged('Office Table Tennis');
+      cubit.kFactorChanged('40');
+      cubit.movEnabledChanged(false);
+      cubit.movCapChanged('5,5');
+      cubit.shutoutBonusChanged(false);
+      cubit.shutoutMultiplierChanged('1,5');
+      await cubit.submit();
+    },
+    verify: (_) => verify(
+      () => repository.create(
+        name: 'Office Table Tennis',
+        seasonLength: SeasonLength.quarterly,
+        kFactor: 40,
+        movEnabled: false,
+        movCap: 5.5,
+        shutoutBonus: false,
+        shutoutMultiplier: 1.5,
+      ),
+    ).called(1),
+  );
+
+  test('holds back rating settings Postgres would reject', () {
+    final valid = _editing('Pool');
+    expect(valid.canSubmit, isTrue);
+    expect(valid.copyWith(kFactor: '0').canSubmit, isFalse);
+    expect(valid.copyWith(kFactor: '201').canSubmit, isFalse);
+    expect(valid.copyWith(kFactor: '').canSubmit, isFalse);
+    expect(valid.copyWith(movCap: '0,5').canSubmit, isFalse);
+    expect(valid.copyWith(movCap: '51').canSubmit, isFalse);
+    expect(valid.copyWith(movCap: '').canSubmit, isFalse);
+    expect(valid.copyWith(shutoutMultiplier: '0,5').canSubmit, isFalse);
+    expect(valid.copyWith(shutoutMultiplier: '11').canSubmit, isFalse);
+  });
 
   blocTest<CreateCompetitionCubit, CreateCompetitionState>(
     'will not submit an invalid name',
@@ -79,6 +147,11 @@ void main() {
       () => repository.create(
         name: any(named: 'name'),
         seasonLength: any(named: 'seasonLength'),
+        kFactor: any(named: 'kFactor'),
+        movEnabled: any(named: 'movEnabled'),
+        movCap: any(named: 'movCap'),
+        shutoutBonus: any(named: 'shutoutBonus'),
+        shutoutMultiplier: any(named: 'shutoutMultiplier'),
       ),
     ),
   );
@@ -90,6 +163,11 @@ void main() {
           () => repository.create(
             name: any(named: 'name'),
             seasonLength: any(named: 'seasonLength'),
+            kFactor: any(named: 'kFactor'),
+            movEnabled: any(named: 'movEnabled'),
+            movCap: any(named: 'movCap'),
+            shutoutBonus: any(named: 'shutoutBonus'),
+            shutoutMultiplier: any(named: 'shutoutMultiplier'),
             displayName: any(named: 'displayName'),
           ),
         ).thenThrow(

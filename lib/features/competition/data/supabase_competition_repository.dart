@@ -41,6 +41,11 @@ class SupabaseCompetitionRepository implements CompetitionRepository {
   Future<Competition> create({
     required String name,
     required SeasonLength seasonLength,
+    required int kFactor,
+    required bool movEnabled,
+    required double movCap,
+    required bool shutoutBonus,
+    required double shutoutMultiplier,
     String? displayName,
   }) => guard(() async {
     final row = await _client.rpc<Map<String, dynamic>>(
@@ -48,6 +53,11 @@ class SupabaseCompetitionRepository implements CompetitionRepository {
       params: {
         'p_name': name.trim(),
         'p_season_length': seasonLength.wireName,
+        'p_k_factor': kFactor,
+        'p_mov_enabled': movEnabled,
+        'p_mov_cap': movCap,
+        'p_shutout_bonus': shutoutBonus,
+        'p_shutout_multiplier': shutoutMultiplier,
         if (displayName != null && displayName.trim().isNotEmpty)
           'p_display_name': displayName.trim(),
       },
@@ -93,6 +103,8 @@ class SupabaseCompetitionRepository implements CompetitionRepository {
     required int kFactor,
     required bool movEnabled,
     required double movCap,
+    required bool shutoutBonus,
+    required double shutoutMultiplier,
     required bool allowDraws,
   }) => guard(() async {
     final row = await _client
@@ -103,6 +115,8 @@ class SupabaseCompetitionRepository implements CompetitionRepository {
           'k_factor': kFactor,
           'mov_enabled': movEnabled,
           'mov_cap': movCap,
+          'shutout_bonus': shutoutBonus,
+          'shutout_multiplier': shutoutMultiplier,
           'allow_draws': allowDraws,
         })
         .eq('id', competitionId)

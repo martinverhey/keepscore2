@@ -14,6 +14,8 @@ Competition _competition({
   int kFactor = 32,
   bool movEnabled = true,
   double movCap = 2.5,
+  bool shutoutBonus = true,
+  double shutoutMultiplier = 2,
   bool allowDraws = true,
 }) => Competition(
   id: 'c1',
@@ -26,6 +28,8 @@ Competition _competition({
   kFactor: kFactor,
   movEnabled: movEnabled,
   movCap: movCap,
+  shutoutBonus: shutoutBonus,
+  shutoutMultiplier: shutoutMultiplier,
   allowDraws: allowDraws,
   createdAt: DateTime.utc(2026, 8, 9),
 );
@@ -119,6 +123,8 @@ void main() {
           kFactor: any(named: 'kFactor'),
           movEnabled: any(named: 'movEnabled'),
           movCap: any(named: 'movCap'),
+          shutoutBonus: any(named: 'shutoutBonus'),
+          shutoutMultiplier: any(named: 'shutoutMultiplier'),
           allowDraws: any(named: 'allowDraws'),
         ),
       ).thenAnswer(
@@ -128,6 +134,8 @@ void main() {
           kFactor: 24,
           movEnabled: false,
           movCap: 2,
+          shutoutBonus: false,
+          shutoutMultiplier: 3,
           allowDraws: false,
         ),
       );
@@ -140,6 +148,8 @@ void main() {
       cubit.kFactorChanged('24');
       cubit.movEnabledChanged(false);
       cubit.movCapChanged('2,0');
+      cubit.shutoutBonusChanged(false);
+      cubit.shutoutMultiplierChanged('3');
       cubit.allowDrawsChanged(false);
       await cubit.submit();
     },
@@ -152,6 +162,8 @@ void main() {
           kFactor: 24,
           movEnabled: false,
           movCap: 2.0,
+          shutoutBonus: false,
+          shutoutMultiplier: 3.0,
           allowDraws: false,
         ),
       ).called(1);
@@ -160,6 +172,8 @@ void main() {
       expect(_ready(cubit).busy, isFalse);
       expect(_ready(cubit).name, 'Table Tennis');
       expect(_ready(cubit).movCap, '2');
+      expect(_ready(cubit).shutoutBonus, isFalse);
+      expect(_ready(cubit).shutoutMultiplier, '3');
     },
   );
 
@@ -175,6 +189,8 @@ void main() {
           kFactor: any(named: 'kFactor'),
           movEnabled: any(named: 'movEnabled'),
           movCap: any(named: 'movCap'),
+          shutoutBonus: any(named: 'shutoutBonus'),
+          shutoutMultiplier: any(named: 'shutoutMultiplier'),
           allowDraws: any(named: 'allowDraws'),
         ),
       ).thenAnswer((_) async => _competition());
@@ -201,6 +217,8 @@ void main() {
           kFactor: any(named: 'kFactor'),
           movEnabled: any(named: 'movEnabled'),
           movCap: any(named: 'movCap'),
+          shutoutBonus: any(named: 'shutoutBonus'),
+          shutoutMultiplier: any(named: 'shutoutMultiplier'),
           allowDraws: any(named: 'allowDraws'),
         ),
       ).thenThrow(const PermissionFailure());

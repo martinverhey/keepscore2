@@ -17,6 +17,8 @@ class Competition extends Equatable {
     required this.kFactor,
     required this.movEnabled,
     required this.movCap,
+    this.shutoutBonus = true,
+    this.shutoutMultiplier = 2,
     required this.allowDraws,
     required this.createdAt,
   });
@@ -32,6 +34,10 @@ class Competition extends Equatable {
     kFactor: map['k_factor'] as int,
     movEnabled: map['mov_enabled'] as bool,
     movCap: _toDouble(map['mov_cap']),
+    shutoutBonus: map['shutout_bonus'] as bool? ?? true,
+    shutoutMultiplier: map['shutout_multiplier'] == null
+        ? 2
+        : _toDouble(map['shutout_multiplier']),
     allowDraws: map['allow_draws'] as bool,
     createdAt: DateTime.parse(map['created_at'] as String),
   );
@@ -46,6 +52,8 @@ class Competition extends Equatable {
   final int kFactor;
   final bool movEnabled;
   final double movCap;
+  final bool shutoutBonus;
+  final double shutoutMultiplier;
   final bool allowDraws;
   final DateTime createdAt;
 
@@ -63,6 +71,8 @@ class Competition extends Equatable {
     kFactor,
     movEnabled,
     movCap,
+    shutoutBonus,
+    shutoutMultiplier,
     allowDraws,
     createdAt,
   ];

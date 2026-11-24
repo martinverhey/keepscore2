@@ -1,7 +1,10 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/failure.dart';
+import '../../../../core/extensions/double.extension.dart';
+import '../../../../core/extensions/string.extension.dart';
 import '../../../competition/domain/competition.model.dart';
+import '../../../match/domain/elo_settings.model.dart';
 
 sealed class CompetitionEditState extends Equatable {
   const CompetitionEditState();
@@ -38,6 +41,8 @@ class CompetitionEditReady extends CompetitionEditState {
     required this.kFactor,
     required this.movEnabled,
     required this.movCap,
+    required this.shutoutBonus,
+    required this.shutoutMultiplier,
     required this.allowDraws,
     this.busy = false,
     this.saved = false,
@@ -51,7 +56,9 @@ class CompetitionEditReady extends CompetitionEditState {
         seasonLength: competition.seasonLength,
         kFactor: '${competition.kFactor}',
         movEnabled: competition.movEnabled,
-        movCap: _formatCap(competition.movCap),
+        movCap: competition.movCap.inputLabel,
+        shutoutBonus: competition.shutoutBonus,
+        shutoutMultiplier: competition.shutoutMultiplier.inputLabel,
         allowDraws: competition.allowDraws,
       );
 
@@ -61,6 +68,8 @@ class CompetitionEditReady extends CompetitionEditState {
   final String kFactor;
   final bool movEnabled;
   final String movCap;
+  final bool shutoutBonus;
+  final String shutoutMultiplier;
   final bool allowDraws;
   final bool busy;
   final bool saved;
@@ -68,18 +77,25 @@ class CompetitionEditReady extends CompetitionEditState {
 
   bool get nameIsValid => name.trim().length >= 2;
 
-  int? get kFactorValue => int.tryParse(kFactor.trim());
+  int? get kFactorValue => kFactor.wholeNumberValue;
 
-  bool get kFactorIsValid =>
-      kFactorValue != null && kFactorValue! >= 1 && kFactorValue! <= 200;
+  bool get kFactorIsValid => EloSettings.kFactorIsValid(kFactorValue);
 
-  double? get movCapValue =>
-      double.tryParse(movCap.trim().replaceAll(',', '.'));
+  double? get movCapValue => movCap.decimalValue;
 
-  bool get movCapIsValid =>
-      movCapValue != null && movCapValue! >= 1 && movCapValue! <= 50;
+  bool get movCapIsValid => EloSettings.movCapIsValid(movCapValue);
 
-  bool get canSubmit => nameIsValid && kFactorIsValid && movCapIsValid && !busy;
+  double? get shutoutMultiplierValue => shutoutMultiplier.decimalValue;
+
+  bool get shutoutMultiplierIsValid =>
+      EloSettings.shutoutMultiplierIsValid(shutoutMultiplierValue);
+
+  bool get canSubmit =>
+      nameIsValid &&
+      kFactorIsValid &&
+      movCapIsValid &&
+      shutoutMultiplierIsValid &&
+      !busy;
 
   CompetitionEditReady copyWith({
     Competition? competition,
@@ -88,6 +104,8 @@ class CompetitionEditReady extends CompetitionEditState {
     String? kFactor,
     bool? movEnabled,
     String? movCap,
+    bool? shutoutBonus,
+    String? shutoutMultiplier,
     bool? allowDraws,
     bool? busy,
     bool? saved,
@@ -101,6 +119,8 @@ class CompetitionEditReady extends CompetitionEditState {
       kFactor: kFactor ?? this.kFactor,
       movEnabled: movEnabled ?? this.movEnabled,
       movCap: movCap ?? this.movCap,
+      shutoutBonus: shutoutBonus ?? this.shutoutBonus,
+      shutoutMultiplier: shutoutMultiplier ?? this.shutoutMultiplier,
       allowDraws: allowDraws ?? this.allowDraws,
       busy: busy ?? this.busy,
       saved: saved ?? this.saved,
@@ -116,12 +136,11 @@ class CompetitionEditReady extends CompetitionEditState {
     kFactor,
     movEnabled,
     movCap,
+    shutoutBonus,
+    shutoutMultiplier,
     allowDraws,
     busy,
     saved,
     failure,
   ];
 }
-
-String _formatCap(double value) =>
-    value == value.roundToDouble() ? value.round().toString() : '$value';

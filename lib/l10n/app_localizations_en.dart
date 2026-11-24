@@ -177,12 +177,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get competitionCodeCopied => 'Copied';
 
   @override
-  String get competitionNameTooShort =>
-      'Give the competition a name of at least 2 characters.';
+  String get competitionNameTooShort => 'Use at least 2 characters.';
 
   @override
   String competitionSeasonExplainer(int rating) {
-    return 'At the start of every season all ratings reset to $rating.';
+    return 'Each season, everyone starts again at $rating.';
   }
 
   @override
@@ -274,31 +273,43 @@ class AppLocalizationsEn extends AppLocalizations {
       'Seasons already played keep their results. This only changes how future seasons are cut.';
 
   @override
-  String get competitionKFactorLabel => 'K-factor';
+  String get competitionKFactorLabel => 'Base points';
 
   @override
   String get competitionKFactorHelp =>
-      'The points at stake in a match, before any margin bonus. The winner gets the share the loser was expected to win.';
+      'Points at stake per match, before bonus points. Higher means bigger swings.';
 
   @override
-  String get competitionKFactorInvalid => 'Pick a K-factor between 1 and 200.';
+  String get competitionKFactorInvalid => 'Pick a number from 1 to 200.';
 
   @override
   String get competitionMovLabel => 'Margin of victory';
 
   @override
-  String get competitionMovHelp =>
-      'Each point of difference adds an extra point to the stake, doubled when the loser scores nothing. Turn this off to score every win the same.';
+  String get competitionMovHelp => 'Winning by more earns bonus points.';
 
   @override
-  String get competitionMovCapLabel => 'Maximum extra points';
+  String get competitionMovCapLabel => 'Maximum bonus points';
 
   @override
-  String get competitionMovCapHelp =>
-      'The most extra points a big margin can add, before a shutout doubles them.';
+  String get competitionMovCapInvalid => 'Pick a number from 1 to 50.';
 
   @override
-  String get competitionMovCapInvalid => 'Pick a maximum between 1 and 50.';
+  String get competitionShutoutBonusLabel => 'Shutout multiplier';
+
+  @override
+  String get competitionShutoutBonusHelp =>
+      'Multiplies the bonus points when the loser scores 0.';
+
+  @override
+  String get competitionShutoutMultiplierLabel => 'Multiplier';
+
+  @override
+  String get competitionShutoutMultiplierInvalid =>
+      'Pick a number from 1 to 10.';
+
+  @override
+  String get competitionAdvancedLabel => 'Advanced';
 
   @override
   String get competitionAllowDrawsLabel => 'Allow draws';

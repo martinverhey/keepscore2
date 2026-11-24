@@ -4,3 +4,9 @@ extension StringJoinCode on String {
 
   bool get isJoinCode => normalizedJoinCode.length == 6;
 }
+
+extension StringNumberInput on String {
+  int? get wholeNumberValue => int.tryParse(trim());
+
+  double? get decimalValue => double.tryParse(trim().replaceAll(',', '.'));
+}

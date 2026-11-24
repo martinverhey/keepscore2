@@ -67,7 +67,8 @@ begin
   v_delta_a := public.elo_delta(
     v_rating_a, v_rating_b,
     v_match.team_a_score, v_match.team_b_score,
-    v_comp.k_factor, v_comp.mov_enabled, v_comp.mov_cap
+    v_comp.k_factor, v_comp.mov_enabled, v_comp.mov_cap, v_comp.shutout_bonus,
+    v_comp.shutout_multiplier
   );
 
   v_outcome_a := case

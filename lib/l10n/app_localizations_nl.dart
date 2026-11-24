@@ -178,12 +178,11 @@ class AppLocalizationsNl extends AppLocalizations {
   String get competitionCodeCopied => 'Gekopieerd';
 
   @override
-  String get competitionNameTooShort =>
-      'Geef de competitie een naam van minstens 2 tekens.';
+  String get competitionNameTooShort => 'Gebruik minstens 2 tekens.';
 
   @override
   String competitionSeasonExplainer(int rating) {
-    return 'Aan het begin van elk seizoen gaan alle ratings terug naar $rating.';
+    return 'Elk seizoen begint iedereen weer op $rating.';
   }
 
   @override
@@ -275,31 +274,44 @@ class AppLocalizationsNl extends AppLocalizations {
       'Gespeelde seizoenen behouden hun uitslagen. Dit verandert alleen hoe volgende seizoenen lopen.';
 
   @override
-  String get competitionKFactorLabel => 'K-factor';
+  String get competitionKFactorLabel => 'Basispunten';
 
   @override
   String get competitionKFactorHelp =>
-      'De punten die er in een wedstrijd op het spel staan, zonder bonus voor scoreverschil. De winnaar krijgt het deel dat de verliezer naar verwachting zou winnen.';
+      'Punten die per wedstrijd op het spel staan, zonder bonuspunten. Hoger betekent grotere sprongen.';
 
   @override
-  String get competitionKFactorInvalid => 'Kies een K-factor tussen 1 en 200.';
+  String get competitionKFactorInvalid =>
+      'Kies een getal van 1 tot en met 200.';
 
   @override
   String get competitionMovLabel => 'Scoreverschil';
 
   @override
-  String get competitionMovHelp =>
-      'Elk punt verschil legt een extra punt in de pot, dubbel als de verliezer niets scoort. Zet dit uit om elke winst even zwaar te laten tellen.';
+  String get competitionMovHelp => 'Wie ruimer wint, krijgt bonuspunten.';
 
   @override
-  String get competitionMovCapLabel => 'Maximaal extra punten';
+  String get competitionMovCapLabel => 'Maximaal aantal bonuspunten';
 
   @override
-  String get competitionMovCapHelp =>
-      'Het maximum aan extra punten dat een groot scoreverschil oplevert, vóór de verdubbeling bij een nul.';
+  String get competitionMovCapInvalid => 'Kies een getal van 1 tot en met 50.';
 
   @override
-  String get competitionMovCapInvalid => 'Kies een maximum tussen 1 en 50.';
+  String get competitionShutoutBonusLabel => 'Vermenigvuldiger bij een nul';
+
+  @override
+  String get competitionShutoutBonusHelp =>
+      'Vermenigvuldigt de bonuspunten als de verliezer 0 scoort.';
+
+  @override
+  String get competitionShutoutMultiplierLabel => 'Vermenigvuldiger';
+
+  @override
+  String get competitionShutoutMultiplierInvalid =>
+      'Kies een getal van 1 tot en met 10.';
+
+  @override
+  String get competitionAdvancedLabel => 'Geavanceerd';
 
   @override
   String get competitionAllowDrawsLabel => 'Gelijkspel toestaan';

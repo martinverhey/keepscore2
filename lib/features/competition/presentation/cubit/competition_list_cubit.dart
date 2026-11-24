@@ -75,6 +75,8 @@ class CompetitionListCubit extends Cubit<CompetitionListState> {
       kFactor: competition.kFactor,
       movEnabled: competition.movEnabled,
       movCap: competition.movCap,
+      shutoutBonus: competition.shutoutBonus,
+      shutoutMultiplier: competition.shutoutMultiplier,
       allowDraws: competition.allowDraws,
     );
   });
