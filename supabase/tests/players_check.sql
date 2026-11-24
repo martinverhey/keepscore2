@@ -34,7 +34,7 @@ declare
   v_n       integer;
   v_denied  boolean;
 begin
-  select * into v_comp from public.competitions limit 1;
+  select * into v_comp from public.competitions where owner_id = v_owner limit 1;
 
   -- Two more *registered* accounts. The seed's "friend" is anonymous, and
   -- the interesting non-owner cases need people who are not.
